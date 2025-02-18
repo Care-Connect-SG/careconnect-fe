@@ -43,6 +43,31 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
+## Contributing
+
+We welcome contributions to the CareConnect Backend project. To contribute, please follow these steps:
+
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature-branch`).
+3. Make your changes.
+4. Commit your changes (`git commit -m 'Add some feature'`).
+5. Push to the branch (`git push origin feature-branch`).
+6. Open a pull request.
+
+## Committing Changes
+
+We will be loosely following [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) guideline for our commit messages. See the table below for the list of commit types.
+
+| Type     | Description                                                                           |
+| -------- | ------------------------------------------------------------------------------------- |
+| feat     | Commits that add a new feature                                                        |
+| fix      | Bug fixes                                                                             |
+| test     | Addings or changing tests, basically any change within the `test` directory           |
+| refactor | Changes to source code that neither add a feature nor fixes a bug                     |
+| build    | Changes to CI or build configuration files (Docker, github actions)                   |
+| chore    | Anything else that doesn't modify any `src` or `test` files (linters, tsconfig, etc.) |
+| revert   | Reverts a previous commit                                                             |
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

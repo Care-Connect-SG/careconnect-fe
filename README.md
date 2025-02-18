@@ -22,7 +22,7 @@ bun install
 SOON TO BE ADDED
 ```
 
-3. Run the development server:
+3. Run the development:
 
 ```bash
 npm run dev
@@ -36,15 +36,9 @@ bun dev
 
 Open [http://localhost:3001](http://localhost:3000) with your browser to see the result.
 
-## Contributing
+## Workflow
 
-We welcome contributions to the CareConnect Backend project. To contribute, please follow these steps:
-
-1. Create a new branch (`git checkout -b feature-branch`).
-2. Make your changes.
-3. Commit your changes (`git commit -m 'Add some feature'`).
-4. Push to the branch (`git push origin feature-branch`).
-5. Open a pull request.
+See Jira for list of existing issues and to create branches for them.
 
 ## Committing Changes
 
@@ -60,6 +54,16 @@ We will be loosely following [conventional commits](https://www.conventionalcomm
 | chore    | Anything else that doesn't modify any `src` or `test` files (linters, tsconfig, etc.) |
 | revert   | Reverts a previous commit                                                             |
 
+## Contributing
+
+We welcome contributions to the CareConnect Backend project. To contribute, please follow these steps:
+
+1. Create a new branch (`git checkout -b feature-branch`).
+2. Make your changes.
+3. Commit your changes (`git commit -m 'Add some feature'`).
+4. Push to the branch (`git push origin feature-branch`).
+5. Open a pull request.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
@@ -68,9 +72,3 @@ To learn more about Next.js, take a look at the following resources:
 - [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.

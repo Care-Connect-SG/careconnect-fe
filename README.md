@@ -19,10 +19,7 @@ bun install
 2. Create a `.env` file in the root directory (same location as the `package.json` file) to include the environment variables needed for the server to work properly.
 
 ```shell
-NEXT_PUBLIC_BASE_DEPLOYED_URL=https://ignite-be.fly.dev/api/v1/
-NEXT_PUBLIC_BASE_URL=http://localhost:3000/api/v1/
-FRONTEND_URL="http://localhost:3001"
-BACKEND_URL="http://localhost:3000"
+SOON TO BE ADDED
 ```
 
 3. Run the development server:

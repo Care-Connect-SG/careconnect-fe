@@ -6,8 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "biome check . --ignore-path .gitignore",
-    "lint:fix": "biome check . --write --ignore-path .gitignore"
+    "lint": "biome check .",
+    "lint:fix": "biome check . --write"
   },
   "dependencies": {
     "@biomejs/biome": "^1.9.4",

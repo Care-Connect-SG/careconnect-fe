@@ -4,7 +4,7 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 
-1. Make sure you install the dependencies when you clone the project for the first time. Use whichever command below corresponding to your favourite package manager:
+1. Make sure you install the dependencies when you clone the project for the first time. Use whichever command below corresponding to your favourite package:
 
 ```shell
 npm install

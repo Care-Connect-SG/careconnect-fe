@@ -67,7 +67,7 @@ export default function Login() {
         });
       }
 
-      router.push("/dashboard");
+      router.push("/dashboard/home");
     } catch (error: any) {
       setLoading(false);
       console.error("Error during login:", error);

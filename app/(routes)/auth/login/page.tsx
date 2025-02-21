@@ -43,13 +43,9 @@ export default function Login() {
 
   useEffect(() => {
     if (status !== "loading" && session) {
-      router.push("/dashboard");
+      router.push("/dashboard/home");
     }
   }, [session, status, router]);
-
-  if (status === "loading") {
-    return <Spinner />;
-  }
 
   const onSubmit = async (data: FormData) => {
     setLoading(true);

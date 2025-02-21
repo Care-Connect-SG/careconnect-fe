@@ -16,10 +16,11 @@ pnpm install
 bun install
 ```
 
-2. Create a `.env` file in the root directory (same location as the `package.json` file) to include the environment variables needed for the server to work properly.
+2. Create a `.env` file in the root directory (same location as the `package.json` file) to include the environment variables needed for the server to work properly (ask jay for the variables).
 
 ```shell
-SOON TO BE ADDED
+NEXT_PUBLIC_BE_API_URL=
+NEXTAUTH_SECRET=
 ```
 
 3. Run the development:

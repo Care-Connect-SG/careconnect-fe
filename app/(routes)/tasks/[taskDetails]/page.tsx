@@ -16,11 +16,16 @@ import { getTaskById } from "@/services/taskService";
 // Breadcrumb Navigation
 const Breadcrumb = ({ taskTitle }: { taskTitle: string }) => (
   <div className="flex items-center text-sm text-gray-600 mb-6">
-    <a href="#" className="hover:text-blue-600">Dashboard</a>
+    <a href="#" className="hover:text-blue-600">
+      Dashboard
+    </a>
     <ChevronRight className="w-4 h-4 mx-2" />
-    <a href="#" className="hover:text-blue-600">Tasks</a>
+    <a href="#" className="hover:text-blue-600">
+      Tasks
+    </a>
     <ChevronRight className="w-4 h-4 mx-2" />
-    <span className="text-gray-800">{taskTitle || "Task Details"}</span> {/* Placeholder */}
+    <span className="text-gray-800">{taskTitle || "Task Details"}</span>{" "}
+    {/* Placeholder */}
   </div>
 );
 
@@ -39,13 +44,18 @@ const TaskHeader = ({ task }: { task: any }) => {
               <User className="w-4 h-4 text-gray-400 mr-2" />
               <span className="text-sm text-gray-600">Assigned to: </span>
               <span className="ml-1 text-sm font-medium text-blue-600">
-                {task.assigned_to?.join(", ") || "Unassigned"} {/* Placeholder */}
+                {task.assigned_to?.join(", ") || "Unassigned"}{" "}
+                {/* Placeholder */}
               </span>
             </div>
             <div className="flex items-center">
               <Clock className="w-4 h-4 text-red-400 mr-2" />
               <span className="text-sm font-medium text-red-600">
-                Due on {task.due_date ? new Date(task.due_date).toLocaleString() : "N/A"} {/* Placeholder */}
+                Due on{" "}
+                {task.due_date
+                  ? new Date(task.due_date).toLocaleString()
+                  : "N/A"}{" "}
+                {/* Placeholder */}
               </span>
             </div>
           </div>
@@ -69,7 +79,10 @@ const TaskHeader = ({ task }: { task: any }) => {
                   action cannot be undone.
                 </Dialog.Description>
                 <div className="mt-6 flex justify-end space-x-3">
-                  <Button variant="secondary" onClick={() => setShowDialog(false)}>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setShowDialog(false)}
+                  >
                     Cancel
                   </Button>
                   <Button variant="success">Confirm Completion</Button>
@@ -86,21 +99,29 @@ const TaskHeader = ({ task }: { task: any }) => {
 
 const ResidentSnapshot = ({ resident }: { resident: any }) => (
   <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-    <h2 className="text-lg font-semibold text-gray-800 mb-4">Resident Information</h2>
+    <h2 className="text-lg font-semibold text-gray-800 mb-4">
+      Resident Information
+    </h2>
     <div className="grid grid-cols-2 gap-6">
       <div>
         <div className="flex items-start mb-4">
           <User className="w-5 h-5 text-gray-400 mr-3 mt-1" />
           <div>
             <p className="text-sm text-gray-500">Resident Name</p>
-            <p className="font-medium text-gray-900">{resident?.full_name || "Unknown"}</p> {/* Placeholder */}
+            <p className="font-medium text-gray-900">
+              {resident?.full_name || "Unknown"}
+            </p>{" "}
+            {/* Placeholder */}
           </div>
         </div>
         <div className="flex items-start">
           <Home className="w-5 h-5 text-gray-400 mr-3 mt-1" />
           <div>
             <p className="text-sm text-gray-500">Room Number</p>
-            <p className="font-medium text-gray-900">{resident?.room_number || "N/A"}</p> {/* Placeholder */}
+            <p className="font-medium text-gray-900">
+              {resident?.room_number || "N/A"}
+            </p>{" "}
+            {/* Placeholder */}
           </div>
         </div>
       </div>
@@ -110,8 +131,13 @@ const ResidentSnapshot = ({ resident }: { resident: any }) => (
 
 const TaskDescription = ({ description }: { description: string }) => (
   <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-    <h2 className="text-lg font-semibold text-gray-800 mb-4">Task Description</h2>
-    <p className="text-gray-600 leading-relaxed">{description || "No description available."}</p> {/* Placeholder */}
+    <h2 className="text-lg font-semibold text-gray-800 mb-4">
+      Task Description
+    </h2>
+    <p className="text-gray-600 leading-relaxed">
+      {description || "No description available."}
+    </p>{" "}
+    {/* Placeholder */}
   </div>
 );
 
@@ -144,7 +170,8 @@ export const TaskDetails = () => {
           <TaskDescription description={task.task_details} />
         </div>
         <div className="col-span-1">
-          <ResidentSnapshot resident={task.resident || {}} /> {/* Placeholder */}
+          <ResidentSnapshot resident={task.resident || {}} />{" "}
+          {/* Placeholder */}
         </div>
       </div>
     </div>

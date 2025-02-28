@@ -44,7 +44,6 @@ export interface TaskBase {
   media?: string[];
   notes?: string;
   is_ai_generated: boolean;
-  calendar_event_id?: string;
 }
 
 export interface TaskCreate extends TaskBase {}

@@ -1,4 +1,4 @@
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react";
+import { Calendar, Home, Settings, ClipboardList, Users, AlertTriangle, User, Megaphone, UsersRound } from "lucide-react";
 
 import {
   Sidebar,
@@ -19,23 +19,43 @@ const items = [
     icon: Home,
   },
   {
-    title: "Inbox",
-    url: "#",
-    icon: Inbox,
+    title: "Tasks",
+    url: "/dashboard/tasks",
+    icon: ClipboardList,
+  },
+  {
+    title: "Residents",
+    url: "/dashboard/residents",
+    icon: Users,
+  },
+  {
+    title: "Incident Reports",
+    url: "/dashboard/incidents",
+    icon: AlertTriangle,
+  },
+  {
+    title: "Profile",
+    url: "/dashboard/profile",
+    icon: User,
+  },
+  {
+    title: "Announcement",
+    url: "/dashboard/announcement",
+    icon: Megaphone,
   },
   {
     title: "Calendar",
-    url: "#",
+    url: "/dashboard/calendar",
     icon: Calendar,
   },
   {
-    title: "Search",
-    url: "#",
-    icon: Search,
+    title: "Group",
+    url: "/dashboard/group",
+    icon: UsersRound,
   },
   {
     title: "Settings",
-    url: "#",
+    url: "/dashboard/settings",
     icon: Settings,
   },
 ];

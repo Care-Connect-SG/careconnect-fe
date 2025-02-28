@@ -524,15 +524,15 @@ const sidebarMenuButtonVariants = cva(
   {
     variants: {
       variant: {
-        default: "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+        default: "hover:bg-blue-50 hover:text-blue-600", // Change hover background to blue
         outline:
           "bg-background shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]",
       },
       size: {
-        default: "h-8 text-sm",
-        sm: "h-7 text-xs",
-        lg: "h-12 text-sm group-data-[collapsible=icon]:!p-0",
-      },
+        default: "h-12 text-sm", // Increase from h-8 to h-10
+        sm: "h-10 text-xs",        // Increase from h-7 to h-9
+        lg: "h-14 text-sm group-data-[collapsible=icon]:!p-0", // Increase from h-12 to h-14
+      },            
     },
     defaultVariants: {
       variant: "default",

@@ -13,7 +13,7 @@ export const getTasks = async (email: string): Promise<Task[]> => {
       {
         method: "GET",
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -39,7 +39,7 @@ export const getTaskById = async (taskId: string): Promise<Task> => {
       {
         method: "GET",
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
 
     if (!response.ok) {

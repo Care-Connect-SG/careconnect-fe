@@ -9,12 +9,16 @@ export default function DashboardLayout({
 }) {
   return (
     <SidebarProvider>
-      <AppSidebar />
-      <main className="w-full pt-14"> {/* Prevent content from being hidden under TopBar */}
-        <TopBar /> {/* Add TopBar here */}
-        <SidebarTrigger />
-        {children}
-      </main>
+      <div className="flex h-screen w-full"> {/* Ensure full width */}
+        {/* Sidebar */}
+        <AppSidebar className="flex-shrink-0" />
+  
+        {/* Main Content */}
+        <div className="flex flex-col flex-1 w-full"> {/* Ensures content takes full width */}
+          <TopBar /> {/* TopBar inside the main content */}
+          <main className="flex-1 overflow-auto w-full">{children}</main>
+        </div>
+      </div>
     </SidebarProvider>
   );
-}
+  

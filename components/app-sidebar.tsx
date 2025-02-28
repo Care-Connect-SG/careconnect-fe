@@ -1,3 +1,5 @@
+"use client"; // Ensure this is a Client Component
+
 import { Calendar, Home, Settings, ClipboardList, Users, AlertTriangle, User, Megaphone, UsersRound } from "lucide-react";
 
 import {
@@ -9,6 +11,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarTrigger, // Add SidebarTrigger here
+  useSidebar, // Add useSidebar here
 } from "@/components/ui/sidebar";
 
 // Menu items.
@@ -61,11 +65,20 @@ const items = [
 ];
 
 export function AppSidebar() {
+  const { state } = useSidebar(); //  Detect if the sidebar is collapsed
+
   return (
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>CareConnect</SidebarGroupLabel>
+          <div className="flex items-center justify-between p-4">
+            {/* Sidebar Logo */}
+            <SidebarGroupLabel>CareConnect</SidebarGroupLabel>
+            
+            {/* Sidebar Toggle Button (Collapsible Icon) */}
+            <SidebarTrigger className="text-gray-500 hover:text-gray-700" />
+          </div>
+
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
@@ -82,6 +95,13 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      {/* ✅ Show a floating button when the sidebar is collapsed */}
+      {state === "collapsed" && (
+        <div className="fixed top-4 left-4 z-50">
+          <SidebarTrigger className="bg-gray-200 p-2 rounded-full shadow-md hover:bg-gray-300" />
+        </div>
+      )}
     </Sidebar>
   );
 }

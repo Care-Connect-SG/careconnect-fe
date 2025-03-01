@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/tooltip";
 import { BookPlus, FilePenLine, Trash2 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface FormCardProps {
   id: string;
@@ -34,6 +35,8 @@ export default function FormCard({
   onPublish,
   onDelete,
 }: FormCardProps) {
+  const router = useRouter();
+
   return (
     <Card
       className={`w-xs max-w-xs h-[11rem] overflow-hidden ${
@@ -42,40 +45,44 @@ export default function FormCard({
           : "border-l-4 border-l-yellow-500"
       }`}
     >
-      <CardHeader
-        className={`flex flex-row items-start justify-between space-y-0`}
-      >
-        <div>
-          <CardTitle className="text-base font-bold">{title}</CardTitle>
-          <p className="hidden sm:block text-xs text-muted-foreground mt-1">
-            Created at {created_date}
-          </p>
-        </div>
-        <Badge
-          className={
-            status === "Published"
-              ? "hidden md:block bg-green-100 text-green-800"
-              : "hidden md:block bg-yellow-100 text-yellow-800"
-          }
+      <Link href={`/dashboard/form/view/${id}`}>
+        <CardHeader
+          className={`flex flex-row items-start justify-between space-y-0`}
         >
-          {status}
-        </Badge>
-      </CardHeader>
-      <CardContent>
-        <p className="hidden md:block text-xs truncate">{description}</p>
-      </CardContent>
+          <div>
+            <CardTitle className="text-base font-bold">{title}</CardTitle>
+            <p className="hidden sm:block text-xs text-muted-foreground mt-1">
+              Created at {created_date}
+            </p>
+          </div>
+          <Badge
+            className={
+              status === "Published"
+                ? "hidden md:block bg-green-100 text-green-800"
+                : "hidden md:block bg-yellow-100 text-yellow-800"
+            }
+          >
+            {status}
+          </Badge>
+        </CardHeader>
+        <CardContent>
+          <p className="hidden md:block text-xs truncate">{description}</p>
+        </CardContent>
+      </Link>
       <CardFooter className="flex justify-end gap-4 py-2 px-6 text-semibold text-gray-400">
         {status === "Draft" && (
           <div className="flex gap-4 items-center">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Link
-                    href={`form/build?id=${id}`}
-                    onClick={(e) => e.stopPropagation()}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`form/build?id=${id}`);
+                    }}
                   >
                     <FilePenLine className="h-4 w-4 hover:text-gray-600" />
-                  </Link>
+                  </button>
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>Edit</p>

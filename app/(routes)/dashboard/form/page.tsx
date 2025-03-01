@@ -67,9 +67,8 @@ export default function Incident() {
       <hr className="border-t-1 border-gray-300 mx-8 py-2"></hr>
       <div className="w-full grid grid-cols-3 gap-4 px-8 py-4">
         {forms.map((form) => (
-          <div onClick={(e) => e.preventDefault()}>
+          <div key={form._id} onClick={(e) => e.preventDefault()}>
             <FormCard
-              key={form._id}
               id={form._id}
               title={form.title}
               description={form.description}

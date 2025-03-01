@@ -10,7 +10,7 @@ import {
   User,
 } from "lucide-react";
 import React from "react";
-import { Button } from "./button";
+import { Button } from "./ui/button";
 export const TopBar = () => {
   return (
     <div className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">

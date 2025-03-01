@@ -15,7 +15,7 @@ export const getTasks = async (email: string): Promise<Task[]> => {
         headers: {
           "Content-Type": "application/json",
         },
-      },
+      }
     );
 
     if (!response.ok) {
@@ -43,7 +43,7 @@ export const getTaskById = async (taskId: string): Promise<Task> => {
         headers: {
           "Content-Type": "application/json",
         },
-      },
+      }
     );
 
     if (!response.ok) {
@@ -54,6 +54,36 @@ export const getTaskById = async (taskId: string): Promise<Task> => {
     return data;
   } catch (error) {
     console.error("getTaskById error:", error);
+    throw error;
+  }
+};
+
+/**
+ * Mark a task as completed.
+ * This calls the backend endpoint POST /tasks/<task_id>/complete
+ */
+export const completeTask = async (taskId: string): Promise<Task> => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/complete`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `Error marking task as completed: ${response.statusText}`
+      );
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("completeTask error:", error);
     throw error;
   }
 };

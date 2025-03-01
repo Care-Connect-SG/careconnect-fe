@@ -3,7 +3,7 @@ import React from "react";
 
 
 export type Resident = {
-  id: number;
+  id: string;
   name: string;
   age: number;
   room: string;
@@ -13,8 +13,8 @@ export type Resident = {
 
 interface ResidentCardProps {
   resident: Resident;
-  onNurseChange: (id: number, newNurse: string) => void;
-  onClick?: (id: number) => void;
+  onNurseChange: (id: string, newNurse: string) => void;
+  onClick?: (id: string) => void;
 }
 
 
@@ -27,7 +27,7 @@ function AllResidentCard({ resident, onNurseChange, onClick }: ResidentCardProps
 
 
   return (
-    <div className="flex items-center justify-between p-4 bg-white shadow-md rounded-md"  onClick={() => onClick && onClick(resident.id)} >
+    <div className="flex items-center justify-between p-4 bg-white shadow-md rounded-md"  >
       <div className="flex items-center gap-4">
         {/* Profile Photo */}
         <div className="relative w-16 h-16">
@@ -40,7 +40,7 @@ function AllResidentCard({ resident, onNurseChange, onClick }: ResidentCardProps
         </div>
         {/* Resident Details */}
         <div>
-          <h2 className="text-lg font-semibold">{resident.name}</h2>
+          <h2 className="text-lg font-semibold"  onClick={() => onClick && onClick(resident.id)}>{resident.name}</h2>
           <p className="text-sm text-gray-600">Age: {resident.age}</p>
           <p className="text-sm text-gray-600">Room: {resident.room}</p>
         </div>

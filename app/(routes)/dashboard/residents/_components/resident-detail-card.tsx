@@ -57,12 +57,21 @@ const ResidentDetailsCard: React.FC<ResidentDetailsCardProps> = ({
           <p className="text-sm text-gray-600">
             <span className="font-medium">Emergency Contact:</span> {emergencyContactName}
           </p>
+          </div>
+        <div> 
           <p className="text-sm text-gray-600">
             <span className="font-medium">Contact Number:</span> {emergencyContactNumber}
           </p>
         </div>
 
-        <div className="sm:col-span-2">
+        <div> 
+          <p className="text-sm text-gray-600">
+            <span className="font-medium">Nurse:</span> {primaryNurse}
+          </p>
+        </div>
+
+
+        {/* <div className="sm:col-span-2">
           <label
             htmlFor="primaryNurse"
             className="block text-sm font-medium text-gray-700"
@@ -81,7 +90,7 @@ const ResidentDetailsCard: React.FC<ResidentDetailsCardProps> = ({
               </option>
             ))}
           </select>
-        </div>
+        </div> */}
       </div>
     </div>
   );

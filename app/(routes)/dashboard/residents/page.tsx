@@ -1,41 +1,39 @@
 "use client";
 
-import React, { useState } from "react";
-import ResidentCard, { Resident } from "./components/all-resident-card";
+import React, { useEffect, useState } from "react";
+import ResidentCard, { Resident } from "./_components/all-resident-card";
 import { useRouter } from "next/navigation";
-
+import { getResidents } from "../../../api/resident";
+import { ResidentRecord } from "@/types/resident";
 
 export default function AllResidentsPage() {
-  // Sample data for demonstration
-  const [residents, setResidents] = useState<Resident[]>([
-    {
-      id: 1,
-      name: "Alice Johnson",
-      age: 78,
-      room: "203B",
-      nurse: "Nurse A",
-      imageUrl: "/images/no-image.png",
-    },
-    {
-      id: 2,
-      name: "Bob Smith",
-      age: 82,
-      room: "205A",
-      nurse: "Nurse B",
-      imageUrl: "/images/no-image.png",
-    },
-    {
-      id: 3,
-      name: "Cindy Lee",
-      age: 90,
-      room: "210C",
-      nurse: "Nurse A",
-      imageUrl: "/images/no-image.png",
-    },
-  ]);
-
-  // State for search term
+  const [residents, setResidents] = useState<Resident[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const router = useRouter();
+
+  useEffect(() => {
+    // Call your API to fetch residents
+    getResidents()
+      .then((data: ResidentRecord[]) => {
+        // Map backend data (ResidentRecord) to your Resident type
+        const formatted: Resident[] = data.map((record) => ({
+          id: record._id, // or keep as string if your component supports it
+          name: record.full_name,
+          // If API doesn't include age, you could compute it from date_of_birth.
+          // For now, we'll assume it's returned or set to a default.
+          age: record.date_of_birth.length ? record.date_of_birth.length : 0,
+          room: record.room_number,
+          nurse: record.primary_nurse || "N/A",
+          // If your API doesn't return an image URL, use a default.
+          imageUrl:  "/images/no-image.png",
+        }));
+        setResidents(formatted);
+        console.log("Residents fetched:", formatted);
+      })
+      .catch((error) => {
+        console.error("Error fetching residents:", error);
+      });
+  }, []);
 
   // Filter logic
   const filteredResidents = residents.filter((resident) =>
@@ -43,9 +41,9 @@ export default function AllResidentsPage() {
   );
 
   // Handle nurse selection changes
-  const handleNurseChange = (id: number, newNurse: string) => {
+  const handleNurseChange = (id: string, newNurse: string) => {
     setResidents((prev) =>
-      prev.map((res) => (res.id === id ? { ...res, nurse: newNurse } : res))
+      prev.map((res) => (res.id === id.toString() ? { ...res, nurse: newNurse } : res))
     );
   };
 
@@ -54,12 +52,10 @@ export default function AllResidentsPage() {
     setSearchTerm(e.target.value);
   };
 
-  const router = useRouter();
-
-  const handleCardClick = (id: number) => {
+  // Navigate to resident detail page when a card is clicked
+  const handleCardClick = (id: string) => {
     router.push(`/dashboard/residents/${id}`);
   };
-
 
   return (
     <div className="max-w-4xl mx-auto p-4">
@@ -79,16 +75,16 @@ export default function AllResidentsPage() {
 
       {/* List of Resident Cards */}
       <div className="space-y-4">
-        {filteredResidents.map((resident) => (
-          <ResidentCard
-            key={resident.id}
-            resident={resident}
-            onNurseChange={handleNurseChange}
-            onClick={handleCardClick}
-          />
-        ))}
-
-        {filteredResidents.length === 0 && (
+        {filteredResidents.length > 0 ? (
+          filteredResidents.map((resident) => (
+            <ResidentCard
+              key={resident.id}
+              resident={resident}
+              onNurseChange={handleNurseChange}
+              onClick={handleCardClick}
+            />
+          ))
+        ) : (
           <p className="text-gray-500 text-center">No residents found.</p>
         )}
       </div>

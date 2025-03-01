@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import ResidentDetailsCard from "../components/resident-detail-card";
-import ResidentDetailsNotesCard from "../components/resident-detail-notes";
-import ResidentProfileCard from "../components/resident-profile-card";
+import ResidentDetailsCard from "../_components/resident-detail-card";
+import ResidentDetailsNotesCard from "../_components/resident-detail-notes";
+import ResidentProfileCard from "../_components/resident-profile-card";
 
 const TABS = [
   { label: "Overview", value: "overview" },
   { label: "Record History", value: "history" },
   { label: "Medication", value: "medication" },
+  { label: "Care Plan", value: "careplan" },
   { label: "Wellness Report", value: "wellness" },
 ];
 
@@ -65,7 +66,7 @@ const ResidentDashboard = () => {
             emergencyContactName="Bob Johnson"
             emergencyContactNumber="91234567"
             relationship="Spouse"
-            primaryNurse={primaryNurse}
+            primaryNurse="Nurse A"
             onPrimaryNurseChange={handlePrimaryNurseChange}
           />
 
@@ -84,6 +85,13 @@ const ResidentDashboard = () => {
       {activeTab === "medication" && (
         <div className="mt-6">
           <h2 className="text-lg font-semibold">Medication</h2>
+          {/* Insert your medication content or components here */}
+        </div>
+      )}
+
+      {activeTab === "careplan" && (
+        <div className="mt-6">
+          <h2 className="text-lg font-semibold">Care Plan</h2>
           {/* Insert your medication content or components here */}
         </div>
       )}

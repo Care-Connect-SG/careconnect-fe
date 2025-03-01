@@ -1,16 +1,29 @@
-"use client"; // Ensure this is a Client Component
+"use client";
 
 import {
   AlertTriangle,
   Calendar,
+  ChevronRight,
   ClipboardList,
   Home,
+  LogOut,
   Megaphone,
   Settings,
-  User,
   Users,
   UsersRound,
 } from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
+import { useEffect } from "react";
+import { Button } from "./ui/button";
+import { Spinner } from "./ui/spinner";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import {
   Sidebar,
@@ -21,81 +34,67 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger, // Add SidebarTrigger here
-  useSidebar, // Add useSidebar here
+  SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-// Menu items.
-const items = [
-  {
-    title: "Home",
-    url: "/dashboard/home",
-    icon: Home,
-  },
-  {
-    title: "Tasks",
-    url: "/dashboard/tasks",
-    icon: ClipboardList,
-  },
-  {
-    title: "Residents",
-    url: "/dashboard/residents",
-    icon: Users,
-  },
+const mainItems = [
+  { title: "Home", url: "/dashboard/home", icon: Home },
+  { title: "Tasks", url: "/dashboard/tasks", icon: ClipboardList },
+  { title: "Residents", url: "/dashboard/residents", icon: Users },
   {
     title: "Incident Reports",
     url: "/dashboard/incidents",
     icon: AlertTriangle,
   },
-  {
-    title: "Profile",
-    url: "/dashboard/profile",
-    icon: User,
-  },
-  {
-    title: "Announcement",
-    url: "/dashboard/announcement",
-    icon: Megaphone,
-  },
-  {
-    title: "Calendar",
-    url: "/dashboard/calendar",
-    icon: Calendar,
-  },
-  {
-    title: "Group",
-    url: "/dashboard/group",
-    icon: UsersRound,
-  },
-  {
-    title: "Settings",
-    url: "/dashboard/settings",
-    icon: Settings,
-  },
+  { title: "Announcements", url: "/dashboard/announcements", icon: Megaphone },
+  { title: "Calendar", url: "/dashboard/calendar", icon: Calendar },
+];
+
+const bottomItems = [
+  { title: "Group", url: "/dashboard/group", icon: UsersRound },
+  { title: "Settings", url: "/dashboard/settings", icon: Settings },
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar(); //  Detect if the sidebar is collapsed
+  const { state } = useSidebar();
+  const router = useRouter();
+  const { data: session, status } = useSession();
+
+  useEffect(() => {
+    if (status !== "loading" && !session) {
+      router.push("/auth/login");
+    }
+  }, [session, status, router]);
 
   return (
     <Sidebar>
-      <SidebarContent>
+      <SidebarContent className="flex flex-col h-full">
         <SidebarGroup>
-          <div className="flex items-center justify-between p-4">
-            {/* Sidebar Logo */}
-            <SidebarGroupLabel>CareConnect</SidebarGroupLabel>
-
-            {/* Sidebar Toggle Button (Collapsible Icon) */}
-            <SidebarTrigger className="text-gray-500 hover:text-gray-700" />
+          <div className="flex items-center justify-between p-4 pl-2">
+            <SidebarGroupLabel className="p-0">
+              <Image
+                src="/careconnect.png"
+                alt="CareConnect Logo"
+                className="h-5 w-auto object-contain hover:cursor-pointer"
+                width={2154}
+                height={972}
+                onClick={() => router.push("/dashboard/home")}
+              />
+            </SidebarGroupLabel>
+            <SidebarTrigger className="text-gray-500 hover:text-blue-600" />
           </div>
 
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
+              {mainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon />
+                    <a href={item.url} className="flex items-center gap-3">
+                      <item.icon className="w-5 h-5" />
                       <span>{item.title}</span>
                     </a>
                   </SidebarMenuButton>
@@ -104,12 +103,79 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        <div className="flex-1"></div>
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {bottomItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <Link href={item.url} className="flex items-center gap-3">
+                      <item.icon className="w-5 h-5" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <Button className="flex items-center gap-3 w-full bg-transparent text-black">
+                        {status === "loading" ? (
+                          <Spinner />
+                        ) : (
+                          <>
+                            {/* <Image
+                              src="/url"
+                              alt="Profile"
+                              width={24}
+                              height={24}
+                              className="w-6 h-6 rounded-full"
+                            /> */}
+                            <span>{session?.user?.email}</span>
+                            <ChevronRight className="ml-auto" />
+                          </>
+                        )}
+                      </Button>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent align="end" sideOffset={8}>
+                  <DropdownMenuItem>
+                    <Link
+                      href="/dashboard/profile"
+                      className="flex items-center gap-2"
+                    >
+                      <Users className="w-4 h-4 mr-3" />
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="text-red-600 cursor-pointer"
+                    onClick={() => signOut({ callbackUrl: "/" })}
+                  >
+                    <LogOut className="w-4 h-4 mr-3" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
 
-      {/* ✅ Show a floating button when the sidebar is collapsed */}
       {state === "collapsed" && (
-        <div className="fixed top-4 left-4 z-50">
-          <SidebarTrigger className="bg-gray-200 p-2 rounded-full shadow-md hover:bg-gray-300" />
+        <div className="fixed top-6 left-4 z-10">
+          <SidebarTrigger className="bg-white text-gray-500 hover:text-blue-600" />
         </div>
       )}
     </Sidebar>

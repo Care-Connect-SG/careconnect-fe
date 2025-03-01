@@ -1,6 +1,12 @@
 import { AppSidebar } from "@/components/app-sidebar";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { TopBar } from "@/components/ui/topbar";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import type { Metadata } from "next";
+// import { TopBar } from "@/components/ui/topbar";
+
+export const metadata: Metadata = {
+  title: "CareConnect - Dashboard",
+  description: "Your care management solution",
+};
 
 export default function DashboardLayout({
   children,
@@ -13,7 +19,7 @@ export default function DashboardLayout({
         <AppSidebar />
 
         <div className="flex flex-col flex-1 w-full">
-          <TopBar />
+          {/* <TopBar /> */}
           <main className="flex-1 overflow-auto w-full">{children}</main>
         </div>
       </div>

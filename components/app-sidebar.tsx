@@ -98,7 +98,7 @@ export function AppSidebar() {
   // Conditionally render the "Users" tab if the userRole is "Admin"
   const updatedMainItems =
     userRole === "Admin"
-      ? [...mainItems, { title: "Users", url: "/dashboard/users", icon: Users }]
+      ? [...mainItems, { title: "Nurses", url: "/dashboard/nurses", icon: Users }]
       : mainItems;
 
   return (

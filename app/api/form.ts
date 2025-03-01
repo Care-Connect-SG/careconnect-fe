@@ -28,7 +28,7 @@ export const getForms = async (): Promise<FormComplete[]> => {
 export const createForm = async (formData: FormBase): Promise<string> => {
   try {
     const response = await fetch(
-      `${process.env.BE_API_URL}/incident/forms`,
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/incident/forms`,
       {
         method: "POST",
         headers: {
@@ -57,7 +57,7 @@ export const updateForm = async (
 ): Promise<string> => {
   try {
     const response = await fetch(
-      `${process.env.BE_API_URL}/incident/forms/${formId}`,
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/incident/forms/${formId}`,
       {
         method: "PUT",
         headers: {
@@ -83,7 +83,7 @@ export const updateForm = async (
 export const publishForm = async (formId: string): Promise<string> => {
   try {
     const response = await fetch(
-      `${process.env.BE_API_URL}/incident/forms/${formId}/publish`,
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/incident/forms/${formId}/publish`,
       {
         method: "PUT",
         headers: {
@@ -108,7 +108,7 @@ export const publishForm = async (formId: string): Promise<string> => {
 export const getFormById = async (formId: string): Promise<FormComplete> => {
   try {
     const response = await fetch(
-      `${process.env.BE_API_URL}/incident/forms/${formId}`,
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/incident/forms/${formId}`,
       {
         method: "GET",
         headers: {
@@ -128,14 +128,13 @@ export const getFormById = async (formId: string): Promise<FormComplete> => {
   } catch (error) {
     console.error("Error fetching form: ", error);
     throw error;
-    //TODO: Find a better way to handle errors
   }
 };
 
 export const deleteForm = async (formId: string): Promise<void> => {
   try {
     const response = await fetch(
-      `${process.env.BE_API_URL}/incident/forms/${formId}`,
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/incident/forms/${formId}`,
       {
         method: "DELETE",
         headers: {

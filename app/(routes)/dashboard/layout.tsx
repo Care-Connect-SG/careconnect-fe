@@ -1,6 +1,6 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { TopBar } from "@/components/ui/topbar"; // Import the named export TopBar component
+import { TopBar } from "@/components/ui/topbar";
 
 export default function DashboardLayout({
   children,
@@ -9,16 +9,14 @@ export default function DashboardLayout({
 }) {
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full"> {/* Ensure full width */}
-        {/* Sidebar */}
-        <AppSidebar className="flex-shrink-0" />
-  
-        {/* Main Content */}
-        <div className="flex flex-col flex-1 w-full"> {/* Ensures content takes full width */}
-          <TopBar /> {/* TopBar inside the main content */}
+      <div className="flex h-screen w-full">
+        <AppSidebar />
+
+        <div className="flex flex-col flex-1 w-full">
+          <TopBar />
           <main className="flex-1 overflow-auto w-full">{children}</main>
         </div>
       </div>
     </SidebarProvider>
   );
-  
+}

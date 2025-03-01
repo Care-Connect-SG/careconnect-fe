@@ -13,7 +13,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { Spinner } from "./ui/spinner";
 
@@ -63,12 +63,43 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const router = useRouter();
   const { data: session, status } = useSession();
+  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
     if (status !== "loading" && !session) {
       router.push("/auth/login");
     }
   }, [session, status, router]);
+
+  useEffect(() => {
+    if (session?.user?.email) {
+      // Fetch the user role if email is available in the session
+      const fetchUserRole = async () => {
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_BE_API_URL}/users/email/${session?.user?.email}`
+          );
+          if (response.ok) {
+            const data = await response.json();
+            // Assuming the response contains the 'role' property
+            setUserRole(data.role);
+          } else {
+            console.error("Failed to fetch user role");
+          }
+        } catch (error) {
+          console.error("Error fetching user role:", error);
+        }
+      };
+
+      fetchUserRole();
+    }
+  }, [session?.user?.email]);
+
+  // Conditionally render the "Users" tab if the userRole is "Admin"
+  const updatedMainItems =
+    userRole === "Admin"
+      ? [...mainItems, { title: "Users", url: "/dashboard/users", icon: Users }]
+      : mainItems;
 
   return (
     <Sidebar>
@@ -90,7 +121,7 @@ export function AppSidebar() {
 
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainItems.map((item) => (
+              {updatedMainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <a href={item.url} className="flex items-center gap-3">

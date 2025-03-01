@@ -22,7 +22,7 @@ export const authOptions: NextAuthOptions = {
               username: credentials?.email || "",
               password: credentials?.password || "",
             }),
-          },
+          }
         );
 
         const user = await res.json();

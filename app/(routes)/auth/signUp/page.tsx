@@ -65,7 +65,6 @@ export default function SignUp() {
     setLoading(true);
 
     try {
-
       const response = await fetch(`${BE_API_URL}/users/register`, {
         method: "POST",
         headers: {

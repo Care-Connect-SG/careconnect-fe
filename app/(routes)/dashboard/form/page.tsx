@@ -1,6 +1,6 @@
 "use client";
 
-import { getForms } from "@/app/api/form";
+import { deleteForm, getForms, publishForm } from "@/app/api/form";
 import { Card } from "@/components/ui/card";
 import { FormComplete } from "@/types/form";
 import { Plus } from "lucide-react";
@@ -34,6 +34,26 @@ export default function Incident() {
     }
   };
 
+  const handlePublish = async (formId: string) => {
+    try {
+      await publishForm(formId);
+      console.log("Published form: ", formId);
+      fetchForms();
+    } catch (error) {
+      console.error("Failed to publish form");
+    }
+  };
+
+  const handleDelete = async (formId: string) => {
+    try {
+      await deleteForm(formId);
+      console.log("Deleted form: ", formId);
+      fetchForms();
+    } catch (error) {
+      console.error("Failed to delete form");
+    }
+  };
+
   return (
     <>
       <div className="px-8 py-4">
@@ -49,14 +69,17 @@ export default function Incident() {
         {forms.map((form) => (
           <FormCard
             key={form._id}
+            id={form._id}
             title={form.title}
             description={form.description}
             created_date={formatDate(form.created_date)}
             status={form.status}
+            onPublish={handlePublish}
+            onDelete={handleDelete}
           />
         ))}
-        <Card className="border-dashed w-xs max-w-xs h-[10rem] hover:bg-gray-100">
-          <Link href="/dashboard/form/create">
+        <Card className="border-dashed w-xs max-w-xs h-[11rem] hover:bg-gray-100">
+          <Link href="/dashboard/form/build">
             <div className="flex flex-col justify-center items-center h-full">
               <Plus className="mb-0 h-6 w-6 text-gray-500" />
               <p className="text-sm text-gray-400 mt-1">Create a new form</p>

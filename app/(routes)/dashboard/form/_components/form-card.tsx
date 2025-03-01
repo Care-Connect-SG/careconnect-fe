@@ -70,7 +70,10 @@ export default function FormCard({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Link href={`form/build?id=${id}`}>
+                  <Link
+                    href={`form/build?id=${id}`}
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <FilePenLine className="h-4 w-4 hover:text-gray-600" />
                   </Link>
                 </TooltipTrigger>
@@ -82,7 +85,12 @@ export default function FormCard({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button onClick={() => onPublish(id)}>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onPublish(id);
+                    }}
+                  >
                     <BookPlus className="h-4 w-4 hover:text-gray-600" />
                   </button>
                 </TooltipTrigger>
@@ -97,7 +105,12 @@ export default function FormCard({
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <button onClick={() => onDelete(id)}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(id);
+                }}
+              >
                 <Trash2 className="h-4 w-4 hover:text-gray-600" />
               </button>
             </TooltipTrigger>

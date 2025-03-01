@@ -15,7 +15,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import FormElement from "../_components/form-element";
 import FormElementBar from "../_components/form-element-bar";
-import FormHeader from "../_components/form-header";
+import { FormHeaderEdit } from "../_components/form-header";
 
 export default function CreateForm() {
   const router = useRouter();
@@ -38,7 +38,8 @@ export default function CreateForm() {
         })
         .catch(() => {
           console.error("Form not found");
-          router.replace("/dashboard/form");
+          router.replace("/404");
+          //TODO: Find a better way to handle errors
         });
     }
   }, [formId, isEditing, dispatch, router]);
@@ -169,7 +170,7 @@ export default function CreateForm() {
       </div>
 
       <div className="mx-8 pb-4">
-        <FormHeader
+        <FormHeaderEdit
           title={state.title}
           description={state.description}
           onTitleChange={(e) =>

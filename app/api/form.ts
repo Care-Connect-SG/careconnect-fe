@@ -120,6 +120,7 @@ export const getFormById = async (formId: string): Promise<FormComplete> => {
 
     if (!response.ok) {
       throw new Error(`Error fetching form: ${response.statusText}`);
+      //TODO: Find a better way to handle errors
     }
 
     const data = await response.json();
@@ -127,6 +128,7 @@ export const getFormById = async (formId: string): Promise<FormComplete> => {
   } catch (error) {
     console.error("Error fetching form: ", error);
     throw error;
+    //TODO: Find a better way to handle errors
   }
 };
 

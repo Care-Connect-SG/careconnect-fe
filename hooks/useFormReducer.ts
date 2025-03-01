@@ -29,7 +29,10 @@ type Action =
   | { type: "UPDATE_TITLE"; payload: string }
   | { type: "UPDATE_DESCRIPTION"; payload: string }
   | { type: "ADD_ELEMENT"; payload: FormElementType }
-  | { type: "UPDATE_ELEMENT"; payload: { id: string; updatedData: Partial<FormElementData> } }
+  | {
+      type: "UPDATE_ELEMENT";
+      payload: { id: string; updatedData: Partial<FormElementData> };
+    }
   | { type: "REMOVE_ELEMENT"; payload: string };
 
 const formReducer = (state: FormState, action: Action): FormState => {
@@ -51,7 +54,10 @@ const formReducer = (state: FormState, action: Action): FormState => {
             label: "",
             helptext: "",
             required: false,
-            options: action.payload === "radio" || action.payload === "checkbox" ? ["Option 1"] : undefined,
+            options:
+              action.payload === "radio" || action.payload === "checkbox"
+                ? ["Option 1"]
+                : undefined,
           },
         ],
       };
@@ -59,16 +65,23 @@ const formReducer = (state: FormState, action: Action): FormState => {
       return {
         ...state,
         elements: state.elements.map((el) =>
-          el.id === action.payload.id ? { ...el, ...action.payload.updatedData } : el
+          el.id === action.payload.id
+            ? { ...el, ...action.payload.updatedData }
+            : el,
         ),
       };
     case "REMOVE_ELEMENT":
-      return { ...state, elements: state.elements.filter((el) => el.id !== action.payload) };
+      return {
+        ...state,
+        elements: state.elements.filter((el) => el.id !== action.payload),
+      };
     default:
       return state;
   }
 };
 
-export function useFormReducer(initialState: FormState = { title: "", description: "", elements: [] }) {
+export function useFormReducer(
+  initialState: FormState = { title: "", description: "", elements: [] },
+) {
   return useReducer(formReducer, initialState);
 }

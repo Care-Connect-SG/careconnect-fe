@@ -8,9 +8,10 @@ import { FormResponse } from "@/types/form";
 import { ChevronLeft, Eye } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { useEffect, useState } from "react";
-import FormElementView from "../../_components/form-element-view";
-import { FormHeaderView } from "../../_components/form-header";
+import FormElementView from "../../../_components/form-element-view";
+import { FormHeaderView } from "../../../_components/form-header";
+import { useState } from "react";
+import { useEffect } from "react";
 
 export default function ViewForm({
   params,
@@ -50,7 +51,7 @@ export default function ViewForm({
     <div className="py-4 px-8">
       <div className="flex justify-between pb-2">
         <div className="flex justify-start gap-2">
-          <Link href="/dashboard/form">
+          <Link href="/dashboard/form/admin">
             <button className="border h-6 w-10 rounded-md hover:bg-gray-50">
               <ChevronLeft className="h-4 w-4 mx-auto" />
             </button>

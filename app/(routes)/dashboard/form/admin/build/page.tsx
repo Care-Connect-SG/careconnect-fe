@@ -14,10 +14,12 @@ import { FormCreate, FormResponse } from "@/types/form";
 import { ChevronLeft, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
-import FormElement from "../_components/form-element";
-import FormElementBar from "../_components/form-element-bar";
-import { FormHeaderEdit } from "../_components/form-header";
+import { useEffect } from "react";
+import FormElement from "../../_components/form-element";
+import FormElementBar from "../../_components/form-element-bar";
+import { FormHeaderEdit } from "../../_components/form-header";
+import { Suspense } from "react";
+import { useState } from "react";
 
 export default function CreateFormWrapper() {
   return (
@@ -78,8 +80,9 @@ function CreateForm() {
 
     if (!formId) {
       try {
-        const newFormId = await createForm(formData);
-        router.replace(`/dashboard/form/build?id=${newFormId}`);
+        const formId = await createForm(formData);
+        console.log(formId);
+        router.replace(`/dashboard/form/admin/build?id=${formId}`);
       } catch (error) {
         console.error("Error saving form:", error);
       }
@@ -111,14 +114,14 @@ function CreateForm() {
     if (!formId) {
       try {
         await createForm(formData);
-        router.replace(`/dashboard/form`);
+        router.replace(`/dashboard/form/admin`);
       } catch (error) {
         console.error("Error saving form:", error);
       }
     } else {
       try {
         await updateForm(formId, formData);
-        router.replace(`/dashboard/form`);
+        router.replace(`/dashboard/form/admin`);
       } catch (error) {
         console.error("Error updating form:", error);
       }
@@ -128,7 +131,8 @@ function CreateForm() {
   const handleDeleteDraft = async (formId: string) => {
     try {
       await deleteForm(formId);
-      router.replace(`/dashboard/form`);
+      console.log("Deleted form: ", formId);
+      router.replace(`/dashboard/form/admin`);
     } catch (error) {
       console.error("Failed to delete form");
     }
@@ -151,7 +155,7 @@ function CreateForm() {
 
       <div className="flex items-center justify-between pb-2">
         <div className="flex justify-start gap-2 px-8 pb-2">
-          <Link href="/dashboard/form">
+          <Link href="/dashboard/form/admin">
             <Button variant="outline" className="hover:border-gray-50">
               <ChevronLeft />
             </Button>

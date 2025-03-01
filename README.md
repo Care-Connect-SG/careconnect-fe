@@ -16,12 +16,7 @@ pnpm install
 bun install
 ```
 
-2. Create a `.env` file in the root directory (same location as the `package.json` file) to include the environment variables needed for the server to work properly (ask jay for the variables).
-
-```shell
-NEXT_PUBLIC_BE_API_URL=
-NEXTAUTH_SECRET=
-```
+2. Create a `.env` file in the root directory (same location as the `package.json` file) to include the environment variables needed for the server to work properly (see `.env.example`).
 
 3. Run the development:
 
@@ -35,7 +30,7 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3001](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 ## Workflow
 

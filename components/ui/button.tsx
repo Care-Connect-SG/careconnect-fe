@@ -12,12 +12,12 @@ const buttonVariants = cva(
         default: "bg-blue-500 text-white hover:bg-blue-600",
         secondary: "bg-gray-100 text-gray-700 hover:bg-gray-200",
         success: "bg-green-500 text-white hover:bg-green-600",
-        warning: "bg-yellow-500 text-white hover:bg-yellow-600"
+        warning: "bg-yellow-500 text-white hover:bg-yellow-600",
       },
       size: {
         default: "h-10 px-4 py-2",
         sm: "h-9 px-3",
-        lg: "h-11 px-8",      
+        lg: "h-11 px-8",
         icon: "h-10 w-10",
       },
     },

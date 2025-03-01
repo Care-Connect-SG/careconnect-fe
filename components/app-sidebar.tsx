@@ -1,6 +1,16 @@
 "use client"; // Ensure this is a Client Component
 
-import { Calendar, Home, Settings, ClipboardList, Users, AlertTriangle, User, Megaphone, UsersRound } from "lucide-react";
+import {
+  AlertTriangle,
+  Calendar,
+  ClipboardList,
+  Home,
+  Megaphone,
+  Settings,
+  User,
+  Users,
+  UsersRound,
+} from "lucide-react";
 
 import {
   Sidebar,
@@ -74,7 +84,7 @@ export function AppSidebar() {
           <div className="flex items-center justify-between p-4">
             {/* Sidebar Logo */}
             <SidebarGroupLabel>CareConnect</SidebarGroupLabel>
-            
+
             {/* Sidebar Toggle Button (Collapsible Icon) */}
             <SidebarTrigger className="text-gray-500 hover:text-gray-700" />
           </div>

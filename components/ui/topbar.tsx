@@ -1,16 +1,16 @@
-import React from "react";
-import {
-  Search,
-  Bell,
-  Plus,
-  AlertTriangle,
-  User,
-  LogOut,
-  Settings,
-} from "lucide-react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { Button } from "./button";
 import * as Tooltip from "@radix-ui/react-tooltip";
+import {
+  AlertTriangle,
+  Bell,
+  LogOut,
+  Plus,
+  Search,
+  Settings,
+  User,
+} from "lucide-react";
+import React from "react";
+import { Button } from "./button";
 export const TopBar = () => {
   return (
     <div className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">

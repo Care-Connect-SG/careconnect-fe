@@ -65,12 +65,11 @@ export default function SignUp() {
     setLoading(true);
 
     try {
-      console.log(BE_API_SECRET);
-      const response = await fetch("${BE_API_URL}/register", {
+
+      const response = await fetch(`${BE_API_URL}/users/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${BE_API_SECRET}`,
         },
         body: JSON.stringify(data),
       });

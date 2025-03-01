@@ -7,10 +7,20 @@ import {
   Home,
   Megaphone,
   Settings,
-  User,
   Users,
   UsersRound,
+  ChevronRight,
+  LogOut,
 } from "lucide-react";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import {
   Sidebar,
@@ -25,24 +35,26 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-// Define main menu items (without Profile)
 const mainItems = [
   { title: "Home", url: "/dashboard/home", icon: Home },
   { title: "Tasks", url: "/dashboard/tasks", icon: ClipboardList },
   { title: "Residents", url: "/dashboard/residents", icon: Users },
-  { title: "Incident Reports", url: "/dashboard/incidents", icon: AlertTriangle },
+  {
+    title: "Incident Reports",
+    url: "/dashboard/incidents",
+    icon: AlertTriangle,
+  },
   { title: "Announcement", url: "/dashboard/announcement", icon: Megaphone },
   { title: "Calendar", url: "/dashboard/calendar", icon: Calendar },
 ];
 
-// Define bottom items (Group & Settings)
 const bottomItems = [
   { title: "Group", url: "/dashboard/group", icon: UsersRound },
   { title: "Settings", url: "/dashboard/settings", icon: Settings },
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar(); // Detect if the sidebar is collapsed
+  const { state } = useSidebar();
 
   return (
     <Sidebar>
@@ -72,27 +84,24 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
         <div className="flex-1"></div> {/* Spacer to push items down */}
-
-          {/* Bottom Items */}
-          <SidebarGroup>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {bottomItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <a href={item.url} className="flex items-center gap-3">
-                        <item.icon className="w-5 h-5" />
-                        <span>{item.title}</span>
-                      </a>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-
+        {/* Bottom Items */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {bottomItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <a href={item.url} className="flex items-center gap-3">
+                      <item.icon className="w-5 h-5" />
+                      <span>{item.title}</span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
         {/* Profile Section */}
         <SidebarGroup>
           <SidebarGroupContent>

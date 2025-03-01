@@ -13,7 +13,7 @@ export default function DashboardLayout({
         <AppSidebar />
 
         <div className="flex flex-col flex-1 w-full">
-          <TopBar />
+          {/* <TopBar /> */}
           <main className="flex-1 overflow-auto w-full">{children}</main>
         </div>
       </div>

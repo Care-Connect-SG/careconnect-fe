@@ -13,9 +13,9 @@ import { ChevronLeft, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
-import FormElement from "../_components/form-element";
-import FormElementBar from "../_components/form-element-bar";
-import { FormHeaderEdit } from "../_components/form-header";
+import FormElement from "../../_components/form-element";
+import FormElementBar from "../../_components/form-element-bar";
+import { FormHeaderEdit } from "../../_components/form-header";
 
 export default function CreateForm() {
   const router = useRouter();
@@ -66,7 +66,7 @@ export default function CreateForm() {
       try {
         const formId = await createForm(formData);
         console.log(formId);
-        router.replace(`/dashboard/form/build?id=${formId}`);
+        router.replace(`/dashboard/form/admin/build?id=${formId}`);
       } catch (error) {
         console.error("Error saving form:", error);
       }
@@ -98,14 +98,14 @@ export default function CreateForm() {
     if (!formId) {
       try {
         await createForm(formData);
-        router.replace(`/dashboard/form`);
+        router.replace(`/dashboard/form/admin`);
       } catch (error) {
         console.error("Error saving form:", error);
       }
     } else {
       try {
         await updateForm(formId, formData);
-        router.replace(`/dashboard/form`);
+        router.replace(`/dashboard/form/admin`);
       } catch (error) {
         console.error("Error updating form:", error);
       }
@@ -116,7 +116,7 @@ export default function CreateForm() {
     try {
       await deleteForm(formId);
       console.log("Deleted form: ", formId);
-      router.replace(`/dashboard/form`);
+      router.replace(`/dashboard/form/admin`);
     } catch (error) {
       console.error("Failed to delete form");
     }
@@ -139,7 +139,7 @@ export default function CreateForm() {
 
       <div className="flex items-center justify-between pb-2">
         <div className="flex justify-start gap-2 px-8 pb-2">
-          <Link href="/dashboard/form">
+          <Link href="/dashboard/form/admin">
             <Button variant="outline" className="hover:border-gray-50">
               <ChevronLeft />
             </Button>

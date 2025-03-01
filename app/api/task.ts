@@ -7,14 +7,13 @@ import { Task } from "@/types/task";
 export const getTasks = async (email: string): Promise<Task[]> => {
   try {
     const response = await fetch(
-      `${process.env.BE_API_URL}/tasks?assigned_to=${encodeURIComponent(
-        email,
-      )}`,
+      `${
+        process.env.NEXT_PUBLIC_BE_API_URL
+      }/tasks?assigned_to=${encodeURIComponent(email)}`,
       {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.BE_API_SECRET}`,
         },
       },
     );
@@ -37,13 +36,15 @@ export const getTasks = async (email: string): Promise<Task[]> => {
  */
 export const getTaskById = async (taskId: string): Promise<Task> => {
   try {
-    const response = await fetch(`${process.env.BE_API_URL}/tasks/${taskId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.BE_API_SECRET}`,
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       throw new Error(`Error fetching task by ID: ${response.statusText}`);

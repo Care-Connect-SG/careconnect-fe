@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState, FormEvent } from "react";
+import Link from "next/link";
 //import { AppSidebar } from "@/components/app-sidebar";
 //import { TopBar } from "@/components/ui/topbar";
 import { Spinner } from "@/components/ui/spinner";
 
 interface Group {
-    id: string;
+    _id: string; // Now required, since your backend always returns _id
     name: string;
     description: string;
     members?: string[];
@@ -130,18 +131,26 @@ const [groups, setGroups] = useState<Group[]>([]);
           {/* Groups list */}
           {!loading && !error && (
             <ul className="space-y-4">
-              {groups.map((group, index) => (
-                <li key={group.id ? group.id : index}className="border p-4 rounded shadow-sm">
-                  <h2 className="text-xl font-semibold">{group.name}</h2>
-                  <p className="text-gray-700">{group.description}</p>
-                  {group.members && (
-                    <p className="mt-2 text-sm text-gray-500">
-                      Members: {group.members.join(", ")}
-                    </p>
-                  )}
+            {groups.map((group, index) => {
+              // Use group.group_id if available; otherwise fallback to group.id.
+              const groupIdentifier = group._id ? String(group._id) : index.toString();
+              return (
+                <li key={groupIdentifier || index} className="border p-4 rounded shadow-sm">
+                  <Link href={`/dashboard/group/${groupIdentifier}`}>
+                    <div className="block hover:underline">
+                      <h2 className="text-xl font-semibold">{group.name}</h2>
+                      <p className="text-gray-700">{group.description}</p>
+                      {group.members && (
+                        <p className="mt-2 text-sm text-gray-500">
+                          Members: {group.members.join(", ")}
+                        </p>
+                      )}
+                    </div>
+                  </Link>
                 </li>
-              ))}
-            </ul>
+              );
+            })}
+          </ul>
           )}
         </main>
   );

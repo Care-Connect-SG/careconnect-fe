@@ -68,3 +68,42 @@ export async function POST(request: Request) {
       return NextResponse.error();
     }
   }
+
+  export async function PUT(request: Request) {
+    try {
+      // Expect the request body to contain:
+      // group_name (the original name), new_name, and new_description.
+      const body = await request.json();
+      const { group_id, new_name, new_description } = body;
+      
+      // Construct the backend URL with query parameters.
+      const url = `${BE_API_URL}/groups/edit?group_id=${encodeURIComponent(
+        group_id
+      )}&new_name=${encodeURIComponent(new_name)}&new_description=${encodeURIComponent(
+        new_description
+      )}`;
+
+      console.log("Updating group at:", url);
+      
+      const res = await fetch(url, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${BE_API_SECRET}`,
+        },
+      });
+      
+      console.log("Response status:", res.status);
+      const data = await res.json();
+      console.log("Update response data:", data);
+      
+      if (!res.ok) {
+        return NextResponse.json({ error: data }, { status: res.status });
+      }
+      
+      return NextResponse.json(data, { status: res.status });
+    } catch (error) {
+      console.error("Error updating group:", error);
+      return NextResponse.error();
+    }
+  }

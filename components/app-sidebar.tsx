@@ -1,4 +1,4 @@
-"use client"; // Ensure this is a Client Component
+"use client";
 
 import {
   AlertTriangle,
@@ -21,11 +21,12 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger, // Add SidebarTrigger here
-  useSidebar, // Add useSidebar here
+  SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 
-// Menu items.
 const items = [
   {
     title: "Home",
@@ -75,18 +76,25 @@ const items = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar(); //  Detect if the sidebar is collapsed
+  const { state } = useSidebar();
+  const router = useRouter();
 
   return (
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-          <div className="flex items-center justify-between p-4">
-            {/* Sidebar Logo */}
-            <SidebarGroupLabel>CareConnect</SidebarGroupLabel>
-
-            {/* Sidebar Toggle Button (Collapsible Icon) */}
-            <SidebarTrigger className="text-gray-500 hover:text-gray-700" />
+          <div className="flex items-center justify-between p-4 pl-2">
+            <SidebarGroupLabel className="p-0">
+              <Image
+                src="/careconnect.png"
+                alt="CareConnect Logo"
+                className="h-5 w-auto object-contain hover:cursor-pointer"
+                width={2154}
+                height={972}
+                onClick={() => router.push("/dashboard/home")}
+              />
+            </SidebarGroupLabel>
+            <SidebarTrigger className="text-gray-500 hover:text-blue-600" />
           </div>
 
           <SidebarGroupContent>
@@ -106,10 +114,9 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      {/* ✅ Show a floating button when the sidebar is collapsed */}
       {state === "collapsed" && (
-        <div className="fixed top-4 left-4 z-50">
-          <SidebarTrigger className="bg-gray-200 p-2 rounded-full shadow-md hover:bg-gray-300" />
+        <div className="fixed top-6 left-4 z-10">
+          <SidebarTrigger className="bg-white text-gray-500 hover:text-blue-600" />
         </div>
       )}
     </Sidebar>

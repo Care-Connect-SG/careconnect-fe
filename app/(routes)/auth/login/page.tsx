@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
@@ -80,9 +81,10 @@ export default function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+      <h1 className="text-2xl font-bold mb-6 text-center">Care Connect</h1>
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6">Login</h1>
+        <h2 className="text-xl font-semibold mb-4">Login</h2>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
@@ -131,8 +133,17 @@ export default function Login() {
                 </FormItem>
               )}
             />
+            <div className="text-center text-gray-700">
+              Don't have an account?{" "}
+              <Link
+                href="/auth/signUp"
+                className="text-blue-600 hover:underline"
+              >
+                Register Here!
+              </Link>
+            </div>
             <Button type="submit" className="w-full">
-              {loading ? <Spinner /> : "Login"}
+              {form.formState.isSubmitting ? <Spinner /> : "Login"}
             </Button>
           </form>
         </Form>

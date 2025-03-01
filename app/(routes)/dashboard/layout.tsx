@@ -1,6 +1,12 @@
 import { AppSidebar } from "@/components/app-sidebar";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-// import { TopBar } from "@/components/ui/topbar"; // Import the named export TopBar component
+import { SidebarProvider } from "@/components/ui/sidebar";
+import type { Metadata } from "next";
+// import { TopBar } from "@/components/ui/topbar";
+
+export const metadata: Metadata = {
+  title: "CareConnect - Dashboard",
+  description: "Your care management solution",
+};
 
 export default function DashboardLayout({
   children,

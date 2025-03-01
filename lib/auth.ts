@@ -12,7 +12,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BE_API_URL}/users/login`,
+          `${process.env.BE_API_URL}/users/login`,
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },

@@ -67,16 +67,17 @@ export default function Incident() {
       <hr className="border-t-1 border-gray-300 mx-8 py-2"></hr>
       <div className="w-full grid grid-cols-3 gap-4 px-8 py-4">
         {forms.map((form) => (
-          <FormCard
-            key={form._id}
-            id={form._id}
-            title={form.title}
-            description={form.description}
-            created_date={formatDate(form.created_date)}
-            status={form.status}
-            onPublish={handlePublish}
-            onDelete={handleDelete}
-          />
+          <Link href={`/dashboard/form/view/${form._id}`} key={form._id}>
+            <FormCard
+              id={form._id}
+              title={form.title}
+              description={form.description}
+              created_date={formatDate(form.created_date)}
+              status={form.status}
+              onPublish={handlePublish}
+              onDelete={handleDelete}
+            />
+          </Link>
         ))}
         <Card className="border-dashed w-xs max-w-xs h-[11rem] hover:bg-gray-100">
           <Link href="/dashboard/form/build">

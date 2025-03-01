@@ -9,19 +9,24 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-interface FormHeaderProps {
+interface FormHeaderEditProps {
   title: string;
   description: string;
   onTitleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onDescriptionChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
 }
 
-export default function FormHeader({
+interface FormHeaderViewProps {
+  title: string;
+  description: string;
+}
+
+function FormHeaderEdit({
   title,
   description,
   onTitleChange,
   onDescriptionChange,
-}: FormHeaderProps) {
+}: FormHeaderEditProps) {
   return (
     <>
       <Card>
@@ -50,3 +55,34 @@ export default function FormHeader({
     </>
   );
 }
+
+function FormHeaderView({ title, description }: FormHeaderViewProps) {
+  return (
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            <Input
+              value={title}
+              disabled
+              className="md:text-2xl font-bold rounded-none border-0 disabled:opacity-100
+                         px-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+              placeholder="Untitled Form"
+            />
+          </CardTitle>
+          <CardDescription>
+            <Textarea
+              value={description}
+              disabled
+              className="rounded-none border-0 disabled:opacity-100 px-0 resize-none focus-visible:ring-0 focus-visible:ring-offset-0"
+              placeholder="Add a description for your form"
+              rows={2}
+            ></Textarea>
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    </>
+  );
+}
+
+export { FormHeaderEdit, FormHeaderView };

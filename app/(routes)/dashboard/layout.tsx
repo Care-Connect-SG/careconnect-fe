@@ -1,6 +1,6 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { TopBar } from "@/components/ui/topbar";
+// import { TopBar } from "@/components/ui/topbar"; // Import the named export TopBar component
 
 export default function DashboardLayout({
   children,

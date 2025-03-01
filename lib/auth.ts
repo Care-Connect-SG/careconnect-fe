@@ -17,13 +17,12 @@ export const authOptions: NextAuthOptions = {
             method: "POST",
             headers: {
               "Content-Type": "application/x-www-form-urlencoded",
-              // Authorization: `Bearer ${process.env.BE_API_SECRET}`,
             },
             body: new URLSearchParams({
               username: credentials?.email || "",
               password: credentials?.password || "",
             }),
-          }
+          },
         );
 
         const user = await res.json();

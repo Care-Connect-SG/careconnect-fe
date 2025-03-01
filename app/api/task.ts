@@ -8,14 +8,14 @@ export const getTasks = async (email: string): Promise<Task[]> => {
   try {
     const response = await fetch(
       `${
-        process.env.NEXT_PUIBLIC_BE_API_URL
+        process.env.NEXT_PUBLIC_BE_API_URL
       }/tasks?assigned_to=${encodeURIComponent(email)}`,
       {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -43,7 +43,7 @@ export const getTaskById = async (taskId: string): Promise<Task> => {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {

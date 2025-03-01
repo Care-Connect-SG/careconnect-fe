@@ -59,7 +59,7 @@ export default async function ViewForm({
         </div>
       </div>
 
-      <Button disabled className="disabled:opacity-100">
+      <Button disabled className="disabled:opacity-100 bg-black">
         Submit Form
       </Button>
     </div>

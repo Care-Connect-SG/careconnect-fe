@@ -40,6 +40,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { fetchUserRole } from "@/app/api/user/route";
 
 const mainItems = [
   { title: "Home", url: "/dashboard/home", icon: Home },
@@ -72,27 +73,14 @@ export function AppSidebar() {
   }, [session, status, router]);
 
   useEffect(() => {
-    if (session?.user?.email) {
-      // Fetch the user role if email is available in the session
-      const fetchUserRole = async () => {
-        try {
-          const response = await fetch(
-            `${process.env.NEXT_PUBLIC_BE_API_URL}/users/email/${session?.user?.email}`
-          );
-          if (response.ok) {
-            const data = await response.json();
-            // Assuming the response contains the 'role' property
-            setUserRole(data.role);
-          } else {
-            console.error("Failed to fetch user role");
-          }
-        } catch (error) {
-          console.error("Error fetching user role:", error);
-        }
-      };
+    const getUserRole = async () => {
+      if (!session?.user?.email) return;
 
-      fetchUserRole();
-    }
+      const role = await fetchUserRole(session.user.email);
+      setUserRole(role);
+    };
+
+    getUserRole();
   }, [session?.user?.email]);
 
   // Conditionally render the "Users" tab if the userRole is "Admin"

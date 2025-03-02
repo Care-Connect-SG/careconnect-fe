@@ -18,7 +18,7 @@ const TABS = [
 ];
 
 export default function ResidentDashboard() {
-  // Extract residentProfile parameter from the URL (your dynamic route folder is [residentProfile])
+  // Extract residentProfile parameter from the URL
   const { residentProfile } = useParams() as { residentProfile: string };
   console.log("Resident Profile ID:", residentProfile);
 
@@ -27,6 +27,7 @@ export default function ResidentDashboard() {
   const [resident, setResident] = useState<ResidentRecord | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Fetch resident data on mount/when residentProfile changes
   useEffect(() => {
     if (residentProfile) {
       getResidentById(residentProfile)
@@ -49,32 +50,59 @@ export default function ResidentDashboard() {
     return Math.abs(ageDt.getUTCFullYear() - 1970);
   };
 
+  // Opens the edit profile modal
   const handleEditProfile = () => {
     setIsModalOpen(true);
   };
 
-  const handlePrimaryNurseChange = (value: string) => {
-    setPrimaryNurse(value);
-    // Optionally update backend here...
-  };
-
-  const handleModalClose = () => {
-    setIsModalOpen(false);
-  };
-
+  // Called when the modal form is saved (editing full profile)
   const handleModalSave = async (updatedData: any) => {
+    if (!resident) return;
     try {
-      const residentId = resident?.id || "";
-      if (!residentId) {
-        throw new Error("Resident ID is missing.");
-      }
+      const residentId = resident.id || resident.id;
+      if (!residentId) throw new Error("Resident ID is missing.");
       const updatedResident = await updateResident(residentId, updatedData);
       setResident(updatedResident);
       setPrimaryNurse(updatedResident.primary_nurse || "");
-      console.log("Updated resident:", updatedResident);
+      console.log("Updated resident (profile):", updatedResident);
     } catch (error) {
       console.error("Error updating resident profile:", error);
     }
+    setIsModalOpen(false);
+  };
+
+  // Called when additional notes are saved from the inline edit in the notes card
+  const handleSaveAdditionalNotes = async (newNotes: string) => {
+    if (!resident) return;
+    // Build a full update payload using the current resident data and the updated additional notes
+    const updatePayload = {
+      full_name: resident.full_name,
+      gender: resident.gender,
+      date_of_birth: resident.date_of_birth,
+      nric_number: resident.nric_number,
+      emergency_contact_name: resident.emergency_contact_name,
+      emergency_contact_number: resident.emergency_contact_number,
+      relationship: resident.relationship,
+      room_number: resident.room_number,
+      additional_notes: newNotes,
+      primary_nurse: resident.primary_nurse || "",
+    };
+
+    try {
+      const updatedResident = await updateResident(resident.id, updatePayload);
+      setResident(updatedResident);
+      console.log("Updated resident (notes):", updatedResident);
+    } catch (error) {
+      console.error("Error updating additional notes:", error);
+    }
+  };
+
+  const handlePrimaryNurseChange = (value: string) => {
+    setPrimaryNurse(value);
+    // Optionally, you could update the nurse field immediately using a similar update payload.
+  };
+
+  const handleModalClose = () => {
     setIsModalOpen(false);
   };
 
@@ -108,7 +136,7 @@ export default function ResidentDashboard() {
           relationship: resident.relationship,
           emergency_contact_name: resident.emergency_contact_name,
           emergency_contact_number: resident.emergency_contact_number,
-          primary_nurse: resident.primary_nurse,
+          primary_nurse: resident.primary_nurse || "",
         }}
         onSave={handleModalSave}
       />
@@ -143,37 +171,40 @@ export default function ResidentDashboard() {
             emergencyContactNumber={resident.emergency_contact_number}
             relationship={resident.relationship}
             primaryNurse={resident.primary_nurse || ""}
-           
+            
           />
-          <ResidentDetailsNotesCard additionalNotes={resident.additional_notes || "None"} />
+          <ResidentDetailsNotesCard
+            additionalNotes={resident.additional_notes || "None"}
+            onSaveNotes={handleSaveAdditionalNotes}
+          />
         </div>
       )}
 
       {activeTab === "history" && (
         <div className="mt-6">
           <h2 className="text-lg font-semibold">Record History</h2>
-          {/* Insert your record history content or components here */}
+          {/* Insert record history content here */}
         </div>
       )}
 
       {activeTab === "medication" && (
         <div className="mt-6">
           <h2 className="text-lg font-semibold">Medication</h2>
-          {/* Insert your medication content or components here */}
+          {/* Insert medication content here */}
         </div>
       )}
 
       {activeTab === "careplan" && (
         <div className="mt-6">
           <h2 className="text-lg font-semibold">Care Plan</h2>
-          {/* Insert your care plan content or components here */}
+          {/* Insert care plan content here */}
         </div>
       )}
 
       {activeTab === "wellness" && (
         <div className="mt-6">
           <h2 className="text-lg font-semibold">Wellness Report</h2>
-          {/* Insert your wellness report content or components here */}
+          {/* Insert wellness report content here */}
         </div>
       )}
     </div>

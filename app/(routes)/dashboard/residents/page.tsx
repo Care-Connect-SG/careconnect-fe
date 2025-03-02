@@ -47,6 +47,15 @@ export default function AllResidentsPage() {
     resident.full_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+    // Simple age calculator (assuming date_of_birth is an ISO string)
+    const computeAge = (dob: string) => {
+      const birthDate = new Date(dob);
+      const diffMs = Date.now() - birthDate.getTime();
+      const ageDt = new Date(diffMs);
+      return Math.abs(ageDt.getUTCFullYear() - 1970);
+    };
+
+
   // Handle nurse selection changes using the updateResidentNurse API
   const handleNurseChange = async (id: string, newNurse: string) => {
     // Find the current resident record from state
@@ -89,11 +98,17 @@ export default function AllResidentsPage() {
     router.push(`/dashboard/residents/${id}`);
   };
 
+  // Handle adding a new nurse
+  const handleAddNewNurse = () => {
+    alert("Add New Nurse clicked!");
+    // You can open a modal or navigate to a page for adding a new nurse here.
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-4">
-      {/* Search Bar */}
-      <div className="flex justify-center mb-4">
-        <div className="relative w-full">
+      {/* Search Bar with Add New Nurse Button */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="relative w-full max-w-xl">
           <input
             type="text"
             placeholder="Search residents..."
@@ -103,6 +118,13 @@ export default function AllResidentsPage() {
           />
           <span className="absolute right-3 top-2 text-gray-400">🔍</span>
         </div>
+        <button
+          onClick={handleAddNewNurse} 
+          className=" mr-5 px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600"
+          style={{ marginRight: "50px" }}
+        >
+          Add New Nurse
+        </button>
       </div>
 
       {/* List of Resident Cards */}
@@ -114,8 +136,8 @@ export default function AllResidentsPage() {
               resident={{
                 id: resident.id,
                 name: resident.full_name,
-                age: 0, // You can compute age from date_of_birth if needed
-                room: resident.room_number,
+                age: computeAge(resident.date_of_birth),
+                room: resident.room_number || "N/A",
                 nurse: resident.primary_nurse || "N/A",
                 imageUrl: "/images/no-image.png",
               }}

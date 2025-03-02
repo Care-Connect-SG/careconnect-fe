@@ -175,7 +175,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
               value={primaryNurse}
               onChange={(e) => setPrimaryNurse(e.target.value)}
               className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-              required
+              disabled
             />
           </div>
           <div className="flex justify-end space-x-4">

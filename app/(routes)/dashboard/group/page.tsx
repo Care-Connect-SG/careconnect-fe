@@ -2,19 +2,17 @@
 
 import { useEffect, useState, FormEvent } from "react";
 import Link from "next/link";
-//import { AppSidebar } from "@/components/app-sidebar";
-//import { TopBar } from "@/components/ui/topbar";
 import { Spinner } from "@/components/ui/spinner";
 
 interface Group {
-    _id: string; // Now required, since your backend always returns _id
-    name: string;
-    description: string;
-    members?: string[];
-  }
+  id: string; 
+  name: string;
+  description: string;
+  members?: string[];
+}
 
 export default function GroupDashboard() {
-const [groups, setGroups] = useState<Group[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,7 +21,7 @@ const [groups, setGroups] = useState<Group[]>([]);
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
-  // useEffect to fetch groups from your API endpoint when the component mounts.
+  // Fetch groups from the API endpoint when the component mounts.
   useEffect(() => {
     fetch("/api/groups")
       .then((res) => {
@@ -52,13 +50,11 @@ const [groups, setGroups] = useState<Group[]>([]);
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // If you need authentication headers, add them here.
           Authorization: `Bearer ${process.env.BE_API_SECRET}`,
         },
         body: JSON.stringify({
           name: newGroupName,
           description: newGroupDescription,
-          // If your backend expects members or other fields, include them as needed.
         }),
       });
 
@@ -81,9 +77,9 @@ const [groups, setGroups] = useState<Group[]>([]);
 
   return (
     <main className="p-6">
-          <h1 className="text-3xl font-bold mb-4">Groups</h1>
+      <h1 className="text-3xl font-bold mb-4">Groups</h1>
 
-          {/* Form for creating a new group */}
+      {/* Form for creating a new group */}
       <form onSubmit={handleCreateGroup} className="mb-8">
         <h2 className="text-xl font-semibold mb-2">Create New Group</h2>
         {createError && <p className="text-red-500 mb-2">{createError}</p>}
@@ -122,36 +118,35 @@ const [groups, setGroups] = useState<Group[]>([]);
         </button>
       </form>
 
-          {/* Loading spinner */}
-          {loading && <Spinner />}
+      {/* Loading spinner */}
+      {loading && <Spinner />}
 
-          {/* Error message */}
-          {error && <p className="text-red-500">{error}</p>}
+      {/* Error message */}
+      {error && <p className="text-red-500">{error}</p>}
 
-          {/* Groups list */}
-          {!loading && !error && (
-            <ul className="space-y-4">
-            {groups.map((group, index) => {
-              // Use group.group_id if available; otherwise fallback to group.id.
-              const groupIdentifier = group._id ? String(group._id) : index.toString();
-              return (
-                <li key={groupIdentifier || index} className="border p-4 rounded shadow-sm">
-                  <Link href={`/dashboard/group/${groupIdentifier}`}>
-                    <div className="block hover:underline">
-                      <h2 className="text-xl font-semibold">{group.name}</h2>
-                      <p className="text-gray-700">{group.description}</p>
-                      {group.members && (
-                        <p className="mt-2 text-sm text-gray-500">
-                          Members: {group.members.join(", ")}
-                        </p>
-                      )}
-                    </div>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-          )}
-        </main>
+      {/* Groups list */}
+      {!loading && !error && (
+        <ul className="space-y-4">
+          {groups.map((group, index) => {
+            const groupIdentifier = group.id ? String(group.id) : index.toString();
+            return (
+              <li key={groupIdentifier} className="border p-4 rounded shadow-sm">
+                <Link href={`/dashboard/group/${groupIdentifier}`}>
+                  <div className="block hover:underline">
+                    <h2 className="text-xl font-semibold">{group.name}</h2>
+                    <p className="text-gray-700">{group.description}</p>
+                    {group.members && (
+                      <p className="mt-2 text-sm text-gray-500">
+                        Members: {group.members.join(", ")}
+                      </p>
+                    )}
+                  </div>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </main>
   );
 }

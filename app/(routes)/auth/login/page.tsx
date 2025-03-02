@@ -22,7 +22,7 @@ import { z } from "zod";
 
 const schema = z.object({
   email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string().min(6, "Password must be at least 6 characterfres"),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -133,16 +133,8 @@ export default function Login() {
                 </FormItem>
               )}
             />
-            <div className="text-center text-gray-700">
-              Don't have an account?{" "}
-              <Link
-                href="/auth/signUp"
-                className="text-blue-600 hover:underline"
-              >
-                Register Here!
-              </Link>
-            </div>
-            <Button type="submit" className="w-full">
+
+            <Button type="submit" className="w-full bg-black">
               {form.formState.isSubmitting ? <Spinner /> : "Login"}
             </Button>
           </form>

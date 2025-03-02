@@ -238,7 +238,7 @@ export default function CreateUserModal({ isOpen, onClose, onUserCreated }: Crea
             )}
           />
 
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full bg-black" disabled={loading}>
             {loading ? <Spinner /> : "Create User"}
           </Button>
         </form>

@@ -127,9 +127,8 @@ const TaskDescription = ({ description }: { description: string }) => (
   </div>
 );
 
-export const TaskDetails = () => {
+const TaskDetails = () => {
   const { taskDetails } = useParams();
-  const router = useRouter();
   const [task, setTask] = useState<any>(null);
   const { setPageName } = useBreadcrumb();
 

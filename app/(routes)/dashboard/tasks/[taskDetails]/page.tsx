@@ -1,10 +1,10 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { ChevronRight, Clock, User, Home, CheckCircle } from "lucide-react";
-import * as Dialog from "@radix-ui/react-dialog";
+import { completeTask, getTaskById } from "@/app/api/task";
 import { Button } from "@/components/ui/button";
+import * as Dialog from "@radix-ui/react-dialog";
+import { CheckCircle, ChevronRight, Clock, Home, User } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { getTaskById, completeTask } from "@/app/api/task";
+import React, { useEffect, useState } from "react";
 
 // Breadcrumb Navigation
 const Breadcrumb = ({ taskTitle }: { taskTitle: string }) => (

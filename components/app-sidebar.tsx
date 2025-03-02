@@ -77,7 +77,7 @@ export function AppSidebar() {
       const fetchUserRole = async () => {
         try {
           const response = await fetch(
-            `${process.env.NEXT_PUBLIC_BE_API_URL}/users/email/${session?.user?.email}`
+            `${process.env.NEXT_PUBLIC_BE_API_URL}/users/email/${session?.user?.email}`,
           );
           if (response.ok) {
             const data = await response.json();

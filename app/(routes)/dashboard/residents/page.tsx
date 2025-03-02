@@ -17,7 +17,7 @@ export default function AllResidentsPage() {
       .then((data: ResidentRecord[]) => {
         // Map backend data (ResidentRecord) to your Resident type
         const formatted: Resident[] = data.map((record) => ({
-          id: record._id, // or keep as string if your component supports it
+          id: record.id, // or keep as string if your component supports it
           name: record.full_name,
           // If API doesn't include age, you could compute it from date_of_birth.
           // For now, we'll assume it's returned or set to a default.

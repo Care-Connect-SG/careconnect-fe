@@ -1,5 +1,5 @@
 export interface ResidentRecord {
-    _id: string;
+    id: string;
     full_name: string;
     gender: string;
     date_of_birth: string; // ISO date string

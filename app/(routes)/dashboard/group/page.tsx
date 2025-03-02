@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState, FormEvent } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Spinner } from "@/components/ui/spinner";
 
 interface Group {
-  id: string; 
+  id: string; // using 'id' to represent the unique identifier from the backend
   name: string;
   description: string;
   members?: string[];
@@ -15,11 +15,6 @@ export default function GroupDashboard() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const [newGroupName, setNewGroupName] = useState("");
-  const [newGroupDescription, setNewGroupDescription] = useState("");
-  const [creating, setCreating] = useState(false);
-  const [createError, setCreateError] = useState<string | null>(null);
 
   // Fetch groups from the API endpoint when the component mounts.
   useEffect(() => {
@@ -40,112 +35,42 @@ export default function GroupDashboard() {
       });
   }, []);
 
-  // Function to handle group creation
-  const handleCreateGroup = async (e: FormEvent) => {
-    e.preventDefault();
-    setCreating(true);
-    setCreateError(null);
-    try {
-      const response = await fetch("/api/groups", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.BE_API_SECRET}`,
-        },
-        body: JSON.stringify({
-          name: newGroupName,
-          description: newGroupDescription,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error creating group: ${response.statusText}`);
-      }
-      const createdGroup = await response.json();
-
-      // Append the new group to the list
-      setGroups((prev) => [...prev, createdGroup]);
-      // Reset form fields
-      setNewGroupName("");
-      setNewGroupDescription("");
-    } catch (err: any) {
-      setCreateError(err.message || "Failed to create group");
-    } finally {
-      setCreating(false);
-    }
-  };
-
   return (
-    <main className="p-6">
-      <h1 className="text-3xl font-bold mb-4">Groups</h1>
+    <main className="p-6 max-w-7xl mx-auto">
+      <h1 className="text-4xl font-bold mb-8">Groups</h1>
+      <div className="mb-6">
+      <Link
+  href="/dashboard/group/createGroup"
+  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+>
+  Create New Group
+</Link>
 
-      {/* Form for creating a new group */}
-      <form onSubmit={handleCreateGroup} className="mb-8">
-        <h2 className="text-xl font-semibold mb-2">Create New Group</h2>
-        {createError && <p className="text-red-500 mb-2">{createError}</p>}
-        <div className="mb-2">
-          <label htmlFor="groupName" className="block font-medium">
-            Group Name
-          </label>
-          <input
-            id="groupName"
-            type="text"
-            value={newGroupName}
-            onChange={(e) => setNewGroupName(e.target.value)}
-            className="mt-1 block w-full border rounded p-2"
-            required
-          />
-        </div>
-        <div className="mb-2">
-          <label htmlFor="groupDescription" className="block font-medium">
-            Description
-          </label>
-          <textarea
-            id="groupDescription"
-            value={newGroupDescription}
-            onChange={(e) => setNewGroupDescription(e.target.value)}
-            className="mt-1 block w-full border rounded p-2"
-            rows={3}
-            required
-          />
-        </div>
-        <button
-          type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          disabled={creating}
-        >
-          {creating ? "Creating..." : "Create Group"}
-        </button>
-      </form>
+      </div>
 
-      {/* Loading spinner */}
       {loading && <Spinner />}
-
-      {/* Error message */}
       {error && <p className="text-red-500">{error}</p>}
-
-      {/* Groups list */}
       {!loading && !error && (
-        <ul className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {groups.map((group, index) => {
             const groupIdentifier = group.id ? String(group.id) : index.toString();
             return (
-              <li key={groupIdentifier} className="border p-4 rounded shadow-sm">
+              <div key={groupIdentifier} className="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
                 <Link href={`/dashboard/group/${groupIdentifier}`}>
-                  <div className="block hover:underline">
-                    <h2 className="text-xl font-semibold">{group.name}</h2>
-                    <p className="text-gray-700">{group.description}</p>
+                  <div className="cursor-pointer">
+                    <h2 className="text-xl font-semibold mb-2">{group.name}</h2>
+                    <p className="text-gray-700 mb-2">{group.description}</p>
                     {group.members && (
-                      <p className="mt-2 text-sm text-gray-500">
+                      <p className="text-sm text-gray-500">
                         Members: {group.members.join(", ")}
                       </p>
                     )}
                   </div>
                 </Link>
-              </li>
+              </div>
             );
           })}
-        </ul>
+        </div>
       )}
     </main>
   );

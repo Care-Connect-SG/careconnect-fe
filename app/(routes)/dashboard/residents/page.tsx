@@ -1,50 +1,82 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import ResidentCard, { Resident } from "./_components/all-resident-card";
+import ResidentCard, { Resident, NurseOption } from "./_components/all-resident-card";
 import { useRouter } from "next/navigation";
-import { getResidents } from "../../../api/resident";
+import { getResidents, updateResidentNurse, updateResident } from "../../../api/resident";
+import { getAllNurses } from "../../../api/user";
 import { ResidentRecord } from "@/types/resident";
+import { UserResponse } from "../../../api/user";
 
 export default function AllResidentsPage() {
-  const [residents, setResidents] = useState<Resident[]>([]);
+  // We'll store the full ResidentRecord in state so we have all data for updates.
+  const [residents, setResidents] = useState<ResidentRecord[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [nurseOptions, setNurseOptions] = useState<NurseOption[]>([]);
   const router = useRouter();
 
   useEffect(() => {
-    // Call your API to fetch residents
+    // Fetch resident records
     getResidents()
       .then((data: ResidentRecord[]) => {
-        // Map backend data (ResidentRecord) to your Resident type
-        const formatted: Resident[] = data.map((record) => ({
-          id: record.id, // or keep as string if your component supports it
-          name: record.full_name,
-          // If API doesn't include age, you could compute it from date_of_birth.
-          // For now, we'll assume it's returned or set to a default.
-          age: record.date_of_birth.length ? record.date_of_birth.length : 0,
-          room: record.room_number,
-          nurse: record.primary_nurse || "N/A",
-          // If your API doesn't return an image URL, use a default.
-          imageUrl:  "/images/no-image.png",
-        }));
-        setResidents(formatted);
-        console.log("Residents fetched:", formatted);
+        setResidents(data);
+        console.log("Residents fetched:", data);
       })
       .catch((error) => {
         console.error("Error fetching residents:", error);
       });
   }, []);
 
-  // Filter logic
+  useEffect(() => {
+    // Fetch nurse options from the API
+    getAllNurses()
+      .then((data: UserResponse[]) => {
+        const options: NurseOption[] = data.map((user) => ({
+          id: user.id,
+          name: user.name,
+        }));
+        setNurseOptions(options);
+      })
+      .catch((error) => {
+        console.error("Error fetching nurses:", error);
+      });
+  }, []);
+
+  // Filter resident records based on full_name
   const filteredResidents = residents.filter((resident) =>
-    resident.name.toLowerCase().includes(searchTerm.toLowerCase())
+    resident.full_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Handle nurse selection changes
-  const handleNurseChange = (id: string, newNurse: string) => {
-    setResidents((prev) =>
-      prev.map((res) => (res.id === id.toString() ? { ...res, nurse: newNurse } : res))
-    );
+  // Handle nurse selection changes using the updateResidentNurse API
+  const handleNurseChange = async (id: string, newNurse: string) => {
+    // Find the current resident record from state
+    const currentResident = residents.find((res) => res.id === id);
+    if (!currentResident) return;
+
+    // Build a full update payload using current resident data
+    const updatePayload = {
+      full_name: currentResident.full_name,
+      gender: currentResident.gender,
+      date_of_birth: currentResident.date_of_birth,
+      nric_number: currentResident.nric_number,
+      emergency_contact_name: currentResident.emergency_contact_name,
+      emergency_contact_number: currentResident.emergency_contact_number,
+      relationship: currentResident.relationship,
+      room_number: currentResident.room_number,
+      additional_notes: currentResident.additional_notes,
+      primary_nurse: newNurse,
+    };
+
+    try {
+      const updatedResident = await updateResidentNurse(id, updatePayload);
+      // Update state with the full updated resident record
+      setResidents((prev) =>
+        prev.map((res) => (res.id === id ? updatedResident : res))
+      );
+      console.log("Updated resident:", updatedResident);
+    } catch (error) {
+      console.error("Error updating nurse:", error);
+    }
   };
 
   // Handle search input changes
@@ -79,9 +111,17 @@ export default function AllResidentsPage() {
           filteredResidents.map((resident) => (
             <ResidentCard
               key={resident.id}
-              resident={resident}
+              resident={{
+                id: resident.id,
+                name: resident.full_name,
+                age: 0, // You can compute age from date_of_birth if needed
+                room: resident.room_number,
+                nurse: resident.primary_nurse || "N/A",
+                imageUrl: "/images/no-image.png",
+              }}
               onNurseChange={handleNurseChange}
               onClick={handleCardClick}
+              nurseOptions={nurseOptions}
             />
           ))
         ) : (

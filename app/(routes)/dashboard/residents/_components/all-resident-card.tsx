@@ -1,6 +1,6 @@
+// components/all-resident-card.tsx
 import Image from "next/image";
 import React from "react";
-
 
 export type Resident = {
   id: string;
@@ -11,23 +11,33 @@ export type Resident = {
   imageUrl: string;
 };
 
+export type NurseOption = {
+  id: string;
+  name: string;
+};
+
 interface ResidentCardProps {
   resident: Resident;
   onNurseChange: (id: string, newNurse: string) => void;
   onClick?: (id: string) => void;
+  nurseOptions: NurseOption[];
 }
 
-
-
-function AllResidentCard({ resident, onNurseChange, onClick }: ResidentCardProps) {
+function ResidentCard({
+  resident,
+  onNurseChange,
+  onClick,
+  nurseOptions,
+}: ResidentCardProps) {
   const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     onNurseChange(resident.id, event.target.value);
   };
 
-
-
   return (
-    <div className="flex items-center justify-between p-4 bg-white shadow-md rounded-md"  >
+    <div
+      className="flex items-center justify-between p-4 bg-white shadow-md rounded-md cursor-pointer"
+      onClick={() => onClick && onClick(resident.id)}
+    >
       <div className="flex items-center gap-4">
         {/* Profile Photo */}
         <div className="relative w-16 h-16">
@@ -40,24 +50,26 @@ function AllResidentCard({ resident, onNurseChange, onClick }: ResidentCardProps
         </div>
         {/* Resident Details */}
         <div>
-          <h2 className="text-lg font-semibold"  onClick={() => onClick && onClick(resident.id)}>{resident.name}</h2>
+          <h2 className="text-lg font-semibold">{resident.name}</h2>
           <p className="text-sm text-gray-600">Age: {resident.age}</p>
           <p className="text-sm text-gray-600">Room: {resident.room}</p>
         </div>
       </div>
-
-      {/* Oval dropdown for Primary Nurse */}
+      {/* Nurse Dropdown */}
       <select
         className="px-4 py-2 bg-blue-100 text-blue-700 rounded-full cursor-pointer"
         value={resident.nurse}
+        onClick={(e) => e.stopPropagation()} // prevent card click
         onChange={handleChange}
       >
-        <option value="Nurse A">Nurse A</option>
-        <option value="Nurse B">Nurse B</option>
-        <option value="Nurse C">Nurse C</option>
+        {nurseOptions.map((option) => (
+          <option key={option.id} value={option.name}>
+            {option.name}
+          </option>
+        ))}
       </select>
     </div>
   );
 }
 
-export default AllResidentCard;
+export default ResidentCard;

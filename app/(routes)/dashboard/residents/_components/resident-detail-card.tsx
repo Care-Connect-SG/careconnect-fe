@@ -9,7 +9,7 @@ interface ResidentDetailsCardProps {
   relationship: string;
   additionalNotes?: string;
   primaryNurse: string;
-  onPrimaryNurseChange: (value: string) => void;
+ 
 }
 
 const nurseOptions = [
@@ -27,7 +27,7 @@ const ResidentDetailsCard: React.FC<ResidentDetailsCardProps> = ({
   emergencyContactNumber,
   relationship,
   primaryNurse,
-  onPrimaryNurseChange,
+
 }) => {
   return (
     <div className="w-full max-w-4xl mx-auto mt-6 p-4 bg-white shadow-md rounded-md">

@@ -1,25 +1,12 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { ChevronRight, Clock, User, Home, CheckCircle } from "lucide-react";
-import * as Dialog from "@radix-ui/react-dialog";
-import { Button } from "@/components/ui/button";
-import { useParams, useRouter } from "next/navigation";
-import { getTaskById, completeTask } from "@/app/api/task";
 
-// Breadcrumb Navigation
-const Breadcrumb = ({ taskTitle }: { taskTitle: string }) => (
-  <div className="flex items-center text-sm text-gray-600 mb-6">
-    <a href="#" className="hover:text-blue-600">
-      Dashboard
-    </a>
-    <ChevronRight className="w-4 h-4 mx-2" />
-    <a href="#" className="hover:text-blue-600">
-      Tasks
-    </a>
-    <ChevronRight className="w-4 h-4 mx-2" />
-    <span className="text-gray-800">{taskTitle || "Task Details"}</span>
-  </div>
-);
+import { completeTask, getTaskById } from "@/app/api/task";
+import { Button } from "@/components/ui/button";
+import * as Dialog from "@radix-ui/react-dialog";
+import { CheckCircle, Clock, Home, User } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useBreadcrumb } from "../../../../../context/breadcrumb-context";
 
 const TaskHeader = ({ task }: { task: any }) => {
   const [showDialog, setShowDialog] = useState(false);
@@ -144,6 +131,7 @@ export const TaskDetails = () => {
   const { taskDetails } = useParams();
   const router = useRouter();
   const [task, setTask] = useState<any>(null);
+  const { setPageName } = useBreadcrumb();
 
   useEffect(() => {
     if (taskDetails) fetchTask();
@@ -157,6 +145,7 @@ export const TaskDetails = () => {
     try {
       const data = await getTaskById(taskDetails);
       setTask(data);
+      setPageName(data.task_title);
     } catch (error) {
       console.error("Error fetching task details", error);
     }
@@ -166,7 +155,6 @@ export const TaskDetails = () => {
 
   return (
     <div className="flex-1 bg-gray-50 p-8">
-      <Breadcrumb taskTitle={task.task_title} />
       <TaskHeader task={task} />
       <div className="grid grid-cols-3 gap-6">
         <div className="col-span-2">

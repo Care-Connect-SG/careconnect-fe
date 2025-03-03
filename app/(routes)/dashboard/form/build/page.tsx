@@ -189,18 +189,18 @@ export default function CreateForm() {
         <div className="py-4 space-y-4">
           {state.elements.map((element) => (
             <FormElement
-              key={element.id}
+              key={element.element_id}
               element={element}
-              onUpdate={(id, updatedData) =>
+              onUpdate={(element_id, updatedData) =>
                 dispatch({
                   type: "UPDATE_ELEMENT",
-                  payload: { id, updatedData },
+                  payload: { element_id, updatedData },
                 })
               }
-              onRemove={(id) =>
+              onRemove={(element_id) =>
                 dispatch({
                   type: "REMOVE_ELEMENT",
-                  payload: id,
+                  payload: element_id,
                 })
               }
             />

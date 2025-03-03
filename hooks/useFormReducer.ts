@@ -10,7 +10,7 @@ export type FormElementType =
   | "checkbox";
 
 export interface FormElementData {
-  id: string;
+  element_id: string;
   type: FormElementType;
   label: string;
   helptext: string;
@@ -31,7 +31,7 @@ type Action =
   | { type: "ADD_ELEMENT"; payload: FormElementType }
   | {
       type: "UPDATE_ELEMENT";
-      payload: { id: string; updatedData: Partial<FormElementData> };
+      payload: { element_id: string; updatedData: Partial<FormElementData> };
     }
   | { type: "REMOVE_ELEMENT"; payload: string };
 
@@ -49,7 +49,7 @@ const formReducer = (state: FormState, action: Action): FormState => {
         elements: [
           ...state.elements,
           {
-            id: uuidv4(),
+            element_id: uuidv4(),
             type: action.payload,
             label: "",
             helptext: "",
@@ -65,7 +65,7 @@ const formReducer = (state: FormState, action: Action): FormState => {
       return {
         ...state,
         elements: state.elements.map((el) =>
-          el.id === action.payload.id
+          el.element_id === action.payload.element_id
             ? { ...el, ...action.payload.updatedData }
             : el,
         ),
@@ -73,7 +73,7 @@ const formReducer = (state: FormState, action: Action): FormState => {
     case "REMOVE_ELEMENT":
       return {
         ...state,
-        elements: state.elements.filter((el) => el.id !== action.payload),
+        elements: state.elements.filter((el) => el.element_id !== action.payload),
       };
     default:
       return state;

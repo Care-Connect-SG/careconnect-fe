@@ -29,13 +29,13 @@ export default function FormElement({
   const handleOptionChange = (index: number, newValue: string) => {
     const updatedOptions = [...(element.options || [])];
     updatedOptions[index] = newValue;
-    onUpdate(element.id, { options: updatedOptions });
+    onUpdate(element.element_id, { options: updatedOptions });
   };
 
   const handleRemoveOption = (index: number) => {
     if (element.options && element.options.length > 1) {
       const updatedOptions = element.options.filter((_, i) => i !== index);
-      onUpdate(element.id, { options: updatedOptions });
+      onUpdate(element.element_id, { options: updatedOptions });
     }
   };
 
@@ -46,7 +46,7 @@ export default function FormElement({
           <CardTitle className="p-0 mb-0 max-h-10 flex items-center justify-between">
             <Input
               value={element.label}
-              onChange={(e) => onUpdate(element.id, { label: e.target.value })}
+              onChange={(e) => onUpdate(element.element_id, { label: e.target.value })}
               className="md:text-base md:max-w-80 max-w-52 pb-0 font-semibold text-black rounded-none border-0 border-b-2 border-transparent 
                             hover:border-gray-500 focus:border-gray-500 px-0 focus-visible:ring-0 focus-visible:ring-offset-0"
               placeholder="Label"
@@ -57,7 +57,7 @@ export default function FormElement({
                 <Switch
                   checked={element.required}
                   onCheckedChange={(checked) =>
-                    onUpdate(element.id, { required: checked })
+                    onUpdate(element.element_id, { required: checked })
                   }
                 />
               </div>
@@ -66,7 +66,7 @@ export default function FormElement({
                 variant="ghost"
                 size="icon"
                 className="text-gray-500"
-                onClick={() => onRemove(element.id)}
+                onClick={() => onRemove(element.element_id)}
               >
                 <Trash2></Trash2>
               </Button>
@@ -76,7 +76,7 @@ export default function FormElement({
             <Input
               value={element.helptext}
               onChange={(e) =>
-                onUpdate(element.id, { helptext: e.target.value })
+                onUpdate(element.element_id, { helptext: e.target.value })
               }
               className="md:text-xs py-0 font-normal rounded-none border-0 border-b border-transparent text-gray-500 placeholder:text-muted-foreground
                             hover:border-gray-500 focus:border-gray-500 px-0 focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -142,7 +142,7 @@ export default function FormElement({
                 variant="outline"
                 size="sm"
                 onClick={() =>
-                  onUpdate(element.id, {
+                  onUpdate(element.element_id, {
                     options: [...(element.options || []), ""],
                   })
                 }
@@ -161,7 +161,7 @@ export default function FormElement({
                     onChange={(e) => {
                       const updatedOptions = [...(element.options || [])];
                       updatedOptions[index] = e.target.value;
-                      onUpdate(element.id, { options: updatedOptions });
+                      onUpdate(element.element_id, { options: updatedOptions });
                     }}
                     className="w-52 focus:border-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0"
                     placeholder="New Option"
@@ -182,7 +182,7 @@ export default function FormElement({
                 variant="outline"
                 size="sm"
                 onClick={() =>
-                  onUpdate(element.id, {
+                  onUpdate(element.element_id, {
                     options: [...(element.options || []), ""],
                   })
                 }

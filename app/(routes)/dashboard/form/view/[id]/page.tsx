@@ -54,7 +54,7 @@ export default async function ViewForm({
         <FormHeaderView title={form.title} description={form.description} />
         <div className="py-4 space-y-4">
           {form.json_content.map((element) => (
-            <FormElementView key={element.id} element={element} />
+            <FormElementView key={element.element_id} element={element} />
           ))}
         </div>
       </div>

@@ -2,7 +2,7 @@
 
 import { deleteForm, getForms, publishForm } from "@/app/api/form";
 import { Card } from "@/components/ui/card";
-import { FormComplete } from "@/types/form";
+import { FormResponse } from "@/types/form";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -18,7 +18,7 @@ const formatDate = (isoDate: string): string => {
 };
 
 export default function Incident() {
-  const [forms, setForms] = useState<FormComplete[]>([]);
+  const [forms, setForms] = useState<FormResponse[]>([]);
 
   useEffect(() => {
     fetchForms();

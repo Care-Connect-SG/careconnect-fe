@@ -1,6 +1,6 @@
-import { FormBase, FormComplete } from "@/types/form";
+import { FormCreate, FormResponse } from "@/types/form";
 
-export const getForms = async (): Promise<FormComplete[]> => {
+export const getForms = async (): Promise<FormResponse[]> => {
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/incident/forms`,
@@ -25,7 +25,7 @@ export const getForms = async (): Promise<FormComplete[]> => {
   }
 };
 
-export const createForm = async (formData: FormBase): Promise<string> => {
+export const createForm = async (formData: FormCreate): Promise<string> => {
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/incident/forms`,
@@ -53,7 +53,7 @@ export const createForm = async (formData: FormBase): Promise<string> => {
 
 export const updateForm = async (
   formId: string,
-  formData: FormBase,
+  formData: FormCreate,
 ): Promise<string> => {
   try {
     const response = await fetch(
@@ -105,7 +105,7 @@ export const publishForm = async (formId: string): Promise<string> => {
   }
 };
 
-export const getFormById = async (formId: string): Promise<FormComplete> => {
+export const getFormById = async (formId: string): Promise<FormResponse> => {
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/incident/forms/${formId}`,

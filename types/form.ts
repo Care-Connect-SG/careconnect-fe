@@ -1,6 +1,6 @@
 import { FormElementData } from "@/hooks/useFormReducer";
 
-export interface FormBase {
+export interface FormCreate {
   title: string;
   description: string | "";
   creator_id: string;
@@ -8,7 +8,7 @@ export interface FormBase {
   status: "Draft" | "Published";
 }
 
-export interface FormComplete extends FormBase {
+export interface FormResponse extends FormCreate {
   _id: string;
   created_date: string;
 }

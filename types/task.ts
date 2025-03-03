@@ -26,7 +26,7 @@ export enum Recurrence {
 }
 
 export interface Task {
-  id?: string;
+  id: string;
   task_title: string;
   task_details?: string;
   status: TaskStatus;

@@ -1,9 +1,14 @@
 import { FormBase, FormComplete } from "@/types/form";
 
-export const getForms = async (): Promise<FormComplete[]> => {
+export const getForms = async (status?: string): Promise<FormComplete[]> => {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BE_API_URL}/incident/forms`,
+    let url = `${process.env.NEXT_PUBLIC_BE_API_URL}/incident/forms`;
+
+    if (status) {
+      url += `?status=${encodeURIComponent(status)}`;
+    }
+
+    const response = await fetch(url,
       {
         method: "GET",
         headers: {

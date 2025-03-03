@@ -5,8 +5,8 @@ import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useBreadcrumb } from "../../../../../context/breadcrumb-context";
 
-import TaskDetailHeader from "./_components/task-detail-header";
 import ResidentInfo from "./_components/resident-info";
+import TaskDetailHeader from "./_components/task-detail-header";
 
 import { getTaskById } from "@/app/api/task";
 

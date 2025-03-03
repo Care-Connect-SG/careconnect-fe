@@ -13,26 +13,44 @@ interface Group {
   members?: string[];
 }
 
+interface User {
+  email: string;
+  name: string;
+  role: string;
+}
+
 export default function GroupDashboard() {
   const [groups, setGroups] = useState<Group[]>([]);
+  const [userMapping, setUserMapping] = useState<{ [email: string]: string }>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch groups from the API endpoint when the component mounts.
+  // Fetch both groups and users concurrently.
   useEffect(() => {
-    fetch("/api/groups")
-      .then((res) => {
-        if (!res.ok) {
+    Promise.all([
+      fetch("/api/groups"),
+      fetch("/api/users")
+    ])
+      .then(async ([groupsRes, usersRes]) => {
+        if (!groupsRes.ok) {
           throw new Error("Failed to fetch groups");
         }
-        return res.json();
-      })
-      .then((data) => {
-        setGroups(data);
+        if (!usersRes.ok) {
+          throw new Error("Failed to fetch users");
+        }
+        const groupsData = await groupsRes.json();
+        const usersData: User[] = await usersRes.json();
+        setGroups(groupsData);
+        // Build a mapping: email => name
+        const mapping: { [email: string]: string } = {};
+        usersData.forEach((user) => {
+          mapping[user.email] = user.name;
+        });
+        setUserMapping(mapping);
         setLoading(false);
       })
       .catch((err) => {
-        setError(err.message || "An error occurred while fetching groups");
+        setError(err.message || "An error occurred while fetching data");
         setLoading(false);
       });
   }, []);
@@ -55,8 +73,13 @@ export default function GroupDashboard() {
       {error && <p className="text-red-500">{error}</p>}
       {!loading && !error && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {groups.map((group, index) => {
-            const groupIdentifier = group.id ? String(group.id) : index.toString();
+          {groups.map((group) => {
+            const groupIdentifier = group.id || "";
+            // Convert each member's email to their corresponding name.
+            const memberNames = group.members && group.members.length > 0
+              ? group.members.map(email => userMapping[email] || email).join(", ")
+              : "No members yet.";
+
             return (
               <div
                 key={groupIdentifier}
@@ -66,11 +89,9 @@ export default function GroupDashboard() {
                   <div className="cursor-pointer">
                     <h2 className="text-xl font-semibold mb-2">{group.name}</h2>
                     <p className="text-gray-700 mb-2">{group.description}</p>
-                    {group.members && (
-                      <p className="text-sm text-gray-500">
-                        Members: {group.members.join(", ")}
-                      </p>
-                    )}
+                    <p className="text-sm text-gray-500">
+                      Members: {memberNames}
+                    </p>
                   </div>
                 </Link>
               </div>

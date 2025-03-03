@@ -1,18 +1,64 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useEffect, useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
+
+interface User {
+  email: string;
+  name: string;
+  role: string;
+}
 
 export default function CreateGroupPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [groupName, setGroupName] = useState("");
   const [groupDescription, setGroupDescription] = useState("");
+  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(true);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Fetch available users for selection
+  useEffect(() => {
+    fetch("/api/users")
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Failed to fetch users");
+        }
+        return res.json();
+      })
+      .then((data) => {
+        setUsers(data);
+        setLoadingUsers(false);
+      })
+      .catch((err) => {
+        setError(err.message || "Failed to load users");
+        setLoadingUsers(false);
+      });
+  }, []);
+
+  // Single-select handler: adds the selected user to the array if not already added.
+  const handleSelectChange = (value: string) => {
+    if (!selectedMembers.includes(value)) {
+      setSelectedMembers((prev) => [...prev, value]);
+    }
+  };
+
+  const handleRemoveMember = (email: string) => {
+    setSelectedMembers((prev) => prev.filter((member) => member !== email));
+  };
 
   const handleCreateGroup = async (e: FormEvent) => {
     e.preventDefault();
@@ -28,6 +74,7 @@ export default function CreateGroupPage() {
         body: JSON.stringify({
           name: groupName,
           description: groupDescription,
+          members: selectedMembers,
         }),
       });
       if (!res.ok) {
@@ -41,7 +88,6 @@ export default function CreateGroupPage() {
         variant: "default",
       });
 
-      // Redirect to the groups list page upon successful creation.
       router.push("/dashboard/group");
     } catch (err: any) {
       setError(err.message || "Failed to create group");
@@ -80,12 +126,43 @@ export default function CreateGroupPage() {
             required
           />
         </div>
+        <div>
+          <label className="block font-medium mb-1">Add Members</label>
+          {loadingUsers ? (
+            <Spinner />
+          ) : (
+            <Select onValueChange={handleSelectChange}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a user to add" />
+              </SelectTrigger>
+              <SelectContent>
+                {users.map((user: User) => (
+                  <SelectItem key={user.email} value={user.email}>
+                    {user.name} ({user.email})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          {/* Display selected members */}
+          {selectedMembers.length > 0 && (
+            <ul className="mt-2">
+              {selectedMembers.map((email) => (
+                <li key={email} className="flex items-center">
+                  <span>{email}</span>
+                  <button type="button" onClick={() => handleRemoveMember(email)} className="ml-2 text-red-500">
+                    Remove
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
         {error && <p className="text-red-500">{error}</p>}
         <Button type="submit" disabled={creating}>
           {creating ? "Creating..." : "Create Group"}
         </Button>
       </form>
-      {creating && <Spinner />}
     </main>
   );
 }

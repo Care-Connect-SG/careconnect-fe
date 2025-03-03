@@ -13,9 +13,16 @@ interface Group {
   members?: string[];
 }
 
+interface User {
+  email: string;
+  name: string;
+  role: string;
+}
+
 export default function ViewGroupPage() {
   const { groupId } = useParams();
   const [group, setGroup] = useState<Group | null>(null);
+  const [memberNames, setMemberNames] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,7 +37,9 @@ export default function ViewGroupPage() {
       })
       .then((data) => {
         // Find group using _id (or fallback to id)
-        const found = data.find((g: any) => g._id === groupId || g.id === groupId);
+        const found = data.find(
+          (g: any) => g._id === groupId || g.id === groupId
+        );
         if (!found) {
           setError("Group not found");
         } else {
@@ -44,8 +53,32 @@ export default function ViewGroupPage() {
       });
   }, [groupId]);
 
+  // Once we have the group, fetch all users and build a mapping of email -> name.
+  useEffect(() => {
+    if (group && group.members && group.members.length > 0) {
+      fetch("/api/users")
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error("Failed to fetch users");
+          }
+          return res.json();
+        })
+        .then((users: User[]) => {
+          const mapping: { [key: string]: string } = {};
+          users.forEach((user) => {
+            mapping[user.email] = user.name;
+          });
+          setMemberNames(mapping);
+        })
+        .catch((err) => {
+          console.error("Error fetching users:", err);
+        });
+    }
+  }, [group]);
+
   if (loading) return <Spinner />;
-  if (error || !group) return <p className="text-red-500">{error || "Group not found"}</p>;
+  if (error || !group)
+    return <p className="text-red-500">{error || "Group not found"}</p>;
 
   return (
     <main className="p-6 max-w-3xl mx-auto">
@@ -86,7 +119,7 @@ export default function ViewGroupPage() {
           <ul className="space-y-2">
             {group.members.map((member, index) => (
               <li key={index} className="text-gray-700">
-                {member}
+                {memberNames[member] || member}
               </li>
             ))}
           </ul>

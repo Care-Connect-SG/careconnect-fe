@@ -39,6 +39,7 @@ export async function POST(request: Request) {
         group_id: "", // Leave empty to let the backend generate an ID
         name: body.name,
         description: body.description,
+        members: body.members,
       };
   
       const url = `${BE_API_URL}/groups/create`;

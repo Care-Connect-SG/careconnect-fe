@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 
 interface User {
+  id: string;    // Use the user id
   email: string;
   name: string;
   role: string;
@@ -24,13 +25,14 @@ export default function CreateGroupPage() {
   const { toast } = useToast();
   const [groupName, setGroupName] = useState("");
   const [groupDescription, setGroupDescription] = useState("");
+  // Store user ids in selectedMembers.
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch available users for selection
+  // Fetch available users for selection.
   useEffect(() => {
     fetch("/api/users")
       .then((res) => {
@@ -49,15 +51,15 @@ export default function CreateGroupPage() {
       });
   }, []);
 
-  // Single-select handler: adds the selected user to the array if not already added.
+  // Single-select handler: add the selected user id if not already added.
   const handleSelectChange = (value: string) => {
     if (!selectedMembers.includes(value)) {
       setSelectedMembers((prev) => [...prev, value]);
     }
   };
 
-  const handleRemoveMember = (email: string) => {
-    setSelectedMembers((prev) => prev.filter((member) => member !== email));
+  const handleRemoveMember = (userId: string) => {
+    setSelectedMembers((prev) => prev.filter((memberId) => memberId !== userId));
   };
 
   const handleCreateGroup = async (e: FormEvent) => {
@@ -74,7 +76,7 @@ export default function CreateGroupPage() {
         body: JSON.stringify({
           name: groupName,
           description: groupDescription,
-          members: selectedMembers,
+          members: selectedMembers, // Now these are user IDs.
         }),
       });
       if (!res.ok) {
@@ -145,28 +147,32 @@ export default function CreateGroupPage() {
                       user.role === "Admin" || user.role === "Nurse"
                   )
                   .map((user) => (
-                    <SelectItem key={user.email} value={user.email}>
+                    <SelectItem key={user.id} value={user.id}>
                       {user.name} ({user.email})
                     </SelectItem>
                   ))}
               </SelectContent>
             </Select>
           )}
-          {/* Display selected members */}
+          {/* Display selected members with names */}
           {selectedMembers.length > 0 && (
             <ul className="mt-2">
-              {selectedMembers.map((email) => (
-                <li key={email} className="flex items-center">
-                  <span>{email}</span>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveMember(email)}
-                    className="ml-2 text-red-500"
-                  >
-                    Remove
-                  </button>
-                </li>
-              ))}
+              {selectedMembers.map((userId) => {
+                // Find the user from the users list by id.
+                const user = users.find((u) => u.id === userId);
+                return (
+                  <li key={userId} className="flex items-center">
+                    <span>{user ? user.name : userId}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveMember(userId)}
+                      className="ml-2 text-red-500"
+                    >
+                      Remove
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>

@@ -10,10 +10,12 @@ interface Group {
   _id: string; // from the backend
   name: string;
   description: string;
-  members?: string[];
+  members?: string[]; // these are user IDs
 }
 
 interface User {
+  id?: string;    // might be returned as 'id'
+  _id?: string;   // or '_id'
   email: string;
   name: string;
   role: string;
@@ -53,7 +55,7 @@ export default function ViewGroupPage() {
       });
   }, [groupId]);
 
-  // Once we have the group, fetch all users and build a mapping of email -> name.
+  // Once we have the group, fetch all users and build a mapping of user id -> name.
   useEffect(() => {
     if (group && group.members && group.members.length > 0) {
       fetch("/api/users")
@@ -66,7 +68,11 @@ export default function ViewGroupPage() {
         .then((users: User[]) => {
           const mapping: { [key: string]: string } = {};
           users.forEach((user) => {
-            mapping[user.email] = user.name;
+            // Use user.id if available; otherwise fall back to user._id.
+            const uid = user.id || user._id;
+            if (uid) {
+              mapping[uid] = user.name;
+            }
           });
           setMemberNames(mapping);
         })
@@ -76,11 +82,11 @@ export default function ViewGroupPage() {
     }
   }, [group]);
 
-  const handleRemoveUser = async (userEmail: string) => {
+  const handleRemoveUser = async (userId: string) => {
     try {
       const res = await fetch(
-        `/api/groups/remove-user?group_id=${groupId}&user_email=${encodeURIComponent(
-          userEmail
+        `/api/groups/remove-user?group_id=${groupId}&user_id=${encodeURIComponent(
+          userId
         )}`,
         {
           method: "DELETE",
@@ -96,7 +102,7 @@ export default function ViewGroupPage() {
       // Remove the user from the group's members in the state.
       setGroup((prev) =>
         prev
-          ? { ...prev, members: prev.members?.filter((email) => email !== userEmail) }
+          ? { ...prev, members: prev.members?.filter((id) => id !== userId) }
           : prev
       );
     } catch (err: any) {
@@ -145,15 +151,16 @@ export default function ViewGroupPage() {
         </div>
         {group.members && group.members.length > 0 ? (
           <ul className="space-y-2">
-            {group.members.map((member, index) => (
+            {group.members.map((memberId, index) => (
               <li
                 key={index}
                 className="flex items-center justify-between text-gray-700"
               >
-                <span>{memberNames[member] || member}</span>
+                {/* Display the user's name if available, otherwise fall back to the userId */}
+                <span>{memberNames[memberId] || memberId}</span>
                 <button
                   type="button"
-                  onClick={() => handleRemoveUser(member)}
+                  onClick={() => handleRemoveUser(memberId)}
                   className="text-red-500 text-sm"
                 >
                   Remove

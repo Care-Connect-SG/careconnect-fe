@@ -10,10 +10,11 @@ interface Group {
   id: string; // using 'id' to represent the unique identifier from the backend
   name: string;
   description: string;
-  members?: string[];
+  members?: string[]; // these are user IDs
 }
 
 interface User {
+  id: string; // user id used for mapping
   email: string;
   name: string;
   role: string;
@@ -21,7 +22,7 @@ interface User {
 
 export default function GroupDashboard() {
   const [groups, setGroups] = useState<Group[]>([]);
-  const [userMapping, setUserMapping] = useState<{ [email: string]: string }>({});
+  const [userMapping, setUserMapping] = useState<{ [id: string]: string }>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,10 +42,10 @@ export default function GroupDashboard() {
         const groupsData = await groupsRes.json();
         const usersData: User[] = await usersRes.json();
         setGroups(groupsData);
-        // Build a mapping: email => name
-        const mapping: { [email: string]: string } = {};
+        // Build a mapping: user id => name.
+        const mapping: { [id: string]: string } = {};
         usersData.forEach((user) => {
-          mapping[user.email] = user.name;
+          mapping[user.id] = user.name;
         });
         setUserMapping(mapping);
         setLoading(false);
@@ -75,9 +76,9 @@ export default function GroupDashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {groups.map((group) => {
             const groupIdentifier = group.id || "";
-            // Convert each member's email to their corresponding name.
+            // Convert each member's id to their corresponding name.
             const memberNames = group.members && group.members.length > 0
-              ? group.members.map(email => userMapping[email] || email).join(", ")
+              ? group.members.map(id => userMapping[id] || id).join(", ")
               : "No members yet.";
 
             return (

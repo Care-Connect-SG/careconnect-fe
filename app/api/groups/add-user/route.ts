@@ -6,13 +6,13 @@ const BE_API_SECRET = process.env.BE_API_SECRET || "";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    // Expect the JSON payload to contain: group_id and user_email
-    const { group_id, user_email } = body;
+    // Expect the JSON payload to contain: group_id and user_id
+    const { group_id, user_id } = body;
     
     // Construct the backend URL with query parameters
     const url = `${BE_API_URL}/groups/add-user?group_id=${encodeURIComponent(
       group_id
-    )}&user_email=${encodeURIComponent(user_email)}`;
+    )}&user_id=${encodeURIComponent(user_id)}`;
     
     console.log("Adding user at:", url);
     

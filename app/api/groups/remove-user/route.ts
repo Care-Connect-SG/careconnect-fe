@@ -7,18 +7,18 @@ const BE_API_SECRET = process.env.BE_API_SECRET || "";
 export async function DELETE(request: Request) {
   const { searchParams } = new URL(request.url);
   const group_id = searchParams.get("group_id");
-  const user_email = searchParams.get("user_email");
+  const user_id = searchParams.get("user_id");
 
-  if (!group_id || !user_email) {
+  if (!group_id || !user_id) {
     return NextResponse.json(
-      { error: "Both group_id and user_email are required" },
+      { error: "Both group_id and user_id are required" },
       { status: 400 }
     );
   }
 
   const url = `${BE_API_URL}/groups/remove-user?group_id=${encodeURIComponent(
     group_id
-  )}&user_email=${encodeURIComponent(user_email)}`;
+  )}&user_id=${encodeURIComponent(user_id)}`;
 
   try {
     const res = await fetch(url, {

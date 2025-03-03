@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 interface User {
+  id: string; // new: store user id
   email: string;
   name: string;
   role: string; // Role property to filter Admin or Nurse
@@ -63,7 +64,7 @@ export default function AddUsersPage() {
         },
         body: JSON.stringify({
           group_id: groupId, // Using the stable group identifier from the URL.
-          user_email: selectedUser,
+          user_id: selectedUser, // Now using user_id instead of user_email.
         }),
       });
       if (!res.ok) {
@@ -71,7 +72,7 @@ export default function AddUsersPage() {
         throw new Error(errData.error?.detail || "Failed to add user to group");
       }
       await res.json();
-      setAddSuccess(`User ${selectedUser} added successfully!`);
+      setAddSuccess(`User added successfully!`);
       setSelectedUser("");
     } catch (error: any) {
       setAddError(error.message || "Error adding user");
@@ -103,7 +104,7 @@ export default function AddUsersPage() {
                       user.role === "Admin" || user.role === "Nurse"
                   )
                   .map((user) => (
-                    <SelectItem key={user.email} value={user.email}>
+                    <SelectItem key={user.id} value={user.id}>
                       {user.name} ({user.email})
                     </SelectItem>
                   ))}

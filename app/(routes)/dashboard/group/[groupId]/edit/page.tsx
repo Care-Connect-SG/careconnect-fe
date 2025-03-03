@@ -89,10 +89,17 @@ export default function EditGroupPage() {
 
   // Handle group deletion with toast notifications.
   const handleDeleteGroup = async () => {
+    // Ensure groupId is a single string.
+    if (!groupId) {
+      alert("Group id is missing");
+      return;
+    }
+    const id = Array.isArray(groupId) ? groupId[0] : groupId;
+    
     const confirmDelete = window.confirm("Are you sure you want to delete this group?");
     if (!confirmDelete) return;
     try {
-      const res = await fetch(`/api/groups?group_id=${encodeURIComponent(groupId)}`, {
+      const res = await fetch(`/api/groups?group_id=${encodeURIComponent(id)}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
       });

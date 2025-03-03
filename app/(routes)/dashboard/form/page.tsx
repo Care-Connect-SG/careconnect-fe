@@ -5,7 +5,6 @@ import { FormComplete } from "@/types/form";
 import { useEffect, useState } from "react";
 import FormCardPublished from "./_components/form-card-published";
 
-
 const formatDate = (isoDate: string): string => {
   const date = new Date(isoDate);
   return new Intl.DateTimeFormat("en-GB", {

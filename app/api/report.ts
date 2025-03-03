@@ -1,6 +1,8 @@
 import { ReportBase, ReportComplete } from "@/types/report";
 
-export const getReports = async (status?: string): Promise<ReportComplete[]> => {
+export const getReports = async (
+  status?: string,
+): Promise<ReportComplete[]> => {
   try {
     let url = `${process.env.NEXT_PUBLIC_BE_API_URL}/incident/reports`;
 
@@ -8,15 +10,13 @@ export const getReports = async (status?: string): Promise<ReportComplete[]> => 
       url += `?status=${encodeURIComponent(status)}`;
     }
 
-    const response = await fetch(url,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          // Authorization: `Bearer ${process.env.BE_API_SECRET}`,
-        },
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        // Authorization: `Bearer ${process.env.BE_API_SECRET}`,
       },
-    );
+    });
 
     if (!response.ok) {
       throw new Error(`Error fetching reports: ${response.statusText}`);
@@ -110,7 +110,9 @@ export const submitForm = async (reportId: string): Promise<string> => {
   }
 };
 
-export const getReportById = async (reportId: string): Promise<ReportComplete> => {
+export const getReportById = async (
+  reportId: string,
+): Promise<ReportComplete> => {
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/incident/reports/${reportId}`,

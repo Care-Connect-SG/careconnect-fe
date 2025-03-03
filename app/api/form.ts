@@ -8,15 +8,13 @@ export const getForms = async (status?: string): Promise<FormComplete[]> => {
       url += `?status=${encodeURIComponent(status)}`;
     }
 
-    const response = await fetch(url,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          // Authorization: `Bearer ${process.env.BE_API_SECRET}`,
-        },
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        // Authorization: `Bearer ${process.env.BE_API_SECRET}`,
       },
-    );
+    });
 
     if (!response.ok) {
       throw new Error(`Error fetching forms: ${response.statusText}`);

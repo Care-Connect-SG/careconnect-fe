@@ -1,6 +1,6 @@
 export interface ReportSectionContent {
   form_element_id: string;
-  input: string | null
+  input: string | null;
 }
 
 export interface ReportBase {

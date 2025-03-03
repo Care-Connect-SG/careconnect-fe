@@ -107,3 +107,38 @@ export async function POST(request: Request) {
       return NextResponse.error();
     }
   }
+
+  export async function DELETE(request: Request) {
+    // Extract the group_id from the query string
+    const { searchParams } = new URL(request.url);
+    const group_id = searchParams.get("group_id");
+    if (!group_id) {
+      return NextResponse.json({ error: "Group id is required" }, { status: 400 });
+    }
+    
+    // Construct the backend URL for deletion.
+    const url = `${BE_API_URL}/groups/delete?group_id=${encodeURIComponent(group_id)}`;
+    console.log("Deleting group at:", url);
+    
+    try {
+      const res = await fetch(url, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${BE_API_SECRET}`,
+        },
+      });
+      console.log("Response status:", res.status);
+      const data = await res.json();
+      console.log("Delete response data:", data);
+      
+      if (!res.ok) {
+        return NextResponse.json({ error: data }, { status: res.status });
+      }
+      
+      return NextResponse.json(data, { status: res.status });
+    } catch (error) {
+      console.error("Error deleting group:", error);
+      return NextResponse.error();
+    }
+  }

@@ -4,9 +4,11 @@ import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { useToast } from "@/hooks/use-toast";
 
 export default function CreateGroupPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [groupName, setGroupName] = useState("");
   const [groupDescription, setGroupDescription] = useState("");
   const [creating, setCreating] = useState(false);
@@ -21,7 +23,6 @@ export default function CreateGroupPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // Ensure you have proper authentication on the backend.
           Authorization: `Bearer ${process.env.BE_API_SECRET}`,
         },
         body: JSON.stringify({
@@ -33,6 +34,13 @@ export default function CreateGroupPage() {
         throw new Error(`Error creating group: ${res.statusText}`);
       }
       await res.json();
+
+      toast({
+        title: "Group Created",
+        description: "Group created successfully!",
+        variant: "default",
+      });
+
       // Redirect to the groups list page upon successful creation.
       router.push("/dashboard/group");
     } catch (err: any) {

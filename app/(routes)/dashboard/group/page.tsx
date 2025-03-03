@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Spinner } from "@/components/ui/spinner";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 interface Group {
   id: string; // using 'id' to represent the unique identifier from the backend
@@ -37,15 +39,16 @@ export default function GroupDashboard() {
 
   return (
     <main className="p-6 max-w-7xl mx-auto">
-      <h1 className="text-4xl font-bold mb-8">Groups</h1>
-      <div className="mb-6">
-      <Link
-  href="/dashboard/group/createGroup"
-  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
->
-  Create New Group
-</Link>
-
+      {/* Header with title and Create New Group button */}
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-4xl font-bold">Groups</h1>
+        <Link
+          href="/dashboard/group/createGroup"
+          className="inline-flex items-center gap-2 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Create New Group</span>
+        </Link>
       </div>
 
       {loading && <Spinner />}
@@ -55,7 +58,10 @@ export default function GroupDashboard() {
           {groups.map((group, index) => {
             const groupIdentifier = group.id ? String(group.id) : index.toString();
             return (
-              <div key={groupIdentifier} className="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+              <div
+                key={groupIdentifier}
+                className="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
+              >
                 <Link href={`/dashboard/group/${groupIdentifier}`}>
                   <div className="cursor-pointer">
                     <h2 className="text-xl font-semibold mb-2">{group.name}</h2>

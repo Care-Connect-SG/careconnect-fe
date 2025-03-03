@@ -11,23 +11,19 @@ const TaskManagement = () => {
   const [currentView, setCurrentView] = useState<"list" | "kanban">("list");
 
   return (
-    <div className="flex flex-col flex-1 w-full">
-      <main className="flex-1 overflow-auto w-full">
-        <div className="p-8">
-          <div className="flex items-center justify-between mb-8">
-            <h1 className="text-2xl font-semibold text-gray-800">
-              Task Management
-            </h1>
-            <div className="flex items-center space-x-4">
-              <TaskViewToggle view={currentView} onChange={setCurrentView} />
-              <Button>
-                <Plus className="w-4 h-4 mr-2" /> New Task
-              </Button>
-            </div>
-          </div>
+    <div className="flex flex-col w-full gap-8 p-8">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold text-gray-800">
+          Task Management
+        </h1>
+        <div className="flex items-center space-x-4">
+          <TaskViewToggle view={currentView} onChange={setCurrentView} />
+          <Button>
+            <Plus className="w-4 h-4 mr-2" /> New Task
+          </Button>
         </div>
-        {currentView === "list" ? <TaskListView /> : <TaskKanbanView />}
-      </main>
+      </div>
+      {currentView === "list" ? <TaskListView /> : <TaskKanbanView />}
     </div>
   );
 };

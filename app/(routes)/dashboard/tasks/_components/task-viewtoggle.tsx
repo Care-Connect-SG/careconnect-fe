@@ -10,28 +10,26 @@ interface ViewToggleProps {
 
 export const TaskViewToggle = ({ view, onChange }: ViewToggleProps) => {
   return (
-    <div className="flex bg-gray-100 rounded-lg p-1 space-x-1">
+    <div className="flex rounded-lg border border-gray-300 ">
       <Button
         onClick={() => onChange("list")}
-        className={`flex-1 flex items-center justify-center px-3 py-1.5 bg-transparent rounded ${
+        className={`flex-1 flex items-center rounded-l-lg justify-center px-3 py-1.5 focus:ring-0 focus:ring-offset-0 ${
           view === "list"
-            ? "bg-white text-gray-800 shadow-sm hover:bg-white"
-            : "text-gray-600 hover:text-gray-800 hover:bg-transparent"
+            ? "bg-gray-200 text-gray-600 shadow-sm hover:bg-white"
+            : "bg-white text-gray-800 hover:text-blue-600 hover:bg-blue-50"
         }`}
       >
-        <List className="w-4 h-4 mr-1" />
-        <span className="text-sm font-medium">List</span>
+        <List className="w-4 h-4" />
       </Button>
       <Button
         onClick={() => onChange("kanban")}
-        className={`flex-1 flex items-center justify-center px-3 py-1.5 rounded bg-transparent ${
+        className={`flex-1 flex items-center rounded-r-lg justify-center px-3 py-1.5 focus:ring-0 focus:ring-offset-0 ${
           view === "kanban"
-            ? "bg-white text-gray-800 shadow-sm hover:bg-white"
-            : "text-gray-600 hover:text-gray-800 hover:bg-transparent"
+            ? "bg-gray-200 text-gray-600 shadow-sm hover:bg-white"
+            : "bg-white text-gray-800 hover:text-blue-600 hover:bg-blue-50"
         }`}
       >
-        <LayoutGrid className="w-4 h-4 mr-1" />
-        <span className="text-sm font-medium">Board</span>
+        <LayoutGrid className="w-4 h-4" />
       </Button>
     </div>
   );

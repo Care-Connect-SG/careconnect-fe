@@ -99,7 +99,10 @@ export default function CreateGroupPage() {
   return (
     <main className="p-6 max-w-3xl mx-auto">
       <h1 className="text-3xl font-bold mb-6">Create New Group</h1>
-      <form onSubmit={handleCreateGroup} className="space-y-4 bg-white p-6 border rounded-lg shadow-sm">
+      <form
+        onSubmit={handleCreateGroup}
+        className="space-y-4 bg-white p-6 border rounded-lg shadow-sm"
+      >
         <div>
           <label htmlFor="groupName" className="block font-medium mb-1">
             Group Name
@@ -136,11 +139,16 @@ export default function CreateGroupPage() {
                 <SelectValue placeholder="Select a user to add" />
               </SelectTrigger>
               <SelectContent>
-                {users.map((user: User) => (
-                  <SelectItem key={user.email} value={user.email}>
-                    {user.name} ({user.email})
-                  </SelectItem>
-                ))}
+                {users
+                  .filter(
+                    (user: User) =>
+                      user.role === "Admin" || user.role === "Nurse"
+                  )
+                  .map((user) => (
+                    <SelectItem key={user.email} value={user.email}>
+                      {user.name} ({user.email})
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           )}
@@ -150,7 +158,11 @@ export default function CreateGroupPage() {
               {selectedMembers.map((email) => (
                 <li key={email} className="flex items-center">
                   <span>{email}</span>
-                  <button type="button" onClick={() => handleRemoveMember(email)} className="ml-2 text-red-500">
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveMember(email)}
+                    className="ml-2 text-red-500"
+                  >
                     Remove
                   </button>
                 </li>

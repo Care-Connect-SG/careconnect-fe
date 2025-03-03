@@ -76,6 +76,34 @@ export default function ViewGroupPage() {
     }
   }, [group]);
 
+  const handleRemoveUser = async (userEmail: string) => {
+    try {
+      const res = await fetch(
+        `/api/groups/remove-user?group_id=${groupId}&user_email=${encodeURIComponent(
+          userEmail
+        )}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.BE_API_SECRET}`,
+          },
+        }
+      );
+      if (!res.ok) {
+        throw new Error("Failed to remove user");
+      }
+      // Remove the user from the group's members in the state.
+      setGroup((prev) =>
+        prev
+          ? { ...prev, members: prev.members?.filter((email) => email !== userEmail) }
+          : prev
+      );
+    } catch (err: any) {
+      console.error("Error removing user:", err.message || err);
+    }
+  };
+
   if (loading) return <Spinner />;
   if (error || !group)
     return <p className="text-red-500">{error || "Group not found"}</p>;
@@ -118,8 +146,18 @@ export default function ViewGroupPage() {
         {group.members && group.members.length > 0 ? (
           <ul className="space-y-2">
             {group.members.map((member, index) => (
-              <li key={index} className="text-gray-700">
-                {memberNames[member] || member}
+              <li
+                key={index}
+                className="flex items-center justify-between text-gray-700"
+              >
+                <span>{memberNames[member] || member}</span>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveUser(member)}
+                  className="text-red-500 text-sm"
+                >
+                  Remove
+                </button>
               </li>
             ))}
           </ul>

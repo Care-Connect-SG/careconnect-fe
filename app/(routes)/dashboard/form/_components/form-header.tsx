@@ -62,14 +62,10 @@ function FormHeaderView({ title, description }: FormHeaderViewProps) {
       <Card>
         <CardHeader>
           <CardTitle>
-            <h1 className="md:text-2xl font-bold px-0">
-              {title}
-            </h1>
+            <h1 className="md:text-2xl font-bold px-0">{title}</h1>
           </CardTitle>
           <CardDescription>
-            <p>
-              {description}
-            </p>
+            <p>{description}</p>
           </CardDescription>
         </CardHeader>
       </Card>

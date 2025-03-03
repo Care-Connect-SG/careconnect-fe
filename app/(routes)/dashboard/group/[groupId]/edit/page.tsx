@@ -135,7 +135,7 @@ export default function EditGroupPage() {
         <h1 className="text-3xl font-bold">Edit Group</h1>
         <div className="flex gap-1">
           
-          <Button variant="warning" onClick={handleDeleteGroup}>
+          <Button variant="destructive" onClick={handleDeleteGroup}>
             Delete Group
           </Button>
         </div>

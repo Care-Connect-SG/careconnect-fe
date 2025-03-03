@@ -2,7 +2,9 @@
 
 import { useEffect, useState, FormEvent } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { Spinner } from "@/components/ui/spinner";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectTrigger,
@@ -10,7 +12,7 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 interface User {
   id: string; // new: store user id
@@ -22,6 +24,7 @@ interface User {
 export default function AddUsersPage() {
   const { groupId } = useParams();
   const router = useRouter();
+  const { toast } = useToast();
 
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<string>("");
@@ -83,19 +86,29 @@ export default function AddUsersPage() {
 
   return (
     <main className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Add User to Group</h1>
+      {/* Header with back button on the left, centered title */}
+      <header className="mb-8 flex items-center justify-between">
+        <Button variant="secondary" onClick={() => router.back()}>
+          Back
+        </Button>
+        <h1 className="text-3xl font-bold text-center flex-1">
+          Add User to Group
+        </h1>
+        <div className="w-24" />
+      </header>
+
       {loading && <Spinner />}
-      {error && <p className="text-red-500">{error}</p>}
+      {error && <p className="text-red-500 text-center">{error}</p>}
       {!loading && !error && (
         <form
           onSubmit={handleAddUser}
-          className="space-y-4 bg-white p-6 border rounded-lg shadow-sm"
+          className="space-y-6 bg-white p-6 border rounded-lg shadow-sm"
         >
           <div>
             <label className="block font-medium mb-2">Select User</label>
             <Select value={selectedUser} onValueChange={setSelectedUser}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select a user" />
+                <SelectValue placeholder="Select a user to add" />
               </SelectTrigger>
               <SelectContent>
                 {users
@@ -113,12 +126,9 @@ export default function AddUsersPage() {
           </div>
           {addError && <p className="text-red-500">{addError}</p>}
           {addSuccess && <p className="text-green-500">{addSuccess}</p>}
-          <div className="flex gap-4">
+          <div className="flex gap-4 justify-center">
             <Button type="submit" disabled={adding}>
               {adding ? "Adding..." : "Add User"}
-            </Button>
-            <Button variant="secondary" onClick={() => router.back()}>
-              Back to Edit Group
             </Button>
           </div>
         </form>

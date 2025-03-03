@@ -1,47 +1,44 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
+import { UserPlus } from "lucide-react";
 
 interface Group {
-  _id: string; // from the backend
+  id: string;
   name: string;
   description: string;
-  members?: string[]; // these are user IDs
+  members: string[]; // array of user IDs
 }
 
 interface User {
-  id?: string;    // might be returned as 'id'
-  _id?: string;   // or '_id'
-  email: string;
+  id: string;
   name: string;
-  role: string;
+  email: string;
+  avatarUrl?: string; // optional avatar URL
 }
 
 export default function ViewGroupPage() {
   const { groupId } = useParams();
+  const router = useRouter();
+
   const [group, setGroup] = useState<Group | null>(null);
-  const [memberNames, setMemberNames] = useState<{ [key: string]: string }>({});
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch groups and find the group with the matching groupId.
+  // Fetch group details.
   useEffect(() => {
     fetch("/api/groups")
       .then((res) => {
-        if (!res.ok) {
-          throw new Error("Failed to fetch groups");
-        }
+        if (!res.ok) throw new Error("Failed to fetch groups");
         return res.json();
       })
       .then((data) => {
-        // Find group using _id (or fallback to id)
-        const found = data.find(
-          (g: any) => g._id === groupId || g.id === groupId
-        );
+        const found = data.find((g: any) => g.id === groupId);
         if (!found) {
           setError("Group not found");
         } else {
@@ -55,26 +52,16 @@ export default function ViewGroupPage() {
       });
   }, [groupId]);
 
-  // Once we have the group, fetch all users and build a mapping of user id -> name.
+  // Fetch all users (or just the members).
   useEffect(() => {
-    if (group && group.members && group.members.length > 0) {
+    if (group && group.members.length > 0) {
       fetch("/api/users")
         .then((res) => {
-          if (!res.ok) {
-            throw new Error("Failed to fetch users");
-          }
+          if (!res.ok) throw new Error("Failed to fetch users");
           return res.json();
         })
-        .then((users: User[]) => {
-          const mapping: { [key: string]: string } = {};
-          users.forEach((user) => {
-            // Use user.id if available; otherwise fall back to user._id.
-            const uid = user.id || user._id;
-            if (uid) {
-              mapping[uid] = user.name;
-            }
-          });
-          setMemberNames(mapping);
+        .then((data: User[]) => {
+          setUsers(data);
         })
         .catch((err) => {
           console.error("Error fetching users:", err);
@@ -82,6 +69,12 @@ export default function ViewGroupPage() {
     }
   }, [group]);
 
+  // Helper: get user's name by ID.
+  const getUserById = (userId: string) => {
+    return users.find((u) => u.id === userId);
+  };
+
+  // Remove user function.
   const handleRemoveUser = async (userId: string) => {
     try {
       const res = await fetch(
@@ -92,19 +85,19 @@ export default function ViewGroupPage() {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.BE_API_SECRET}`,
+            // Uncomment below if needed:
+            // Authorization: `Bearer ${process.env.BE_API_SECRET}`,
           },
         }
       );
       if (!res.ok) {
         throw new Error("Failed to remove user");
       }
-      // Remove the user from the group's members in the state.
-      setGroup((prev) =>
-        prev
-          ? { ...prev, members: prev.members?.filter((id) => id !== userId) }
-          : prev
-      );
+      // Update state to remove user.
+      setGroup((prev) => {
+        if (!prev) return prev;
+        return { ...prev, members: prev.members.filter((m) => m !== userId) };
+      });
     } catch (err: any) {
       console.error("Error removing user:", err.message || err);
     }
@@ -112,66 +105,110 @@ export default function ViewGroupPage() {
 
   if (loading) return <Spinner />;
   if (error || !group)
-    return <p className="text-red-500">{error || "Group not found"}</p>;
+    return <p className="text-red-500 text-center p-4">{error || "Group not found"}</p>;
 
   return (
-    <main className="p-6 max-w-3xl mx-auto">
-      {/* Header */}
-      <header className="flex items-center justify-between mb-8">
-        <Link
-          href="/dashboard/group"
-          className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300"
-        >
-          Back
-        </Link>
-        <Link
-          href={`/dashboard/group/${groupId}/edit`}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          Edit
-        </Link>
-      </header>
-
-      {/* Group Details */}
-      <section className="mb-8">
-        <h1 className="text-4xl font-bold">{group.name}</h1>
-        <p className="mt-2 text-gray-700">{group.description}</p>
-      </section>
-
-      {/* Members Section */}
-      <section className="bg-white p-6 border rounded-lg shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-semibold">Members</h2>
+    <>
+      {/* Header in a larger container */}
+      <div className="max-w-3xl mx-auto p-6">
+        <header className="flex items-center justify-between">
+          <Button variant="secondary" onClick={() => router.back()}>
+            &lt; Back
+          </Button>
+          <h1 className="text-3xl font-bold flex-1 text-center">
+            Group Details
+          </h1>
           <Link
-            href={`/dashboard/group/${groupId}/add-users`}
-            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+            href={`/dashboard/group/${groupId}/edit`}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
           >
-            Add Users
+            Edit
           </Link>
+        </header>
+      </div>
+
+      {/* Main content in a narrower container */}
+      <div className="max-w-lg mx-auto p-4 space-y-5">
+        {/* Group Name / Description */}
+        <div className="space-y-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-600">
+              Group Name
+            </label>
+            <div className="mt-1 bg-white rounded px-3 py-2 shadow-sm">
+              {group.name}
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-600">
+              Group Description
+            </label>
+            <div className="mt-1 bg-white rounded px-3 py-2 shadow-sm">
+              {group.description}
+            </div>
+          </div>
         </div>
-        {group.members && group.members.length > 0 ? (
-          <ul className="space-y-2">
-            {group.members.map((memberId, index) => (
-              <li
-                key={index}
-                className="flex items-center justify-between text-gray-700"
-              >
-                {/* Display the user's name if available, otherwise fall back to the userId */}
-                <span>{memberNames[memberId] || memberId}</span>
-                <button
-                  type="button"
-                  onClick={() => handleRemoveUser(memberId)}
-                  className="text-red-500 text-sm"
-                >
-                  Remove
-                </button>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-gray-500">No members yet.</p>
-        )}
-      </section>
-    </main>
+
+        {/* Add Users */}
+        <Link
+          href={`/dashboard/group/${groupId}/add-users`}
+          className="inline-flex items-center gap-1 text-blue-600 hover:underline"
+        >
+          <UserPlus className="w-5 h-5" />
+          <span>Add Users</span>
+        </Link>
+
+        {/* Spacer using margin on Current Users section */}
+        <div className="mt-20">
+          <h2 className="text-sm font-medium text-gray-600 mb-2">
+            Current Users
+          </h2>
+          <div className="space-y-2">
+            {group.members.length === 0 ? (
+              <p className="text-gray-500">No users yet.</p>
+            ) : (
+              group.members.map((memberId) => {
+                const user = getUserById(memberId);
+                if (!user) return null;
+                return (
+                  <div
+                    key={user.id}
+                    className="flex items-center justify-between bg-white rounded px-3 py-2 shadow-sm"
+                  >
+                    <div className="flex items-center gap-3">
+                      {/* Avatar */}
+                      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                        {user.avatarUrl ? (
+                          <img
+                            src={user.avatarUrl}
+                            alt={user.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-gray-700 font-semibold">
+                            {user.name.charAt(0).toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                      {/* Name */}
+                      <span className="text-gray-800 font-medium">
+                        {user.name}
+                      </span>
+                    </div>
+                    {/* Remove Button */}
+                    <button
+                      onClick={() => handleRemoveUser(user.id)}
+                      className="text-red-500 text-sm hover:underline"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

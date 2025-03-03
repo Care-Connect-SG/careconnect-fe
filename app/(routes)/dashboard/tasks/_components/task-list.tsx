@@ -1,71 +1,11 @@
 "use client";
 
 import { getTasks } from "@/app/api/task";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Task, TaskStatus } from "@/types/task";
-import { Plus } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
+import { Task } from "@/types/task";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
-
-const TaskTable = ({ tasks }: { tasks: Task[] }) => {
-  if (!tasks.length) {
-    return <p className="text-center text-gray-500">No tasks available</p>;
-  }
-
-  return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                <Checkbox className="h-4 w-4 border border-gray-300 bg-white" />
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Task
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Resident
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Assigned To
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Priority
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Status
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {tasks.map((task) => (
-              <tr key={task.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4">
-                  <Checkbox className="h-4 w-4 border border-gray-300 bg-white" />
-                </td>
-                <td className="px-6 py-4 font-medium text-gray-900">
-                  {task.task_title}
-                </td>
-                <td className="px-6 py-4 text-gray-900">
-                  {task.resident || "N/A"}
-                </td>
-                <td className="px-6 py-4 text-gray-900">
-                  {task.assigned_to || "Unassigned"}
-                </td>
-                <td className="px-6 py-4 text-gray-900">
-                  {task.priority || "Low"}
-                </td>
-                <td className="px-6 py-4 text-gray-900">{task.status}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-};
+import TaskTable from "./task-table";
 
 export default function TaskListView() {
   const { data: session } = useSession();
@@ -91,7 +31,12 @@ export default function TaskListView() {
     fetchTasks();
   }, [session?.user?.email]);
 
-  if (loading) return <p>Loading tasks...</p>;
+  if (loading)
+    return (
+      <div className="p-8">
+        <Spinner />
+      </div>
+    );
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (

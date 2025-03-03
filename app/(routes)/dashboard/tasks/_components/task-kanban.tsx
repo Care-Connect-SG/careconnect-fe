@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Task } from "@/types/task";
 import { Clock, User } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -94,7 +95,12 @@ export default function TaskResidentView() {
   //   fetchResidents();
   // }, []);
 
-  if (loading) return <p>Loading residents...</p>;
+  if (loading)
+    return (
+      <div className="p-8">
+        <Spinner />
+      </div>
+    );
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (

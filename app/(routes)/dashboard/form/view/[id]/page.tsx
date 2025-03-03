@@ -1,7 +1,7 @@
 import { getFormById } from "@/app/api/form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FormComplete } from "@/types/form";
+import { FormResponse } from "@/types/form";
 import { ChevronLeft, Eye } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -12,7 +12,7 @@ export default async function ViewForm({
   params,
 }: { params: Promise<{ id: string }> }) {
   const formId = (await params).id;
-  let form: FormComplete | null = null;
+  let form: FormResponse | null = null;
 
   try {
     form = await getFormById(formId);

@@ -8,7 +8,7 @@ import {
 } from "@/app/api/form";
 import { Button } from "@/components/ui/button";
 import { FormState, useFormReducer } from "@/hooks/useFormReducer";
-import { FormBase, FormComplete } from "@/types/form";
+import { FormCreate, FormResponse } from "@/types/form";
 import { ChevronLeft, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -28,7 +28,7 @@ export default function CreateForm() {
   useEffect(() => {
     if (isEditing) {
       getFormById(formId)
-        .then((data: FormComplete) => {
+        .then((data: FormResponse) => {
           const formState: FormState = {
             title: data.title,
             description: data.description,
@@ -52,7 +52,7 @@ export default function CreateForm() {
       return;
     }
 
-    const formData: FormBase = {
+    const formData: FormCreate = {
       title: state.title,
       description: state.description,
       creator_id: "user123", // TODO: Replace with the actual logged-in user ID
@@ -87,7 +87,7 @@ export default function CreateForm() {
       return;
     }
 
-    const formData: FormBase = {
+    const formData: FormCreate = {
       title: state.title,
       description: state.description,
       creator_id: "user123", // TODO: Replace with the actual logged-in user ID

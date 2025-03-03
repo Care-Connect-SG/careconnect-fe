@@ -62,22 +62,14 @@ function FormHeaderView({ title, description }: FormHeaderViewProps) {
       <Card>
         <CardHeader>
           <CardTitle>
-            <Input
-              value={title}
-              disabled
-              className="md:text-2xl font-bold rounded-none border-0 disabled:opacity-100
-                         px-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-              placeholder="Untitled Form"
-            />
+            <h1 className="md:text-2xl font-bold px-0">
+              {title}
+            </h1>
           </CardTitle>
           <CardDescription>
-            <Textarea
-              value={description}
-              disabled
-              className="rounded-none border-0 disabled:opacity-100 px-0 resize-none focus-visible:ring-0 focus-visible:ring-offset-0"
-              placeholder="Add a description for your form"
-              rows={2}
-            ></Textarea>
+            <p>
+              {description}
+            </p>
           </CardDescription>
         </CardHeader>
       </Card>

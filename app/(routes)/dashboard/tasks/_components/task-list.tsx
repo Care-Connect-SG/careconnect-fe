@@ -1,25 +1,16 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import {
-  ChevronRight,
-  Plus,
-  Check,
-} from "lucide-react";
-import * as Checkbox from "@radix-ui/react-checkbox";
-import { Button } from "@/components/ui/button";
 import { getTasks } from "@/app/api/task";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Task, TaskStatus } from "@/types/task";
+import { Plus } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { Task } from "@/types/task";
+import React, { useEffect, useState } from "react";
 
 const TasksHeader = () => {
   return (
     <div className="mb-8">
-      <div className="flex items-center text-sm text-gray-600 mb-4">
-        <a href="#" className="hover:text-blue-600">Dashboard</a>
-        <ChevronRight className="w-4 h-4 mx-2" />
-        <span className="text-gray-800">Tasks</span>
-      </div>
       <div className="flex justify-end">
         <Button>
           <Plus className="w-4 h-4 mr-2" /> New Task
@@ -32,15 +23,19 @@ const TasksHeader = () => {
 const TaskStats = ({ tasks }: { tasks: Task[] }) => {
   const stats = {
     total: tasks.length,
-    pending: tasks.filter((task) => task.status === "Pending").length,
-    overdue: tasks.filter((task) => new Date(task.due_date) < new Date()).length,
+    pending: tasks.filter((task) => task.status === TaskStatus.ASSIGNED).length,
+    delayed: tasks.filter((task) => new Date(task.due_date) < new Date())
+      .length,
     completed: tasks.filter((task) => task.status === "Completed").length,
   };
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       {Object.entries(stats).map(([key, value]) => (
-        <div key={key} className="bg-white p-4 rounded-lg border border-gray-200">
+        <div
+          key={key}
+          className="bg-white p-4 rounded-lg border border-gray-200"
+        >
           <p className="text-sm text-gray-500 capitalize">{key}</p>
           <p className="text-2xl font-semibold text-blue-600">{value}</p>
         </div>
@@ -61,33 +56,43 @@ const TaskTable = ({ tasks }: { tasks: Task[] }) => {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                <Checkbox.Root className="h-4 w-4 border border-gray-300 bg-white">
-                  <Checkbox.Indicator>
-                    <Check className="h-3 w-3 text-blue-600" />
-                  </Checkbox.Indicator>
-                </Checkbox.Root>
+                <Checkbox className="h-4 w-4 border border-gray-300 bg-white" />
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Task</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Resident</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Assigned To</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Priority</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Task
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Resident
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Assigned To
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Priority
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Status
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {tasks.map((task) => (
               <tr key={task.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4">
-                  <Checkbox.Root className="h-4 w-4 border border-gray-300 bg-white">
-                    <Checkbox.Indicator>
-                      <Check className="h-3 w-3 text-blue-600" />
-                    </Checkbox.Indicator>
-                  </Checkbox.Root>
+                  <Checkbox className="h-4 w-4 border border-gray-300 bg-white" />
                 </td>
-                <td className="px-6 py-4 font-medium text-gray-900">{task.task_title}</td>
-                <td className="px-6 py-4 text-gray-900">{task.resident || "N/A"}</td>
-                <td className="px-6 py-4 text-gray-900">{task.assigned_to || "Unassigned"}</td>
-                <td className="px-6 py-4 text-gray-900">{task.priority || "Low"}</td>
+                <td className="px-6 py-4 font-medium text-gray-900">
+                  {task.task_title}
+                </td>
+                <td className="px-6 py-4 text-gray-900">
+                  {task.resident || "N/A"}
+                </td>
+                <td className="px-6 py-4 text-gray-900">
+                  {task.assigned_to || "Unassigned"}
+                </td>
+                <td className="px-6 py-4 text-gray-900">
+                  {task.priority || "Low"}
+                </td>
                 <td className="px-6 py-4 text-gray-900">{task.status}</td>
               </tr>
             ))}
@@ -98,7 +103,7 @@ const TaskTable = ({ tasks }: { tasks: Task[] }) => {
   );
 };
 
-export default function TasksPage() {
+export default function TaskListView() {
   const { data: session } = useSession();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState<boolean>(true);

@@ -11,17 +11,19 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        const res = await fetch(`${process.env.BE_API_URL}/users/login`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            Authorization: `Bearer ${process.env.BE_API_SECRET}`,
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BE_API_URL}/users/login`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+              username: credentials?.email || "",
+              password: credentials?.password || "",
+            }),
           },
-          body: new URLSearchParams({
-            username: credentials?.email || "",
-            password: credentials?.password || "",
-          }),
-        });
+        );
 
         const user = await res.json();
         if (res.ok && user && user.email) {

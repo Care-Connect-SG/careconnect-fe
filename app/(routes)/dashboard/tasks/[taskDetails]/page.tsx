@@ -153,7 +153,7 @@ const TaskDetails = () => {
   if (!task) return <p>Loading...</p>;
 
   return (
-    <div className="flex-1 bg-gray-50 p-8">
+    <div className="flex-1 p-8">
       <TaskHeader task={task} />
       <div className="grid grid-cols-3 gap-6">
         <div className="col-span-2">

@@ -1,7 +1,7 @@
 "use client";
 
-import TaskStats from "./_components/task-stats";
 import { useSession } from "next-auth/react";
+import TaskStats from "./_components/task-stats";
 
 export default function Home() {
   const { data: session } = useSession();

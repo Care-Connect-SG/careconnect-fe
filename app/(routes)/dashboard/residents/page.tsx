@@ -3,16 +3,18 @@
 import React, { useEffect, useState } from "react";
 import ResidentCard, { Resident, NurseOption } from "./_components/all-resident-card";
 import { useRouter } from "next/navigation";
-import { getResidents, updateResidentNurse, updateResident } from "../../../api/resident";
+import { getResidents, updateResidentNurse, updateResident, deleteResident, createResident } from "../../../api/resident";
 import { getAllNurses } from "../../../api/user";
 import { ResidentRecord } from "@/types/resident";
 import { UserResponse } from "../../../api/user";
+import AddResidentModal from "./_components/add-resident-modal";
 
 export default function AllResidentsPage() {
   // We'll store the full ResidentRecord in state so we have all data for updates.
   const [residents, setResidents] = useState<ResidentRecord[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [nurseOptions, setNurseOptions] = useState<NurseOption[]>([]);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -47,18 +49,16 @@ export default function AllResidentsPage() {
     resident.full_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-    // Simple age calculator (assuming date_of_birth is an ISO string)
-    const computeAge = (dob: string) => {
-      const birthDate = new Date(dob);
-      const diffMs = Date.now() - birthDate.getTime();
-      const ageDt = new Date(diffMs);
-      return Math.abs(ageDt.getUTCFullYear() - 1970);
-    };
-
+  // Simple age calculator (assuming date_of_birth is an ISO string)
+  const computeAge = (dob: string) => {
+    const birthDate = new Date(dob);
+    const diffMs = Date.now() - birthDate.getTime();
+    const ageDt = new Date(diffMs);
+    return Math.abs(ageDt.getUTCFullYear() - 1970);
+  };
 
   // Handle nurse selection changes using the updateResidentNurse API
   const handleNurseChange = async (id: string, newNurse: string) => {
-    // Find the current resident record from state
     const currentResident = residents.find((res) => res.id === id);
     if (!currentResident) return;
 
@@ -78,13 +78,27 @@ export default function AllResidentsPage() {
 
     try {
       const updatedResident = await updateResidentNurse(id, updatePayload);
-      // Update state with the full updated resident record
       setResidents((prev) =>
         prev.map((res) => (res.id === id ? updatedResident : res))
       );
       console.log("Updated resident:", updatedResident);
     } catch (error) {
       console.error("Error updating nurse:", error);
+    }
+  };
+
+  // Handle delete button click with confirmation alert
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this resident?")) {
+      return;
+    }
+    try {
+      await deleteResident(id);
+      // Update state by removing the deleted resident
+      setResidents((prev) => prev.filter((res) => res.id !== id));
+      console.log("Deleted resident with id:", id);
+    } catch (error) {
+      console.error("Error deleting resident:", error);
     }
   };
 
@@ -98,11 +112,17 @@ export default function AllResidentsPage() {
     router.push(`/dashboard/residents/${id}`);
   };
 
-  // Handle adding a new nurse
-  const handleAddNewNurse = () => {
-    alert("Add New Nurse clicked!");
-    // You can open a modal or navigate to a page for adding a new nurse here.
-  };
+    // Handle Add Resident Modal Save
+    const handleAddResidentSave = async (newResidentData: any) => {
+      try {
+        const createdResident = await createResident(newResidentData);
+        setResidents((prev) => [...prev, createdResident]);
+        console.log("Created new resident:", createdResident);
+      } catch (error) {
+        console.error("Error creating resident:", error);
+      }
+      setIsAddModalOpen(false);
+    };
 
   return (
     <div className="max-w-4xl mx-auto p-4">
@@ -119,13 +139,18 @@ export default function AllResidentsPage() {
           <span className="absolute right-3 top-2 text-gray-400">🔍</span>
         </div>
         <button
-          onClick={handleAddNewNurse} 
-          className=" mr-5 px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600"
-          style={{ marginRight: "50px" }}
+           onClick={() => setIsAddModalOpen(true)}
+          className="ml-4 px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600"
         >
           Add New Nurse
         </button>
       </div>
+
+      <AddResidentModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSave={handleAddResidentSave}
+      />
 
       {/* List of Resident Cards */}
       <div className="space-y-4">
@@ -143,6 +168,7 @@ export default function AllResidentsPage() {
               }}
               onNurseChange={handleNurseChange}
               onClick={handleCardClick}
+              onDelete={handleDelete}
               nurseOptions={nurseOptions}
             />
           ))

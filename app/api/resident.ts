@@ -1,4 +1,4 @@
-import { ResidentRecord } from "@/types/resident"; // adjust the path and type name as needed
+import { ResidentRecord, RegistrationCreate } from "@/types/resident"; // adjust the path and type names as needed
 
 /**
  * Fetch all resident records.
@@ -87,6 +87,37 @@ export const getResidentById = async (residentId: string): Promise<ResidentRecor
     );
     if (!response.ok) {
       throw new Error(`Error updating resident: ${response.statusText}`);
+    }
+    const data = await response.json();
+    return data;
+  };
+
+  export const deleteResident = async (residentId: string): Promise<void> => {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}`,
+      {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    if (!response.ok) {
+      throw new Error(`Error deleting resident: ${response.statusText}`);
+    }
+  };
+
+  export const createResident = async (
+    newResidentData: RegistrationCreate
+  ): Promise<ResidentRecord> => {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/createNewRecord`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newResidentData),
+      }
+    );
+    if (!response.ok) {
+      throw new Error(`Error creating resident: ${response.statusText}`);
     }
     const data = await response.json();
     return data;

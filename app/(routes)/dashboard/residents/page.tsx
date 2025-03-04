@@ -25,7 +25,7 @@ export default function AllResidentsPage() {
           room: record.room_number,
           nurse: record.primary_nurse || "N/A",
           // If your API doesn't return an image URL, use a default.
-          imageUrl:  "/images/no-image.png",
+          imageUrl: "/images/no-image.png",
         }));
         setResidents(formatted);
         console.log("Residents fetched:", formatted);

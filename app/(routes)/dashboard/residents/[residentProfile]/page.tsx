@@ -1,9 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import ResidentDetailsCard from "../_components/resident-detail-card";
 import ResidentDetailsNotesCard from "../_components/resident-detail-notes";
 import ResidentProfileCard from "../_components/resident-profile-card";
+import MedicationDisplay from "../_components/medication-display";
+import { MedicationRecord } from "@/types/medication";
+import { getMedicationsForResident } from "@/app/api/medication";
 
 const TABS = [
   { label: "Overview", value: "overview" },
@@ -16,6 +20,8 @@ const TABS = [
 const ResidentDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [primaryNurse, setPrimaryNurse] = useState("");
+  const [medications, setMedications] = useState<MedicationRecord[]>([]);
+  const pathname = usePathname();
 
   const handleEditProfile = () => {
     alert("Edit Profile clicked!");
@@ -24,6 +30,17 @@ const ResidentDashboard = () => {
   const handlePrimaryNurseChange = (value: string) => {
     setPrimaryNurse(value);
   };
+  // Extract Resident ID from URL
+  const residentId = pathname.split("/").pop(); // Gets the last segment of the URL
+
+  // Fetch Medications when the Medication tab is active
+  useEffect(() => {
+    if (activeTab === "medication" && residentId) {
+      getMedicationsForResident(residentId)
+        .then((data) => setMedications(data))
+        .catch(console.error);
+    }
+  }, [activeTab, residentId]);
 
   return (
     <div className="w-full max-w-4xl mx-auto mt-10">
@@ -43,11 +60,10 @@ const ResidentDashboard = () => {
             <button
               key={tab.value}
               onClick={() => setActiveTab(tab.value)}
-              className={`py-2 px-1 text-sm font-medium ${
-                activeTab === tab.value
-                  ? "text-blue-600 border-b-2 border-blue-600"
-                  : "text-gray-500"
-              }`}
+              className={`py-2 px-1 text-sm font-medium ${activeTab === tab.value
+                ? "text-blue-600 border-b-2 border-blue-600"
+                : "text-gray-500"
+                }`}
             >
               {tab.label}
             </button>
@@ -57,21 +73,15 @@ const ResidentDashboard = () => {
 
       {/* Tab Content */}
       {activeTab === "overview" && (
-        <div className="flex flex-col sm:flex-row items-start justify-between gap-6 mt-6">
-          {/* Details Card */}
-          <ResidentDetailsCard
-            gender="Female"
-            dateOfBirth="1945-05-12"
-            nricNumber="S1234567A"
-            emergencyContactName="Bob Johnson"
-            emergencyContactNumber="91234567"
-            relationship="Spouse"
-            primaryNurse="Nurse A"
-            onPrimaryNurseChange={handlePrimaryNurseChange}
-          />
-
-          {/* Notes Card */}
-          <ResidentDetailsNotesCard additionalNotes="Requires special diet" />
+        <div className="mt-6">
+          <h2 className="text-lg font-semibold">Medication List</h2>
+          <div className="space-y-4 mt-4">
+            {medications.length > 0 ? (
+              medications.map((med) => <MedicationDisplay key={med.id} medication={med} />)
+            ) : (
+              <p className="text-gray-500">No medications found.</p>
+            )}
+          </div>
         </div>
       )}
 
@@ -84,8 +94,16 @@ const ResidentDashboard = () => {
 
       {activeTab === "medication" && (
         <div className="mt-6">
-          <h2 className="text-lg font-semibold">Medication</h2>
-          {/* Insert your medication content or components here */}
+          <h2 className="text-lg font-semibold">Medication List</h2>
+          <div className="space-y-4 mt-4">
+            {medications.length > 0 ? (
+              medications.map((medication) => (
+                <MedicationDisplay key={medication.id} medication={medication} />
+              ))
+            ) : (
+              <p className="text-gray-500">No medications found.</p>
+            )}
+          </div>
         </div>
       )}
 

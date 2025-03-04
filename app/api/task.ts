@@ -18,7 +18,7 @@ export const getTasks = async (): Promise<Task[]> => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       },
     );

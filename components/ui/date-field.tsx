@@ -1,4 +1,4 @@
-import * as React from "react"
+import * as React from "react";
 
 import {
   DateTimeField,
@@ -6,9 +6,9 @@ import {
   DateTimeFieldMonths,
   DateTimeFieldSeparator,
   DateTimeFieldYears,
-} from "@/components/ui/date-time-field"
+} from "@/components/ui/date-time-field";
 
-export const DateField = DateTimeField
+export const DateField = DateTimeField;
 
 export const DateFieldSeparator = React.forwardRef<
   React.ElementRef<typeof DateTimeFieldSeparator>,
@@ -17,11 +17,11 @@ export const DateFieldSeparator = React.forwardRef<
   <DateTimeFieldSeparator ref={ref} {...props}>
     {children}
   </DateTimeFieldSeparator>
-))
-DateFieldSeparator.displayName = "DateFieldSeparator"
+));
+DateFieldSeparator.displayName = "DateFieldSeparator";
 
-export const DateFieldYears = DateTimeFieldYears
+export const DateFieldYears = DateTimeFieldYears;
 
-export const DateFieldMonths = DateTimeFieldMonths
+export const DateFieldMonths = DateTimeFieldMonths;
 
-export const DateFieldDays = DateTimeFieldDays
+export const DateFieldDays = DateTimeFieldDays;

@@ -1,30 +1,30 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { composeEventHandlers } from "@radix-ui/primitive"
-import * as PopoverPrimitive from "@radix-ui/react-popover"
-import { Primitive } from "@radix-ui/react-primitive"
-import type * as Radix from "@radix-ui/react-primitive"
-import { Slot } from "@radix-ui/react-slot"
-import { useControllableState } from "@radix-ui/react-use-controllable-state"
-import { format } from "date-fns"
+import { composeEventHandlers } from "@radix-ui/primitive";
+import * as PopoverPrimitive from "@radix-ui/react-popover";
+import { Primitive } from "@radix-ui/react-primitive";
+import type * as Radix from "@radix-ui/react-primitive";
+import { Slot } from "@radix-ui/react-slot";
+import { useControllableState } from "@radix-ui/react-use-controllable-state";
+import { format } from "date-fns";
+import * as React from "react";
 import {
-  DayPicker,
   type Mode as DatePickerMode,
   type DateRange,
+  DayPicker,
   type DayPickerProps as DayPickerPrimitiveProps,
-} from "react-day-picker"
+} from "react-day-picker";
 
-import * as DateTimeFieldPrimitive from "@/components/ui/date-time-field-primitive"
-import * as DateTimeRangeFieldPrimitive from "@/components/ui/date-time-range-field-primitive"
+import * as DateTimeFieldPrimitive from "@/components/ui/date-time-field-primitive";
+import * as DateTimeRangeFieldPrimitive from "@/components/ui/date-time-range-field-primitive";
 
 // TODO: start month / end month sync with calendar and date field
 
 export type DatePickerContextProps = {
-  formatStr: string
-  month?: Date
-  onMonthChange: (month: Date) => void
-  disabled?: boolean
+  formatStr: string;
+  month?: Date;
+  onMonthChange: (month: Date) => void;
+  disabled?: boolean;
 } & (
   | Required<
       Pick<
@@ -62,7 +62,7 @@ export type DatePickerContextProps = {
         "mode" | "required" | "value" | "onValueChange"
       >
     >
-)
+);
 
 const DatePickerContext = React.createContext<DatePickerContextProps>({
   mode: "single",
@@ -73,19 +73,19 @@ const DatePickerContext = React.createContext<DatePickerContextProps>({
   onValueChange: () => {},
   disabled: false,
   required: false,
-})
+});
 
-export const useDatePickerContext = () => React.useContext(DatePickerContext)
+export const useDatePickerContext = () => React.useContext(DatePickerContext);
 
 export interface DatePickerBaseProps
   extends React.ComponentProps<typeof PopoverPrimitive.Root> {
-  mode?: DatePickerMode | undefined
-  required?: boolean
-  formatStr?: string
-  month?: Date
-  defaultMonth?: Date
-  onMonthChange?: (month: Date) => void
-  disabled?: boolean
+  mode?: DatePickerMode | undefined;
+  required?: boolean;
+  formatStr?: string;
+  month?: Date;
+  defaultMonth?: Date;
+  onMonthChange?: (month: Date) => void;
+  disabled?: boolean;
 }
 
 export type DatePickerValue<T extends DatePickerMode = "single"> =
@@ -95,54 +95,54 @@ export type DatePickerValue<T extends DatePickerMode = "single"> =
       ? Date[]
       : T extends "range"
         ? DateRange
-        : never
+        : never;
 
 export interface DatePickerSingleProps {
-  mode: "single"
-  required?: false | undefined
-  value?: Date | null
-  defaultValue?: Date
-  onValueChange?: (value: Date | null) => void
+  mode: "single";
+  required?: false | undefined;
+  value?: Date | null;
+  defaultValue?: Date;
+  onValueChange?: (value: Date | null) => void;
 }
 
 export interface DatePickerSingleRequiredProps {
-  mode: "single"
-  required: true
-  value?: Date
-  defaultValue?: Date
-  onValueChange?: (value: Date) => void
+  mode: "single";
+  required: true;
+  value?: Date;
+  defaultValue?: Date;
+  onValueChange?: (value: Date) => void;
 }
 
 export interface DatePickerMultipleProps {
-  mode: "multiple"
-  required?: false | undefined
-  value?: Date[] | null
-  defaultValue?: Date[]
-  onValueChange?: (value: Date[] | null) => void
+  mode: "multiple";
+  required?: false | undefined;
+  value?: Date[] | null;
+  defaultValue?: Date[];
+  onValueChange?: (value: Date[] | null) => void;
 }
 
 export interface DatePickerMultipleRequiredProps {
-  mode: "multiple"
-  required: true
-  value?: Date[]
-  defaultValue?: Date[]
-  onValueChange?: (value: Date[]) => void
+  mode: "multiple";
+  required: true;
+  value?: Date[];
+  defaultValue?: Date[];
+  onValueChange?: (value: Date[]) => void;
 }
 
 export interface DatePickerRangeProps {
-  mode: "range"
-  required?: false | undefined
-  value?: DateRange | null
-  defaultValue?: DateRange
-  onValueChange?: (value: DateRange | null) => void
+  mode: "range";
+  required?: false | undefined;
+  value?: DateRange | null;
+  defaultValue?: DateRange;
+  onValueChange?: (value: DateRange | null) => void;
 }
 
 export interface DatePickerRangeRequiredProps {
-  mode: "range"
-  required: true
-  value?: DateRange
-  defaultValue?: DateRange
-  onValueChange?: (value: DateRange) => void
+  mode: "range";
+  required: true;
+  value?: DateRange;
+  defaultValue?: DateRange;
+  onValueChange?: (value: DateRange) => void;
 }
 
 export type DatePickerProps = DatePickerBaseProps &
@@ -153,7 +153,7 @@ export type DatePickerProps = DatePickerBaseProps &
     | DatePickerMultipleRequiredProps
     | DatePickerRangeProps
     | DatePickerRangeRequiredProps
-  )
+  );
 
 export const DatePicker = <T extends DatePickerMode = "single">({
   mode = "single" as T,
@@ -177,12 +177,12 @@ export const DatePicker = <T extends DatePickerMode = "single">({
     prop: valueProp as DatePickerValue<T>,
     defaultProp: defaultValue as DatePickerValue<T>,
     onChange: onValueChange as (value: DatePickerValue<T>) => void,
-  })
+  });
   const [month, setMonth] = useControllableState({
     prop: monthProp,
     defaultProp: defaultMonth,
     onChange: onMonthChange,
-  })
+  });
 
   return (
     <DatePickerContext.Provider
@@ -208,10 +208,10 @@ export const DatePicker = <T extends DatePickerMode = "single">({
         {children}
       </PopoverPrimitive.Root>
     </DatePickerContext.Provider>
-  )
-}
+  );
+};
 
-export const DatePickerTrigger = PopoverPrimitive.Trigger
+export const DatePickerTrigger = PopoverPrimitive.Trigger;
 
 export const DatePickerDateField = React.forwardRef<
   React.ElementRef<typeof DateTimeFieldPrimitive.Root>,
@@ -221,12 +221,12 @@ export const DatePickerDateField = React.forwardRef<
   >
 >(({ disabled: disabledProp, ...props }, ref) => {
   const { mode, onMonthChange, value, onValueChange, required, disabled } =
-    useDatePickerContext()
+    useDatePickerContext();
 
   if (mode !== "single") {
     throw new Error(
-      '<DatePickerDateField> should only be used when mode is "single"'
-    )
+      '<DatePickerDateField> should only be used when mode is "single"',
+    );
   }
 
   return (
@@ -236,29 +236,29 @@ export const DatePickerDateField = React.forwardRef<
       value={value}
       onValueChange={(date) => {
         if (date) {
-          onValueChange(date)
-          onMonthChange(date)
+          onValueChange(date);
+          onMonthChange(date);
         } else if (!required) {
-          onValueChange(null)
+          onValueChange(null);
         }
       }}
       {...props}
     />
-  )
-})
-DatePickerDateField.displayName = "DatePickerDateField"
+  );
+});
+DatePickerDateField.displayName = "DatePickerDateField";
 
-export const DatePickerDateFieldSeparator = DateTimeFieldPrimitive.Separator
+export const DatePickerDateFieldSeparator = DateTimeFieldPrimitive.Separator;
 
-export const DatePickerDateFieldYears = DateTimeFieldPrimitive.Years
+export const DatePickerDateFieldYears = DateTimeFieldPrimitive.Years;
 
-export const DatePickerDateFieldMonths = DateTimeFieldPrimitive.Months
+export const DatePickerDateFieldMonths = DateTimeFieldPrimitive.Months;
 
-export const DatePickerDateFieldDays = DateTimeFieldPrimitive.Days
+export const DatePickerDateFieldDays = DateTimeFieldPrimitive.Days;
 
-export const DatePickerAnchor = PopoverPrimitive.Anchor
+export const DatePickerAnchor = PopoverPrimitive.Anchor;
 
-export const DatePickerPortal = PopoverPrimitive.Portal
+export const DatePickerPortal = PopoverPrimitive.Portal;
 
 export const DatePickerDateRangeField = React.forwardRef<
   React.ElementRef<typeof DateTimeRangeFieldPrimitive.Root>,
@@ -268,12 +268,12 @@ export const DatePickerDateRangeField = React.forwardRef<
   >
 >(({ disabled: disabledProp, ...props }, ref) => {
   const { mode, onMonthChange, value, onValueChange, required, disabled } =
-    useDatePickerContext()
+    useDatePickerContext();
 
   if (mode !== "range") {
     throw new Error(
-      '<DatePickerDateRangeField> should only be used when mode is "range"'
-    )
+      '<DatePickerDateRangeField> should only be used when mode is "range"',
+    );
   }
 
   return (
@@ -283,38 +283,39 @@ export const DatePickerDateRangeField = React.forwardRef<
       value={value}
       onValueChange={(value) => {
         if (value) {
-          onValueChange(value)
+          onValueChange(value);
           if (value.from) {
-            onMonthChange(value.from)
+            onMonthChange(value.from);
           }
         } else if (!required) {
-          onValueChange(null)
+          onValueChange(null);
         }
       }}
       {...props}
     />
-  )
-})
-DatePickerDateRangeField.displayName = "DatePickerDateRangeField"
+  );
+});
+DatePickerDateRangeField.displayName = "DatePickerDateRangeField";
 
-export const DatePickerDateRangeFieldFrom = DateTimeRangeFieldPrimitive.From
+export const DatePickerDateRangeFieldFrom = DateTimeRangeFieldPrimitive.From;
 
-export const DatePickerDateRangeFieldTo = DateTimeRangeFieldPrimitive.To
+export const DatePickerDateRangeFieldTo = DateTimeRangeFieldPrimitive.To;
 
 export const DatePickerDateRangeFieldSeparator =
-  DateTimeRangeFieldPrimitive.Separator
+  DateTimeRangeFieldPrimitive.Separator;
 
-export const DatePickerDateRangeFieldYears = DateTimeRangeFieldPrimitive.Years
+export const DatePickerDateRangeFieldYears = DateTimeRangeFieldPrimitive.Years;
 
-export const DatePickerDateRangeFieldMonths = DateTimeRangeFieldPrimitive.Months
+export const DatePickerDateRangeFieldMonths =
+  DateTimeRangeFieldPrimitive.Months;
 
-export const DatePickerDateRangeFieldDays = DateTimeRangeFieldPrimitive.Days
+export const DatePickerDateRangeFieldDays = DateTimeRangeFieldPrimitive.Days;
 
 export const DatePickerClear = React.forwardRef<
   React.ElementRef<typeof Primitive.button>,
   React.ComponentPropsWithoutRef<typeof Primitive.button>
 >(({ onClick, ...props }, ref) => {
-  const { required, value, onValueChange } = useDatePickerContext()
+  const { required, value, onValueChange } = useDatePickerContext();
 
   return (
     <Primitive.button
@@ -322,47 +323,47 @@ export const DatePickerClear = React.forwardRef<
       disabled={required || !value}
       onClick={composeEventHandlers(
         onClick,
-        () => !required && onValueChange(null)
+        () => !required && onValueChange(null),
       )}
       {...props}
     />
-  )
-})
-DatePickerClear.displayName = "DatePickerClear"
+  );
+});
+DatePickerClear.displayName = "DatePickerClear";
 
 export interface DatePickerValueProps
   extends Radix.PrimitivePropsWithRef<typeof Primitive.span> {
-  placeholder?: React.ReactNode
+  placeholder?: React.ReactNode;
 }
 
 export const DatePickerValue = React.forwardRef<
   React.ElementRef<typeof Primitive.span>,
   DatePickerValueProps
 >(({ placeholder, children, ...props }, ref) => {
-  const { mode, formatStr, value } = useDatePickerContext()
+  const { mode, formatStr, value } = useDatePickerContext();
 
   const isValueEmpty = React.useMemo(() => {
     if (mode === "single") {
-      return !value
+      return !value;
     }
     if (mode === "multiple") {
-      return !value?.length
+      return !value?.length;
     }
-    return !value?.from
-  }, [mode, value])
+    return !value?.from;
+  }, [mode, value]);
 
   const formattedValue = React.useMemo(() => {
     if (!value) {
-      return null
+      return null;
     }
     if (mode === "single") {
-      return format(value, formatStr)
+      return format(value, formatStr);
     }
     if (mode === "multiple") {
-      return value.map((v) => format(v, formatStr)).join(", ")
+      return value.map((v) => format(v, formatStr)).join(", ");
     }
-    return `${value.from ? format(value.from, formatStr) : "Select a date"} - ${value.to ? format(value.to, formatStr) : "Select a date"}`
-  }, [mode, value, formatStr])
+    return `${value.from ? format(value.from, formatStr) : "Select a date"} - ${value.to ? format(value.to, formatStr) : "Select a date"}`;
+  }, [mode, value, formatStr]);
 
   return (
     <Primitive.span
@@ -372,11 +373,11 @@ export const DatePickerValue = React.forwardRef<
     >
       {isValueEmpty ? placeholder : (children ?? formattedValue)}
     </Primitive.span>
-  )
-})
-DatePickerValue.displayName = "DatePickerValue"
+  );
+});
+DatePickerValue.displayName = "DatePickerValue";
 
-export const DatePickerContent = PopoverPrimitive.Content
+export const DatePickerContent = PopoverPrimitive.Content;
 
 export interface DatePickerCalendarProps
   extends Omit<
@@ -389,8 +390,8 @@ export interface DatePickerCalendarProps
     | "disabled"
     | "required"
   > {
-  asChild?: boolean
-  children?: React.ReactNode
+  asChild?: boolean;
+  children?: React.ReactNode;
 }
 
 export const DatePickerCalendar = ({
@@ -406,9 +407,9 @@ export const DatePickerCalendar = ({
     onValueChange,
     disabled,
     required,
-  } = useDatePickerContext()
+  } = useDatePickerContext();
 
-  const Comp = asChild ? (Slot as typeof DayPicker) : DayPicker
+  const Comp = asChild ? (Slot as typeof DayPicker) : DayPicker;
 
   return (
     <Comp
@@ -419,16 +420,16 @@ export const DatePickerCalendar = ({
       } as React.ComponentProps<typeof Comp>)}
       onSelect={(value: Date | Date[] | DateRange | undefined) => {
         if (!value && !required) {
-          onValueChange(null)
+          onValueChange(null);
         }
         if (mode === "single") {
-          onValueChange(value as Date)
+          onValueChange(value as Date);
         }
         if (mode === "multiple") {
-          onValueChange(value as Date[])
+          onValueChange(value as Date[]);
         }
         if (mode === "range") {
-          onValueChange(value as DateRange)
+          onValueChange(value as DateRange);
         }
       }}
       month={month}
@@ -437,29 +438,29 @@ export const DatePickerCalendar = ({
       autoFocus={autoFocus}
       {...props}
     />
-  )
-}
+  );
+};
 
-const Root = DatePicker
-const DateField = DatePickerDateField
-const DateFieldSeparator = DatePickerDateFieldSeparator
-const DateFieldYears = DatePickerDateFieldYears
-const DateFieldMonths = DatePickerDateFieldMonths
-const DateFieldDays = DatePickerDateFieldDays
-const DateRangeField = DatePickerDateRangeField
-const DateRangeFieldFrom = DatePickerDateRangeFieldFrom
-const DateRangeFieldTo = DatePickerDateRangeFieldTo
-const DateRangeFieldSeparator = DatePickerDateRangeFieldSeparator
-const DateRangeFieldYears = DatePickerDateRangeFieldYears
-const DateRangeFieldMonths = DatePickerDateRangeFieldMonths
-const DateRangeFieldDays = DatePickerDateRangeFieldDays
-const Value = DatePickerValue
-const Clear = DatePickerClear
-const Trigger = DatePickerTrigger
-const Anchor = DatePickerAnchor
-const Portal = DatePickerPortal
-const Content = DatePickerContent
-const Calendar = DatePickerCalendar
+const Root = DatePicker;
+const DateField = DatePickerDateField;
+const DateFieldSeparator = DatePickerDateFieldSeparator;
+const DateFieldYears = DatePickerDateFieldYears;
+const DateFieldMonths = DatePickerDateFieldMonths;
+const DateFieldDays = DatePickerDateFieldDays;
+const DateRangeField = DatePickerDateRangeField;
+const DateRangeFieldFrom = DatePickerDateRangeFieldFrom;
+const DateRangeFieldTo = DatePickerDateRangeFieldTo;
+const DateRangeFieldSeparator = DatePickerDateRangeFieldSeparator;
+const DateRangeFieldYears = DatePickerDateRangeFieldYears;
+const DateRangeFieldMonths = DatePickerDateRangeFieldMonths;
+const DateRangeFieldDays = DatePickerDateRangeFieldDays;
+const Value = DatePickerValue;
+const Clear = DatePickerClear;
+const Trigger = DatePickerTrigger;
+const Anchor = DatePickerAnchor;
+const Portal = DatePickerPortal;
+const Content = DatePickerContent;
+const Calendar = DatePickerCalendar;
 
 export {
   Root,
@@ -482,4 +483,4 @@ export {
   Portal,
   Content,
   Calendar,
-}
+};

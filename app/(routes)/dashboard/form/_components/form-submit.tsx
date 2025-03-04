@@ -4,6 +4,7 @@ import { createReport } from "@/app/api/report";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { FormElementData } from "@/hooks/useFormReducer";
+import { useReportReducer } from "@/hooks/useReportReducer";
 import { FormResponse } from "@/types/form";
 import { ReportCreate } from "@/types/report";
 import { ChevronLeft } from "lucide-react";
@@ -13,7 +14,6 @@ import { useEffect, useState } from "react";
 import FormElementFill from "./form-element-fill";
 import { FormHeaderView } from "./form-header";
 import ResidentSelector from "./tag-personnel";
-import { useReportReducer } from "@/hooks/useReportReducer";
 
 interface FormSubmitProps {
   form: FormResponse;

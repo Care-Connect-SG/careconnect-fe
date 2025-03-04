@@ -1,18 +1,18 @@
-import * as React from "react"
-import { useControllableState } from "@radix-ui/react-use-controllable-state"
-import { DateRange } from "react-day-picker"
+import { useControllableState } from "@radix-ui/react-use-controllable-state";
+import * as React from "react";
+import { DateRange } from "react-day-picker";
 import {
   Options,
   useTimescape as useReactTimescape,
   useTimescapeRange as useReactTimescapeRange,
-} from "timescape/react"
+} from "timescape/react";
 
-export type TimescapeOptions = Omit<Options, "date" | "onChangeDate">
+export type TimescapeOptions = Omit<Options, "date" | "onChangeDate">;
 
 export interface UseTimescapeOptions extends TimescapeOptions {
-  value?: Date | null
-  defaultValue?: Date
-  onValueChange?: (value: Date | null) => void
+  value?: Date | null;
+  defaultValue?: Date;
+  onValueChange?: (value: Date | null) => void;
 }
 
 export const useTimescape = ({
@@ -31,7 +31,7 @@ export const useTimescape = ({
     prop: valueProp,
     defaultProp: defaultValue,
     onChange: onValueChange,
-  })
+  });
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { update, _manager, ...timescape } = useReactTimescape({
@@ -47,52 +47,52 @@ export const useTimescape = ({
     // Partial input does not work with reactive value at the moment.
     // For more information, see https://github.com/dan-lee/timescape/issues/51.
     disallowPartial: true,
-  })
+  });
 
   React.useEffect(() => {
     update((prevOptions) => ({
       ...prevOptions,
       date: !value ? undefined : value,
-    }))
-  }, [value, update])
+    }));
+  }, [value, update]);
 
   React.useEffect(() => {
-    update((prevOptions) => ({ ...prevOptions, digits }))
-  }, [digits, update])
+    update((prevOptions) => ({ ...prevOptions, digits }));
+  }, [digits, update]);
 
   React.useEffect(() => {
-    update((prevOptions) => ({ ...prevOptions, hour12 }))
-  }, [hour12, update])
+    update((prevOptions) => ({ ...prevOptions, hour12 }));
+  }, [hour12, update]);
 
   React.useEffect(() => {
-    update((prevOptions) => ({ ...prevOptions, maxDate }))
-  }, [maxDate, update])
+    update((prevOptions) => ({ ...prevOptions, maxDate }));
+  }, [maxDate, update]);
 
   React.useEffect(() => {
-    update((prevOptions) => ({ ...prevOptions, minDate }))
-  }, [minDate, update])
+    update((prevOptions) => ({ ...prevOptions, minDate }));
+  }, [minDate, update]);
 
   React.useEffect(() => {
-    update((prevOptions) => ({ ...prevOptions, snapToStep }))
-  }, [snapToStep, update])
+    update((prevOptions) => ({ ...prevOptions, snapToStep }));
+  }, [snapToStep, update]);
 
   React.useEffect(() => {
-    update((prevOptions) => ({ ...prevOptions, wheelControl }))
-  }, [wheelControl, update])
+    update((prevOptions) => ({ ...prevOptions, wheelControl }));
+  }, [wheelControl, update]);
 
   React.useEffect(() => {
-    update((prevOptions) => ({ ...prevOptions, wrapAround }))
-  }, [wrapAround, update])
+    update((prevOptions) => ({ ...prevOptions, wrapAround }));
+  }, [wrapAround, update]);
 
-  return timescape
-}
+  return timescape;
+};
 
 export interface UseTimescapeRangeOptions extends TimescapeOptions {
-  value?: DateRange | null
-  defaultValue?: DateRange
-  onValueChange?: (value: DateRange | null) => void
-  from?: TimescapeOptions
-  to?: TimescapeOptions
+  value?: DateRange | null;
+  defaultValue?: DateRange;
+  onValueChange?: (value: DateRange | null) => void;
+  from?: TimescapeOptions;
+  to?: TimescapeOptions;
 }
 
 export const useTimescapeRange = ({
@@ -113,7 +113,7 @@ export const useTimescapeRange = ({
     prop: valueProp,
     defaultProp: defaultValue,
     onChange: onValueChange,
-  })
+  });
 
   const { from, to, ...timescape } = useReactTimescapeRange({
     from: {
@@ -148,117 +148,117 @@ export const useTimescapeRange = ({
       disallowPartial: true,
       ...toOptions,
     },
-  })
+  });
 
   // ----------------------------------------------------------------------------
   // Sync `from`
   // ----------------------------------------------------------------------------
 
-  const { update: fromUpdate, ...fromTimescape } = from
+  const { update: fromUpdate, ...fromTimescape } = from;
 
   React.useEffect(() => {
     fromUpdate((prevOptions) => ({
       ...prevOptions,
       digits: fromOptions.digits ?? digits,
-    }))
-  }, [digits, fromOptions.digits, fromUpdate])
+    }));
+  }, [digits, fromOptions.digits, fromUpdate]);
 
   React.useEffect(() => {
     fromUpdate((prevOptions) => ({
       ...prevOptions,
       hour12: fromOptions.hour12 ?? hour12,
-    }))
-  }, [hour12, fromOptions.hour12, fromUpdate])
+    }));
+  }, [hour12, fromOptions.hour12, fromUpdate]);
 
   React.useEffect(() => {
     fromUpdate((prevOptions) => ({
       ...prevOptions,
       maxDate: fromOptions.maxDate ?? maxDate,
-    }))
-  }, [maxDate, fromOptions.maxDate, fromUpdate])
+    }));
+  }, [maxDate, fromOptions.maxDate, fromUpdate]);
 
   React.useEffect(() => {
     fromUpdate((prevOptions) => ({
       ...prevOptions,
       minDate: fromOptions.minDate ?? minDate,
-    }))
-  }, [minDate, fromOptions.minDate, fromUpdate])
+    }));
+  }, [minDate, fromOptions.minDate, fromUpdate]);
 
   React.useEffect(() => {
     fromUpdate((prevOptions) => ({
       ...prevOptions,
       snapToStep: fromOptions.snapToStep ?? snapToStep,
-    }))
-  }, [snapToStep, fromOptions.snapToStep, fromUpdate])
+    }));
+  }, [snapToStep, fromOptions.snapToStep, fromUpdate]);
 
   React.useEffect(() => {
     fromUpdate((prevOptions) => ({
       ...prevOptions,
       wheelControl: fromOptions.wheelControl ?? wheelControl,
-    }))
-  }, [wheelControl, fromOptions.wheelControl, fromUpdate])
+    }));
+  }, [wheelControl, fromOptions.wheelControl, fromUpdate]);
 
   React.useEffect(() => {
     fromUpdate((prevOptions) => ({
       ...prevOptions,
       wrapAround: fromOptions.wrapAround ?? wrapAround,
-    }))
-  }, [wrapAround, fromOptions.wrapAround, fromUpdate])
+    }));
+  }, [wrapAround, fromOptions.wrapAround, fromUpdate]);
 
   // ----------------------------------------------------------------------------
   // Sync `to`
   // ----------------------------------------------------------------------------
 
-  const { update: toUpdate, ...toTimescape } = to
+  const { update: toUpdate, ...toTimescape } = to;
 
   React.useEffect(() => {
     toUpdate((prevOptions) => ({
       ...prevOptions,
       digits: toOptions.digits ?? digits,
-    }))
-  }, [digits, toOptions.digits, toUpdate])
+    }));
+  }, [digits, toOptions.digits, toUpdate]);
 
   React.useEffect(() => {
     toUpdate((prevOptions) => ({
       ...prevOptions,
       hour12: toOptions.hour12 ?? hour12,
-    }))
-  }, [hour12, toOptions.hour12, toUpdate])
+    }));
+  }, [hour12, toOptions.hour12, toUpdate]);
 
   React.useEffect(() => {
     toUpdate((prevOptions) => ({
       ...prevOptions,
       maxDate: toOptions.maxDate ?? maxDate,
-    }))
-  }, [maxDate, toOptions.maxDate, toUpdate])
+    }));
+  }, [maxDate, toOptions.maxDate, toUpdate]);
 
   React.useEffect(() => {
     toUpdate((prevOptions) => ({
       ...prevOptions,
       minDate: toOptions.minDate ?? minDate,
-    }))
-  }, [minDate, toOptions.minDate, toUpdate])
+    }));
+  }, [minDate, toOptions.minDate, toUpdate]);
 
   React.useEffect(() => {
     toUpdate((prevOptions) => ({
       ...prevOptions,
       snapToStep: toOptions.snapToStep ?? snapToStep,
-    }))
-  }, [snapToStep, toOptions.snapToStep, toUpdate])
+    }));
+  }, [snapToStep, toOptions.snapToStep, toUpdate]);
 
   React.useEffect(() => {
     toUpdate((prevOptions) => ({
       ...prevOptions,
       wheelControl: toOptions.wheelControl ?? wheelControl,
-    }))
-  }, [wheelControl, toOptions.wheelControl, toUpdate])
+    }));
+  }, [wheelControl, toOptions.wheelControl, toUpdate]);
 
   React.useEffect(() => {
     toUpdate((prevOptions) => ({
       ...prevOptions,
       wrapAround: toOptions.wrapAround ?? wrapAround,
-    }))
-  }, [wrapAround, toOptions.wrapAround, toUpdate])
+    }));
+  }, [wrapAround, toOptions.wrapAround, toUpdate]);
 
   // ----------------------------------------------------------------------------
   // Sync `value`
@@ -268,16 +268,16 @@ export const useTimescapeRange = ({
     fromUpdate((prevOptions) => ({
       ...prevOptions,
       date: !value?.from ? undefined : value.from,
-    }))
+    }));
     toUpdate((prevOptions) => ({
       ...prevOptions,
       date: !value?.to ? undefined : value.to,
-    }))
-  }, [value, fromUpdate, toUpdate])
+    }));
+  }, [value, fromUpdate, toUpdate]);
 
   return {
     ...timescape,
     from: fromTimescape,
     to: toTimescape,
-  }
-}
+  };
+};

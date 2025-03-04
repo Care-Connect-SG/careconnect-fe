@@ -1,15 +1,15 @@
-import * as React from "react"
-import { useComposedRefs } from "@radix-ui/react-compose-refs"
-import { Primitive } from "@radix-ui/react-primitive"
+import { useComposedRefs } from "@radix-ui/react-compose-refs";
+import { Primitive } from "@radix-ui/react-primitive";
+import * as React from "react";
 
 import {
-  useTimescapeRange,
   UseTimescapeRangeOptions,
-} from "@/hooks/use-timescape"
+  useTimescapeRange,
+} from "@/hooks/use-timescape";
 
 export type DateTimeRangeFieldContextProps = {
-  disabled?: boolean
-} & ReturnType<typeof useTimescapeRange>
+  disabled?: boolean;
+} & ReturnType<typeof useTimescapeRange>;
 
 const DateTimeRangeFieldContext =
   React.createContext<DateTimeRangeFieldContextProps>({
@@ -23,10 +23,10 @@ const DateTimeRangeFieldContext =
     },
     getRootProps: () => ({ ref: () => null }),
     disabled: false,
-  })
+  });
 
 export const useDateTimeRangeFieldContext = () =>
-  React.useContext(DateTimeRangeFieldContext)
+  React.useContext(DateTimeRangeFieldContext);
 
 export interface DateTimeRangeFieldProps
   extends UseTimescapeRangeOptions,
@@ -34,7 +34,7 @@ export interface DateTimeRangeFieldProps
       React.ComponentPropsWithoutRef<typeof Primitive.div>,
       "value" | "defaultValue"
     > {
-  disabled?: boolean
+  disabled?: boolean;
 }
 
 export const DateTimeRangeField = React.forwardRef<
@@ -58,7 +58,7 @@ export const DateTimeRangeField = React.forwardRef<
       to,
       ...props
     },
-    ref
+    ref,
   ) => {
     const timescape = useTimescapeRange({
       value,
@@ -73,11 +73,11 @@ export const DateTimeRangeField = React.forwardRef<
       wrapAround,
       from,
       to,
-    })
+    });
 
-    const { ref: rootRef, ...rootProps } = timescape.getRootProps()
+    const { ref: rootRef, ...rootProps } = timescape.getRootProps();
 
-    const composedRefs = useComposedRefs(ref, (node) => rootRef(node)!)
+    const composedRefs = useComposedRefs(ref, (node) => rootRef(node)!);
 
     return (
       <DateTimeRangeFieldContext.Provider value={{ ...timescape, disabled }}>
@@ -88,16 +88,16 @@ export const DateTimeRangeField = React.forwardRef<
           {...props}
         />
       </DateTimeRangeFieldContext.Provider>
-    )
-  }
-)
-DateTimeRangeField.displayName = "DateTimeRangeField"
+    );
+  },
+);
+DateTimeRangeField.displayName = "DateTimeRangeField";
 
 export const DateTimeRangeFieldSeparator = React.forwardRef<
   React.ElementRef<typeof Primitive.span>,
   React.ComponentPropsWithoutRef<typeof Primitive.span>
 >((props, ref) => {
-  const { disabled } = useDateTimeRangeFieldContext()
+  const { disabled } = useDateTimeRangeFieldContext();
 
   return (
     <Primitive.span
@@ -106,11 +106,11 @@ export const DateTimeRangeFieldSeparator = React.forwardRef<
       data-disabled={disabled}
       {...props}
     />
-  )
-})
-DateTimeRangeFieldSeparator.displayName = "DateTimeRangeFieldSeparator"
+  );
+});
+DateTimeRangeFieldSeparator.displayName = "DateTimeRangeFieldSeparator";
 
-const DateTimeRangeFieldFromContext = React.createContext(false)
+const DateTimeRangeFieldFromContext = React.createContext(false);
 
 export const DateTimeRangeFieldFrom = React.forwardRef<
   React.ElementRef<typeof Primitive.div>,
@@ -119,10 +119,10 @@ export const DateTimeRangeFieldFrom = React.forwardRef<
   <DateTimeRangeFieldFromContext.Provider value={true}>
     <Primitive.div ref={ref} {...props} />
   </DateTimeRangeFieldFromContext.Provider>
-))
-DateTimeRangeFieldFrom.displayName = "DateTimeRangeFieldFrom"
+));
+DateTimeRangeFieldFrom.displayName = "DateTimeRangeFieldFrom";
 
-const DateTimeRangeFieldToContext = React.createContext(false)
+const DateTimeRangeFieldToContext = React.createContext(false);
 
 export const DateTimeRangeFieldTo = React.forwardRef<
   React.ElementRef<typeof Primitive.div>,
@@ -131,35 +131,35 @@ export const DateTimeRangeFieldTo = React.forwardRef<
   <DateTimeRangeFieldToContext.Provider value={true}>
     <Primitive.div ref={ref} {...props} />
   </DateTimeRangeFieldToContext.Provider>
-))
-DateTimeRangeFieldTo.displayName = "DateTimeRangeFieldTo"
+));
+DateTimeRangeFieldTo.displayName = "DateTimeRangeFieldTo";
 
 const useDateTimeFieldSegmentContext = () => {
-  const isFrom = React.useContext(DateTimeRangeFieldFromContext)
-  const isTo = React.useContext(DateTimeRangeFieldToContext)
-  const { disabled, from, to } = useDateTimeRangeFieldContext()
+  const isFrom = React.useContext(DateTimeRangeFieldFromContext);
+  const isTo = React.useContext(DateTimeRangeFieldToContext);
+  const { disabled, from, to } = useDateTimeRangeFieldContext();
 
   if (!isFrom && !isTo) {
     throw new Error(
-      "useDateTimeFieldSegmentContext should be used within <DateTimeRangeFieldFrom> or <DateTimeRangeFieldTo> components"
-    )
+      "useDateTimeFieldSegmentContext should be used within <DateTimeRangeFieldFrom> or <DateTimeRangeFieldTo> components",
+    );
   }
 
   return {
     ...(isFrom ? from : to),
     disabled,
-  }
-}
+  };
+};
 
 export const DateTimeRangeFieldYears = React.forwardRef<
   React.ElementRef<typeof Primitive.input>,
   React.ComponentPropsWithoutRef<typeof Primitive.input>
 >(({ disabled: disabledProp, ...props }, ref) => {
-  const { getInputProps, disabled } = useDateTimeFieldSegmentContext()
+  const { getInputProps, disabled } = useDateTimeFieldSegmentContext();
 
-  const { ref: inputRef, ...inputProps } = getInputProps("years")
+  const { ref: inputRef, ...inputProps } = getInputProps("years");
 
-  const composedRefs = useComposedRefs(ref, inputRef)
+  const composedRefs = useComposedRefs(ref, inputRef);
 
   return (
     <Primitive.input
@@ -168,19 +168,19 @@ export const DateTimeRangeFieldYears = React.forwardRef<
       disabled={disabled || disabledProp}
       {...props}
     />
-  )
-})
-DateTimeRangeFieldYears.displayName = "DateTimeRangeFieldYears"
+  );
+});
+DateTimeRangeFieldYears.displayName = "DateTimeRangeFieldYears";
 
 export const DateTimeRangeFieldMonths = React.forwardRef<
   React.ElementRef<typeof Primitive.input>,
   React.ComponentPropsWithoutRef<typeof Primitive.input>
 >(({ disabled: disabledProp, ...props }, ref) => {
-  const { getInputProps, disabled } = useDateTimeFieldSegmentContext()
+  const { getInputProps, disabled } = useDateTimeFieldSegmentContext();
 
-  const { ref: inputRef, ...inputProps } = getInputProps("months")
+  const { ref: inputRef, ...inputProps } = getInputProps("months");
 
-  const composedRefs = useComposedRefs(ref, inputRef)
+  const composedRefs = useComposedRefs(ref, inputRef);
 
   return (
     <Primitive.input
@@ -189,19 +189,19 @@ export const DateTimeRangeFieldMonths = React.forwardRef<
       disabled={disabled || disabledProp}
       {...props}
     />
-  )
-})
-DateTimeRangeFieldMonths.displayName = "DateTimeRangeFieldMonths"
+  );
+});
+DateTimeRangeFieldMonths.displayName = "DateTimeRangeFieldMonths";
 
 export const DateTimeRangeFieldDays = React.forwardRef<
   React.ElementRef<typeof Primitive.input>,
   React.ComponentPropsWithoutRef<typeof Primitive.input>
 >(({ disabled: disabledProp, ...props }, ref) => {
-  const { getInputProps, disabled } = useDateTimeFieldSegmentContext()
+  const { getInputProps, disabled } = useDateTimeFieldSegmentContext();
 
-  const { ref: inputRef, ...inputProps } = getInputProps("days")
+  const { ref: inputRef, ...inputProps } = getInputProps("days");
 
-  const composedRefs = useComposedRefs(ref, inputRef)
+  const composedRefs = useComposedRefs(ref, inputRef);
 
   return (
     <Primitive.input
@@ -210,19 +210,19 @@ export const DateTimeRangeFieldDays = React.forwardRef<
       disabled={disabled || disabledProp}
       {...props}
     />
-  )
-})
-DateTimeRangeFieldDays.displayName = "DateTimeRangeFieldDays"
+  );
+});
+DateTimeRangeFieldDays.displayName = "DateTimeRangeFieldDays";
 
 export const DateTimeRangeFieldHours = React.forwardRef<
   React.ElementRef<typeof Primitive.input>,
   React.ComponentPropsWithoutRef<typeof Primitive.input>
 >(({ disabled: disabledProp, ...props }, ref) => {
-  const { getInputProps, disabled } = useDateTimeFieldSegmentContext()
+  const { getInputProps, disabled } = useDateTimeFieldSegmentContext();
 
-  const { ref: inputRef, ...inputProps } = getInputProps("hours")
+  const { ref: inputRef, ...inputProps } = getInputProps("hours");
 
-  const composedRefs = useComposedRefs(ref, inputRef)
+  const composedRefs = useComposedRefs(ref, inputRef);
 
   return (
     <Primitive.input
@@ -231,19 +231,19 @@ export const DateTimeRangeFieldHours = React.forwardRef<
       disabled={disabled || disabledProp}
       {...props}
     />
-  )
-})
-DateTimeRangeFieldHours.displayName = "DateTimeRangeFieldHours"
+  );
+});
+DateTimeRangeFieldHours.displayName = "DateTimeRangeFieldHours";
 
 export const DateTimeRangeFieldMinutes = React.forwardRef<
   React.ElementRef<typeof Primitive.input>,
   React.ComponentPropsWithoutRef<typeof Primitive.input>
 >(({ disabled: disabledProp, ...props }, ref) => {
-  const { getInputProps, disabled } = useDateTimeFieldSegmentContext()
+  const { getInputProps, disabled } = useDateTimeFieldSegmentContext();
 
-  const { ref: inputRef, ...inputProps } = getInputProps("minutes")
+  const { ref: inputRef, ...inputProps } = getInputProps("minutes");
 
-  const composedRefs = useComposedRefs(ref, inputRef)
+  const composedRefs = useComposedRefs(ref, inputRef);
 
   return (
     <Primitive.input
@@ -252,19 +252,19 @@ export const DateTimeRangeFieldMinutes = React.forwardRef<
       disabled={disabled || disabledProp}
       {...props}
     />
-  )
-})
-DateTimeRangeFieldMinutes.displayName = "DateTimeRangeFieldMinutes"
+  );
+});
+DateTimeRangeFieldMinutes.displayName = "DateTimeRangeFieldMinutes";
 
 export const DateTimeRangeFieldSeconds = React.forwardRef<
   React.ElementRef<typeof Primitive.input>,
   React.ComponentPropsWithoutRef<typeof Primitive.input>
 >(({ disabled: disabledProp, ...props }, ref) => {
-  const { getInputProps, disabled } = useDateTimeFieldSegmentContext()
+  const { getInputProps, disabled } = useDateTimeFieldSegmentContext();
 
-  const { ref: inputRef, ...inputProps } = getInputProps("seconds")
+  const { ref: inputRef, ...inputProps } = getInputProps("seconds");
 
-  const composedRefs = useComposedRefs(ref, inputRef)
+  const composedRefs = useComposedRefs(ref, inputRef);
 
   return (
     <Primitive.input
@@ -273,22 +273,22 @@ export const DateTimeRangeFieldSeconds = React.forwardRef<
       disabled={disabled || disabledProp}
       {...props}
     />
-  )
-})
-DateTimeRangeFieldSeconds.displayName = "DateTimeRangeFieldSeconds"
+  );
+});
+DateTimeRangeFieldSeconds.displayName = "DateTimeRangeFieldSeconds";
 
 export const DateTimeRangeFieldAmPm = React.forwardRef<
   React.ElementRef<typeof Primitive.input>,
   React.ComponentPropsWithoutRef<typeof Primitive.input>
 >(({ disabled: disabledProp, ...props }, ref) => {
-  const { getInputProps, options, disabled } = useDateTimeFieldSegmentContext()
+  const { getInputProps, options, disabled } = useDateTimeFieldSegmentContext();
 
-  const { ref: inputRef, ...inputProps } = getInputProps("am/pm")
+  const { ref: inputRef, ...inputProps } = getInputProps("am/pm");
 
-  const composedRefs = useComposedRefs(ref, inputRef)
+  const composedRefs = useComposedRefs(ref, inputRef);
 
   if (!options?.hour12) {
-    return null
+    return null;
   }
 
   return (
@@ -298,21 +298,21 @@ export const DateTimeRangeFieldAmPm = React.forwardRef<
       disabled={disabled || disabledProp}
       {...props}
     />
-  )
-})
-DateTimeRangeFieldAmPm.displayName = "DateTimeRangeFieldAmPm"
+  );
+});
+DateTimeRangeFieldAmPm.displayName = "DateTimeRangeFieldAmPm";
 
-const Root = DateTimeRangeField
-const From = DateTimeRangeFieldFrom
-const To = DateTimeRangeFieldTo
-const Separator = DateTimeRangeFieldSeparator
-const Years = DateTimeRangeFieldYears
-const Months = DateTimeRangeFieldMonths
-const Days = DateTimeRangeFieldDays
-const Hours = DateTimeRangeFieldHours
-const Minutes = DateTimeRangeFieldMinutes
-const Seconds = DateTimeRangeFieldSeconds
-const AmPm = DateTimeRangeFieldAmPm
+const Root = DateTimeRangeField;
+const From = DateTimeRangeFieldFrom;
+const To = DateTimeRangeFieldTo;
+const Separator = DateTimeRangeFieldSeparator;
+const Years = DateTimeRangeFieldYears;
+const Months = DateTimeRangeFieldMonths;
+const Days = DateTimeRangeFieldDays;
+const Hours = DateTimeRangeFieldHours;
+const Minutes = DateTimeRangeFieldMinutes;
+const Seconds = DateTimeRangeFieldSeconds;
+const AmPm = DateTimeRangeFieldAmPm;
 
 export {
   Root,
@@ -326,4 +326,4 @@ export {
   Minutes,
   Seconds,
   AmPm,
-}
+};

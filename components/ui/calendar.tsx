@@ -1,20 +1,25 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react"
-import { DayPicker, UI, useDayPicker } from "react-day-picker"
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+} from "lucide-react";
+import * as React from "react";
+import { DayPicker, UI, useDayPicker } from "react-day-picker";
 
-import { cn } from "@/lib/utils"
-import { buttonVariants } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
-export type CalendarProps = React.ComponentProps<typeof DayPicker>
+export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
 function Calendar({
   captionLayout = "label",
@@ -31,16 +36,16 @@ function Calendar({
       classNames={{
         button_next: cn(
           buttonVariants({ variant: "outline" }),
-          "size-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+          "size-7 bg-transparent p-0 opacity-50 hover:opacity-100",
         ),
         button_previous: cn(
           buttonVariants({ variant: "outline" }),
-          "size-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+          "size-7 bg-transparent p-0 opacity-50 hover:opacity-100",
         ),
         caption_label: "text-sm font-medium aria-hidden:hidden",
         day_button: cn(
           buttonVariants({ variant: "ghost" }),
-          "size-9 font-normal"
+          "size-9 font-normal",
         ),
         day: "rounded-md p-0 text-center text-sm aria-selected:bg-accent",
         disabled: "*:text-muted-foreground *:opacity-50",
@@ -51,7 +56,7 @@ function Calendar({
         month_grid: "w-full border-collapse space-y-1",
         month: cn(
           "space-y-4",
-          captionLayout !== "label" && !props.hideNavigation && "mt-9"
+          captionLayout !== "label" && !props.hideNavigation && "mt-9",
         ),
         months:
           "relative flex flex-col gap-y-4 sm:flex-row sm:gap-x-4 sm:gap-y-0",
@@ -74,14 +79,14 @@ function Calendar({
         Chevron: ({ orientation }) => {
           switch (orientation) {
             case "up":
-              return <ChevronUp className="size-4" />
+              return <ChevronUp className="size-4" />;
             case "down":
-              return <ChevronDown className="size-4" />
+              return <ChevronDown className="size-4" />;
             case "left":
-              return <ChevronLeft className="size-4" />
+              return <ChevronLeft className="size-4" />;
             case "right":
             default:
-              return <ChevronRight className="size-4" />
+              return <ChevronRight className="size-4" />;
           }
         },
         Dropdown: ({
@@ -92,7 +97,7 @@ function Calendar({
           options,
           className,
         }) => {
-          const { classNames } = useDayPicker()
+          const { classNames } = useDayPicker();
 
           return (
             <Select
@@ -122,13 +127,13 @@ function Calendar({
                 ))}
               </SelectContent>
             </Select>
-          )
+          );
         },
       }}
       {...props}
     />
-  )
+  );
 }
-Calendar.displayName = "Calendar"
+Calendar.displayName = "Calendar";
 
-export { Calendar }
+export { Calendar };

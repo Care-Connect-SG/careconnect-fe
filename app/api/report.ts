@@ -1,4 +1,9 @@
-import { CaregiverTag, ReportCreate, ReportResponse, ResidentTag } from "@/types/report";
+import {
+  CaregiverTag,
+  ReportCreate,
+  ReportResponse,
+  ResidentTag,
+} from "@/types/report";
 
 export const getReports = async (
   status?: string,
@@ -30,7 +35,9 @@ export const getReports = async (
   }
 };
 
-export const createReport = async (reportData: ReportCreate): Promise<string> => {
+export const createReport = async (
+  reportData: ReportCreate,
+): Promise<string> => {
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/incident/reports`,
@@ -161,7 +168,6 @@ export const deleteReport = async (reportId: string): Promise<void> => {
   }
 };
 
-
 export const getResidentTags = async (
   search_key?: string,
 ): Promise<ResidentTag[]> => {
@@ -181,7 +187,9 @@ export const getResidentTags = async (
     });
 
     if (!response.ok) {
-      throw new Error(`Error fetching residents for tagging: ${response.statusText}`);
+      throw new Error(
+        `Error fetching residents for tagging: ${response.statusText}`,
+      );
     }
 
     const data = await response.json();
@@ -191,7 +199,6 @@ export const getResidentTags = async (
     throw error;
   }
 };
-
 
 export const getCaregiverTags = async (
   search_key?: string,
@@ -212,7 +219,9 @@ export const getCaregiverTags = async (
     });
 
     if (!response.ok) {
-      throw new Error(`Error fetching caregivers for tagging: ${response.statusText}`);
+      throw new Error(
+        `Error fetching caregivers for tagging: ${response.statusText}`,
+      );
     }
 
     const data = await response.json();

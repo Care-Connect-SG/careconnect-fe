@@ -1,28 +1,28 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { CalendarIcon, X } from "lucide-react"
+import { CalendarIcon, X } from "lucide-react";
+import * as React from "react";
 
-import { cn } from "@/lib/utils"
-import { buttonVariants } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
+import { buttonVariants } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   DateFieldDays,
   DateFieldMonths,
   DateFieldSeparator,
   DateFieldYears,
-} from "@/components/ui/date-field"
-import * as DatePickerPrimitive from "@/components/ui/date-picker-primitive"
+} from "@/components/ui/date-field";
+import * as DatePickerPrimitive from "@/components/ui/date-picker-primitive";
 import {
   InputBase,
   InputBaseAdornment,
   InputBaseAdornmentButton,
   InputBaseFlexWrapper,
-} from "@/components/ui/input-base"
+} from "@/components/ui/input-base";
+import { cn } from "@/lib/utils";
 
-export const DatePicker = DatePickerPrimitive.Root
+export const DatePicker = DatePickerPrimitive.Root;
 
-export const DatePickerAnchor = DatePickerPrimitive.Anchor
+export const DatePickerAnchor = DatePickerPrimitive.Anchor;
 
 const DatePickerInputBase = React.forwardRef<
   React.ElementRef<typeof InputBase>,
@@ -48,14 +48,14 @@ const DatePickerInputBase = React.forwardRef<
       </InputBaseAdornment>
     </InputBase>
   </DatePickerAnchor>
-))
-DatePickerInputBase.displayName = "DatePickerInputBase"
+));
+DatePickerInputBase.displayName = "DatePickerInputBase";
 
 const DatePickerDateRangeField = React.forwardRef<
   React.ElementRef<typeof DatePickerPrimitive.DateRangeField>,
   React.ComponentPropsWithoutRef<typeof DatePickerPrimitive.DateRangeField>
 >(({ disabled: disabledProp, className, ...props }, ref) => {
-  const { disabled } = DatePickerPrimitive.useDatePickerContext()
+  const { disabled } = DatePickerPrimitive.useDatePickerContext();
 
   return (
     <DatePickerPrimitive.DateRangeField
@@ -104,15 +104,15 @@ const DatePickerDateRangeField = React.forwardRef<
         </DatePickerPrimitive.DateRangeFieldDays>
       </DatePickerPrimitive.DateRangeFieldTo>
     </DatePickerPrimitive.DateRangeField>
-  )
-})
-DatePickerDateRangeField.displayName = "DatePickerDateRangeField"
+  );
+});
+DatePickerDateRangeField.displayName = "DatePickerDateRangeField";
 
 const DatePickerDateField = React.forwardRef<
   React.ElementRef<typeof DatePickerPrimitive.DateField>,
   React.ComponentPropsWithoutRef<typeof DatePickerPrimitive.DateField>
 >(({ disabled: disabledProp, className, ...props }, ref) => {
-  const { disabled } = DatePickerPrimitive.useDatePickerContext()
+  const { disabled } = DatePickerPrimitive.useDatePickerContext();
 
   return (
     <DatePickerPrimitive.DateField
@@ -137,9 +137,9 @@ const DatePickerDateField = React.forwardRef<
         <DateFieldDays />
       </DatePickerPrimitive.DateFieldDays>
     </DatePickerPrimitive.DateField>
-  )
-})
-DatePickerDateField.displayName = "DatePickerDateField"
+  );
+});
+DatePickerDateField.displayName = "DatePickerDateField";
 
 export const DatePickerInput = React.forwardRef<
   React.ElementRef<
@@ -149,7 +149,7 @@ export const DatePickerInput = React.forwardRef<
     typeof DatePickerDateField | typeof DatePickerDateRangeField
   >
 >((props, ref) => {
-  const { mode } = DatePickerPrimitive.useDatePickerContext()
+  const { mode } = DatePickerPrimitive.useDatePickerContext();
 
   return (
     <DatePickerInputBase>
@@ -169,9 +169,9 @@ export const DatePickerInput = React.forwardRef<
         />
       )}
     </DatePickerInputBase>
-  )
-})
-DatePickerInput.displayName = "DatePickerInput"
+  );
+});
+DatePickerInput.displayName = "DatePickerInput";
 
 export const DatePickerTrigger = React.forwardRef<
   React.ElementRef<typeof DatePickerPrimitive.Trigger>,
@@ -182,7 +182,7 @@ export const DatePickerTrigger = React.forwardRef<
     className={cn(
       buttonVariants({ variant: "outline" }),
       "cursor-pointer font-normal",
-      className
+      className,
     )}
   >
     <DatePickerPrimitive.Trigger ref={ref} {...props}>
@@ -192,8 +192,8 @@ export const DatePickerTrigger = React.forwardRef<
       <InputBaseFlexWrapper>{children}</InputBaseFlexWrapper>
     </DatePickerPrimitive.Trigger>
   </InputBase>
-))
-DatePickerTrigger.displayName = "DatePickerTrigger"
+));
+DatePickerTrigger.displayName = "DatePickerTrigger";
 
 export const DatePickerValue = React.forwardRef<
   React.ElementRef<typeof DatePickerPrimitive.Value>,
@@ -204,8 +204,8 @@ export const DatePickerValue = React.forwardRef<
     className={cn("data-[placeholder]:text-muted-foreground/40", className)}
     {...props}
   />
-))
-DatePickerValue.displayName = "DatePickerValue"
+));
+DatePickerValue.displayName = "DatePickerValue";
 
 export const DatePickerContent = React.forwardRef<
   React.ElementRef<typeof DatePickerPrimitive.Content>,
@@ -218,18 +218,18 @@ export const DatePickerContent = React.forwardRef<
       alignOffset={alignOffset}
       className={cn(
         "relative z-50 max-h-96 w-auto overflow-hidden rounded-md border bg-popover p-0 text-popover-foreground shadow-md data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-        className
+        className,
       )}
       {...props}
     />
   </DatePickerPrimitive.Portal>
-))
-DatePickerContent.displayName = "DatePickerContent"
+));
+DatePickerContent.displayName = "DatePickerContent";
 
 export const DatePickerCalendar = (
-  props: React.ComponentPropsWithoutRef<typeof Calendar>
+  props: React.ComponentPropsWithoutRef<typeof Calendar>,
 ) => (
   <DatePickerPrimitive.Calendar asChild>
     <Calendar {...props} />
   </DatePickerPrimitive.Calendar>
-)
+);

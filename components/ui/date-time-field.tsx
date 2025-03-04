@@ -1,12 +1,12 @@
-import * as React from "react"
+import * as React from "react";
 
-import { cn } from "@/lib/utils"
-import * as DateTimeFieldPrimitive from "@/components/ui/date-time-field-primitive"
+import * as DateTimeFieldPrimitive from "@/components/ui/date-time-field-primitive";
 import {
   InputBase,
   InputBaseControl,
   InputBaseInput,
-} from "@/components/ui/input-base"
+} from "@/components/ui/input-base";
+import { cn } from "@/lib/utils";
 
 export const DateTimeField = React.forwardRef<
   React.ElementRef<typeof DateTimeFieldPrimitive.Root>,
@@ -15,8 +15,8 @@ export const DateTimeField = React.forwardRef<
   <DateTimeFieldPrimitive.Root ref={ref} asChild {...props}>
     <InputBase className={cn("gap-0", className)}>{children}</InputBase>
   </DateTimeFieldPrimitive.Root>
-))
-DateTimeField.displayName = "DateTimeField"
+));
+DateTimeField.displayName = "DateTimeField";
 
 export const DateTimeFieldSeparator = React.forwardRef<
   React.ElementRef<typeof DateTimeFieldPrimitive.Separator>,
@@ -27,8 +27,8 @@ export const DateTimeFieldSeparator = React.forwardRef<
     className={cn("text-muted-foreground", className)}
     {...props}
   />
-))
-DateTimeFieldSeparator.displayName = "DateTimeFieldSeparator"
+));
+DateTimeFieldSeparator.displayName = "DateTimeFieldSeparator";
 
 export const DateTimeFieldYears = React.forwardRef<
   React.ElementRef<typeof DateTimeFieldPrimitive.DateTimeFieldYears>,
@@ -46,13 +46,13 @@ export const DateTimeFieldYears = React.forwardRef<
       <InputBaseInput
         className={cn(
           "box-content h-fit max-w-[calc(4ch_+_0.5rem)] flex-initial rounded-sm px-0.5 tabular-nums focus:bg-primary focus:text-primary-foreground focus:placeholder:text-primary-foreground",
-          className
+          className,
         )}
       />
     </DateTimeFieldPrimitive.DateTimeFieldYears>
   </InputBaseControl>
-))
-DateTimeFieldYears.displayName = "DateTimeFieldYears"
+));
+DateTimeFieldYears.displayName = "DateTimeFieldYears";
 
 export const DateTimeFieldMonths = React.forwardRef<
   React.ElementRef<typeof DateTimeFieldPrimitive.DateTimeFieldMonths>,
@@ -70,13 +70,13 @@ export const DateTimeFieldMonths = React.forwardRef<
       <InputBaseInput
         className={cn(
           "box-content h-fit max-w-[calc(2ch_+_0.5rem)] flex-initial rounded-sm px-0.5 tabular-nums focus:bg-primary focus:text-primary-foreground focus:placeholder:text-primary-foreground",
-          className
+          className,
         )}
       />
     </DateTimeFieldPrimitive.DateTimeFieldMonths>
   </InputBaseControl>
-))
-DateTimeFieldMonths.displayName = "DateTimeFieldMonths"
+));
+DateTimeFieldMonths.displayName = "DateTimeFieldMonths";
 
 export const DateTimeFieldDays = React.forwardRef<
   React.ElementRef<typeof DateTimeFieldPrimitive.DateTimeFieldDays>,
@@ -94,13 +94,13 @@ export const DateTimeFieldDays = React.forwardRef<
       <InputBaseInput
         className={cn(
           "box-content h-fit max-w-[calc(2ch_+_0.5rem)] flex-initial rounded-sm px-0.5 tabular-nums focus:bg-primary focus:text-primary-foreground focus:placeholder:text-primary-foreground",
-          className
+          className,
         )}
       />
     </DateTimeFieldPrimitive.DateTimeFieldDays>
   </InputBaseControl>
-))
-DateTimeFieldDays.displayName = "DateTimeFieldDays"
+));
+DateTimeFieldDays.displayName = "DateTimeFieldDays";
 
 export const DateTimeFieldHours = React.forwardRef<
   React.ElementRef<typeof DateTimeFieldPrimitive.DateTimeFieldHours>,
@@ -118,13 +118,13 @@ export const DateTimeFieldHours = React.forwardRef<
       <InputBaseInput
         className={cn(
           "box-content h-fit max-w-[calc(2ch_+_0.5rem)] flex-initial rounded-sm px-0.5 tabular-nums focus:bg-primary focus:text-primary-foreground focus:placeholder:text-primary-foreground",
-          className
+          className,
         )}
       />
     </DateTimeFieldPrimitive.DateTimeFieldHours>
   </InputBaseControl>
-))
-DateTimeFieldHours.displayName = "DateTimeFieldHours"
+));
+DateTimeFieldHours.displayName = "DateTimeFieldHours";
 
 export const DateTimeFieldMinutes = React.forwardRef<
   React.ElementRef<typeof DateTimeFieldPrimitive.DateTimeFieldMinutes>,
@@ -142,13 +142,13 @@ export const DateTimeFieldMinutes = React.forwardRef<
       <InputBaseInput
         className={cn(
           "box-content h-fit max-w-[calc(2ch_+_0.5rem)] flex-initial rounded-sm px-0.5 tabular-nums focus:bg-primary focus:text-primary-foreground focus:placeholder:text-primary-foreground",
-          className
+          className,
         )}
       />
     </DateTimeFieldPrimitive.DateTimeFieldMinutes>
   </InputBaseControl>
-))
-DateTimeFieldMinutes.displayName = "DateTimeFieldMinutes"
+));
+DateTimeFieldMinutes.displayName = "DateTimeFieldMinutes";
 
 export const DateTimeFieldSeconds = React.forwardRef<
   React.ElementRef<typeof DateTimeFieldPrimitive.DateTimeFieldSeconds>,
@@ -166,13 +166,13 @@ export const DateTimeFieldSeconds = React.forwardRef<
       <InputBaseInput
         className={cn(
           "box-content h-fit max-w-[calc(2ch_+_0.5rem)] flex-initial rounded-sm px-0.5 tabular-nums focus:bg-primary focus:text-primary-foreground focus:placeholder:text-primary-foreground",
-          className
+          className,
         )}
       />
     </DateTimeFieldPrimitive.DateTimeFieldSeconds>
   </InputBaseControl>
-))
-DateTimeFieldSeconds.displayName = "DateTimeFieldSeconds"
+));
+DateTimeFieldSeconds.displayName = "DateTimeFieldSeconds";
 
 export const DateTimeFieldAmPm = React.forwardRef<
   React.ElementRef<typeof DateTimeFieldPrimitive.DateTimeFieldAmPm>,
@@ -190,10 +190,10 @@ export const DateTimeFieldAmPm = React.forwardRef<
       <InputBaseInput
         className={cn(
           "box-content h-fit max-w-[calc(2ch_+_0.5rem)] flex-initial rounded-sm px-0.5 text-center focus:bg-primary focus:text-primary-foreground focus:placeholder:text-primary-foreground",
-          className
+          className,
         )}
       />
     </DateTimeFieldPrimitive.DateTimeFieldAmPm>
   </InputBaseControl>
-))
-DateTimeFieldAmPm.displayName = "DateTimeFieldAmPm"
+));
+DateTimeFieldAmPm.displayName = "DateTimeFieldAmPm";

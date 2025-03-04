@@ -3,6 +3,7 @@
 import { createReport } from "@/app/api/report";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import { FormElementData } from "@/hooks/useFormReducer";
 import { FormResponse } from "@/types/form";
 import { ReportBase, ReportSectionContent } from "@/types/report";
 import { ChevronLeft } from "lucide-react";
@@ -11,7 +12,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import FormElementFill from "./form-element-fill";
 import { FormHeaderView } from "./form-header";
-import { FormElementData } from "@/hooks/useFormReducer";
 
 interface FormSubmitProps {
   form: FormResponse;
@@ -24,7 +24,7 @@ export default function FormSubmit({ form }: FormSubmitProps) {
   const router = useRouter();
 
   useEffect(() => {
-    const blankReport = form.json_content.map((element : FormElementData) => ({
+    const blankReport = form.json_content.map((element: FormElementData) => ({
       form_element_id: element.element_id,
       input: null,
     }));
@@ -42,7 +42,9 @@ export default function FormSubmit({ form }: FormSubmitProps) {
   };
 
   const requiresInput = (id: string) => {
-    const formElement = form.json_content.find((element : FormElementData) => element.element_id === id);
+    const formElement = form.json_content.find(
+      (element: FormElementData) => element.element_id === id,
+    );
     return formElement?.required;
   };
 

@@ -38,7 +38,7 @@ const TaskDetailHeader = ({ task }: { task: Task }) => {
               <User className="w-4 h-4 text-gray-400 mr-2" />
               <span className="text-sm text-gray-600">Assigned:</span>
               <span className="ml-1 text-sm font-medium text-blue-600">
-                {task.assigned_to?.join(", ") || "Unassigned"}
+                {task.assigned_to || "Unassigned"}
               </span>
             </div>
             <div className="flex items-center">

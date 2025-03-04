@@ -23,6 +23,15 @@ export default function FormCardPublished({
 }: FormCardPublishedProps) {
   const router = useRouter();
 
+  const formatDate = (isoDate: string): string => {
+    const date = new Date(isoDate);
+    return new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).format(date);
+  };
+
   return (
     <Card className="relative w-md max-w-md h-[14rem] overflow-hidden border-l-4 border-l-blue-500">
       <CardHeader
@@ -31,7 +40,7 @@ export default function FormCardPublished({
         <div>
           <CardTitle className="text-base font-bold">{title}</CardTitle>
           <p className="hidden sm:block text-xs text-muted-foreground mt-1">
-            Created at {created_date}
+            Created at {formatDate(created_date)}
           </p>
         </div>
       </CardHeader>

@@ -51,7 +51,7 @@ export default function FormCard({
     >
       <Link href={`/dashboard/form/admin/view/${id}`}>
         <CardHeader
-          className={`flex flex-row items-start justify-between space-y-0`}
+          className={`max-h-24 flex flex-row items-start justify-between space-y-0 my-0`}
         >
           <div>
             <CardTitle className="text-base font-bold">{title}</CardTitle>
@@ -70,7 +70,7 @@ export default function FormCard({
           </Badge>
         </CardHeader>
         <CardContent>
-          <p className="hidden min-h-4 max-h-4 md:block text-xs truncate">{description}</p>
+          <p className="hidden h-4 md:block text-xs truncate">{description}</p>
         </CardContent>
       </Link>
       <CardFooter className="flex justify-end gap-4 py-2 px-6 text-semibold text-gray-400">
@@ -82,7 +82,7 @@ export default function FormCard({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      router.push(`form/admin/build?id=${id}`);
+                      router.push(`/dashboard/form/admin/build?id=${id}`);
                     }}
                   >
                     <FilePenLine className="h-4 w-4 hover:text-gray-600" />

@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useBreadcrumb } from "@/context/breadcrumb-context";
 import { getFormById } from "@/app/api/form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,19 +12,36 @@ import { notFound } from "next/navigation";
 import FormElementView from "../../_components/form-element-view";
 import { FormHeaderView } from "../../_components/form-header";
 
-export default async function ViewForm({
-  params,
-}: { params: Promise<{ id: string }> }) {
-  const formId = (await params).id;
-  let form: FormResponse | null = null;
+export default function ViewForm({ params }: { params: Promise<{ id: string }> }) {
+  const [formId, setFormId] = useState<string | null>(null);
+  const [form, setForm] = useState<FormResponse | null>(null);
+  const { setPageName } = useBreadcrumb();
 
-  try {
-    form = await getFormById(formId);
-    if (!form) notFound();
-    //TODO: Find a better way to handle errors
-  } catch (error) {
-    notFound();
-    //TODO: Find a better way to handle errors
+  useEffect(() => {
+    params.then((resolvedParams) => {
+      setFormId(resolvedParams.id);
+    });
+  }, [params]);
+
+  useEffect(() => {
+    if (!formId) return;
+
+    const fetchForm = async () => {
+      try {
+        const fetchedForm = await getFormById(formId);
+        if (!fetchedForm) notFound();
+        setForm(fetchedForm);
+        setPageName(fetchedForm.title);
+      } catch (error) {
+        notFound();
+      }
+    };
+
+    fetchForm();
+  }, [formId, setPageName]);
+
+  if (!form) {
+    return <p>Loading form...</p>;
   }
 
   return (

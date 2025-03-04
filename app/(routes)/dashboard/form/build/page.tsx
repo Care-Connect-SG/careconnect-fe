@@ -17,6 +17,7 @@ import { Suspense, useEffect, useState } from "react";
 import FormElement from "../_components/form-element";
 import FormElementBar from "../_components/form-element-bar";
 import { FormHeaderEdit } from "../_components/form-header";
+import { useBreadcrumb } from "@/context/breadcrumb-context";
 
 export default function CreateFormWrapper() {
   return (
@@ -31,6 +32,7 @@ function CreateForm() {
   const searchParams = useSearchParams();
   const formId = searchParams.get("id");
   const isEditing = !!formId;
+  const { setPageName } = useBreadcrumb();
 
   const [state, dispatch] = useFormReducer();
   const [loading, setLoading] = useState<boolean>(isEditing);
@@ -51,8 +53,11 @@ function CreateForm() {
           router.replace("/404");
         })
         .finally(() => setLoading(false));
+    } else {
+      setPageName("Create Form");
     }
-  }, [formId, isEditing, dispatch, router]);
+  }, [formId, isEditing, dispatch, router, setPageName]);
+
 
   if (loading) return <FormLoadingSkeleton />;
 

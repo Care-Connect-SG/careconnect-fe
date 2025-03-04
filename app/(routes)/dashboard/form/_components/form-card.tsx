@@ -14,7 +14,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { BookPlus, FilePenLine, Trash2 } from "lucide-react";
+import { BookPlus, Copy, FilePenLine, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -26,6 +26,7 @@ interface FormCardProps {
   status: string;
   onPublish: (formId: string) => void;
   onDelete: (formId: string) => void;
+  onDuplicate: (formId: string) => void;
 }
 
 export default function FormCard({
@@ -36,16 +37,16 @@ export default function FormCard({
   status,
   onPublish,
   onDelete,
+  onDuplicate
 }: FormCardProps) {
   const router = useRouter();
 
   return (
     <Card
-      className={`w-xs max-w-xs h-[11rem] overflow-hidden ${
-        status == "Published"
-          ? "border-l-4 border-l-green-500"
-          : "border-l-4 border-l-yellow-500"
-      }`}
+      className={`w-xs max-w-xs h-[11rem] overflow-hidden ${status == "Published"
+        ? "border-l-4 border-l-green-500"
+        : "border-l-4 border-l-yellow-500"
+        }`}
     >
       <Link href={`/dashboard/form/view/${id}`}>
         <CardHeader
@@ -111,23 +112,42 @@ export default function FormCard({
             <div className="w-[1.5px] h-5 bg-gray-300"></div>
           </div>
         )}
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(id);
-                }}
-              >
-                <Trash2 className="h-4 w-4 hover:text-gray-600" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Delete</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <div className="flex gap-4 items-center">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDuplicate(id);
+                  }}
+                >
+                  <Copy className="h-4 w-4 hover:text-gray-600" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Duplicate</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(id);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 hover:text-gray-600" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Delete</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
       </CardFooter>
     </Card>
   );

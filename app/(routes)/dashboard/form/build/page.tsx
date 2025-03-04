@@ -223,9 +223,7 @@ function FormLoadingSkeleton() {
       <h1 className="text-2xl font-semibold tracking-tight py-2">
         <Skeleton className="h-6 w-48" />
       </h1>
-      <p className="text-sm text-muted-foreground">
-        <Skeleton className="h-4 w-80" />
-      </p>
+      <Skeleton className="h-4 w-80 text-sm text-muted-foreground" />
 
       <div className="py-4">
         <Skeleton className="h-12 w-full rounded-md" />

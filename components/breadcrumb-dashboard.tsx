@@ -28,10 +28,9 @@ function BreadCrumbDashboard() {
 
   useEffect(() => {
     setPageName(null);
-  }, [pathname, setPageName])
+  }, [pathname, setPageName]);
 
-  const breadcrumbItems = dynamicSegments
-  .map((segment, index) => {
+  const breadcrumbItems = dynamicSegments.map((segment, index) => {
     const isLast = index === dynamicSegments.length - 1;
     let url = `/dashboard/${dynamicSegments.slice(0, index + 1).join("/")}`;
     let label = segment;
@@ -42,16 +41,16 @@ function BreadCrumbDashboard() {
     }
 
     if (index === 1 && segment === "view") {
-      label = "Preview Form"
-      url = "/dashboard/form"
+      label = "Preview Form";
+      url = "/dashboard/form";
     }
 
     if (pathname.startsWith("/dashboard/form/view/") && isLast) {
       label = "Preview Form";
-    } 
+    }
 
     if (index === 1 && segment === "build") {
-      label = "Edit Form"
+      label = "Edit Form";
     }
 
     if (isLast && pageName) {

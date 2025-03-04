@@ -1,4 +1,4 @@
-import { getSession } from "next-auth/react";
+import { getSession, signIn } from "next-auth/react";
 
 export const fetchWithAuth = async (
   url: string,
@@ -6,12 +6,16 @@ export const fetchWithAuth = async (
 ): Promise<Response> => {
   const session = await getSession();
   if (!session) {
-    throw new Error("No active session found");
+    signIn();
+    return new Promise(() => {});
   }
 
-  const token = session.accessToken as string;
-  const headers = new Headers(options.headers || {});
+  const token = session.accessToken;
+  if (!token) {
+    throw new Error("No valid access token found in session");
+  }
 
+  const headers = new Headers(options.headers || {});
   headers.set("Authorization", `Bearer ${token}`);
 
   return fetch(url, { ...options, headers });

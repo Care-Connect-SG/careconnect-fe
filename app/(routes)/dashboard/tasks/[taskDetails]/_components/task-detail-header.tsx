@@ -4,6 +4,7 @@ import { completeTask } from "@/app/api/task";
 import { Button } from "@/components/ui/button";
 import { Task, TaskStatus } from "@/types/task";
 import { CheckCircle, Clock, User } from "lucide-react";
+import { useState } from "react";
 
 import {
   AlertDialog,
@@ -18,9 +19,11 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const TaskDetailHeader = ({ task }: { task: Task }) => {
+  const [isTaskCompleted, setIsTaskCompleted] = useState(task.status);
   const markTaskCompleted = async () => {
     try {
       await completeTask(task.id);
+      setIsTaskCompleted(TaskStatus.COMPLETED);
     } catch (error) {
       console.error("Error marking task as completed", error);
     }
@@ -52,11 +55,11 @@ const TaskDetailHeader = ({ task }: { task: Task }) => {
             </div>
           </div>
         </div>
-        {task.status !== TaskStatus.COMPLETED && (
+        {isTaskCompleted !== TaskStatus.COMPLETED && (
           <div className="flex flex-col lg:flex-row space-y-3 lg:space-y-0 lg:space-x-3 mt-4 md:mt-0">
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="success" onClick={() => markTaskCompleted()}>
+                <Button variant="success">
                   <CheckCircle className="w-4 h-4 mr-2" />
                   Mark as Completed
                 </Button>
@@ -71,7 +74,7 @@ const TaskDetailHeader = ({ task }: { task: Task }) => {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={markTaskCompleted}>
+                  <AlertDialogAction onClick={() => markTaskCompleted()}>
                     Confirm Completion
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -80,7 +83,7 @@ const TaskDetailHeader = ({ task }: { task: Task }) => {
             <Button variant="secondary">Request Reassignment</Button>
           </div>
         )}
-        {task.status === TaskStatus.COMPLETED && (
+        {isTaskCompleted === TaskStatus.COMPLETED && (
           <div className="flex items-center space-x-2 mt-4 md:mt-0">
             <CheckCircle className="w-4 h-4 text-green-500" />
             <span className="text-sm text-green-500 font-semibold whitespace-nowrap">

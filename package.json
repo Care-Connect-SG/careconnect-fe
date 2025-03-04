@@ -32,7 +32,9 @@
     "@radix-ui/react-use-controllable-state": "^1.1.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cmdk": "1.0.0",
     "date-fns": "^4.1.0",
+    "lodash.debounce": "^4.0.8",
     "lucide-react": "^0.475.0",
     "next": "15.1.7",
     "next-auth": "^4.24.11",
@@ -47,6 +49,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
+    "@types/lodash.debounce": "^4.0.9",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

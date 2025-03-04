@@ -2,7 +2,7 @@
 
 import { completeTask } from "@/app/api/task";
 import { Button } from "@/components/ui/button";
-import { Task } from "@/types/task";
+import { Task, TaskStatus } from "@/types/task";
 import { CheckCircle, Clock, User } from "lucide-react";
 
 import {
@@ -28,8 +28,8 @@ const TaskDetailHeader = ({ task }: { task: Task }) => {
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <div className="flex flex-col md:flex-row md:justify-between md:items-start lg:items-end">
-        <div>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-end">
+        <div className="pr-8">
           <h1 className="text-2xl font-semibold text-gray-800 mb-4">
             {task.task_title || "Untitled Task"}
           </h1>
@@ -52,32 +52,42 @@ const TaskDetailHeader = ({ task }: { task: Task }) => {
             </div>
           </div>
         </div>
-        <div className="flex flex-col lg:flex-row space-y-3 lg:space-y-0 lg:space-x-3 mt-4 md:mt-0">
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="success">
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Mark as Completed
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Complete Task</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to mark this task as completed? This
-                  action cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={markTaskCompleted}>
-                  Confirm Completion
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-          <Button variant="secondary">Request Reassignment</Button>
-        </div>
+        {task.status !== TaskStatus.COMPLETED && (
+          <div className="flex flex-col lg:flex-row space-y-3 lg:space-y-0 lg:space-x-3 mt-4 md:mt-0">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="success" onClick={() => markTaskCompleted()}>
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Mark as Completed
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Complete Task</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to mark this task as completed? This
+                    action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={markTaskCompleted}>
+                    Confirm Completion
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            <Button variant="secondary">Request Reassignment</Button>
+          </div>
+        )}
+        {task.status === TaskStatus.COMPLETED && (
+          <div className="flex items-center space-x-2 mt-4 md:mt-0">
+            <CheckCircle className="w-4 h-4 text-green-500" />
+            <span className="text-sm text-green-500 font-semibold whitespace-nowrap">
+              Task Completed
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -2,7 +2,7 @@ import { getSession } from "next-auth/react";
 
 export const fetchWithAuth = async (
   url: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<Response> => {
   const session = await getSession();
   if (!session) {

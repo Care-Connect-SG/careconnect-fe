@@ -44,7 +44,7 @@ const TaskDetailsPage = () => {
     }
   };
 
-  if (!task) return <p>Loading...</p>;
+  if (!task) return <p>Task not found</p>;
 
   return (
     <div className="flex p-1 md:p-4 lg:p-8 gap-4 flex-col md:flex-1">

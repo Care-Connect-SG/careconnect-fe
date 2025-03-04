@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { PlusCircledIcon, CheckIcon } from "@radix-ui/react-icons";
+import { PlusCircle, Check } from "lucide-react";
 
 interface ResidentDetailsNotesCardProps {
   additionalNotes?: string;
@@ -16,12 +16,10 @@ const ResidentDetailsNotesCard: React.FC<ResidentDetailsNotesCardProps> = ({
   const [notes, setNotes] = useState(additionalNotes || "");
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
-  // When clicking "Add", switch to edit mode.
   const handleAddNote = () => {
     setIsEditing(true);
   };
 
-  // When saving, update the timestamp and notify the parent.
   const handleSaveNote = () => {
     setIsEditing(false);
     const now = new Date();
@@ -41,7 +39,7 @@ const ResidentDetailsNotesCard: React.FC<ResidentDetailsNotesCardProps> = ({
             onClick={handleSaveNote}
             className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
           >
-            <CheckIcon />
+            <Check className="h-4 w-4" />
             <span>Save</span>
           </button>
         ) : (
@@ -49,7 +47,7 @@ const ResidentDetailsNotesCard: React.FC<ResidentDetailsNotesCardProps> = ({
             onClick={handleAddNote}
             className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
           >
-            <PlusCircledIcon />
+            <PlusCircle className="h-4 w-4" />
             <span>Add</span>
           </button>
         )}

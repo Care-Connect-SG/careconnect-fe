@@ -1,16 +1,18 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import ResidentCard, { Resident, NurseOption } from "./_components/all-resident-card";
+import ResidentCard, { NurseOption } from "./_components/all-resident-card";
+import AddResidentModal from "./_components/add-resident-modal";
 import { useRouter } from "next/navigation";
-import { getResidents, updateResidentNurse, updateResident, deleteResident, createResident } from "../../../api/resident";
+import { getResidents, updateResidentNurse, deleteResident, createResident } from "../../../api/resident";
 import { getAllNurses } from "../../../api/user";
 import { ResidentRecord } from "@/types/resident";
 import { UserResponse } from "../../../api/user";
-import AddResidentModal from "./_components/add-resident-modal";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
 export default function AllResidentsPage() {
-  // We'll store the full ResidentRecord in state so we have all data for updates.
   const [residents, setResidents] = useState<ResidentRecord[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [nurseOptions, setNurseOptions] = useState<NurseOption[]>([]);
@@ -18,7 +20,6 @@ export default function AllResidentsPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Fetch resident records
     getResidents()
       .then((data: ResidentRecord[]) => {
         setResidents(data);
@@ -30,7 +31,6 @@ export default function AllResidentsPage() {
   }, []);
 
   useEffect(() => {
-    // Fetch nurse options from the API
     getAllNurses()
       .then((data: UserResponse[]) => {
         const options: NurseOption[] = data.map((user) => ({
@@ -44,12 +44,10 @@ export default function AllResidentsPage() {
       });
   }, []);
 
-  // Filter resident records based on full_name
   const filteredResidents = residents.filter((resident) =>
     resident.full_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Simple age calculator (assuming date_of_birth is an ISO string)
   const computeAge = (dob: string) => {
     const birthDate = new Date(dob);
     const diffMs = Date.now() - birthDate.getTime();
@@ -57,12 +55,9 @@ export default function AllResidentsPage() {
     return Math.abs(ageDt.getUTCFullYear() - 1970);
   };
 
-  // Handle nurse selection changes using the updateResidentNurse API
   const handleNurseChange = async (id: string, newNurse: string) => {
     const currentResident = residents.find((res) => res.id === id);
     if (!currentResident) return;
-
-    // Build a full update payload using current resident data
     const updatePayload = {
       full_name: currentResident.full_name,
       gender: currentResident.gender,
@@ -87,14 +82,10 @@ export default function AllResidentsPage() {
     }
   };
 
-  // Handle delete button click with confirmation alert
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this resident?")) {
-      return;
-    }
+    if (!confirm("Are you sure you want to delete this resident?")) return;
     try {
       await deleteResident(id);
-      // Update state by removing the deleted resident
       setResidents((prev) => prev.filter((res) => res.id !== id));
       console.log("Deleted resident with id:", id);
     } catch (error) {
@@ -102,48 +93,46 @@ export default function AllResidentsPage() {
     }
   };
 
-  // Handle search input changes
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
 
-  // Navigate to resident detail page when a card is clicked
   const handleCardClick = (id: string) => {
     router.push(`/dashboard/residents/${id}`);
   };
 
-    // Handle Add Resident Modal Save
-    const handleAddResidentSave = async (newResidentData: any) => {
-      try {
-        const createdResident = await createResident(newResidentData);
-        setResidents((prev) => [...prev, createdResident]);
-        console.log("Created new resident:", createdResident);
-      } catch (error) {
-        console.error("Error creating resident:", error);
-      }
-      setIsAddModalOpen(false);
-    };
+  const handleAddResidentSave = async (newResidentData: any) => {
+    try {
+      const createdResident = await createResident(newResidentData);
+      setResidents((prev) => [...prev, createdResident]);
+      console.log("Created new resident:", createdResident);
+    } catch (error) {
+      console.error("Error creating resident:", error);
+    }
+    setIsAddModalOpen(false);
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-4">
-      {/* Search Bar with Add New Nurse Button */}
+      {/* Search Bar with Add Buttons */}
       <div className="flex items-center justify-between mb-4">
         <div className="relative w-full max-w-xl">
-          <input
+          <Input
             type="text"
             placeholder="Search residents..."
-            className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-full focus:outline-none focus:border-blue-500"
+            className="pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:border-blue-500"
             value={searchTerm}
             onChange={handleSearch}
           />
-          <span className="absolute right-3 top-2 text-gray-400">🔍</span>
+          <div className="absolute left-3 top-2 text-gray-400">
+            <Search className="h-5 w-5" />
+          </div>
         </div>
-        <button
-           onClick={() => setIsAddModalOpen(true)}
-          className="ml-4 px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600"
-        >
-          Add New Nurse
-        </button>
+        <div className="flex gap-4 right-4" style={{ marginRight: "25px" }}>
+          <Button variant="default" onClick={() => setIsAddModalOpen(true)}>
+            Add New Resident
+          </Button>
+        </div>
       </div>
 
       <AddResidentModal
@@ -152,7 +141,6 @@ export default function AllResidentsPage() {
         onSave={handleAddResidentSave}
       />
 
-      {/* List of Resident Cards */}
       <div className="space-y-4">
         {filteredResidents.length > 0 ? (
           filteredResidents.map((resident) => (

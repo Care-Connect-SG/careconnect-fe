@@ -1,7 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
-import { PlusCircledIcon, CheckIcon, Cross2Icon } from "@radix-ui/react-icons";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -38,13 +46,13 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
 }) => {
   const [fullName, setFullName] = useState(initialData.full_name || "");
   const [roomNumber, setRoomNumber] = useState(initialData.room_number || "");
-  const [gender, setGender] = useState(initialData.gender  || "");
+  const [gender, setGender] = useState(initialData.gender || "");
   const [dateOfBirth, setDateOfBirth] = useState(initialData.date_of_birth || "");
-  const [nricNumber, setNricNumber] = useState(initialData.nric_number  || "" );
+  const [nricNumber, setNricNumber] = useState(initialData.nric_number || "");
   const [relationship, setRelationship] = useState(initialData.relationship || "");
   const [emergencyContactName, setEmergencyContactName] = useState(initialData.emergency_contact_name || "");
   const [emergencyContactNumber, setEmergencyContactNumber] = useState(initialData.emergency_contact_number || "");
-  const [primaryNurse, setPrimaryNurse] = useState(initialData.primary_nurse  || "" );
+  const [primaryNurse, setPrimaryNurse] = useState(initialData.primary_nurse || "");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,44 +73,37 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black opacity-50" onClick={onClose} />
-      {/* Modal */}
-      <div className="relative z-10 bg-white rounded-lg shadow-lg max-w-lg w-full p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold">Edit Profile</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-            <Cross2Icon />
-          </button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-lg w-full p-6 max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Edit Profile</DialogTitle>
+        </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Name</label>
-            <input
-              type="text"
+            <Label htmlFor="fullName">Name</Label>
+            <Input
+              id="fullName"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
               required
             />
           </div>
           {/* Room Number */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Room</label>
-            <input
-              type="text"
+            <Label htmlFor="roomNumber">Room</Label>
+            <Input
+              id="roomNumber"
               value={roomNumber}
               onChange={(e) => setRoomNumber(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
               required
             />
           </div>
           {/* Gender */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Gender</label>
+            <Label htmlFor="gender">Gender</Label>
             <select
+              id="gender"
               value={gender}
               onChange={(e) => setGender(e.target.value)}
               className="mt-1 block w-full border border-gray-300 rounded-md p-2"
@@ -114,81 +115,74 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
           </div>
           {/* Date of Birth */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
-            <input
+            <Label htmlFor="dateOfBirth">Date of Birth</Label>
+            <Input
               type="date"
+              id="dateOfBirth"
               value={dateOfBirth}
               onChange={(e) => setDateOfBirth(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
               required
             />
           </div>
           {/* NRIC Number */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">NRIC Number</label>
-            <input
-              type="text"
+            <Label htmlFor="nricNumber">NRIC Number</Label>
+            <Input
+              id="nricNumber"
               value={nricNumber}
               onChange={(e) => setNricNumber(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
               required
             />
           </div>
           {/* Relationship */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Relationship</label>
-            <input
-              type="text"
+            <Label htmlFor="relationship">Relationship</Label>
+            <Input
+              id="relationship"
               value={relationship}
               onChange={(e) => setRelationship(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
               required
             />
           </div>
           {/* Emergency Contact Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Emergency Contact</label>
-            <input
-              type="text"
+            <Label htmlFor="emergencyContactName">Emergency Contact</Label>
+            <Input
+              id="emergencyContactName"
               value={emergencyContactName}
               onChange={(e) => setEmergencyContactName(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
               required
             />
           </div>
           {/* Emergency Contact Number */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Contact Number</label>
-            <input
-              type="text"
+            <Label htmlFor="emergencyContactNumber">Contact Number</Label>
+            <Input
+              id="emergencyContactNumber"
               value={emergencyContactNumber}
               onChange={(e) => setEmergencyContactNumber(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
               required
             />
           </div>
-          {/* Nurse */}
+          {/* Primary Nurse */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Nurse</label>
-            <input
-              type="text"
+            <Label htmlFor="primaryNurse">Primary Nurse</Label>
+            <Input
+              id="primaryNurse"
               value={primaryNurse}
               onChange={(e) => setPrimaryNurse(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-              disabled
+              required
             />
           </div>
           <div className="flex justify-end space-x-4">
-            <button type="button" onClick={onClose} className="px-4 py-2 border border-gray-300 rounded-md">
+            <Button  type="button" onClick={onClose}>
               Cancel
-            </button>
-            <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded-md">
-              Save
-            </button>
+            </Button>
+            <Button type="submit">Save</Button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

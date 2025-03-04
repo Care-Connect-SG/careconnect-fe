@@ -2,10 +2,10 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import ResidentProfileCard from "../_components/resident-profile-card";
-import ResidentDetailsCard from "../_components/resident-detail-card";
-import ResidentDetailsNotesCard from "../_components/resident-detail-notes";
-import EditProfileModal from "../_components/edit-modal"; // your modal component
+import ResidentProfileCard from "./_components/resident-profile-card";
+import ResidentDetailsCard from "./_components/resident-detail-card";
+import ResidentDetailsNotesCard from "./_components/resident-detail-notes";
+import EditProfileModal from "../_components/edit-modal";
 import { getResidentById, updateResident } from "../../../../api/resident";
 import { ResidentRecord } from "@/types/resident";
 

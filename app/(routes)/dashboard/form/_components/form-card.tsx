@@ -70,7 +70,7 @@ export default function FormCard({
           </Badge>
         </CardHeader>
         <CardContent>
-          <p className="hidden md:block text-xs truncate">{description}</p>
+          <p className="hidden min-h-4 max-h-4 md:block text-xs truncate">{description}</p>
         </CardContent>
       </Link>
       <CardFooter className="flex justify-end gap-4 py-2 px-6 text-semibold text-gray-400">

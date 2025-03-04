@@ -1,24 +1,14 @@
+import { fetchWithAuth } from "@/types/fectchWithAuth";
 import { Task } from "@/types/task";
-import { getSession } from "next-auth/react";
 
 export const getTasks = async (): Promise<Task[]> => {
-  const session = await getSession();
-
-  if (!session) {
-    throw new Error("No active session found");
-  }
-
-  const token = session.accessToken as string;
-  console.log(token);
-
   try {
-    const response = await fetch(
+    const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/`,
       {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
       },
     );

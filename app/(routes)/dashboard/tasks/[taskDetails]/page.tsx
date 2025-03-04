@@ -1,6 +1,5 @@
 "use client";
 
-import { Home, User } from "lucide-react";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useBreadcrumb } from "../../../../../context/breadcrumb-context";
@@ -9,6 +8,7 @@ import ResidentInfo from "./_components/resident-info";
 import TaskDetailHeader from "./_components/task-detail-header";
 
 import { getTaskById } from "@/app/api/task";
+import { Task } from "@/types/task";
 
 const TaskDescription = ({ description }: { description: string }) => (
   <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -23,7 +23,7 @@ const TaskDescription = ({ description }: { description: string }) => (
 
 const TaskDetailsPage = () => {
   const { taskDetails } = useParams();
-  const [task, setTask] = useState<any>(null);
+  const [task, setTask] = useState<Task>();
   const { setPageName } = useBreadcrumb();
 
   useEffect(() => {
@@ -51,10 +51,10 @@ const TaskDetailsPage = () => {
       <TaskDetailHeader task={task} />
       <div className="grid md:grid-cols-3 gap-4">
         <div className="md:col-span-2">
-          <TaskDescription description={task.task_details} />
+          <TaskDescription description={task.task_details || ""} />
         </div>
         <div className="md:col-span-1">
-          <ResidentInfo resident={task.resident || {}} />
+          <ResidentInfo resident={task.residents || {}} />
         </div>
       </div>
     </div>

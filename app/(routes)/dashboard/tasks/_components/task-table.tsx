@@ -44,7 +44,7 @@ const TaskTable = ({ tasks }: { tasks: Task[] }) => {
                   {task.task_title}
                 </td>
                 <td className="px-6 py-4 text-gray-900">
-                  {task.resident || "N/A"}
+                  {task.residents || "N/A"}
                 </td>
                 <td className="px-6 py-4 text-gray-900">
                   {task.assigned_to || "Unassigned"}

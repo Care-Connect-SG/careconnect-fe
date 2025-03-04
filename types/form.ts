@@ -9,6 +9,6 @@ export interface FormCreate {
 }
 
 export interface FormResponse extends FormCreate {
-  _id: string;
+  id: string;
   created_date: string;
 }

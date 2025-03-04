@@ -19,6 +19,9 @@ import { Suspense, useState } from "react";
 import FormElement from "../../_components/form-element";
 import FormElementBar from "../../_components/form-element-bar";
 import { FormHeaderEdit } from "../../_components/form-header";
+import { useSession } from "next-auth/react";
+import { getCurrentUser } from "@/app/api/user";
+
 
 export default function CreateFormWrapper() {
   return (
@@ -34,6 +37,7 @@ function CreateForm() {
   const formId = searchParams.get("id");
   const isEditing = !!formId;
   const { setPageName } = useBreadcrumb();
+  const { data: session } = useSession();
 
   const [state, dispatch] = useFormReducer();
   const [loading, setLoading] = useState<boolean>(isEditing);
@@ -69,10 +73,12 @@ function CreateForm() {
       return;
     }
 
+    const user = await getCurrentUser(session!.user!.email!);
+
     const formData: FormCreate = {
       title: state.title,
       description: state.description,
-      creator_id: "user123", // TODO: Replace with actual user ID
+      creator_id: user.id,
       json_content: state.elements,
       status: "Draft",
     };

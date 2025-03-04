@@ -10,10 +10,13 @@ import { ReportCreate } from "@/types/report";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import FormElementFill from "./form-element-fill";
 import { FormHeaderView } from "./form-header";
 import ResidentSelector from "./tag-personnel";
+import { useSession } from "next-auth/react";
+import { getCurrentUser } from "@/app/api/user";
+
 
 interface FormSubmitProps {
   form: FormResponse;
@@ -22,6 +25,7 @@ interface FormSubmitProps {
 export default function FormSubmit({ form }: FormSubmitProps) {
   const [state, dispatch] = useReportReducer();
   const router = useRouter();
+  const { data: session } = useSession();
 
   useEffect(() => {
     const blankReport = form.json_content.map((element: FormElementData) => ({
@@ -62,10 +66,12 @@ export default function FormSubmit({ form }: FormSubmitProps) {
       }
     }
 
+    const user = await getCurrentUser(session!.user!.email!);
+
     try {
       const submissionData: ReportCreate = {
         form_id: form.id,
-        reporter_id: "user456", // TODO: Replace with actual user ID
+        reporter_id: user.id,
         report_content: state.report.map((section) => ({
           form_element_id: section.form_element_id,
           input: section.input ?? "",

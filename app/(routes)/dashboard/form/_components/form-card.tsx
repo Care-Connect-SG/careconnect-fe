@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -37,16 +37,17 @@ export default function FormCard({
   status,
   onPublish,
   onDelete,
-  onDuplicate
+  onDuplicate,
 }: FormCardProps) {
   const router = useRouter();
 
   return (
     <Card
-      className={`w-xs max-w-xs h-[11rem] overflow-hidden ${status == "Published"
-        ? "border-l-4 border-l-green-500"
-        : "border-l-4 border-l-yellow-500"
-        }`}
+      className={`w-xs max-w-xs h-[11rem] overflow-hidden ${
+        status == "Published"
+          ? "border-l-4 border-l-green-500"
+          : "border-l-4 border-l-yellow-500"
+      }`}
     >
       <Link href={`/dashboard/form/view/${id}`}>
         <CardHeader

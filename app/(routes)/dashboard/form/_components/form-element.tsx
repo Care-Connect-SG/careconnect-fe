@@ -46,7 +46,9 @@ export default function FormElement({
           <CardTitle className="p-0 mb-0 max-h-10 flex items-center justify-between">
             <Input
               value={element.label}
-              onChange={(e) => onUpdate(element.element_id, { label: e.target.value })}
+              onChange={(e) =>
+                onUpdate(element.element_id, { label: e.target.value })
+              }
               className="md:text-base md:max-w-80 max-w-52 pb-0 font-semibold text-black rounded-none border-0 border-b-2 border-transparent 
                             hover:border-gray-500 focus:border-gray-500 px-0 focus-visible:ring-0 focus-visible:ring-offset-0"
               placeholder="Label"

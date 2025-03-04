@@ -8,7 +8,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import FormCard from "./_components/form-card";
 
-
 export default function Incident() {
   const [forms, setForms] = useState<FormResponse[]>([]);
 
@@ -53,8 +52,8 @@ export default function Incident() {
       description: originalForm!.description,
       creator_id: "user567",
       json_content: originalForm!.json_content,
-      status: "Draft"
-    }
+      status: "Draft",
+    };
 
     try {
       await createForm(duplicatedForm);
@@ -62,7 +61,7 @@ export default function Incident() {
     } catch (error) {
       console.error("Error duplicating form:", error);
     }
-  }
+  };
 
   return (
     <>

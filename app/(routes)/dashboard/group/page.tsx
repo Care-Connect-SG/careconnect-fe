@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 interface Group {
   id: string; // Unique identifier from the backend.
@@ -26,6 +27,7 @@ export default function GroupDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const { data: session } = useSession();
 
   // Fetch both groups and users concurrently.
   useEffect(() => {
@@ -55,6 +57,11 @@ export default function GroupDashboard() {
     return user ? user.name : userId;
   };
 
+  const isAdmin = session?.user?.email
+  ? users.find((u) => u.email === session.user!.email)?.role === "Admin"
+  : false;
+
+
   // Filter groups based on group name or any member's name.
   const filteredGroups = groups.filter((group) => {
     const term = searchTerm.toLowerCase();
@@ -80,13 +87,15 @@ export default function GroupDashboard() {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="flex-1 border rounded px-4 py-2 focus:outline-none focus:ring focus:border-blue-300"
           />
-          <Link
-            href="/dashboard/group/createGroup"
-            className="inline-flex items-center gap-2 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Create New Group</span>
-          </Link>
+          {isAdmin && (
+            <Link
+              href="/dashboard/group/createGroup"
+              className="inline-flex items-center gap-2 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Create New Group</span>
+            </Link>
+          )}
         </div>
       </header>
 

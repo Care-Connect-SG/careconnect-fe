@@ -112,7 +112,7 @@ export default function ViewGroupPage() {
       {/* Header in a larger container */}
       <div className="max-w-3xl mx-auto p-6">
         <header className="flex items-center justify-between">
-          <Button variant="secondary" onClick={() => router.back()}>
+        <Button variant="secondary" onClick={() => router.push("/dashboard/group")}>
             &lt; Back
           </Button>
           <h1 className="text-3xl font-bold flex-1 text-center">

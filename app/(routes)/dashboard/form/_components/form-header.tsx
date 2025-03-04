@@ -59,10 +59,10 @@ function FormHeaderEdit({
 function FormHeaderView({ title, description }: FormHeaderViewProps) {
   return (
     <>
-      <Card>
+      <Card className="w-1/2">
         <CardHeader>
           <CardTitle>
-            <h1 className="md:text-2xl font-bold px-0">{title}</h1>
+            <h1 className="md:text-3xl font-bold px-0">{title}</h1>
           </CardTitle>
           <CardDescription>
             <p>{description}</p>

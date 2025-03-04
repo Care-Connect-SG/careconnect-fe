@@ -5,22 +5,22 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { FormElementData } from "@/hooks/useFormReducer";
 import { FormResponse } from "@/types/form";
-import { ReportBase, ReportSectionContent } from "@/types/report";
+import { ReportCreate } from "@/types/report";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import FormElementFill from "./form-element-fill";
 import { FormHeaderView } from "./form-header";
+import ResidentSelector from "./tag-personnel";
+import { useReportReducer } from "@/hooks/useReportReducer";
 
 interface FormSubmitProps {
   form: FormResponse;
 }
 
 export default function FormSubmit({ form }: FormSubmitProps) {
-  const [report, setReport] = useState<ReportSectionContent[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [state, dispatch] = useReportReducer();
   const router = useRouter();
 
   useEffect(() => {
@@ -28,17 +28,11 @@ export default function FormSubmit({ form }: FormSubmitProps) {
       form_element_id: element.element_id,
       input: null,
     }));
-    setReport(blankReport);
+    dispatch({ type: "SET_REPORT", payload: blankReport });
   }, [form]);
 
   const handleInputChange = (form_element_id: string, input: any) => {
-    setReport((prevReport) =>
-      prevReport.map((section) =>
-        section.form_element_id === form_element_id
-          ? { ...section, input }
-          : section,
-      ),
-    );
+    dispatch({ type: "UPDATE_INPUT", payload: { form_element_id, input } });
   };
 
   const requiresInput = (id: string) => {
@@ -49,13 +43,16 @@ export default function FormSubmit({ form }: FormSubmitProps) {
   };
 
   const handleSubmit = async () => {
-    setIsSubmitting(true);
-    setError(null);
+    dispatch({ type: "SET_SUBMITTING", payload: true });
+    dispatch({ type: "SET_ERROR", payload: null });
 
-    for (const section of report) {
+    for (const section of state.report) {
       if (requiresInput(section.form_element_id) && !section.input) {
-        setError("Some required fields(*) are not yet filled in.");
-        setIsSubmitting(false);
+        dispatch({
+          type: "SET_ERROR",
+          payload: "Some required fields are missing.",
+        });
+        dispatch({ type: "SET_SUBMITTING", payload: false });
         toast({
           variant: "destructive",
           title: "Report is missing required fields",
@@ -66,21 +63,25 @@ export default function FormSubmit({ form }: FormSubmitProps) {
     }
 
     try {
-      const submissionData: ReportBase = {
+      const submissionData: ReportCreate = {
         form_id: form.id,
         reporter_id: "user456", // TODO: Replace with actual user ID
-        report_content: report.map((section) => ({
+        report_content: state.report.map((section) => ({
           form_element_id: section.form_element_id,
           input: section.input ?? "",
         })),
-        status: "Submitted",
+        primary_resident: state.primaryResident?.id,
+        involved_residents: state.involvedResidents.map((res) => res.id),
+        involved_caregivers: state.involvedCaregivers.map((cg) => cg.id),
+        status: "Published",
       };
       await createReport(submissionData);
       router.replace(`/dashboard/form`);
     } catch (error) {
       console.error("Error submitting report: ", error);
+      dispatch({ type: "SET_ERROR", payload: "Failed to submit the report." });
     } finally {
-      setIsSubmitting(false);
+      dispatch({ type: "SET_SUBMITTING", payload: false });
     }
   };
 
@@ -97,7 +98,10 @@ export default function FormSubmit({ form }: FormSubmitProps) {
       </div>
 
       <div>
-        <FormHeaderView title={form.title} description={form.description} />
+        <div className="flex justify-between gap-4">
+          <FormHeaderView title={form.title} description={form.description} />
+          <ResidentSelector dispatch={dispatch} selectedState={state} />
+        </div>
         <div className="py-4 space-y-4">
           {form.json_content.map((element) => (
             <FormElementFill
@@ -110,7 +114,7 @@ export default function FormSubmit({ form }: FormSubmitProps) {
       </div>
 
       <Button
-        disabled={isSubmitting}
+        disabled={state.isSubmitting}
         onClick={handleSubmit}
         className="bg-black hover:bg-gray-300 hover:text-black"
       >

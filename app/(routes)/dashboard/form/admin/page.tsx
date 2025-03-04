@@ -1,8 +1,8 @@
 "use client";
 
-import { deleteForm, getForms, publishForm } from "@/app/api/form";
+import { createForm, deleteForm, getForms, publishForm } from "@/app/api/form";
 import { Card } from "@/components/ui/card";
-import { FormComplete } from "@/types/form";
+import { FormCreate, FormResponse } from "@/types/form";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -18,7 +18,7 @@ const formatDate = (isoDate: string): string => {
 };
 
 export default function Incident() {
-  const [forms, setForms] = useState<FormComplete[]>([]);
+  const [forms, setForms] = useState<FormResponse[]>([]);
 
   useEffect(() => {
     fetchForms();
@@ -54,6 +54,24 @@ export default function Incident() {
     }
   };
 
+  const handleDuplicate = async (formId: string) => {
+    const originalForm = forms.find((form) => form.id === formId);
+    const duplicatedForm: FormCreate = {
+      title: originalForm!.title,
+      description: originalForm!.description,
+      creator_id: "user567",
+      json_content: originalForm!.json_content,
+      status: "Draft",
+    };
+
+    try {
+      await createForm(duplicatedForm);
+      fetchForms();
+    } catch (error) {
+      console.error("Error duplicating form:", error);
+    }
+  };
+
   return (
     <>
       <div className="px-8 py-4">
@@ -67,15 +85,16 @@ export default function Incident() {
       <hr className="border-t-1 border-gray-300 mx-8 py-2"></hr>
       <div className="w-full grid grid-cols-3 gap-4 px-8 py-4">
         {forms.map((form) => (
-          <div key={form._id} onClick={(e) => e.preventDefault()}>
+          <div key={form.id} onClick={(e) => e.preventDefault()}>
             <FormCard
-              id={form._id}
+              id={form.id}
               title={form.title}
               description={form.description}
               created_date={formatDate(form.created_date)}
               status={form.status}
               onPublish={handlePublish}
               onDelete={handleDelete}
+              onDuplicate={handleDuplicate}
             />
           </div>
         ))}

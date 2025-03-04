@@ -3,7 +3,7 @@
 import { createReport } from "@/app/api/report";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { FormComplete } from "@/types/form";
+import { FormResponse } from "@/types/form";
 import { ReportBase, ReportSectionContent } from "@/types/report";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
@@ -11,9 +11,10 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import FormElementFill from "./form-element-fill";
 import { FormHeaderView } from "./form-header";
+import { FormElementData } from "@/hooks/useFormReducer";
 
 interface FormSubmitProps {
-  form: FormComplete;
+  form: FormResponse;
 }
 
 export default function FormSubmit({ form }: FormSubmitProps) {
@@ -23,8 +24,8 @@ export default function FormSubmit({ form }: FormSubmitProps) {
   const router = useRouter();
 
   useEffect(() => {
-    const blankReport = form.json_content.map((element) => ({
-      form_element_id: element.id,
+    const blankReport = form.json_content.map((element : FormElementData) => ({
+      form_element_id: element.element_id,
       input: null,
     }));
     setReport(blankReport);
@@ -41,7 +42,7 @@ export default function FormSubmit({ form }: FormSubmitProps) {
   };
 
   const requiresInput = (id: string) => {
-    const formElement = form.json_content.find((element) => element.id === id);
+    const formElement = form.json_content.find((element : FormElementData) => element.element_id === id);
     return formElement?.required;
   };
 
@@ -64,7 +65,7 @@ export default function FormSubmit({ form }: FormSubmitProps) {
 
     try {
       const submissionData: ReportBase = {
-        form_id: form._id,
+        form_id: form.id,
         reporter_id: "user456", // TODO: Replace with actual user ID
         report_content: report.map((section) => ({
           form_element_id: section.form_element_id,
@@ -98,7 +99,7 @@ export default function FormSubmit({ form }: FormSubmitProps) {
         <div className="py-4 space-y-4">
           {form.json_content.map((element) => (
             <FormElementFill
-              key={element.id}
+              key={element.element_id}
               element={element}
               onInputChange={handleInputChange}
             />

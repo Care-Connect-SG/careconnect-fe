@@ -37,7 +37,7 @@ export default function FormElementFill({
 
   useEffect(() => {
     if (value) {
-      onInputChange(element.id, value);
+      onInputChange(element.element_id, value);
     }
   }, [value]);
 
@@ -93,7 +93,7 @@ export default function FormElementFill({
         )}
         {element.type === "datetime" && (
           <DateTimePicker
-            id={element.id}
+            id={element.element_id}
             type={element.type}
             value={value as string}
             onChange={(val) => setValue(val)}
@@ -105,7 +105,7 @@ export default function FormElementFill({
               <label key={option} className="flex items-center gap-2">
                 <input
                   type="radio"
-                  name={element.id}
+                  name={element.element_id}
                   value={option}
                   checked={value === option}
                   onChange={() => setValue(option)}

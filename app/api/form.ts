@@ -1,6 +1,6 @@
 import { FormCreate, FormResponse } from "@/types/form";
 
-export const getForms = async (): Promise<FormResponse[]> => {
+export const getForms = async (status?: string): Promise<FormResponse[]> => {
   try {
     let url = `${process.env.NEXT_PUBLIC_BE_API_URL}/incident/forms`;
 

@@ -12,18 +12,28 @@ import { FormCreate, FormResponse } from "@/types/form";
 import { ChevronLeft, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState, Suspense } from "react";
 import FormElement from "../_components/form-element";
 import FormElementBar from "../_components/form-element-bar";
 import { FormHeaderEdit } from "../_components/form-header";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export default function CreateForm() {
+export default function CreateFormWrapper() {
+  return (
+    <Suspense fallback={<FormLoadingSkeleton />}>
+      <CreateForm />
+    </Suspense>
+  );
+}
+
+function CreateForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const formId = searchParams.get("id");
   const isEditing = !!formId;
 
   const [state, dispatch] = useFormReducer();
+  const [loading, setLoading] = useState<boolean>(isEditing);
 
   useEffect(() => {
     if (isEditing) {
@@ -39,34 +49,31 @@ export default function CreateForm() {
         .catch(() => {
           console.error("Form not found");
           router.replace("/404");
-          //TODO: Find a better way to handle errors
-        });
+        })
+        .finally(() => setLoading(false));
     }
   }, [formId, isEditing, dispatch, router]);
 
+  if (loading) return <FormLoadingSkeleton />;
+
   const handleSaveDraft = async () => {
     if (!state.title || state.elements.length === 0) {
-      alert(
-        "Incomplete Form: A form should have at least a title and a form element",
-      );
+      alert("Incomplete Form: A form should have at least a title and a form element");
       return;
     }
 
     const formData: FormCreate = {
       title: state.title,
       description: state.description,
-      creator_id: "user123", // TODO: Replace with the actual logged-in user ID
+      creator_id: "user123", // TODO: Replace with actual user ID
       json_content: state.elements,
       status: "Draft",
     };
 
-    console.log("Form Data: ", formData);
-
     if (!formId) {
       try {
-        const formId = await createForm(formData);
-        console.log(formId);
-        router.replace(`/dashboard/form/build?id=${formId}`);
+        const newFormId = await createForm(formData);
+        router.replace(`/dashboard/form/build?id=${newFormId}`);
       } catch (error) {
         console.error("Error saving form:", error);
       }
@@ -81,16 +88,14 @@ export default function CreateForm() {
 
   const handlePublishDraft = async () => {
     if (!state.title || state.elements.length === 0) {
-      alert(
-        "Incomplete Form: A form should have at least a title and a form element",
-      );
+      alert("Incomplete Form: A form should have at least a title and a form element");
       return;
     }
 
     const formData: FormCreate = {
       title: state.title,
       description: state.description,
-      creator_id: "user123", // TODO: Replace with the actual logged-in user ID
+      creator_id: "user123", // TODO: Replace with actual user ID
       json_content: state.elements,
       status: "Published",
     };
@@ -115,7 +120,6 @@ export default function CreateForm() {
   const handleDeleteDraft = async (formId: string) => {
     try {
       await deleteForm(formId);
-      console.log("Deleted form: ", formId);
       router.replace(`/dashboard/form`);
     } catch (error) {
       console.error("Failed to delete form");
@@ -126,16 +130,12 @@ export default function CreateForm() {
     <>
       <div className="px-8 py-4 flex items-center justify-between">
         <div>
-          <h1 className="scroll-m-20 text-2xl font-semibold tracking-tight py-2">
-            Incident Reporting Form Builder
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Design, edit and publish your incident reporting forms
-          </p>
+          <h1 className="text-2xl font-semibold tracking-tight py-2">Incident Reporting Form Builder</h1>
+          <p className="text-sm text-muted-foreground">Design, edit, and publish your incident reporting forms</p>
         </div>
       </div>
 
-      <hr className="border-t-1 border-gray-300 mx-8 py-2"></hr>
+      <hr className="border-t-1 border-gray-300 mx-8 py-2" />
 
       <div className="flex items-center justify-between pb-2">
         <div className="flex justify-start gap-2 px-8 pb-2">
@@ -186,6 +186,7 @@ export default function CreateForm() {
             })
           }
         />
+
         <div className="py-4 space-y-4">
           {state.elements.map((element) => (
             <FormElement
@@ -209,12 +210,32 @@ export default function CreateForm() {
       </div>
 
       <div className="flex justify-center items-center">
-        <FormElementBar
-          onAddElement={(type) =>
-            dispatch({ type: "ADD_ELEMENT", payload: type })
-          }
-        ></FormElementBar>
+        <FormElementBar onAddElement={(type) => dispatch({ type: "ADD_ELEMENT", payload: type })} />
       </div>
     </>
+  );
+}
+
+// 🔥 Suspense Fallback (Loading State)
+function FormLoadingSkeleton() {
+  return (
+    <div className="px-8 py-4">
+      <h1 className="text-2xl font-semibold tracking-tight py-2">
+        <Skeleton className="h-6 w-48" />
+      </h1>
+      <p className="text-sm text-muted-foreground">
+        <Skeleton className="h-4 w-80" />
+      </p>
+
+      <div className="py-4">
+        <Skeleton className="h-12 w-full rounded-md" />
+      </div>
+
+      <div className="py-4 space-y-4">
+        {[...Array(3)].map((_, index) => (
+          <Skeleton key={index} className="h-16 w-full rounded-md" />
+        ))}
+      </div>
+    </div>
   );
 }

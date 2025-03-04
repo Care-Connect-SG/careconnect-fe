@@ -73,7 +73,9 @@ const formReducer = (state: FormState, action: Action): FormState => {
     case "REMOVE_ELEMENT":
       return {
         ...state,
-        elements: state.elements.filter((el) => el.element_id !== action.payload),
+        elements: state.elements.filter(
+          (el) => el.element_id !== action.payload,
+        ),
       };
     default:
       return state;

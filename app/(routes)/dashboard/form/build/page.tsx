@@ -7,16 +7,16 @@ import {
   updateForm,
 } from "@/app/api/form";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { FormState, useFormReducer } from "@/hooks/useFormReducer";
 import { FormCreate, FormResponse } from "@/types/form";
 import { ChevronLeft, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState, Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import FormElement from "../_components/form-element";
 import FormElementBar from "../_components/form-element-bar";
 import { FormHeaderEdit } from "../_components/form-header";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CreateFormWrapper() {
   return (
@@ -58,7 +58,9 @@ function CreateForm() {
 
   const handleSaveDraft = async () => {
     if (!state.title || state.elements.length === 0) {
-      alert("Incomplete Form: A form should have at least a title and a form element");
+      alert(
+        "Incomplete Form: A form should have at least a title and a form element",
+      );
       return;
     }
 
@@ -88,7 +90,9 @@ function CreateForm() {
 
   const handlePublishDraft = async () => {
     if (!state.title || state.elements.length === 0) {
-      alert("Incomplete Form: A form should have at least a title and a form element");
+      alert(
+        "Incomplete Form: A form should have at least a title and a form element",
+      );
       return;
     }
 
@@ -130,8 +134,12 @@ function CreateForm() {
     <>
       <div className="px-8 py-4 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight py-2">Incident Reporting Form Builder</h1>
-          <p className="text-sm text-muted-foreground">Design, edit, and publish your incident reporting forms</p>
+          <h1 className="text-2xl font-semibold tracking-tight py-2">
+            Incident Reporting Form Builder
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Design, edit, and publish your incident reporting forms
+          </p>
         </div>
       </div>
 
@@ -210,12 +218,15 @@ function CreateForm() {
       </div>
 
       <div className="flex justify-center items-center">
-        <FormElementBar onAddElement={(type) => dispatch({ type: "ADD_ELEMENT", payload: type })} />
+        <FormElementBar
+          onAddElement={(type) =>
+            dispatch({ type: "ADD_ELEMENT", payload: type })
+          }
+        />
       </div>
     </>
   );
 }
-
 
 function FormLoadingSkeleton() {
   return (

@@ -19,11 +19,33 @@ import FormElement from "../_components/form-element";
 import FormElementBar from "../_components/form-element-bar";
 import { FormHeaderEdit } from "../_components/form-header";
 
+
 export default function CreateFormWrapper() {
   return (
     <Suspense fallback={<FormLoadingSkeleton />}>
       <CreateForm />
     </Suspense>
+  );
+}
+
+function FormLoadingSkeleton() {
+  return (
+    <div className="px-8 py-4">
+      <h1 className="text-2xl font-semibold tracking-tight py-2">
+        <Skeleton className="h-6 w-48" />
+      </h1>
+      <Skeleton className="h-4 w-80 text-sm text-muted-foreground" />
+
+      <div className="py-4">
+        <Skeleton className="h-12 w-full rounded-md" />
+      </div>
+
+      <div className="py-4 space-y-4">
+        {[...Array(3)].map((_, index) => (
+          <Skeleton key={index} className="h-16 w-full rounded-md" />
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -229,26 +251,5 @@ function CreateForm() {
         />
       </div>
     </>
-  );
-}
-
-function FormLoadingSkeleton() {
-  return (
-    <div className="px-8 py-4">
-      <h1 className="text-2xl font-semibold tracking-tight py-2">
-        <Skeleton className="h-6 w-48" />
-      </h1>
-      <Skeleton className="h-4 w-80 text-sm text-muted-foreground" />
-
-      <div className="py-4">
-        <Skeleton className="h-12 w-full rounded-md" />
-      </div>
-
-      <div className="py-4 space-y-4">
-        {[...Array(3)].map((_, index) => (
-          <Skeleton key={index} className="h-16 w-full rounded-md" />
-        ))}
-      </div>
-    </div>
   );
 }

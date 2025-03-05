@@ -4,9 +4,9 @@ import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useBreadcrumb } from "../../../../../context/breadcrumb-context";
 
+import { Spinner } from "@/components/ui/spinner";
 import ResidentInfo from "./_components/resident-info";
 import TaskDetailHeader from "./_components/task-detail-header";
-import { Spinner } from "@/components/ui/spinner";
 
 import { getTaskById } from "@/app/api/task";
 import { Task } from "@/types/task";

@@ -1,9 +1,9 @@
 "use client";
 
 import { Checkbox } from "@/components/ui/checkbox";
+import { toTitleCase } from "@/lib/utils";
 import { Task } from "@/types/task";
 import { useRouter } from "next/navigation";
-import { toTitleCase } from "@/lib/utils";
 
 export default function TaskListView({ tasks }: { tasks: Task[] }) {
   const router = useRouter();

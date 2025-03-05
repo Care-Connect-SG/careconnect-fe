@@ -12,7 +12,7 @@ export function toTitleCase(str: string, locale = undefined) {
       word.length > 0
         ? word.charAt(0).toLocaleUpperCase(locale) +
           word.slice(1).toLocaleLowerCase(locale)
-        : ""
+        : "",
     )
     .join(" ");
 }

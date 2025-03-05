@@ -1,8 +1,8 @@
 "use client";
 
+import { toTitleCase } from "@/lib/utils";
 import { Task } from "@/types/task";
 import { Home, User } from "lucide-react";
-import { toTitleCase } from "@/lib/utils";
 
 const ResidentInfo = ({ taskResidentInfo }: { taskResidentInfo: Task }) => (
   <div className="bg-white rounded-lg border border-gray-200 p-6">

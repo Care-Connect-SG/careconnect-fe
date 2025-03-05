@@ -10,15 +10,15 @@ const RoleChip: React.FC<RoleChipProps> = ({ role }) => {
 
   switch (role) {
     case "Admin":
-      roleColor = "bg-green-500 bg-opacity-40"; 
+      roleColor = "bg-green-600 bg-opacity-20"; 
       textColor = "text-green-900"; 
       break;
     case "Nurse":
-      roleColor = "bg-blue-500 bg-opacity-40"; 
+      roleColor = "bg-blue-600 bg-opacity-20"; 
       textColor = "text-blue-900"; 
       break;
     case "Family":
-      roleColor = "bg-yellow-500 bg-opacity-40"; 
+      roleColor = "bg-yellow-600 bg-opacity-20"; 
       textColor = "text-yellow-900";
       break;
     default:

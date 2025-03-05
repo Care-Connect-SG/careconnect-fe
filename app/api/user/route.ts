@@ -1,4 +1,4 @@
-export const fetchUserRole = async (email: string | undefined) => {
+export const fetchUser = async (email: string | undefined) => {
   if (!email) return null; // Ensure email is provided
 
   try {
@@ -12,9 +12,10 @@ export const fetchUserRole = async (email: string | undefined) => {
     }
 
     const data = await response.json();
-    return data.role; 
+    return data; 
   } catch (error) {
     console.error("Error fetching user role:", error);
     return null;
   }
 };
+

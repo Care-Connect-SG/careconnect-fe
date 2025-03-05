@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Card } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,12 +11,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { EyeIcon, InfoIcon, PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
-import { Button } from "@/components/ui/button"; 
-import RoleChip from "@/components/ui/roleChip"; 
-import CreateUserModal from "@/components/createUserModal"; 
-// Define the User interface
+import {
+  PencilIcon,
+  PlusIcon,
+  TrashIcon,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import RoleChip from "@/components/ui/roleChip";
+import CreateUserModal from "@/components/createUserModal";
+import { useSession } from "next-auth/react";
+import { fetchUser } from "@/app/api/user/route";
+
 interface User {
+  id: string;
   email: string;
   name: string;
   contact_number?: string;
@@ -28,6 +34,8 @@ interface User {
 }
 
 const Nurses = () => {
+  const { data: session, status } = useSession();
+  const [userId, setUserId] = useState(null);
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -36,7 +44,6 @@ const Nurses = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // Define the modal state
   const router = useRouter();
 
-  // Fetch users
   const fetchUsers = async () => {
     try {
       const response = await fetch(
@@ -55,12 +62,12 @@ const Nurses = () => {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
-    fetchUsers(); // Fetch users on component mount
+    fetchUsers();
   }, []);
 
-  // Filter users based on search query and filter selection
   useEffect(() => {
     let filtered = users.filter(
       (user) =>
@@ -75,7 +82,6 @@ const Nurses = () => {
     setFilteredUsers(filtered);
   }, [searchQuery, filter, users]);
 
-  // Loading state while fetching users
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -86,7 +92,7 @@ const Nurses = () => {
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">All Users</h1>
+      <h1 className="text-3xl font-bold mb-6 text-gray-800">User Management</h1>
 
       <div className="flex flex-wrap gap-4 mb-6">
         <Select value={filter} onValueChange={(value) => setFilter(value)}>
@@ -110,8 +116,8 @@ const Nurses = () => {
         />
       </div>
 
-      <Card className="overflow-hidden rounded-lg shadow-lg">
-        <table className="w-full border-collapse">
+      <div className="flex mx-auto">
+        <table className="w-full max-w-5xl border-collapse shadow-lg rounded-lg overflow-hidden">
           <thead>
             <tr className="bg-gray-900 text-white">
               <th className="p-4 text-left">Email</th>
@@ -120,17 +126,17 @@ const Nurses = () => {
               <th className="p-4 text-left">Role</th>
               <th className="p-4 text-left">Organisation Rank</th>
               <th className="p-4 text-left">Gender</th>
-
               <th className="p-4 text-left">Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredUsers.map((user, index) => (
               <tr
-                key={user.email}
+                key={user.id}
                 className={`border-b ${
                   index % 2 === 0 ? "bg-gray-50" : "bg-white"
-                } hover:bg-gray-100 transition`}
+                } hover:bg-gray-100 transition cursor-pointer`}
+                onClick={() => router.push(`/dashboard/nurses/${user.id}`)}
               >
                 <td className="p-4">{user.email}</td>
                 <td className="p-4">{user.name}</td>
@@ -140,37 +146,24 @@ const Nurses = () => {
                 </td>
                 <td className="p-4">{user.organisation_rank || "N/A"}</td>
                 <td className="p-4">{user.gender}</td>
-
                 <td className="p-4 flex gap-3">
-                  {/* Edit Icon */}
                   <PencilIcon
                     className="h-5 w-5 text-blue-600 cursor-pointer hover:text-blue-800 transition"
                     onClick={() =>
                       router.push(`/dashboard/users/edit/${user.email}`)
                     }
                   />
-
-                  {/* Inspect Icon */}
-                  <InfoIcon
-                    className="h-5 w-5 text-gray-600 cursor-pointer hover:text-gray-800 transition"
-                    onClick={() =>
-                      router.push(`/dashboard/users/${user.email}`)
-                    }
-                  />
-
-                  {/* Delete Icon */}
                   <TrashIcon
                     className="h-5 w-5 text-red-600 cursor-pointer hover:text-red-800 transition"
-                    onClick={() => () => console.log("Delete user:", user.email)}
+                    onClick={() => console.log("Delete user:", user.email)}
                   />
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </Card>
+      </div>
 
-      {/* Button to open modal */}
       <Button
         className="fixed bottom-8 right-8 bg-black text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg hover:bg-gray-800 transition"
         onClick={() => setIsModalOpen(true)}
@@ -178,7 +171,6 @@ const Nurses = () => {
         <PlusIcon className="h-6 w-6" />
       </Button>
 
-      {/* Create User Modal */}
       {isModalOpen && (
         <CreateUserModal
           isOpen={isModalOpen}

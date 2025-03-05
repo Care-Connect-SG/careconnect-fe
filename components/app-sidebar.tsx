@@ -40,7 +40,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { fetchUserRole } from "@/app/api/user/route";
+import { fetchUser } from "@/app/api/user/route";
 
 const mainItems = [
   { title: "Home", url: "/dashboard/home", icon: Home },
@@ -76,8 +76,8 @@ export function AppSidebar() {
     const getUserRole = async () => {
       if (!session?.user?.email) return;
 
-      const role = await fetchUserRole(session.user.email);
-      setUserRole(role);
+      const user = await fetchUser(session.user.email);
+      setUserRole(user.role);
     };
 
     getUserRole();

@@ -1,8 +1,10 @@
 "use client";
 
+import { Task } from "@/types/task";
 import { Home, User } from "lucide-react";
+import { toTitleCase } from "@/lib/utils";
 
-const ResidentInfo = ({ resident }: { resident: any }) => (
+const ResidentInfo = ({ taskResidentInfo }: { taskResidentInfo: Task }) => (
   <div className="bg-white rounded-lg border border-gray-200 p-6">
     <h2 className="text-lg font-semibold text-gray-800 mb-4">
       Resident Information
@@ -14,7 +16,7 @@ const ResidentInfo = ({ resident }: { resident: any }) => (
           <div>
             <p className="text-sm text-gray-500">Resident Name</p>
             <p className="font-medium text-gray-900">
-              {resident?.full_name || "Unknown"}
+              {toTitleCase(taskResidentInfo.resident_name) || "Unknown"}
             </p>
           </div>
         </div>
@@ -23,7 +25,7 @@ const ResidentInfo = ({ resident }: { resident: any }) => (
           <div>
             <p className="text-sm text-gray-500">Room Number</p>
             <p className="font-medium text-gray-900">
-              {resident?.room_number || "N/A"}
+              {taskResidentInfo.resident_room || "N/A"}
             </p>
           </div>
         </div>

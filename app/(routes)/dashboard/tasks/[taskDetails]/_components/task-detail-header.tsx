@@ -18,7 +18,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-const TaskDetailHeader = ({ task }: { task: Task }) => {
+export const TaskDetailHeader = ({ task }: { task: Task }) => {
   const [isTaskCompleted, setIsTaskCompleted] = useState(task.status);
   const markTaskCompleted = async () => {
     try {
@@ -39,9 +39,9 @@ const TaskDetailHeader = ({ task }: { task: Task }) => {
           <div className="flex flex-wrap items-center gap-4 md:gap-2 lg:gap-3">
             <div className="flex items-center">
               <User className="w-4 h-4 text-gray-400 mr-2" />
-              <span className="text-sm text-gray-600">Assigned:</span>
+              <span className="text-sm text-gray-600">Assigned to:</span>
               <span className="ml-1 text-sm font-medium text-blue-600">
-                {task.assigned_to || "Unassigned"}
+                {task.assigned_to_name || "Unassigned"}
               </span>
             </div>
             <div className="flex items-center">
@@ -86,8 +86,11 @@ const TaskDetailHeader = ({ task }: { task: Task }) => {
         {isTaskCompleted === TaskStatus.COMPLETED && (
           <div className="flex items-center space-x-2 mt-4 md:mt-0">
             <CheckCircle className="w-4 h-4 text-green-500" />
-            <span className="text-sm text-green-500 font-semibold whitespace-nowrap">
-              Task Completed
+            <span className="text-sm text-green-500 font-semibold">
+              Task Completed on{" "}
+              {task.finished_at
+                ? new Date(task.finished_at).toLocaleString()
+                : "N/A"}
             </span>
           </div>
         )}

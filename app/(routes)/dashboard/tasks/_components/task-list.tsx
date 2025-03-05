@@ -3,6 +3,7 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Task } from "@/types/task";
 import { useRouter } from "next/navigation";
+import { toTitleCase } from "@/lib/utils";
 
 export default function TaskListView({ tasks }: { tasks: Task[] }) {
   const router = useRouter();
@@ -53,10 +54,10 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                   {task.task_title}
                 </td>
                 <td className="px-6 py-4 text-gray-900">
-                  {task.residents || "N/A"}
+                  {toTitleCase(task.resident_name) || "N/A"}
                 </td>
                 <td className="px-6 py-4 text-gray-900">
-                  {task.assigned_to || "Unassigned"}
+                  {toTitleCase(task.assigned_to_name) || "Unassigned"}
                 </td>
                 <td className="px-6 py-4 text-gray-900">
                   {task.priority || "Low"}

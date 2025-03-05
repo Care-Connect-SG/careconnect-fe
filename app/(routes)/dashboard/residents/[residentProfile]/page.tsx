@@ -7,7 +7,10 @@ import ResidentDetailsNotesCard from "../_components/resident-detail-notes";
 import ResidentProfileCard from "../_components/resident-profile-card";
 import MedicationDisplay from "../_components/medication-display";
 import { MedicationRecord } from "@/types/medication";
+import { Button } from "@/components/ui/button";
 import { getMedicationsForResident } from "@/app/api/medication";
+import CreateMedication from "../_components/create-medication";
+import EditMedication from "../_components/edit-medication";
 
 const TABS = [
   { label: "Overview", value: "overview" },
@@ -21,6 +24,9 @@ const ResidentDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [primaryNurse, setPrimaryNurse] = useState("");
   const [medications, setMedications] = useState<MedicationRecord[]>([]);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedMedication, setSelectedMedication] = useState<MedicationRecord | null>(null);
   const pathname = usePathname();
 
   const handleEditProfile = () => {
@@ -41,6 +47,13 @@ const ResidentDashboard = () => {
         .catch(console.error);
     }
   }, [activeTab, residentId]);
+
+  // Handle edit button click in MedicationDisplay
+  const handleEditMedication = (medication: MedicationRecord) => {
+    console.log("Opening edit modal for:", medication); // ✅ Debugging step
+    setSelectedMedication(medication);
+    setIsEditModalOpen(true);
+  };
 
   return (
     <div className="w-full max-w-4xl mx-auto mt-10">
@@ -73,15 +86,21 @@ const ResidentDashboard = () => {
 
       {/* Tab Content */}
       {activeTab === "overview" && (
-        <div className="mt-6">
-          <h2 className="text-lg font-semibold">Medication List</h2>
-          <div className="space-y-4 mt-4">
-            {medications.length > 0 ? (
-              medications.map((med) => <MedicationDisplay key={med.id} medication={med} />)
-            ) : (
-              <p className="text-gray-500">No medications found.</p>
-            )}
-          </div>
+        <div className="flex flex-col sm:flex-row items-start justify-between gap-6 mt-6">
+          {/* Details Card */}
+          <ResidentDetailsCard
+            gender="Female"
+            dateOfBirth="1945-05-12"
+            nricNumber="S1234567A"
+            emergencyContactName="Bob Johnson"
+            emergencyContactNumber="91234567"
+            relationship="Spouse"
+            primaryNurse="Nurse A"
+            onPrimaryNurseChange={handlePrimaryNurseChange}
+          />
+
+          {/* Notes Card */}
+          <ResidentDetailsNotesCard additionalNotes="Requires special diet" />
         </div>
       )}
 
@@ -94,17 +113,51 @@ const ResidentDashboard = () => {
 
       {activeTab === "medication" && (
         <div className="mt-6">
-          <h2 className="text-lg font-semibold">Medication List</h2>
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold">Medication List</h2>
+            <Button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="bg-gray-100 text-gray-700 border border-gray-300 shadow-sm px-2 py-1 text-xs rounded-md hover:bg-gray-200 transition w-28"
+            >
+              Add Medication
+            </Button>
+
+          </div>
           <div className="space-y-4 mt-4">
             {medications.length > 0 ? (
               medications.map((medication) => (
-                <MedicationDisplay key={medication.id} medication={medication} />
+                <MedicationDisplay key={medication.id} medication={medication} onEdit={handleEditMedication} />
               ))
             ) : (
               <p className="text-gray-500">No medications found.</p>
             )}
           </div>
         </div>
+      )}
+
+      {/* Create Medication Modal */}
+      <CreateMedication
+        residentId={residentId || ""}
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onMedicationAdded={() => {
+          setIsCreateModalOpen(false);
+          getMedicationsForResident(residentId || "").then(setMedications);
+        }}
+      />
+
+      {/* Edit Medication Modal */}
+      {selectedMedication && (
+        <EditMedication
+          residentId={residentId || ""}
+          medication={selectedMedication}
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          onMedicationUpdated={() => {
+            setIsEditModalOpen(false);
+            getMedicationsForResident(residentId || "").then(setMedications);
+          }}
+        />
       )}
 
       {activeTab === "careplan" && (

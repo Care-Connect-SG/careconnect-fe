@@ -81,7 +81,7 @@ export default function Incident() {
               id={form.id}
               title={form.title}
               description={form.description}
-              created_date={form.created_date.split(" ")[0]}
+              created_at={form.created_at.split(" ")[0]}
               status={form.status}
               onPublish={handlePublish}
               onDelete={handleDelete}

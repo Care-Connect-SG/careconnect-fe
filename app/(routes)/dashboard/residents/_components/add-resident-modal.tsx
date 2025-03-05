@@ -1,7 +1,7 @@
 "use client";
 
+import { X } from "lucide-react";
 import React, { useState, useEffect } from "react";
-import { Cross2Icon } from "@radix-ui/react-icons";
 import { getAllNurses } from "../../../../api/user";
 import { UserResponse } from "../../../../api/user";
 
@@ -80,14 +80,19 @@ const AddResidentModal: React.FC<AddResidentModalProps> = ({
       <div className="relative z-10 bg-white rounded-lg shadow-lg max-w-lg w-full p-6 max-h-[80vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">Add New Resident</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-            <Cross2Icon />
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <X />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Full Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Full Name</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Full Name
+            </label>
             <input
               type="text"
               value={fullName}
@@ -98,7 +103,9 @@ const AddResidentModal: React.FC<AddResidentModalProps> = ({
           </div>
           {/* Gender */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Gender</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Gender
+            </label>
             <select
               value={gender}
               onChange={(e) => setGender(e.target.value)}
@@ -112,7 +119,9 @@ const AddResidentModal: React.FC<AddResidentModalProps> = ({
           </div>
           {/* Date of Birth */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Date of Birth
+            </label>
             <input
               type="date"
               value={dateOfBirth}
@@ -123,7 +132,9 @@ const AddResidentModal: React.FC<AddResidentModalProps> = ({
           </div>
           {/* NRIC Number */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">NRIC Number</label>
+            <label className="block text-sm font-medium text-gray-700">
+              NRIC Number
+            </label>
             <input
               type="text"
               value={nricNumber}
@@ -134,7 +145,9 @@ const AddResidentModal: React.FC<AddResidentModalProps> = ({
           </div>
           {/* Emergency Contact Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Emergency Contact</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Emergency Contact
+            </label>
             <input
               type="text"
               value={emergencyContactName}
@@ -145,7 +158,9 @@ const AddResidentModal: React.FC<AddResidentModalProps> = ({
           </div>
           {/* Emergency Contact Number */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Contact Number</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Contact Number
+            </label>
             <input
               type="text"
               value={emergencyContactNumber}
@@ -156,7 +171,9 @@ const AddResidentModal: React.FC<AddResidentModalProps> = ({
           </div>
           {/* Relationship */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Relationship</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Relationship
+            </label>
             <input
               type="text"
               value={relationship}
@@ -167,7 +184,9 @@ const AddResidentModal: React.FC<AddResidentModalProps> = ({
           </div>
           {/* Room Number */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Room Number</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Room Number
+            </label>
             <input
               type="text"
               value={roomNumber}
@@ -177,7 +196,9 @@ const AddResidentModal: React.FC<AddResidentModalProps> = ({
           </div>
           {/* Additional Notes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Additional Notes</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Additional Notes
+            </label>
             <textarea
               value={additionalNotes}
               onChange={(e) => setAdditionalNotes(e.target.value)}
@@ -187,7 +208,9 @@ const AddResidentModal: React.FC<AddResidentModalProps> = ({
           </div>
           {/* Primary Nurse Dropdown */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Primary Nurse</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Primary Nurse
+            </label>
             <select
               value={primaryNurse}
               onChange={(e) => setPrimaryNurse(e.target.value)}

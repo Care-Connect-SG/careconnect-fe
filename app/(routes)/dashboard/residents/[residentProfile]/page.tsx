@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { ResidentRecord } from "@/types/resident";
 import { useParams } from "next/navigation";
-import ResidentProfileCard from "./_components/resident-profile-card";
+import React, { useEffect, useState } from "react";
+import { getResidentById, updateResident } from "../../../../api/resident";
+import EditProfileModal from "../_components/edit-modal";
 import ResidentDetailsCard from "./_components/resident-detail-card";
 import ResidentDetailsNotesCard from "./_components/resident-detail-notes";
-import EditProfileModal from "../_components/edit-modal";
-import { getResidentById, updateResident } from "../../../../api/resident";
-import { ResidentRecord } from "@/types/resident";
+import ResidentProfileCard from "./_components/resident-profile-card";
 
 const TABS = [
   { label: "Overview", value: "overview" },
@@ -171,7 +171,6 @@ export default function ResidentDashboard() {
             emergencyContactNumber={resident.emergency_contact_number}
             relationship={resident.relationship}
             primaryNurse={resident.primary_nurse || ""}
-            
           />
           <ResidentDetailsNotesCard
             additionalNotes={resident.additional_notes || "None"}

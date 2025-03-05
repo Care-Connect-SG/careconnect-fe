@@ -1,7 +1,7 @@
 "use client";
 
+import { Check, PlusCircle } from "lucide-react";
 import React, { useState } from "react";
-import { PlusCircle, Check } from "lucide-react";
 
 interface ResidentDetailsNotesCardProps {
   additionalNotes?: string;

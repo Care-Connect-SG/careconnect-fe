@@ -1,16 +1,21 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import ResidentCard, { NurseOption } from "./_components/all-resident-card";
-import AddResidentModal from "./_components/add-resident-modal";
-import { useRouter } from "next/navigation";
-import { getResidents, updateResidentNurse, deleteResident, createResident } from "../../../api/resident";
-import { getAllNurses } from "../../../api/user";
-import { ResidentRecord } from "@/types/resident";
-import { UserResponse } from "../../../api/user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ResidentRecord } from "@/types/resident";
 import { Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import {
+  createResident,
+  deleteResident,
+  getResidents,
+  updateResidentNurse,
+} from "../../../api/resident";
+import { getAllNurses } from "../../../api/user";
+import { UserResponse } from "../../../api/user";
+import AddResidentModal from "./_components/add-resident-modal";
+import ResidentCard, { NurseOption } from "./_components/all-resident-card";
 
 export default function AllResidentsPage() {
   const [residents, setResidents] = useState<ResidentRecord[]>([]);
@@ -45,7 +50,7 @@ export default function AllResidentsPage() {
   }, []);
 
   const filteredResidents = residents.filter((resident) =>
-    resident.full_name.toLowerCase().includes(searchTerm.toLowerCase())
+    resident.full_name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const computeAge = (dob: string) => {
@@ -74,7 +79,7 @@ export default function AllResidentsPage() {
     try {
       const updatedResident = await updateResidentNurse(id, updatePayload);
       setResidents((prev) =>
-        prev.map((res) => (res.id === id ? updatedResident : res))
+        prev.map((res) => (res.id === id ? updatedResident : res)),
       );
       console.log("Updated resident:", updatedResident);
     } catch (error) {

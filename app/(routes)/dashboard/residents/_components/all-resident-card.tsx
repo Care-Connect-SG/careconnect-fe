@@ -1,17 +1,17 @@
 "use client";
 
-import Image from "next/image";
-import React from "react";
-import { Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
   Select,
-  SelectTrigger,
-  SelectValue,
   SelectContent,
   SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
+import { Trash } from "lucide-react";
+import Image from "next/image";
+import React from "react";
 
 export type Resident = {
   id: string;

@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import React, { useState } from "react";
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -47,12 +47,22 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   const [fullName, setFullName] = useState(initialData.full_name || "");
   const [roomNumber, setRoomNumber] = useState(initialData.room_number || "");
   const [gender, setGender] = useState(initialData.gender || "");
-  const [dateOfBirth, setDateOfBirth] = useState(initialData.date_of_birth || "");
+  const [dateOfBirth, setDateOfBirth] = useState(
+    initialData.date_of_birth || "",
+  );
   const [nricNumber, setNricNumber] = useState(initialData.nric_number || "");
-  const [relationship, setRelationship] = useState(initialData.relationship || "");
-  const [emergencyContactName, setEmergencyContactName] = useState(initialData.emergency_contact_name || "");
-  const [emergencyContactNumber, setEmergencyContactNumber] = useState(initialData.emergency_contact_number || "");
-  const [primaryNurse, setPrimaryNurse] = useState(initialData.primary_nurse || "");
+  const [relationship, setRelationship] = useState(
+    initialData.relationship || "",
+  );
+  const [emergencyContactName, setEmergencyContactName] = useState(
+    initialData.emergency_contact_name || "",
+  );
+  const [emergencyContactNumber, setEmergencyContactNumber] = useState(
+    initialData.emergency_contact_number || "",
+  );
+  const [primaryNurse, setPrimaryNurse] = useState(
+    initialData.primary_nurse || "",
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -175,7 +185,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
             />
           </div>
           <div className="flex justify-end space-x-4">
-            <Button  type="button" onClick={onClose}>
+            <Button type="button" onClick={onClose}>
               Cancel
             </Button>
             <Button type="submit">Save</Button>

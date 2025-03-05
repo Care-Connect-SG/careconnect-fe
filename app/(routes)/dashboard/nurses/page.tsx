@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { EyeIcon, PlusIcon } from "lucide-react";
+import { EyeIcon, InfoIcon, PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
 import { Button } from "@/components/ui/button"; 
 import RoleChip from "@/components/ui/roleChip"; 
 import CreateUserModal from "@/components/createUserModal"; 
@@ -141,12 +141,27 @@ const Nurses = () => {
                 <td className="p-4">{user.organisation_rank || "N/A"}</td>
                 <td className="p-4">{user.gender}</td>
 
-                <td className="p-4">
-                  <EyeIcon
+                <td className="p-4 flex gap-3">
+                  {/* Edit Icon */}
+                  <PencilIcon
+                    className="h-5 w-5 text-blue-600 cursor-pointer hover:text-blue-800 transition"
+                    onClick={() =>
+                      router.push(`/dashboard/users/edit/${user.email}`)
+                    }
+                  />
+
+                  {/* Inspect Icon */}
+                  <InfoIcon
                     className="h-5 w-5 text-gray-600 cursor-pointer hover:text-gray-800 transition"
                     onClick={() =>
                       router.push(`/dashboard/users/${user.email}`)
                     }
+                  />
+
+                  {/* Delete Icon */}
+                  <TrashIcon
+                    className="h-5 w-5 text-red-600 cursor-pointer hover:text-red-800 transition"
+                    onClick={() => () => console.log("Delete user:", user.email)}
                   />
                 </td>
               </tr>

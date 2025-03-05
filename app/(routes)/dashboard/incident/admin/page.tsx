@@ -17,7 +17,7 @@ const formatDate = (isoDate: string): string => {
   }).format(date);
 };
 
-export default function Incident() {
+export default function IncidentReportingFormsAdmin() {
   const [forms, setForms] = useState<FormResponse[]>([]);
 
   useEffect(() => {

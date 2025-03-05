@@ -23,15 +23,15 @@ import { useSession } from "next-auth/react";
 import { getCurrentUser } from "@/app/api/user";
 
 
-export default function CreateFormWrapper() {
+export default function FormBuildWrapper() {
   return (
     <Suspense fallback={<FormLoadingSkeleton />}>
-      <CreateForm />
+      <BuildForm />
     </Suspense>
   );
 }
 
-function CreateForm() {
+function BuildForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const formId = searchParams.get("id");

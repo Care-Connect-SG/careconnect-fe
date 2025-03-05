@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import FormCardPublished from "./_components/form-card-published";
 
 
-export default function Report() {
+export default function IncidentReportingForms() {
   const [forms, setForms] = useState<FormResponse[]>([]);
 
   useEffect(() => {

@@ -12,7 +12,7 @@ import { useEffect, useState } from "react";
 import FormElementView from "../../../_components/form-element-view";
 import { FormHeaderView } from "../../../_components/form-header";
 
-export default function ViewForm({
+export default function FormView({
   params,
 }: { params: Promise<{ id: string }> }) {
   const [formId, setFormId] = useState<string | null>(null);

@@ -2,7 +2,7 @@ import { getFormById } from "@/app/api/form";
 import { notFound } from "next/navigation";
 import FormSubmit from "../../_components/form-submit";
 
-export default async function FillForm({
+export default async function FormFill({
   params,
 }: { params: Promise<{ id: string }> }) {
   const formId = (await params).id;

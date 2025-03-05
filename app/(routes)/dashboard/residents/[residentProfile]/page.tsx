@@ -1,20 +1,19 @@
 "use client";
 
+import { getMedicationsForResident } from "@/app/api/medication";
+import { Button } from "@/components/ui/button";
+import { MedicationRecord } from "@/types/medication";
 import { ResidentRecord } from "@/types/resident";
-import { useParams, usePathname } from "next/navigation";
+import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { getResidentById, updateResident } from "../../../../api/resident";
+import CreateMedication from "../_components/create-medication";
+import EditMedication from "../_components/edit-medication";
 import EditProfileModal from "../_components/edit-modal";
+import MedicationDisplay from "../_components/medication-display";
 import ResidentDetailsCard from "./_components/resident-detail-card";
 import ResidentDetailsNotesCard from "./_components/resident-detail-notes";
 import ResidentProfileCard from "./_components/resident-profile-card";
-import MedicationDisplay from "../_components/medication-display";
-import { MedicationRecord } from "@/types/medication";
-import { Button } from "@/components/ui/button";
-import { getMedicationsForResident } from "@/app/api/medication";
-import CreateMedication from "../_components/create-medication";
-import EditMedication from "../_components/edit-medication";
-
 
 const TABS = [
   { label: "Overview", value: "overview" },
@@ -25,164 +24,116 @@ const TABS = [
 ];
 
 export default function ResidentDashboard() {
-  // Extract residentProfile parameter from the URL
   const { residentProfile } = useParams() as { residentProfile: string };
-  console.log("Resident Profile ID:", residentProfile);
 
+  // State Variables
   const [activeTab, setActiveTab] = useState("overview");
   const [primaryNurse, setPrimaryNurse] = useState("");
   const [medications, setMedications] = useState<MedicationRecord[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedMedication, setSelectedMedication] = useState<MedicationRecord | null>(null);
-  const pathname = usePathname();
-
+  const [selectedMedication, setSelectedMedication] =
+    useState<MedicationRecord | null>(null);
   const [resident, setResident] = useState<ResidentRecord | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Fetch resident data on mount/when residentProfile changes
+  // Fetch resident data on mount or when `residentProfile` changes
   useEffect(() => {
     if (residentProfile) {
       getResidentById(residentProfile)
         .then((data: ResidentRecord) => {
           setResident(data);
           setPrimaryNurse(data.primary_nurse || "");
-          console.log("Resident fetched:", data);
         })
-        .catch((error: any) => {
-          console.error("Error fetching resident info:", error);
-        });
+        .catch((error) => console.error("Error fetching resident:", error));
     }
   }, [residentProfile]);
 
-  // Simple age calculator (assuming date_of_birth is an ISO string)
-  const computeAge = (dob: string) => {
-    const birthDate = new Date(dob);
-    const diffMs = Date.now() - birthDate.getTime();
-    const ageDt = new Date(diffMs);
-    return Math.abs(ageDt.getUTCFullYear() - 1970);
-  };
+  // Fetch medications when the "Medication" tab is active
+  useEffect(() => {
+    if (activeTab === "medication" && residentProfile) {
+      getMedicationsForResident(residentProfile)
+        .then(setMedications)
+        .catch(console.error);
+    }
+  }, [activeTab, residentProfile]);
 
-  // Opens the edit profile modal
+  // Handle Edit Profile Modal
   const handleEditProfile = () => {
     setIsModalOpen(true);
   };
 
-  // Called when the modal form is saved (editing full profile)
+  // Save Profile Changes
   const handleModalSave = async (updatedData: any) => {
     if (!resident) return;
     try {
-      const residentId = resident.id || resident.id;
-      if (!residentId) throw new Error("Resident ID is missing.");
-      const updatedResident = await updateResident(residentId, updatedData);
+      const updatedResident = await updateResident(resident.id, updatedData);
       setResident(updatedResident);
       setPrimaryNurse(updatedResident.primary_nurse || "");
-      console.log("Updated resident (profile):", updatedResident);
     } catch (error) {
       console.error("Error updating resident profile:", error);
     }
     setIsModalOpen(false);
   };
 
-  // Called when additional notes are saved from the inline edit in the notes card
+  // Save Additional Notes
   const handleSaveAdditionalNotes = async (newNotes: string) => {
     if (!resident) return;
-    // Build a full update payload using the current resident data and the updated additional notes
-    const updatePayload = {
-      full_name: resident.full_name,
-      gender: resident.gender,
-      date_of_birth: resident.date_of_birth,
-      nric_number: resident.nric_number,
-      emergency_contact_name: resident.emergency_contact_name,
-      emergency_contact_number: resident.emergency_contact_number,
-      relationship: resident.relationship,
-      room_number: resident.room_number,
-      additional_notes: newNotes,
-      primary_nurse: resident.primary_nurse || "",
-    };
-
     try {
-      const updatedResident = await updateResident(resident.id, updatePayload);
+      const updatedResident = await updateResident(resident.id, {
+        ...resident,
+        additional_notes: newNotes,
+      });
       setResident(updatedResident);
-      console.log("Updated resident (notes):", updatedResident);
     } catch (error) {
       console.error("Error updating additional notes:", error);
     }
   };
 
-  const handlePrimaryNurseChange = (value: string) => {
-    setPrimaryNurse(value);
-    // Optionally, you could update the nurse field immediately using a similar update payload.
-  };
-
-  const handleModalClose = () => {
-    setIsModalOpen(false);
+  // Handle Edit Medication Click
+  const handleEditMedication = (medication: MedicationRecord) => {
+    setSelectedMedication(medication);
+    setIsEditModalOpen(true);
   };
 
   if (!resident) {
     return <div className="text-center mt-10">Loading resident details...</div>;
   }
 
-  const age = computeAge(resident.date_of_birth);
-  // Extract Resident ID from URL
-  const residentId = pathname.split("/").pop(); // Gets the last segment of the URL
-
-  // Fetch Medications when the Medication tab is active
-  useEffect(() => {
-    if (activeTab === "medication" && residentId) {
-      getMedicationsForResident(residentId)
-        .then((data) => setMedications(data))
-        .catch(console.error);
-    }
-  }, [activeTab, residentId]);
-
-  // Handle edit button click in MedicationDisplay
-  const handleEditMedication = (medication: MedicationRecord) => {
-    console.log("Opening edit modal for:", medication); // ✅ Debugging step
-    setSelectedMedication(medication);
-    setIsEditModalOpen(true);
-  };
-
   return (
     <div className="w-full max-w-4xl mx-auto mt-10">
-      {/* Profile Card (Always Visible) */}
+      {/* Profile Card */}
       <ResidentProfileCard
         name={resident.full_name}
-        age={age}
+        age={
+          new Date().getFullYear() -
+          new Date(resident.date_of_birth).getFullYear()
+        }
         room={resident.room_number}
-        imageUrl="/images/no-image.png" // Use resident.imageUrl if provided by your backend
+        imageUrl="/images/no-image.png"
         onEdit={handleEditProfile}
       />
 
       {/* Edit Profile Modal */}
       <EditProfileModal
         isOpen={isModalOpen}
-        onClose={handleModalClose}
-        initialData={{
-          full_name: resident.full_name,
-          room_number: resident.room_number,
-          gender: resident.gender,
-          date_of_birth: resident.date_of_birth,
-          nric_number: resident.nric_number,
-          relationship: resident.relationship,
-          emergency_contact_name: resident.emergency_contact_name,
-          emergency_contact_number: resident.emergency_contact_number,
-          primary_nurse: resident.primary_nurse || "",
-        }}
+        onClose={() => setIsModalOpen(false)}
+        initialData={resident}
         onSave={handleModalSave}
       />
 
-      {/* Tab Bar */}
+      {/* Tab Navigation */}
       <div className="mt-6 border-b border-gray-200">
         <div className="flex space-x-8">
           {TABS.map((tab) => (
             <button
               key={tab.value}
               onClick={() => setActiveTab(tab.value)}
-              className={`py-2 px-1 text-sm font-medium ${activeTab === tab.value
-                ? "text-blue-600 border-b-2 border-blue-600"
-                : "text-gray-500"
-                }`}
+              className={`py-2 px-1 text-sm font-medium ${
+                activeTab === tab.value
+                  ? "text-blue-600 border-b-2 border-blue-600"
+                  : "text-gray-500"
+              }`}
             >
               {tab.label}
             </button>
@@ -190,7 +141,7 @@ export default function ResidentDashboard() {
         </div>
       </div>
 
-      {/* Tab Content */}
+      {/* Overview Tab */}
       {activeTab === "overview" && (
         <div className="flex flex-col sm:flex-row items-start justify-between gap-6 mt-6">
           <ResidentDetailsCard
@@ -209,29 +160,24 @@ export default function ResidentDashboard() {
         </div>
       )}
 
-      {activeTab === "history" && (
-        <div className="mt-6">
-          <h2 className="text-lg font-semibold">Record History</h2>
-          {/* Insert record history content here */}
-        </div>
-      )}
-
+      {/* Medication Tab */}
       {activeTab === "medication" && (
         <div className="mt-6">
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-semibold">Medication List</h2>
-            <Button
-              onClick={() => setIsCreateModalOpen(true)}
-              className="bg-gray-100 text-gray-700 border border-gray-300 shadow-sm px-2 py-1 text-xs rounded-md hover:bg-gray-200 transition w-28"
-            >
+            <Button onClick={() => setIsCreateModalOpen(true)}>
               Add Medication
             </Button>
-
           </div>
+
           <div className="space-y-4 mt-4">
             {medications.length > 0 ? (
               medications.map((medication) => (
-                <MedicationDisplay key={medication.id} medication={medication} onEdit={handleEditMedication} />
+                <MedicationDisplay
+                  key={medication.id}
+                  medication={medication}
+                  onEdit={handleEditMedication}
+                />
               ))
             ) : (
               <p className="text-gray-500">No medications found.</p>
@@ -242,41 +188,27 @@ export default function ResidentDashboard() {
 
       {/* Create Medication Modal */}
       <CreateMedication
-        residentId={residentId || ""}
+        residentId={residentProfile}
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onMedicationAdded={() => {
           setIsCreateModalOpen(false);
-          getMedicationsForResident(residentId || "").then(setMedications);
+          getMedicationsForResident(residentProfile).then(setMedications);
         }}
       />
 
       {/* Edit Medication Modal */}
       {selectedMedication && (
         <EditMedication
-          residentId={residentId || ""}
+          residentId={residentProfile}
           medication={selectedMedication}
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
           onMedicationUpdated={() => {
             setIsEditModalOpen(false);
-            getMedicationsForResident(residentId || "").then(setMedications);
+            getMedicationsForResident(residentProfile).then(setMedications);
           }}
         />
-      )}
-
-      {activeTab === "careplan" && (
-        <div className="mt-6">
-          <h2 className="text-lg font-semibold">Care Plan</h2>
-          {/* Insert care plan content here */}
-        </div>
-      )}
-
-      {activeTab === "wellness" && (
-        <div className="mt-6">
-          <h2 className="text-lg font-semibold">Wellness Report</h2>
-          {/* Insert wellness report content here */}
-        </div>
       )}
     </div>
   );

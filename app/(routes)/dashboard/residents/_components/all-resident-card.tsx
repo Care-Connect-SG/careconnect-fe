@@ -1,6 +1,17 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Trash } from "lucide-react";
 import Image from "next/image";
 import React from "react";
-
 
 export type Resident = {
   id: string;
@@ -11,25 +22,44 @@ export type Resident = {
   imageUrl: string;
 };
 
+export type NurseOption = {
+  id: string;
+  name: string;
+};
+
 interface ResidentCardProps {
   resident: Resident;
   onNurseChange: (id: string, newNurse: string) => void;
   onClick?: (id: string) => void;
+  onDelete?: (id: string) => void;
+  nurseOptions: NurseOption[];
 }
 
+function ResidentCard({
+  resident,
+  onNurseChange,
+  onClick,
+  onDelete,
+  nurseOptions,
+}: ResidentCardProps) {
+  // Use an empty string if nurse is not set.
+  const currentValue = resident.nurse || "";
 
-
-function AllResidentCard({ resident, onNurseChange, onClick }: ResidentCardProps) {
-  const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    onNurseChange(resident.id, event.target.value);
+  const handleChange = (value: string) => {
+    onNurseChange(resident.id, value);
   };
 
-
+  const handleDelete = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    if (onDelete) onDelete(resident.id);
+  };
 
   return (
-    <div className="flex items-center justify-between p-4 bg-white shadow-md rounded-md"  >
+    <div
+      className="flex items-center justify-between p-4 bg-white shadow-md rounded-md cursor-pointer"
+      onClick={() => onClick && onClick(resident.id)}
+    >
       <div className="flex items-center gap-4">
-        {/* Profile Photo */}
         <div className="relative w-16 h-16">
           <Image
             src={resident.imageUrl}
@@ -38,26 +68,31 @@ function AllResidentCard({ resident, onNurseChange, onClick }: ResidentCardProps
             className="rounded-full object-cover"
           />
         </div>
-        {/* Resident Details */}
         <div>
-          <h2 className="text-lg font-semibold"  onClick={() => onClick && onClick(resident.id)}>{resident.name}</h2>
+          <Label className="text-lg font-semibold">{resident.name}</Label>
           <p className="text-sm text-gray-600">Age: {resident.age}</p>
           <p className="text-sm text-gray-600">Room: {resident.room}</p>
         </div>
       </div>
-
-      {/* Oval dropdown for Primary Nurse */}
-      <select
-        className="px-4 py-2 bg-blue-100 text-blue-700 rounded-full cursor-pointer"
-        value={resident.nurse}
-        onChange={handleChange}
-      >
-        <option value="Nurse A">Nurse A</option>
-        <option value="Nurse B">Nurse B</option>
-        <option value="Nurse C">Nurse C</option>
-      </select>
+      <div className="flex items-center gap-2">
+        <Select value={currentValue} onValueChange={handleChange}>
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="Select Nurse" />
+          </SelectTrigger>
+          <SelectContent>
+            {nurseOptions.map((option) => (
+              <SelectItem key={option.id} value={option.name}>
+                {option.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button onClick={handleDelete} className="bg-red-500 hover:bg-red-600">
+          <Trash className="h-4 w-4 text-white" />
+        </Button>
+      </div>
     </div>
   );
 }
 
-export default AllResidentCard;
+export default ResidentCard;

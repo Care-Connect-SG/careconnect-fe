@@ -1,87 +1,168 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import ResidentCard, { Resident } from "./_components/all-resident-card";
-import { useRouter } from "next/navigation";
-import { getResidents } from "../../../api/resident";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ResidentRecord } from "@/types/resident";
+import { Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import {
+  createResident,
+  deleteResident,
+  getResidents,
+  updateResidentNurse,
+} from "../../../api/resident";
+import { getAllNurses } from "../../../api/user";
+import { UserResponse } from "../../../api/user";
+import AddResidentModal from "./_components/add-resident-modal";
+import ResidentCard, { NurseOption } from "./_components/all-resident-card";
 
 export default function AllResidentsPage() {
-  const [residents, setResidents] = useState<Resident[]>([]);
+  const [residents, setResidents] = useState<ResidentRecord[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [nurseOptions, setNurseOptions] = useState<NurseOption[]>([]);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    // Call your API to fetch residents
     getResidents()
       .then((data: ResidentRecord[]) => {
-        // Map backend data (ResidentRecord) to your Resident type
-        const formatted: Resident[] = data.map((record) => ({
-          id: record.id, // or keep as string if your component supports it
-          name: record.full_name,
-          // If API doesn't include age, you could compute it from date_of_birth.
-          // For now, we'll assume it's returned or set to a default.
-          age: record.date_of_birth.length ? record.date_of_birth.length : 0,
-          room: record.room_number,
-          nurse: record.primary_nurse || "N/A",
-          // If your API doesn't return an image URL, use a default.
-          imageUrl:  "/images/no-image.png",
-        }));
-        setResidents(formatted);
-        console.log("Residents fetched:", formatted);
+        setResidents(data);
+        console.log("Residents fetched:", data);
       })
       .catch((error) => {
         console.error("Error fetching residents:", error);
       });
   }, []);
 
-  // Filter logic
+  useEffect(() => {
+    getAllNurses()
+      .then((data: UserResponse[]) => {
+        const options: NurseOption[] = data.map((user) => ({
+          id: user.id,
+          name: user.name,
+        }));
+        setNurseOptions(options);
+      })
+      .catch((error) => {
+        console.error("Error fetching nurses:", error);
+      });
+  }, []);
+
   const filteredResidents = residents.filter((resident) =>
-    resident.name.toLowerCase().includes(searchTerm.toLowerCase())
+    resident.full_name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  // Handle nurse selection changes
-  const handleNurseChange = (id: string, newNurse: string) => {
-    setResidents((prev) =>
-      prev.map((res) => (res.id === id.toString() ? { ...res, nurse: newNurse } : res))
-    );
+  const computeAge = (dob: string) => {
+    const birthDate = new Date(dob);
+    const diffMs = Date.now() - birthDate.getTime();
+    const ageDt = new Date(diffMs);
+    return Math.abs(ageDt.getUTCFullYear() - 1970);
   };
 
-  // Handle search input changes
+  const handleNurseChange = async (id: string, newNurse: string) => {
+    const currentResident = residents.find((res) => res.id === id);
+    if (!currentResident) return;
+    const updatePayload = {
+      full_name: currentResident.full_name,
+      gender: currentResident.gender,
+      date_of_birth: currentResident.date_of_birth,
+      nric_number: currentResident.nric_number,
+      emergency_contact_name: currentResident.emergency_contact_name,
+      emergency_contact_number: currentResident.emergency_contact_number,
+      relationship: currentResident.relationship,
+      room_number: currentResident.room_number,
+      additional_notes: currentResident.additional_notes,
+      primary_nurse: newNurse,
+    };
+
+    try {
+      const updatedResident = await updateResidentNurse(id, updatePayload);
+      setResidents((prev) =>
+        prev.map((res) => (res.id === id ? updatedResident : res)),
+      );
+      console.log("Updated resident:", updatedResident);
+    } catch (error) {
+      console.error("Error updating nurse:", error);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this resident?")) return;
+    try {
+      await deleteResident(id);
+      setResidents((prev) => prev.filter((res) => res.id !== id));
+      console.log("Deleted resident with id:", id);
+    } catch (error) {
+      console.error("Error deleting resident:", error);
+    }
+  };
+
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
 
-  // Navigate to resident detail page when a card is clicked
   const handleCardClick = (id: string) => {
     router.push(`/dashboard/residents/${id}`);
   };
 
+  const handleAddResidentSave = async (newResidentData: any) => {
+    try {
+      const createdResident = await createResident(newResidentData);
+      setResidents((prev) => [...prev, createdResident]);
+      console.log("Created new resident:", createdResident);
+    } catch (error) {
+      console.error("Error creating resident:", error);
+    }
+    setIsAddModalOpen(false);
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-4">
-      {/* Search Bar */}
-      <div className="flex justify-center mb-4">
-        <div className="relative w-full">
-          <input
+      {/* Search Bar with Add Buttons */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="relative w-full max-w-xl">
+          <Input
             type="text"
             placeholder="Search residents..."
-            className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-full focus:outline-none focus:border-blue-500"
+            className="pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:border-blue-500"
             value={searchTerm}
             onChange={handleSearch}
           />
-          <span className="absolute right-3 top-2 text-gray-400">🔍</span>
+          <div className="absolute left-3 top-2 text-gray-400">
+            <Search className="h-5 w-5" />
+          </div>
+        </div>
+        <div className="flex gap-4 right-4" style={{ marginRight: "25px" }}>
+          <Button variant="default" onClick={() => setIsAddModalOpen(true)}>
+            Add New Resident
+          </Button>
         </div>
       </div>
 
-      {/* List of Resident Cards */}
+      <AddResidentModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSave={handleAddResidentSave}
+      />
+
       <div className="space-y-4">
         {filteredResidents.length > 0 ? (
           filteredResidents.map((resident) => (
             <ResidentCard
               key={resident.id}
-              resident={resident}
+              resident={{
+                id: resident.id,
+                name: resident.full_name,
+                age: computeAge(resident.date_of_birth),
+                room: resident.room_number || "N/A",
+                nurse: resident.primary_nurse || "N/A",
+                imageUrl: "/images/no-image.png",
+              }}
               onNurseChange={handleNurseChange}
               onClick={handleCardClick}
+              onDelete={handleDelete}
+              nurseOptions={nurseOptions}
             />
           ))
         ) : (

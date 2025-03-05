@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 
 interface ResidentDetailsCardProps {
@@ -9,7 +11,6 @@ interface ResidentDetailsCardProps {
   relationship: string;
   additionalNotes?: string;
   primaryNurse: string;
-  onPrimaryNurseChange: (value: string) => void;
 }
 
 const nurseOptions = [
@@ -27,7 +28,6 @@ const ResidentDetailsCard: React.FC<ResidentDetailsCardProps> = ({
   emergencyContactNumber,
   relationship,
   primaryNurse,
-  onPrimaryNurseChange,
 }) => {
   return (
     <div className="w-full max-w-4xl mx-auto mt-6 p-4 bg-white shadow-md rounded-md">
@@ -55,21 +55,22 @@ const ResidentDetailsCard: React.FC<ResidentDetailsCardProps> = ({
         </div>
         <div>
           <p className="text-sm text-gray-600">
-            <span className="font-medium">Emergency Contact:</span> {emergencyContactName}
+            <span className="font-medium">Emergency Contact:</span>{" "}
+            {emergencyContactName}
           </p>
-          </div>
-        <div> 
+        </div>
+        <div>
           <p className="text-sm text-gray-600">
-            <span className="font-medium">Contact Number:</span> {emergencyContactNumber}
+            <span className="font-medium">Contact Number:</span>{" "}
+            {emergencyContactNumber}
           </p>
         </div>
 
-        <div> 
+        <div>
           <p className="text-sm text-gray-600">
             <span className="font-medium">Nurse:</span> {primaryNurse}
           </p>
         </div>
-
 
         {/* <div className="sm:col-span-2">
           <label

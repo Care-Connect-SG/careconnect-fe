@@ -55,7 +55,7 @@ export default function CreateFormPage() {
   const handleSaveDraft = async () => {
     if (!state.title || state.elements.length === 0) {
       alert(
-        "Incomplete Form: A form should have at least a title and a form element"
+        "Incomplete Form: A form should have at least a title and a form element",
       );
       return;
     }
@@ -87,7 +87,7 @@ export default function CreateFormPage() {
   const handlePublishDraft = async () => {
     if (!state.title || state.elements.length === 0) {
       alert(
-        "Incomplete Form: A form should have at least a title and a form element"
+        "Incomplete Form: A form should have at least a title and a form element",
       );
       return;
     }

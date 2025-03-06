@@ -8,7 +8,6 @@ export const getForms = async (): Promise<FormResponse[]> => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          // Authorization: `Bearer ${process.env.BE_API_SECRET}`,
         },
       },
     );
@@ -33,7 +32,6 @@ export const createForm = async (formData: FormCreate): Promise<string> => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // Authorization: `Bearer ${process.env.BE_API_SECRET}`,
         },
         body: JSON.stringify(formData),
       },
@@ -62,7 +60,6 @@ export const updateForm = async (
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          // Authorization: `Bearer ${process.env.BE_API_SECRET}`,
         },
         body: JSON.stringify(formData),
       },
@@ -88,7 +85,6 @@ export const publishForm = async (formId: string): Promise<string> => {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          // Authorization: `Bearer ${process.env.BE_API_SECRET}`,
         },
       },
     );
@@ -113,7 +109,6 @@ export const getFormById = async (formId: string): Promise<FormResponse> => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          // Authorization: `Bearer ${process.env.BE_API_SECRET}`,
         },
       },
     );
@@ -140,7 +135,6 @@ export const deleteForm = async (formId: string): Promise<void> => {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          // Authorization: `Bearer ${process.env.BE_API_SECRET}`,
         },
       },
     );

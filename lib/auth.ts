@@ -1,7 +1,8 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-const TOKENEXPIRY = 30 * 60 * 1000; // 30 minutes
+// 30 minutes
+const TOKENEXPIRY = 30 * 60 * 1000;
 
 async function refreshAccessToken(token: any) {
   if (!token.refreshToken) {

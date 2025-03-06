@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ResidentRecord } from "@/types/resident";
+import { UserResponse } from "@/types/user";
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -13,7 +14,6 @@ import {
   updateResidentNurse,
 } from "../../../api/resident";
 import { getAllNurses } from "../../../api/user";
-import { UserResponse } from "../../../api/user";
 import AddResidentModal from "./_components/add-resident-modal";
 import ResidentCard, { NurseOption } from "./_components/all-resident-card";
 

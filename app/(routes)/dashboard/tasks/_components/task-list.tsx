@@ -1,47 +1,73 @@
 "use client";
 
-import { getTasks } from "@/app/api/task";
-import { Spinner } from "@/components/ui/spinner";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toTitleCase } from "@/lib/utils";
 import { Task } from "@/types/task";
-import { useSession } from "next-auth/react";
-import React, { useEffect, useState } from "react";
-import TaskTable from "./task-table";
+import { useRouter } from "next/navigation";
 
-export default function TaskListView() {
-  const { data: session } = useSession();
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+export default function TaskListView({ tasks }: { tasks: Task[] }) {
+  const router = useRouter();
 
-  useEffect(() => {
-    if (!session?.user?.email) return;
-    const userEmail = session.user.email as string;
-
-    const fetchTasks = async () => {
-      try {
-        const data: Task[] = await getTasks(userEmail);
-        setTasks(data);
-      } catch (err) {
-        setError("Failed to fetch tasks");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTasks();
-  }, [session?.user?.email]);
-
-  if (loading)
+  if (!tasks.length) {
     return (
-      <div className="p-8">
-        <Spinner />
-      </div>
+      <p className="text-center text-gray-500">No available tasks, Hooray!</p>
     );
-  if (error) return <p className="text-red-500">{error}</p>;
+  }
 
   return (
-    <div className="flex-1 p-8">
-      <TaskTable tasks={tasks} />
+    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                {/* <Checkbox className="h-4 w-4 border border-gray-300 bg-white" /> */}
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Task
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Resident
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Assigned To
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Priority
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Status
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200">
+            {tasks.map((task) => (
+              <tr
+                key={task.id}
+                className="hover:bg-blue-50 hover:cursor-pointer hover:duration-300 ease-in-out"
+                onClick={() => router.push(`/dashboard/tasks/${task.id}`)}
+              >
+                <td className="px-6 py-4">
+                  <Checkbox className="h-4 w-4 border border-gray-300 bg-white" />
+                </td>
+                <td className="px-6 py-4 font-medium text-gray-900">
+                  {task.task_title}
+                </td>
+                <td className="px-6 py-4 text-gray-900">
+                  {toTitleCase(task.resident_name) || "N/A"}
+                </td>
+                <td className="px-6 py-4 text-gray-900">
+                  {toTitleCase(task.assigned_to_name) || "Unassigned"}
+                </td>
+                <td className="px-6 py-4 text-gray-900">
+                  {task.priority || "Low"}
+                </td>
+                <td className="px-6 py-4 text-gray-900">{task.status}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

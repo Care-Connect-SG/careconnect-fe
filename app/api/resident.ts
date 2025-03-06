@@ -1,13 +1,9 @@
-import { RegistrationCreate, ResidentRecord } from "@/types/resident"; // adjust the path and type names as needed
+import { RegistrationCreate, ResidentRecord } from "@/types/resident";
 
-/**
- * Fetch all resident records.
- * This calls the backend endpoint GET /residents
- */
 export const getResidents = async (): Promise<ResidentRecord[]> => {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BE_API_URL}/residents`,
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/`,
       {
         method: "GET",
         headers: {

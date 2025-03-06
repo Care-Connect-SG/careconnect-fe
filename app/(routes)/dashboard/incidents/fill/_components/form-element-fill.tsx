@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -9,71 +9,86 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+
 import { FormElementData } from "@/hooks/useFormReducer";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
-import { useEffect, useState } from "react";
 
-
+// We also pass the current 'value'
 interface FormElementFillProps {
   element: FormElementData;
-  onInputChange: (form_element_id: string, input: any) => void;
+  value: string | string[];  // Current value for this field
+  // This method updates the global state in the parent
+  onInputChange: (form_element_id: string, inputValue: any) => void;
 }
 
 export default function FormElementFill({
   element,
+  value,
   onInputChange,
 }: FormElementFillProps) {
-  const [value, setValue] = useState<string | string[]>(
-    element.type === "checkbox" ? [] : "",
-  );
+  // For readability, destructure a bit:
+  const { element_id, type, label, required, helptext, options } = element;
 
-  useEffect(() => {
-    if (value) {
-      onInputChange(element.element_id, value);
-    }
-  }, [value]);
+  // Handler for updating a "text" or "textarea" field
+  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    onInputChange(element_id, e.target.value);
+  };
+
+  // Handler for picking a date
+  const handleDateSelect = (date: Date | undefined) => {
+    const formatted = date ? format(date, "yyyy-MM-dd") : "";
+    onInputChange(element_id, formatted);
+  };
+
+  // For radio and checkbox fields, we'll define separate handlers
+  const handleRadioChange = (option: string) => {
+    onInputChange(element_id, option);
+  };
+
+  const handleCheckboxChange = (option: string) => {
+    const currentValue = Array.isArray(value) ? value : [];
+    const newValue = currentValue.includes(option)
+      ? currentValue.filter((item) => item !== option)
+      : [...currentValue, option];
+    onInputChange(element_id, newValue);
+  };
 
   return (
-    <Card className="py-0">
+    <Card>
       <CardHeader>
         <CardTitle className="md:text-lg md:font-semibold">
-          {element.label} {element.required ? "*" : ""}
+          {label}
+          {required ? " *" : ""}
         </CardTitle>
-        {element.helptext && (
-          <CardDescription>{element.helptext}</CardDescription>
-        )}
+        {helptext && <CardDescription>{helptext}</CardDescription>}
       </CardHeader>
-      <CardContent className="">
-        {element.type === "text" && (
+
+      <CardContent>
+        {type === "text" && (
           <Input
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
+            value={typeof value === "string" ? value : ""}
+            onChange={handleTextChange}
             placeholder="Short answer text"
           />
         )}
-        {element.type === "textarea" && (
+
+        {type === "textarea" && (
           <Textarea
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
+            value={typeof value === "string" ? value : ""}
+            onChange={handleTextChange}
             placeholder="Long answer text"
             className="resize-none"
           />
         )}
-        {element.type === "date" && (
+
+        {type === "date" && (
           <Popover>
             <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={value ? "" : "text-muted-foreground"}
-              >
+              <Button variant="outline">
                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                 {value
                   ? format(new Date(value as string), "PPP")
@@ -84,44 +99,37 @@ export default function FormElementFill({
               <Calendar
                 mode="single"
                 selected={value ? new Date(value as string) : undefined}
-                onSelect={(date) =>
-                  setValue(date ? format(date, "yyyy-MM-dd") : "")
-                }
+                onSelect={handleDateSelect}
               />
             </PopoverContent>
           </Popover>
         )}
-        {element.type === "radio" && element.options && (
-          <div>
-            {element.options.map((option) => (
+
+        {type === "radio" && options && (
+          <div className="flex flex-col gap-2">
+            {options.map((option) => (
               <label key={option} className="flex items-center gap-2">
                 <input
                   type="radio"
-                  name={element.element_id}
+                  name={element_id}
                   value={option}
                   checked={value === option}
-                  onChange={() => setValue(option)}
+                  onChange={() => handleRadioChange(option)}
                 />
                 {option}
               </label>
             ))}
           </div>
         )}
-        {element.type === "checkbox" && element.options && (
-          <div>
-            {element.options.map((option) => (
+
+        {type === "checkbox" && options && (
+          <div className="flex flex-col gap-2">
+            {options.map((option) => (
               <label key={option} className="flex items-center gap-2">
                 <input
                   type="checkbox"
-                  value={option}
                   checked={Array.isArray(value) && value.includes(option)}
-                  onChange={() =>
-                    setValue((prev: any) =>
-                      prev.includes(option)
-                        ? prev.filter((item: string) => item !== option)
-                        : [...prev, option],
-                    )
-                  }
+                  onChange={() => handleCheckboxChange(option)}
                 />
                 {option}
               </label>

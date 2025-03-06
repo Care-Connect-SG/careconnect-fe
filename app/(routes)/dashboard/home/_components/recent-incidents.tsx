@@ -1,15 +1,18 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { AlertTriangle, ArrowRight } from "lucide-react";
 
 const RecentIncidents = () => (
   <Card className="p-6">
     <div className="flex items-center justify-between mb-6">
       <p className="text-lg font-semibold text-gray-800">Recent Incidents</p>
-      <Button variant="link" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+      <Button
+        variant="link"
+        className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+      >
         View All
       </Button>
     </div>
@@ -37,7 +40,10 @@ const RecentIncidents = () => (
           status: "Documented",
         },
       ].map((incident, i) => (
-        <Card key={i} className="p-4 bg-gray-50 flex items-center justify-between">
+        <Card
+          key={i}
+          className="p-4 bg-gray-50 flex items-center justify-between"
+        >
           <div>
             <div className="flex items-center space-x-2">
               <p className="font-medium text-gray-900">{incident.title}</p>
@@ -46,8 +52,8 @@ const RecentIncidents = () => (
                   incident.severity === "High"
                     ? "bg-red-100 text-red-800"
                     : incident.severity === "Medium"
-                    ? "bg-yellow-100 text-yellow-800"
-                    : "bg-green-100 text-green-800"
+                      ? "bg-yellow-100 text-yellow-800"
+                      : "bg-green-100 text-green-800"
                 } px-2 py-1 text-xs rounded-full`}
               >
                 {incident.severity}

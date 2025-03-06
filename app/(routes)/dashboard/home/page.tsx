@@ -16,10 +16,10 @@ export default function Home() {
 
   return (
     <div className="flex flex-col w-full gap-8 p-8">
-        <p className="text-2xl font-semibold text-gray-800">
-          Hello, {session?.user?.email}!
-        </p>
-        <Separator />
+      <p className="text-2xl font-semibold text-gray-800">
+        Hello, {session?.user?.email}!
+      </p>
+      <Separator />
 
       <QuickActions />
       <p className="text-lg font-semibold text-gray-800">Overview</p>

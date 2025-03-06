@@ -30,16 +30,10 @@ export default function CreateReportPage() {
   const isEditing = !!reportId;
   const { data: session } = useSession();
 
-  // ---------------------------
-  // The main reducer for the form
-  // ---------------------------
   const [state, dispatch] = useReportReducer();
   const [form, setForm] = useState<FormResponse>();
   const [loading, setLoading] = useState(true);
 
-  // ---------------------------
-  // Step 1: Fetch the form definition
-  // ---------------------------
   const fetchForm = async () => {
     try {
       const data = await getFormById(formId!);
@@ -51,13 +45,9 @@ export default function CreateReportPage() {
     }
   };
 
-  // ---------------------------
-  // Step 2: Fetch the existing report if editing
-  // ---------------------------
   const fetchReport = async () => {
     try {
       const data: ReportResponse = await getReportById(reportId!);
-      // Convert the returned data into the structure expected by our reducer
       const reportState: ReportState = {
         report_content: data.report_content,
         primaryResident: data.primary_resident || null,
@@ -74,9 +64,6 @@ export default function CreateReportPage() {
     }
   };
 
-  // ---------------------------
-  // Step 3: Initialize our reducer based on editing or creating new
-  // ---------------------------
   const initializeReport = async () => {
     const formData = await fetchForm();
     if (!formData) return;
@@ -85,7 +72,6 @@ export default function CreateReportPage() {
     if (isEditing) {
       const reportState = await fetchReport();
       if (reportState) {
-        // Replace entire state (including "report_content")
         dispatch({ type: "SET_REPORT", payload: reportState });
       }
     } else {
@@ -99,16 +85,12 @@ export default function CreateReportPage() {
     setLoading(false);
   };
 
-  // Trigger once on mount or when formId changes
   useEffect(() => {
     if (formId) {
       initializeReport();
     }
   }, [formId, isEditing, reportId, router]);
 
-  // ---------------------------
-  // Update a single field's input in the reducer
-  // ---------------------------
   const handleInputChange = (form_element_id: string, inputValue: any) => {
     dispatch({
       type: "UPDATE_INPUT",
@@ -116,9 +98,6 @@ export default function CreateReportPage() {
     });
   };
 
-  // ---------------------------
-  // Check if a form element is required
-  // ---------------------------
   const requiresInput = (id: string) => {
     const formElement = form?.json_content.find(
       (element: FormElementData) => element.element_id === id
@@ -126,9 +105,6 @@ export default function CreateReportPage() {
     return formElement?.required;
   };
 
-  // ---------------------------
-  // Submitting / Saving
-  // ---------------------------
   const handleSubmit = async (mode: "Save" | "Publish") => {
     dispatch({ type: "SET_SUBMITTING", payload: true });
     dispatch({ type: "SET_ERROR", payload: null });
@@ -150,7 +126,6 @@ export default function CreateReportPage() {
       }
     }
 
-    // Build data to send
     const user = await getCurrentUser(session!.user!.email!);
     const reporter: CaregiverTag = { id: user.id, name: user.email, role: user.role };
 
@@ -172,19 +147,15 @@ export default function CreateReportPage() {
 
     try {
       if (mode === "Save") {
-        // Save as draft
         const reportData = createReportData(ReportStatus.DRAFT);
 
         if (!reportId) {
-          // create
           const newReportId = await createReport(reportData);
           router.replace(`/dashboard/incidents/fill?formId=${formId}&reportId=${newReportId}`);
         } else {
-          // update
           await updateReport(reportId, reportData);
         }
       } else {
-        // Publish
         const reportData = createReportData(ReportStatus.PUBLISHED);
 
         if (!reportId) {
@@ -202,9 +173,6 @@ export default function CreateReportPage() {
     }
   };
 
-  // ---------------------------
-  // Loading / Render
-  // ---------------------------
   if (loading) return <LoadingSkeleton />;
 
   return (
@@ -236,18 +204,11 @@ export default function CreateReportPage() {
       <div>
         <div className="flex justify-between gap-4">
           <FormHeaderView title={form!.title} description={form!.description} />
-          {/* This presumably updates state.primaryResident, etc. */}
           <ResidentSelector dispatch={dispatch} selectedState={state} />
         </div>
 
-        {/* 
-          Step 4: 
-          Render each form element from state (or from the form definition, 
-          but typically from state so we see the user's current values).
-        */}
         <div className="py-4 space-y-4">
           {state.report_content.map((section) => {
-            // Grab the definition from form.json_content if needed
             const elementDef = form!.json_content.find(
               (el) => el.element_id === section.form_element_id
             );
@@ -257,7 +218,6 @@ export default function CreateReportPage() {
               <FormElementFill
                 key={section.form_element_id}
                 element={elementDef}
-                // We'll pass the current input directly
                 value={section.input ?? ""}
                 onInputChange={handleInputChange}
               />

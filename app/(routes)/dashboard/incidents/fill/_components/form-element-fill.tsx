@@ -17,11 +17,9 @@ import { Calendar } from "@/components/ui/calendar";
 
 import { FormElementData } from "@/hooks/useFormReducer";
 
-// We also pass the current 'value'
 interface FormElementFillProps {
   element: FormElementData;
-  value: string | string[];  // Current value for this field
-  // This method updates the global state in the parent
+  value: string | string[]; 
   onInputChange: (form_element_id: string, inputValue: any) => void;
 }
 
@@ -30,21 +28,17 @@ export default function FormElementFill({
   value,
   onInputChange,
 }: FormElementFillProps) {
-  // For readability, destructure a bit:
   const { element_id, type, label, required, helptext, options } = element;
 
-  // Handler for updating a "text" or "textarea" field
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     onInputChange(element_id, e.target.value);
   };
 
-  // Handler for picking a date
   const handleDateSelect = (date: Date | undefined) => {
     const formatted = date ? format(date, "yyyy-MM-dd") : "";
     onInputChange(element_id, formatted);
   };
 
-  // For radio and checkbox fields, we'll define separate handlers
   const handleRadioChange = (option: string) => {
     onInputChange(element_id, option);
   };

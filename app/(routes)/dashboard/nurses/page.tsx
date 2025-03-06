@@ -129,12 +129,6 @@ const Nurses = () => {
                 <td className="p-4">{user.organisation_rank || "N/A"}</td>
                 <td className="p-4">{user.gender}</td>
                 <td className="p-4 flex gap-3">
-                  <PencilIcon
-                    className="h-5 w-5 text-blue-600 cursor-pointer hover:text-blue-800 transition"
-                    onClick={() =>
-                      router.push(`/dashboard/users/edit/${user.email}`)
-                    }
-                  />
                   <TrashIcon
                     className="h-5 w-5 text-red-600 cursor-pointer hover:text-red-800 transition"
                     onClick={() => console.log("Delete user:", user.email)}

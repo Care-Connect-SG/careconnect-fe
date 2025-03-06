@@ -7,6 +7,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useSession } from "next-auth/react";
+import { fetchUser } from "@/app/api/user";
 
 interface Group {
   _id: string;
@@ -27,6 +28,7 @@ export default function EditGroupPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { data: session } = useSession();
+  const [isAdmin, setIsAdmin] = useState(false);
 
 
   const [group, setGroup] = useState<Group | null>(null);
@@ -64,7 +66,7 @@ export default function EditGroupPage() {
         setLoading(false);
       });
   }, [groupId]);
-  
+
   useEffect(() => {
     fetch("/api/users")
       .then((res) => {
@@ -148,9 +150,24 @@ export default function EditGroupPage() {
     }
   };
 
-  const isAdmin = session?.user?.email
-  ? users.find((u) => u.email === session.user!.email)?.role === "Admin"
-  : false;
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (!session?.user?.email) {
+        setIsAdmin(false);
+        return;
+      }
+
+      try {
+        const user = await fetchUser(session.user.email);
+        setIsAdmin(user?.role === "Admin"); // ✅ Update state
+      } catch (error) {
+        console.error("Error checking admin role:", error);
+        setIsAdmin(false);
+      }
+    };
+
+    checkAdminStatus();
+  }, [session?.user?.email]);
 
 
   if (loading) return <Spinner />;

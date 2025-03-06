@@ -6,6 +6,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { fetchUser } from "@/app/api/user";
+
 
 interface Group {
   id: string; // Unique identifier from the backend.
@@ -28,8 +30,8 @@ export default function GroupDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const { data: session } = useSession();
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  // Fetch both groups and users concurrently.
   useEffect(() => {
     Promise.all([fetch("/api/groups"), fetch("/api/users")])
       .then(async ([groupsRes, usersRes]) => {
@@ -57,9 +59,24 @@ export default function GroupDashboard() {
     return user ? user.name : userId;
   };
 
-  const isAdmin = session?.user?.email
-  ? users.find((u) => u.email === session.user!.email)?.role === "Admin"
-  : false;
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (!session?.user?.email) {
+        setIsAdmin(false);
+        return;
+      }
+
+      try {
+        const user = await fetchUser(session.user.email);
+        setIsAdmin(user?.role === "Admin"); // ✅ Update state
+      } catch (error) {
+        console.error("Error checking admin role:", error);
+        setIsAdmin(false);
+      }
+    };
+
+    checkAdminStatus();
+  }, [session?.user?.email]);
 
 
   // Filter groups based on group name or any member's name.
@@ -89,12 +106,13 @@ export default function GroupDashboard() {
           />
           {isAdmin && (
             <Link
-              href="/dashboard/group/createGroup"
-              className="inline-flex items-center gap-2 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Create New Group</span>
-            </Link>
+  href="/dashboard/group/createGroup"
+  className="inline-flex items-center gap-2 bg-green-500 text-white px-5 py-3 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:bg-green-700 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50"
+>
+  <Plus className="w-5 h-5" />
+  <span className="font-medium">Create New Group</span>
+</Link>
+
           )}
         </div>
       </header>

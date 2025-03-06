@@ -9,7 +9,7 @@ import { ChevronLeft, Eye } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { useEffect, useState } from "react";
-import FormElementView from "../../../_components/form-element-view";
+import FormElementView from "../_components/form-element-view";
 import { FormHeaderView } from "../../../_components/form-header";
 import { LoadingSkeleton } from "../../../_components/loading-skeleton";
 

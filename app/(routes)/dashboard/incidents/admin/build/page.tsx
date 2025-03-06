@@ -18,8 +18,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { Suspense, useState } from "react";
-import FormElement from "../../_components/form-element";
-import FormElementBar from "../../_components/form-element-bar";
+import FormElement from "./_components/form-element";
+import FormElementBar from "./_components/form-element-bar";
 import { FormHeaderEdit } from "../../_components/form-header";
 
 export default function FormBuildWrapper() {

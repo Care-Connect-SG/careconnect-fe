@@ -27,8 +27,6 @@ interface ReportsTableProps {
 }
 
 export default function ReportsTable({ reports, activeTab }: ReportsTableProps) {
-  const [viewDialogOpen, setViewDialogOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const router = useRouter();
 
   const handleView = (report: ReportResponse) => {

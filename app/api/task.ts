@@ -7,19 +7,20 @@ export const getTasks = async (filters?: {
   priority?: string;
 }): Promise<Task[]> => {
   try {
-    // Remove empty values from filters
     const queryParams = filters
       ? new URLSearchParams(filters as Record<string, string>).toString()
       : "";
 
     const response = await fetchWithAuth(
-      `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${queryParams ? `?${queryParams}` : ""}`,
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${
+        queryParams ? `?${queryParams}` : ""
+      }`,
       {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -34,7 +35,6 @@ export const getTasks = async (filters?: {
   }
 };
 
-
 export const getTaskById = async (taskId: string): Promise<Task> => {
   try {
     const response = await fetchWithAuth(
@@ -44,7 +44,7 @@ export const getTaskById = async (taskId: string): Promise<Task> => {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -69,7 +69,7 @@ export const createTask = async (taskData: Partial<Task>): Promise<Task> => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(taskData),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -84,7 +84,10 @@ export const createTask = async (taskData: Partial<Task>): Promise<Task> => {
   }
 };
 
-export const updateTask = async (taskId: string, updatedData: Partial<Task>): Promise<Task> => {
+export const updateTask = async (
+  taskId: string,
+  updatedData: Partial<Task>,
+): Promise<Task> => {
   try {
     const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}`,
@@ -94,7 +97,7 @@ export const updateTask = async (taskId: string, updatedData: Partial<Task>): Pr
           "Content-Type": "application/json",
         },
         body: JSON.stringify(updatedData),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -118,11 +121,13 @@ export const completeTask = async (taskId: string): Promise<Task> => {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
-      throw new Error(`Error marking task as completed: ${response.statusText}`);
+      throw new Error(
+        `Error marking task as completed: ${response.statusText}`,
+      );
     }
 
     const data = await response.json();
@@ -142,11 +147,13 @@ export const uncompleteTask = async (taskId: string): Promise<Task> => {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
-      throw new Error(`Error marking task as incomplete: ${response.statusText}`);
+      throw new Error(
+        `Error marking task as incomplete: ${response.statusText}`,
+      );
     }
 
     const data = await response.json();
@@ -157,14 +164,13 @@ export const uncompleteTask = async (taskId: string): Promise<Task> => {
   }
 };
 
-
 export const deleteTask = async (taskId: string): Promise<void> => {
   try {
     const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}`,
       {
         method: "DELETE",
-      }
+      },
     );
 
     if (!response.ok) {

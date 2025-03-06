@@ -1,13 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { Plus, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { getTasks } from "@/app/api/task";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Task } from "@/types/task";
 
@@ -23,26 +29,28 @@ const TaskManagement = () => {
 
   const [filters, setFilters] = useState({
     search: "",
-    status: undefined as string | undefined,  // ✅ Fix: Use `undefined`
-    priority: undefined as string | undefined,  // ✅ Fix: Use `undefined`
+    status: undefined as string | undefined,
+    priority: undefined as string | undefined,
   });
 
   useEffect(() => {
     const todayFormatted = format(new Date(), "EEEE, dd MMMM yyyy");
     setDate(todayFormatted);
-    
-    fetchTasks(); // Initial fetch
+
+    fetchTasks();
   }, []);
 
   useEffect(() => {
     fetchTasks();
-  }, [filters]); // Re-fetch when filters change
+  }, [filters]);
 
   const fetchTasks = async () => {
     setLoading(true);
     try {
       const filteredTasks = await getTasks(
-        Object.fromEntries(Object.entries(filters).filter(([_, v]) => v !== undefined)) 
+        Object.fromEntries(
+          Object.entries(filters).filter(([_, v]) => v !== undefined),
+        ),
       );
       setTasks(filteredTasks);
     } catch (err) {
@@ -59,8 +67,8 @@ const TaskManagement = () => {
   const clearFilters = () => {
     setFilters({
       search: "",
-      status: undefined,  // ✅ Reset to `undefined`
-      priority: undefined, // ✅ Reset to `undefined`
+      status: undefined,
+      priority: undefined,
     });
   };
 
@@ -70,7 +78,9 @@ const TaskManagement = () => {
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <div className="flex flex-col space-y-2">
-            <h1 className="text-2xl font-semibold text-gray-800">Task Management</h1>
+            <h1 className="text-2xl font-semibold text-gray-800">
+              Task Management
+            </h1>
           </div>
           <div className="flex items-center space-x-4">
             <TaskViewToggle view={currentView} onChange={setCurrentView} />
@@ -97,23 +107,25 @@ const TaskManagement = () => {
 
         {/* Status Filter */}
         <Select
-        value={filters.status ?? ""}  // ✅ Fix: Prevent undefined errors
-        onValueChange={(value) => updateFilter("status", value || undefined)} 
+          value={filters.status ?? ""} // ✅ Fix: Prevent undefined errors
+          onValueChange={(value) => updateFilter("status", value || undefined)}
         >
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Select Status" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="Assigned">Assigned</SelectItem>
-          <SelectItem value="Completed">Completed</SelectItem>
-          <SelectItem value="Delayed">Delayed</SelectItem>
-        </SelectContent>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Assigned">Assigned</SelectItem>
+            <SelectItem value="Completed">Completed</SelectItem>
+            <SelectItem value="Delayed">Delayed</SelectItem>
+          </SelectContent>
         </Select>
 
         {/* Priority Filter */}
         <Select
           value={filters.priority ?? ""} // ✅ Fix: Ensure value is never undefined
-          onValueChange={(value) => updateFilter("priority", value || undefined)} 
+          onValueChange={(value) =>
+            updateFilter("priority", value || undefined)
+          }
         >
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Select Priority" />

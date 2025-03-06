@@ -1,12 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { CheckCircle, Circle } from "lucide-react";
 import { completeTask, uncompleteTask } from "@/app/api/task";
-import { Task, TaskStatus } from "@/types/task";
-import { toTitleCase } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +12,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { toTitleCase } from "@/lib/utils";
+import { Task, TaskStatus } from "@/types/task";
+import { CheckCircle, Circle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function TaskListView({ tasks }: { tasks: Task[] }) {
   const router = useRouter();
@@ -35,8 +35,10 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
 
       setTaskList((prevTasks) =>
         prevTasks.map((task) =>
-          task.id === selectedTask.id ? { ...task, status: updatedTask.status } : task
-        )
+          task.id === selectedTask.id
+            ? { ...task, status: updatedTask.status }
+            : task,
+        ),
       );
     } catch (error) {
       console.error("Error toggling task status:", error);
@@ -82,7 +84,6 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                 key={task.id}
                 className="hover:bg-blue-50 hover:cursor-pointer hover:duration-300 ease-in-out"
               >
-                {/* Completion Toggle Button */}
                 <td className="px-6 py-4">
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
@@ -147,33 +148,30 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                   {toTitleCase(task.assigned_to_name) || "Unassigned"}
                 </td>
 
-
-                {/* ✅ Priority Styling */}
                 <td className="px-6 py-4">
                   <span
                     className={`px-2 py-1 text-xs rounded-full ${
                       task.priority === "High"
                         ? "bg-red-100 text-red-800"
                         : task.priority === "Medium"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-green-100 text-green-800"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-green-100 text-green-800"
                     }`}
                   >
                     {task.priority || "Low"}
                   </span>
                 </td>
-                
-                {/* ✅ Status Styling */}
+
                 <td className="px-6 py-4">
                   <span
                     className={`px-2 py-1 text-xs rounded-full ${
                       task.status === "Assigned"
                         ? "bg-blue-100 text-blue-800"
                         : task.status === "Completed"
-                        ? "bg-green-100 text-green-800"
-                        : task.status === "Delayed"
-                        ? "bg-red-100 text-red-800"
-                        : "bg-orange-100 text-orange-800"
+                          ? "bg-green-100 text-green-800"
+                          : task.status === "Delayed"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-orange-100 text-orange-800"
                     }`}
                   >
                     {task.status}

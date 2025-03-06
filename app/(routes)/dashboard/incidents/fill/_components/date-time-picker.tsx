@@ -23,8 +23,8 @@ import { useEffect, useState } from "react";
 interface DateTimePickerProps {
   id: string;
   type: string;
-  value?: string; // Expecting format "yyyy-MM-dd hh:mm a"
-  onChange: (id: string, type: string, content: string) => void;
+  value?: string;
+  onChange: (id: string, content: string) => void;
 }
 
 export default function DateTimePicker({
@@ -41,18 +41,28 @@ export default function DateTimePicker({
   }>({});
 
   useEffect(() => {
+    if (!value || typeof value !== "string") return;
+
     if (value) {
       try {
-        const [datePart, timePart] = value.split(" ");
-        const [hours, minutes] = timePart?.split(":") || ["12", "00"];
-        const period = timePart?.includes("AM") ? "AM" : "PM";
+        const parts = value.split(" ");
+        if (parts.length < 3) return;
 
-        const parsedDate = parse(datePart, "yyyy-MM-dd", new Date());
+        const [datePart, timePart, period] = parts;
+
+        const [hours, minutes] = timePart?.split(":");
+
+        let parsedDate = parse(datePart, "yyyy-MM-dd", new Date());
         if (!isValid(parsedDate)) return;
+
+        let parsedHours = parseInt(hours, 10);
+        if (period === "PM" && parsedHours < 12) parsedHours += 12;
+        if (period === "AM" && parsedHours === 12) parsedHours = 0;
+
         setDateTime({
           date: parsedDate,
-          hours,
-          minutes,
+          hours: (parsedHours % 12 || 12).toString().padStart(2, "0"),
+          minutes: minutes.padStart(2, "0"),
           period: period as "AM" | "PM",
         });
       } catch (error) {
@@ -70,11 +80,16 @@ export default function DateTimePicker({
       newDateTime.minutes &&
       newDateTime.period
     ) {
-      const formattedDateTime = format(
-        new Date(newDateTime.date),
-        `yyyy-MM-dd hh:mm a`,
-      );
-      onChange(id, type, formattedDateTime);
+      const fullDateTime = new Date(newDateTime.date);
+      let hours = parseInt(newDateTime.hours, 10);
+
+      if (newDateTime.period === "PM" && hours < 12) hours += 12;
+      if (newDateTime.period === "AM" && hours === 12) hours = 0;
+
+      fullDateTime.setHours(hours, parseInt(newDateTime.minutes, 10));
+
+      const formattedDateTime = format(fullDateTime, "yyyy-MM-dd hh:mm a");
+      onChange(id, formattedDateTime);
     }
 
     setDateTime(newDateTime);

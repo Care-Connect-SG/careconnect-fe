@@ -20,7 +20,7 @@ import { FormElementData } from "@/hooks/useFormReducer";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import DateTimePicker from "./date-time-picker";
+
 
 interface FormElementFillProps {
   element: FormElementData;
@@ -90,14 +90,6 @@ export default function FormElementFill({
               />
             </PopoverContent>
           </Popover>
-        )}
-        {element.type === "datetime" && (
-          <DateTimePicker
-            id={element.element_id}
-            type={element.type}
-            value={value as string}
-            onChange={(val) => setValue(val)}
-          />
         )}
         {element.type === "radio" && element.options && (
           <div>

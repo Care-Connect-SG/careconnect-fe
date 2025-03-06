@@ -107,16 +107,6 @@ export default function FormElement({
               <span>Pick a date</span>
             </Button>
           )}
-          {element.type === "datetime" && (
-            <Button
-              disabled
-              variant={"outline"}
-              className="w-[240px] justify-start text-left font-normal text-muted-foreground"
-            >
-              <CalendarClockIcon />
-              <span>MM/DD/YYYY hh:mm</span>
-            </Button>
-          )}
           {element.type === "radio" && (
             <div className="flex flex-col space-y-2">
               {element.options?.map((option, index) => (

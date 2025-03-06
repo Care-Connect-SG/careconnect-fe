@@ -8,14 +8,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import FormCard from "../_components/form-card";
 
-const formatDate = (isoDate: string): string => {
-  const date = new Date(isoDate);
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(date);
-};
 
 export default function IncidentReportingFormsAdmin() {
   const [forms, setForms] = useState<FormResponse[]>([]);

@@ -6,7 +6,7 @@ import {
 import { useReducer } from "react";
 
 export interface ReportState {
-  report: ReportSectionContent[];
+  report_content: ReportSectionContent[];
   primaryResident: ResidentTag | null;
   involvedResidents: ResidentTag[];
   involvedCaregivers: CaregiverTag[];
@@ -15,7 +15,7 @@ export interface ReportState {
 }
 
 const initialReportState: ReportState = {
-  report: [],
+  report_content: [],
   primaryResident: null,
   involvedResidents: [],
   involvedCaregivers: [],
@@ -24,7 +24,8 @@ const initialReportState: ReportState = {
 };
 
 type ReportAction =
-  | { type: "SET_REPORT"; payload: ReportSectionContent[] }
+  | { type: "SET_REPORT"; payload: ReportState }
+  | { type: "SET_REPORT_CONTENT"; payload: ReportSectionContent[] }
   | { type: "UPDATE_INPUT"; payload: { form_element_id: string; input: any } }
   | { type: "SET_PRIMARY_RESIDENT"; payload: ResidentTag | null }
   | { type: "UNSET_PRIMARY_RESIDENT"; paylod: string }
@@ -41,11 +42,13 @@ const reportReducer = (
 ): ReportState => {
   switch (action.type) {
     case "SET_REPORT":
-      return { ...state, report: action.payload };
+      return { ...state, ...action.payload };
+    case "SET_REPORT_CONTENT":
+      return { ...state, report_content: action.payload };
     case "UPDATE_INPUT":
       return {
         ...state,
-        report: state.report.map((section) =>
+        report_content: state.report_content.map((section) =>
           section.form_element_id === action.payload.form_element_id
             ? { ...section, input: action.payload.input }
             : section,

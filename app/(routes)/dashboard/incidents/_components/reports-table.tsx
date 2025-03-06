@@ -22,9 +22,10 @@ import { useState } from "react";
 
 interface ReportsTableProps {
   reports: ReportResponse[];
+  activeTab: string;
 }
 
-export default function ReportsTable({ reports }: ReportsTableProps) {
+export default function ReportsTable({ reports, activeTab }: ReportsTableProps) {
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState<ReportResponse | null>(
@@ -52,9 +53,9 @@ export default function ReportsTable({ reports }: ReportsTableProps) {
           <TableRow>
             <TableHead className="text-center">Published Date</TableHead>
             <TableHead className="text-center">Form</TableHead>
-            <TableHead className="text-center">Reporter</TableHead>
+            {activeTab === "all" && <TableHead className="text-center">Reporter</TableHead>}
             <TableHead className="text-center">Resident</TableHead>
-            <TableHead className="text-center">Status</TableHead>
+            {activeTab === "my" && <TableHead className="text-center">Status</TableHead>}
             <TableHead className="text-center">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -70,21 +71,19 @@ export default function ReportsTable({ reports }: ReportsTableProps) {
               <TableRow key={report.id}>
                 <TableCell className="font-medium">{report.published_date || "-"}</TableCell>
                 <TableCell>{report.form_name}</TableCell>
-                <TableCell>{report.reporter_name}</TableCell>
-                <TableCell>{report.primary_resident_name}</TableCell>
-                <TableCell>
+                {activeTab == "all" && <TableCell>{report.reporter.name}</TableCell>}
+                <TableCell>{report.primary_resident?.name}</TableCell>
+                {activeTab == "my" && <TableCell>
                   <Badge
-                    variant={
-                      report.status === "Published"
-                        ? "default"
-                        : report.status === "Draft"
-                          ? "secondary"
-                          : "outline"
+                    className={
+                      report.status === "Draft"
+                        ? "text-yellow-800 bg-yellow-100 h-6"
+                        : "text-green-800 bg-green-100 h-6"
                     }
                   >
                     {report.status}
                   </Badge>
-                </TableCell>
+                </TableCell>}
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

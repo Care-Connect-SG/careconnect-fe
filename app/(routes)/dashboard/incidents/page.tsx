@@ -5,7 +5,7 @@ import { getReports } from "@/app/api/report";
 import { getCurrentUser } from "@/app/api/user";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FormResponse } from "@/types/form";
-import { ReportResponse } from "@/types/report";
+import { ReportResponse, ReportStatus } from "@/types/report";
 import { UserResponse } from "@/types/user";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
@@ -54,7 +54,7 @@ export default function IncidentReports() {
 
   const fetchReports = async () => {
     try {
-      const data = await getReports("Published");
+      const data = await getReports();
       setReports(data);
     } catch (error) {
       console.error("Failed to fetch reports");
@@ -72,7 +72,8 @@ export default function IncidentReports() {
 
   const filteredReports = useMemo(() => {
     return reports.filter((report) => {
-      if (activeTab === "my" && report.reporter_id !== user?.id) return false;
+      if (activeTab === "my" && report.reporter.id != user?.id) return false;
+      if (activeTab !== "my" && report.status != ReportStatus.PUBLISHED) return false;
 
       if (
         filterOptions.formId &&
@@ -84,14 +85,14 @@ export default function IncidentReports() {
       if (
         filterOptions.reporterId &&
         filterOptions.reporterId !== "all" &&
-        report.reporter_id !== filterOptions.reporterId
+        report.reporter.id !== filterOptions.reporterId
       )
         return false;
 
       if (
         filterOptions.residentId &&
         filterOptions.residentId !== "all" &&
-        report.primary_resident !== filterOptions.residentId
+        report.primary_resident?.id !== filterOptions.residentId
       )
         return false;
 
@@ -118,7 +119,7 @@ export default function IncidentReports() {
           Incident Reports
         </h1>
         <p className="text-sm text-muted-foreground">
-          View all published incident reports
+          View all incident reports
         </p>
       </div>
       <hr className="border-t-1 border-gray-300 mx-6 pt-2 pb-0"></hr>
@@ -129,10 +130,10 @@ export default function IncidentReports() {
             <TabsTrigger value="my">My Reports</TabsTrigger>
           </TabsList>
           <TabsContent value="all" className="mt-4">
-            <ReportsTable reports={filteredReports} />
+            <ReportsTable reports={filteredReports} activeTab="all" />
           </TabsContent>
           <TabsContent value="my" className="mt-4">
-            <ReportsTable reports={filteredReports} />
+            <ReportsTable reports={filteredReports} activeTab="my" />
           </TabsContent>
         </Tabs>
       </div>

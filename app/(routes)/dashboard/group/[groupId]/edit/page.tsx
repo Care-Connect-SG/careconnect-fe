@@ -1,11 +1,10 @@
 "use client";
 
-import { fetchUser } from "@/app/api/user";
+import { getUser } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 
@@ -163,7 +162,7 @@ export default function EditGroupPage() {
       }
 
       try {
-        const user = await fetchUser(session.user.email);
+        const user = await getUser(session.user.email);
         setIsAdmin(user?.role === "Admin"); // ✅ Update state
       } catch (error) {
         console.error("Error checking admin role:", error);

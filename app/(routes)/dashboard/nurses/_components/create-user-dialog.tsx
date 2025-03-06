@@ -1,5 +1,6 @@
 "use client";
 
+import { createUser } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,6 +20,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -44,6 +52,8 @@ const schema = z
     path: ["confirmPassword"],
   });
 
+export type UserForm = z.infer<typeof schema>;
+
 interface CreateUserDialogProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
@@ -66,37 +76,14 @@ export default function CreateUserDialog({
       password: "",
       confirmPassword: "",
       contact_number: "",
-      role: undefined,
       organisation_rank: "",
-      gender: undefined,
     },
   });
 
-  const onSubmit = async (data: {
-    name: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-    contactNumber?: string;
-    role: "Admin" | "Nurse" | "Family";
-    organisationRank?: string;
-    gender: "Male" | "Female";
-  }) => {
+  const onSubmit = async (data: UserForm) => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BE_API_URL}/users/register`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to create user");
-      }
-
+      await createUser(data);
       toast({ title: "User created successfully!", variant: "default" });
       form.reset();
       onUserCreated();
@@ -208,12 +195,16 @@ export default function CreateUserDialog({
                 <FormItem>
                   <FormLabel>Role</FormLabel>
                   <FormControl>
-                    <select {...field} className="border rounded p-2 w-full">
-                      <option value="">Select Role</option>
-                      <option value="Admin">Admin</option>
-                      <option value="Nurse">Nurse</option>
-                      <option value="Family">Family</option>
-                    </select>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger className="w-full p-3 border rounded-lg shadow-sm bg-white text-gray-700">
+                        <SelectValue placeholder="Select Role" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white shadow-lg rounded-lg">
+                        <SelectItem value="Admin">Admin</SelectItem>
+                        <SelectItem value="Nurse">Nurse</SelectItem>
+                        <SelectItem value="Family">Family</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -227,11 +218,15 @@ export default function CreateUserDialog({
                 <FormItem>
                   <FormLabel>Gender</FormLabel>
                   <FormControl>
-                    <select {...field} className="border rounded p-2 w-full">
-                      <option value="">Select Gender</option>
-                      <option value="Male">Male</option>
-                      <option value="Female">Female</option>
-                    </select>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger className="w-full p-3 border rounded-lg shadow-sm bg-white text-gray-700">
+                        <SelectValue placeholder="Select Gender" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white shadow-lg rounded-lg">
+                        <SelectItem value="Male">Male</SelectItem>
+                        <SelectItem value="Female">Female</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

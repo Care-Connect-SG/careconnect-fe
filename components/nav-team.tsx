@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchUser } from "@/app/api/user";
+import { getUser } from "@/app/api/user";
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -38,7 +38,7 @@ export function NavTeam({
     const getUserRole = async () => {
       if (!session?.user?.email) return;
 
-      const user = await fetchUser(session.user.email);
+      const user = await getUser(session.user.email);
       setUserRole(user.role);
     };
 

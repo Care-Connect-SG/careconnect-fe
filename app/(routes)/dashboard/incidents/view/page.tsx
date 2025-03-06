@@ -7,7 +7,7 @@ import { ReportResponse } from "@/types/report";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { LoadingSkeleton } from "../_components/loading-skeleton";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -94,21 +94,27 @@ export default function ViewReportPage() {
                                 }
                                 {
                                     report?.involved_residents &&
-                                    <div>
-                                        <p><span className="font-semibold text-gray-500">Involved Residents: </span>
-                                            {report.involved_residents.toString()}
-                                        </p>
-                                    </div>
-
+                                    report?.involved_residents?.length > 0 &&
+                                    (
+                                        <div>
+                                            <p>
+                                                <span className="font-semibold text-gray-500">Involved Residents: </span>
+                                                {report.involved_residents.map((resident) => resident.name).join(", ")}
+                                            </p>
+                                        </div>
+                                    )
                                 }
                                 {
                                     report?.involved_caregivers &&
-                                    <div>
-                                        <p><span className="font-semibold text-gray-500">Involved Caregivers: </span>
-                                            {report.involved_caregivers.toString()}
-                                        </p>
-                                    </div>
-                                }
+                                    report?.involved_caregivers?.length! > 0 && (
+                                        <div>
+                                            <p>
+                                                <span className="font-semibold text-gray-500">Involved Caregivers: </span>
+                                                {report.involved_caregivers.map((caregiver) => caregiver.name).join(", ")}
+                                            </p>
+                                        </div>
+                                    )}
+
                             </div>
                         </div>
                         <hr className="border-t-1 border-gray-300 py-2"></hr>

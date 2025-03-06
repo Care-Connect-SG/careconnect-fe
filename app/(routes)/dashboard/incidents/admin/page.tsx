@@ -99,7 +99,7 @@ export default function IncidentReportingFormsAdmin() {
           </div>
         ))}
         <Card className="border-dashed w-xs max-w-xs h-[11rem] hover:bg-gray-100">
-          <Link href="/dashboard/form/admin/build">
+          <Link href="/dashboard/incidents/admin/build">
             <div className="flex flex-col justify-center items-center h-full">
               <Plus className="mb-0 h-6 w-6 text-gray-500" />
               <p className="text-sm text-gray-400 mt-1">Create a new form</p>

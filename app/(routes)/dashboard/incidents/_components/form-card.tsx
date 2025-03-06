@@ -49,7 +49,7 @@ export default function FormCard({
           : "border-l-4 border-l-yellow-500"
       }`}
     >
-      <Link href={`/dashboard/form/admin/view/${id}`}>
+      <Link href={`/dashboard/incidents/admin/view/${id}`}>
         <CardHeader
           className={`max-h-24 flex flex-row items-start justify-between space-y-0 my-0`}
         >
@@ -82,7 +82,7 @@ export default function FormCard({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      router.push(`/dashboard/form/admin/build?id=${id}`);
+                      router.push(`/dashboard/incidents/admin/build?id=${id}`);
                     }}
                   >
                     <FilePenLine className="h-4 w-4 hover:text-gray-600" />

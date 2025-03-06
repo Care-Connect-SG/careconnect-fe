@@ -50,7 +50,7 @@ export default function FormView({
     <div className="py-4 px-8">
       <div className="flex justify-between pb-2">
         <div className="flex justify-start gap-2">
-          <Link href="/dashboard/form/admin">
+          <Link href="/dashboard/incidents/admin">
             <button className="border h-6 w-10 rounded-md hover:bg-gray-50">
               <ChevronLeft className="h-4 w-4 mx-auto" />
             </button>

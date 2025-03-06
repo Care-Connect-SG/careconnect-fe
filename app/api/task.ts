@@ -1,15 +1,10 @@
+import { fetchWithAuth } from "@/types/fectchWithAuth";
 import { Task } from "@/types/task";
 
-/**
- * Fetch all tasks for a user based on their email.
- * This calls the backend endpoint GET /tasks?assigned_to=<email>
- */
-export const getTasks = async (email: string): Promise<Task[]> => {
+export const getTasks = async (): Promise<Task[]> => {
   try {
-    const response = await fetch(
-      `${
-        process.env.NEXT_PUBLIC_BE_API_URL
-      }/tasks?assigned_to=${encodeURIComponent(email)}`,
+    const response = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/`,
       {
         method: "GET",
         headers: {
@@ -30,10 +25,6 @@ export const getTasks = async (email: string): Promise<Task[]> => {
   }
 };
 
-/**
- * Fetch a single task by its ID.
- * This calls the backend endpoint GET /tasks/<task_id>
- */
 export const getTaskById = async (taskId: string): Promise<Task> => {
   try {
     const response = await fetch(
@@ -58,10 +49,6 @@ export const getTaskById = async (taskId: string): Promise<Task> => {
   }
 };
 
-/**
- * Mark a task as completed.
- * This calls the backend endpoint POST /tasks/<task_id>/complete
- */
 export const completeTask = async (taskId: string): Promise<Task> => {
   try {
     const response = await fetch(

@@ -2,22 +2,17 @@
 
 import { getTasks } from "@/app/api/task";
 import { Task, TaskStatus } from "@/types/task";
-import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 const TaskStats = () => {
-  const { data: session } = useSession();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!session?.user?.email) return;
-    const userEmail = session.user.email as string;
-
     const fetchTasks = async () => {
       try {
-        const data: Task[] = await getTasks(userEmail);
+        const data: Task[] = await getTasks();
         setTasks(data);
       } catch (err) {
         setError("Failed to fetch tasks");
@@ -27,7 +22,7 @@ const TaskStats = () => {
     };
 
     fetchTasks();
-  }, [session?.user?.email]);
+  }, []);
 
   const stats = {
     total: tasks.length,

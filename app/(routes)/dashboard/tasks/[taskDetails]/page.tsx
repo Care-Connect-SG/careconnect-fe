@@ -1,14 +1,15 @@
 "use client";
 
-import { Home, User } from "lucide-react";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useBreadcrumb } from "../../../../../context/breadcrumb-context";
 
+import { Spinner } from "@/components/ui/spinner";
 import ResidentInfo from "./_components/resident-info";
 import TaskDetailHeader from "./_components/task-detail-header";
 
 import { getTaskById } from "@/app/api/task";
+import { Task } from "@/types/task";
 
 const TaskDescription = ({ description }: { description: string }) => (
   <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -23,7 +24,8 @@ const TaskDescription = ({ description }: { description: string }) => (
 
 const TaskDetailsPage = () => {
   const { taskDetails } = useParams();
-  const [task, setTask] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [task, setTask] = useState<Task>();
   const { setPageName } = useBreadcrumb();
 
   useEffect(() => {
@@ -41,22 +43,32 @@ const TaskDetailsPage = () => {
       setPageName(data.task_title);
     } catch (error) {
       console.error("Error fetching task details", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (!task) return <p>Loading...</p>;
+  if (!task) return <p>Task not found</p>;
 
   return (
     <div className="flex p-1 md:p-4 lg:p-8 gap-4 flex-col md:flex-1">
-      <TaskDetailHeader task={task} />
-      <div className="grid md:grid-cols-3 gap-4">
-        <div className="md:col-span-2">
-          <TaskDescription description={task.task_details} />
+      {loading ? (
+        <div className="p-8">
+          <Spinner />
         </div>
-        <div className="md:col-span-1">
-          <ResidentInfo resident={task.resident || {}} />
-        </div>
-      </div>
+      ) : (
+        <>
+          <TaskDetailHeader task={task} />
+          <div className="grid md:grid-cols-3 gap-4">
+            <div className="md:col-span-2">
+              <TaskDescription description={task.task_details || ""} />
+            </div>
+            <div className="md:col-span-1">
+              <ResidentInfo taskResidentInfo={task} />
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };

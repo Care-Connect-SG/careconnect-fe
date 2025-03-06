@@ -32,7 +32,9 @@ const TaskCard = ({ task }: { task: Task }) => {
       <div className="flex items-center justify-between mt-3">
         <div className="flex items-center space-x-2">
           <Clock className="w-4 h-4 text-gray-400" />
-          <span className="text-xs text-gray-500">{task.due_date}</span>
+          <span className="text-xs text-gray-500">
+            {task.due_date.toLocaleDateString()}
+          </span>
         </div>
         {task.priority && (
           <span
@@ -71,7 +73,7 @@ const TaskCard = ({ task }: { task: Task }) => {
 //   );
 // };
 
-export default function TaskResidentView() {
+export default function TaskResidentView({ tasks }: { tasks: Task[] }) {
   const { data: session } = useSession();
   const [residents, setResidents] = useState([]);
   const [loading, setLoading] = useState<boolean>(true);

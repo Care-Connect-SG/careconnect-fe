@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchUser } from "@/app/api/user/route";
+import { fetchUser } from "@/app/api/user";
 import CreateUserModal from "@/components/createUserModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,8 +30,6 @@ interface User {
 }
 
 const Nurses = () => {
-  const { data: session, status } = useSession();
-  const [userId, setUserId] = useState(null);
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);

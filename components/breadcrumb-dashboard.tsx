@@ -15,9 +15,12 @@ const items = [
   { key: "home", label: "Home" },
   { key: "tasks", label: "Tasks" },
   { key: "residents", label: "Residents" },
-  { key: "form", label: "Incident Management" },
+  { key: "form", label: "Incident Form Management " },
   { key: "announcements", label: "Announcements" },
   { key: "group", label: "Group" },
+  { key: "calendar", label: "Calendar" },
+  { key: "incidents", label: "Incident Management" },
+  { key: "nurses", label: "Nurses" },
 ];
 
 function BreadCrumbDashboard() {

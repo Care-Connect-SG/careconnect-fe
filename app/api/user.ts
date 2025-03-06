@@ -35,4 +35,3 @@ export const fetchUser = async (email: string | undefined) => {
     return null;
   }
 };
-

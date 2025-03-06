@@ -12,11 +12,10 @@ export interface User {
 export enum Role {
   ADMIN = "Admin",
   NURSE = "Nurse",
-  FAMILY = "Family"
+  FAMILY = "Family",
 }
 
 export enum Gender {
   MALE = "Male",
-  FEMALE = "Female"
+  FEMALE = "Female",
 }
-

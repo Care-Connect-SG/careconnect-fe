@@ -1,13 +1,13 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import {
+  ChevronDown,
   Clock,
   MapPin,
   MoreHorizontal,
   Users,
-  ChevronDown,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 const ActivityList = () => {
   const activities = [
@@ -92,8 +92,8 @@ const ActivityList = () => {
                       item.status === "Upcoming"
                         ? "bg-yellow-100 text-yellow-800"
                         : item.status === "In Progress"
-                        ? "bg-blue-100 text-blue-800"
-                        : "bg-gray-100 text-gray-800"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-gray-100 text-gray-800"
                     }`}
                   >
                     {item.status}

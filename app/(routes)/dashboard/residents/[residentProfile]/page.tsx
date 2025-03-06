@@ -4,6 +4,7 @@ import { getMedicationsForResident } from "@/app/api/medication";
 import { Button } from "@/components/ui/button";
 import { MedicationRecord } from "@/types/medication";
 import { ResidentRecord } from "@/types/resident";
+import { CarePlanRecord } from "@/types/careplan";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { getResidentById, updateResident } from "../../../../api/resident";
@@ -14,6 +15,8 @@ import MedicationDisplay from "../_components/medication-display";
 import ResidentDetailsCard from "./_components/resident-detail-card";
 import ResidentDetailsNotesCard from "./_components/resident-detail-notes";
 import ResidentProfileCard from "./_components/resident-profile-card";
+import { getCarePlansForResident } from "@/app/api/careplan";
+import CarePlanDisplay from "../_components/careplan-display";
 
 const TABS = [
   { label: "Overview", value: "overview" },
@@ -36,6 +39,7 @@ export default function ResidentDashboard() {
     useState<MedicationRecord | null>(null);
   const [resident, setResident] = useState<ResidentRecord | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [carePlans, setCarePlans] = useState<CarePlanRecord[]>([]);
 
   // Fetch resident data on mount or when `residentProfile` changes
   useEffect(() => {
@@ -57,6 +61,14 @@ export default function ResidentDashboard() {
         .catch(console.error);
     }
   }, [activeTab, residentProfile]);
+
+  useEffect(() => {
+    if (activeTab === "careplan" && residentProfile) {
+      getCarePlansForResident(residentProfile)
+        .then(setCarePlans)
+        .catch(console.error);
+    }
+  }, [activeTab, residentProfile])
 
   // Handle Edit Profile Modal
   const handleEditProfile = () => {
@@ -129,11 +141,10 @@ export default function ResidentDashboard() {
             <button
               key={tab.value}
               onClick={() => setActiveTab(tab.value)}
-              className={`py-2 px-1 text-sm font-medium ${
-                activeTab === tab.value
-                  ? "text-blue-600 border-b-2 border-blue-600"
-                  : "text-gray-500"
-              }`}
+              className={`py-2 px-1 text-sm font-medium ${activeTab === tab.value
+                ? "text-blue-600 border-b-2 border-blue-600"
+                : "text-gray-500"
+                }`}
             >
               {tab.label}
             </button>
@@ -209,6 +220,27 @@ export default function ResidentDashboard() {
             getMedicationsForResident(residentProfile).then(setMedications);
           }}
         />
+      )}
+
+      {activeTab === "careplan" && (
+        <div className="mt-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold">Resident Care Plan</h2>
+            <Button onClick={() => setIsCreateModalOpen(true)}>
+              Add CarePlan
+            </Button>
+          </div>
+
+          <div className="space-y-4 mt-4">
+            {carePlans.length > 0 ? (
+              carePlans.map((careplan) => (
+                <CarePlanDisplay key={careplan.id} careplan={careplan} />
+              ))
+            ) : (
+              <p className="text-gray-500">No care plans found.</p>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

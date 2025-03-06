@@ -1,7 +1,7 @@
 "use client";
 
+import CreateUserDialog from "@/app/(routes)/dashboard/nurses/_components/create-user-dialog";
 import { deleteUser } from "@/app/api/user";
-import CreateUserDialog from "@/components/createUserModal";
 import {
   AlertDialog,
   AlertDialogAction,

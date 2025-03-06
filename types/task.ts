@@ -25,29 +25,27 @@ export enum Recurrence {
   ANNUALLY = "Annually",
 }
 
-export interface TaskBase {
+export interface Task {
+  id: string;
   task_title: string;
   task_details?: string;
+  media?: string[];
+  notes?: string;
   status: TaskStatus;
   priority?: TaskPriority;
   category?: TaskCategory;
-  assigned_to: string[];
-  resident: string;
-  created_by: string;
-  created_at: string;
-  start_date?: string;
-  due_date?: string;
+  start_date: Date;
+  due_date: Date;
   recurring?: Recurrence;
-  end_recurring_date?: string;
+  end_recurring_date?: Date;
   remind_prior?: number;
-  finished_at?: string;
-  media?: string[];
-  notes?: string;
+  finished_at?: Date;
   is_ai_generated: boolean;
-}
-
-export interface TaskCreate extends TaskBase {}
-
-export interface Task extends TaskBase {
-  id?: string;
+  created_at: Date;
+  assigned_to: string;
+  assigned_to_name: string;
+  resident: string;
+  resident_name: string;
+  resident_room: string;
+  created_by: string;
 }

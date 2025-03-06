@@ -48,7 +48,7 @@ export default function FormElementFill({
           {element.label} {element.required ? "*" : ""}
         </CardTitle>
         {element.helptext && (
-          <CardDescription>element.helptext</CardDescription>
+          <CardDescription>{element.helptext}</CardDescription>
         )}
       </CardHeader>
       <CardContent className="">

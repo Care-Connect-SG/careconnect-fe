@@ -47,16 +47,15 @@ export default function ReportsTable({ reports }: ReportsTableProps) {
 
   return (
     <div className="rounded-md border">
-      <Table>
+      <Table className="text-center">
         <TableHeader>
           <TableRow>
-            <TableHead>Title</TableHead>
-            <TableHead>Form</TableHead>
-            <TableHead>Reporter</TableHead>
-            <TableHead>Resident</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead className="text-center">Published Date</TableHead>
+            <TableHead className="text-center">Form</TableHead>
+            <TableHead className="text-center">Reporter</TableHead>
+            <TableHead className="text-center">Resident</TableHead>
+            <TableHead className="text-center">Status</TableHead>
+            <TableHead className="text-center">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -69,11 +68,10 @@ export default function ReportsTable({ reports }: ReportsTableProps) {
           ) : (
             reports.map((report) => (
               <TableRow key={report.id}>
-                <TableCell className="font-medium">{report.id}</TableCell>
+                <TableCell className="font-medium">{report.published_date || "-"}</TableCell>
                 <TableCell>{report.form_name}</TableCell>
                 <TableCell>{report.reporter_name}</TableCell>
                 <TableCell>{report.primary_resident_name}</TableCell>
-                <TableCell>{report.published_date}</TableCell>
                 <TableCell>
                   <Badge
                     variant={

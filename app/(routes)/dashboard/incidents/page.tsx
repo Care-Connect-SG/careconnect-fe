@@ -1,5 +1,129 @@
+"use client"
+
+import { getForms } from "@/app/api/form"
+import { getReports } from "@/app/api/report"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { FormResponse } from "@/types/form"
+import { ReportResponse } from "@/types/report"
+import { useEffect, useMemo, useState } from "react"
+import ReportsTable from "./_components/reports-table"
+import { useSession } from "next-auth/react"
+import { getCurrentUser } from "@/app/api/user"
+import { UserResponse } from "@/types/user"
+
+
+interface FilterOptions {
+    formId: string
+    reporterId: string
+    residentId: string
+    startDate: Date | null
+    endDate: Date | null
+}
+
+
 export default function IncidentReports() {
-    return (<div>Hi You are at Incident Reports</div>);
+    const { data: session } = useSession();
+    const [activeTab, setActiveTab] = useState("all")
+    const [reports, setReports] = useState<ReportResponse[]>([])
+    const [forms, setForms] = useState<FormResponse[]>([])
+    const [filterOptions, setFilterOptions] = useState<FilterOptions>({
+        formId: "",
+        reporterId: "",
+        residentId: "",
+        startDate: null,
+        endDate: null,
+    })
+    const [user, setUser] = useState<UserResponse>();
+
+    useEffect(() => {
+        async function fetchUserId() {
+            if (session?.user?.email) {
+                try {
+                    const user = await getCurrentUser(session.user.email);
+                    setUser(user); // Assuming the API response contains user ID
+                } catch (error) {
+                    console.error("Error fetching user:", error);
+                }
+            }
+        }
+        fetchUserId();
+    }, [session]);
+
+    
+    useEffect(() => {
+        fetchReports();
+        fetchForms();
+    }, []);
+
+
+    const fetchReports = async () => {
+        try {
+            const data = await getReports("Published");
+            setReports(data);
+        } catch (error) {
+            console.error("Failed to fetch reports")
+        }
+    }
+
+    const fetchForms = async () => {
+        try {
+            const data = await getForms("Published");
+            setForms(data);
+        } catch (error) {
+            console.error("Failed to fetch forms")
+        }
+    }
+
+    const filteredReports = useMemo(() => {
+        return reports.filter((report) => {
+            if (activeTab === "my" && report.reporter_id !== user?.id) return false;
+
+            if (filterOptions.formId && filterOptions.formId !== "all" && report.form_id !== filterOptions.formId)
+                return false;
+
+            if (filterOptions.reporterId && filterOptions.reporterId !== "all" && report.reporter_id !== filterOptions.reporterId)
+                return false;
+
+            if (filterOptions.residentId && filterOptions.residentId !== "all" && report.primary_resident !== filterOptions.residentId)
+                return false;
+
+            if (filterOptions.startDate && new Date(report.published_date!) < filterOptions.startDate) return false;
+
+            if (filterOptions.endDate && new Date(report.published_date!) > filterOptions.endDate) return false;
+
+            return true;
+        });
+    }, [activeTab, filterOptions, reports, user]);
+
+
+    return (
+        <>
+            <div className="px-6 py-4">
+                <h1 className="scroll-m-20 text-2xl font-semibold tracking-tight py-2">
+                    Incident Reports
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                    View all published incident reports
+                </p>
+            </div>
+            <hr className="border-t-1 border-gray-300 mx-6 pt-2 pb-0"></hr>
+            <div className="px-6">
+                <Tabs defaultValue="all" onValueChange={setActiveTab}>
+                    <TabsList className="grid grid-cols-2">
+                        <TabsTrigger value="all">All Reports</TabsTrigger>
+                        <TabsTrigger value="my">My Reports</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="all" className="mt-4">
+                        <ReportsTable reports={filteredReports} />
+                    </TabsContent>
+                    <TabsContent value="my" className="mt-4">
+                        <ReportsTable reports={filteredReports} />
+                    </TabsContent>
+                </Tabs>
+
+            </div>
+        </>
+    );
 }
 
 

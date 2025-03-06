@@ -1,6 +1,7 @@
 "use client";
 
 import { getCaregiverTags, getResidentTags } from "@/app/api/report";
+import { getCurrentUser } from "@/app/api/user";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import {
@@ -19,8 +20,10 @@ import {
 import { ReportState } from "@/hooks/useReportReducer";
 import { cn } from "@/lib/utils";
 import { CaregiverTag, ResidentTag } from "@/types/report";
+import { UserResponse } from "@/types/user";
 import debounce from "lodash.debounce";
 import { Check, CirclePlus, UserRound, UsersRound, X } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 interface ResidentSelectorProps {
@@ -34,6 +37,23 @@ export default function ResidentSelector({
 }: ResidentSelectorProps) {
   const { primaryResident, involvedResidents, involvedCaregivers } =
     selectedState;
+  const { data: session } = useSession();
+
+  const [user, setUser] = useState<UserResponse>();
+
+  useEffect(() => {
+    async function fetchUserId() {
+      if (session?.user?.email) {
+        try {
+          const user = await getCurrentUser(session.user.email);
+          setUser(user); // Assuming the API response contains user ID
+        } catch (error) {
+          console.error("Error fetching user:", error);
+        }
+      }
+    }
+    fetchUserId();
+  }, [session]);
 
   const [primaryResidentOptions, setPrimaryResidentOptions] = useState<
     ResidentTag[]
@@ -239,7 +259,12 @@ export default function ResidentSelector({
                   <CommandList>
                     <CommandEmpty>No caregiver found.</CommandEmpty>
                     <CommandGroup>
-                      {caregiverOptions.map((caregiver) => (
+                      {caregiverOptions
+                      .filter(
+                        (caregiver) =>
+                          !(caregiver.id === user?.id),
+                      )
+                      .map((caregiver) => (
                         <CommandItem
                           key={caregiver.id}
                           onSelect={() =>

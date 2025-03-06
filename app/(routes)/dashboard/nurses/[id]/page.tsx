@@ -124,17 +124,17 @@ const UserProfile = () => {
       <div className="mt-6 border-b border-gray-200">
         <div className="flex space-x-8">
           {TABS.map((tab) => (
-            <button
-              key={tab.value}
-              onClick={() => setActiveTab(tab.value)}
-              className={`py-2 px-1 text-sm font-medium ${
-                activeTab === tab.value
-                  ? "text-blue-600 border-b-2 border-blue-600"
-                  : "text-gray-500"
-              }`}
-            >
-              {tab.label}
-            </button>
+            <Button variant="transparentHover"
+            key={tab.value}
+            onClick={() => setActiveTab(tab.value)}
+            className={`py-2 px-1 text-sm font-medium bg-transparent ${
+              activeTab === tab.value
+                ? "text-blue-600 border-b-2"
+                : "text-gray-500 border-transparent"
+            } hover:text-gray-600 hover:border-gray-600 transition-colors bg-transparent duration-200`}
+          >
+            {tab.label}
+          </Button>
           ))}
         </div>
       </div>

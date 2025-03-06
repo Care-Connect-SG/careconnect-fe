@@ -19,7 +19,6 @@ import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-
 const Nurses = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
@@ -27,7 +26,8 @@ const Nurses = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [filter, setFilter] = useState<string>("All Users");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState<boolean>(false);
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] =
+    useState<boolean>(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const router = useRouter();
 

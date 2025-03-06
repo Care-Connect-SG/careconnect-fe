@@ -29,7 +29,6 @@ export const getCurrentUser = async (email: string): Promise<UserResponse> => {
   }
 };
 
-
 export const createUser = async (user: UserForm): Promise<User> => {
   try {
     const response = await fetch(

@@ -18,7 +18,6 @@ const TABS = [
 ];
 
 export default function ResidentDashboard() {
-  // Extract residentProfile parameter from the URL
   const { residentProfile } = useParams() as { residentProfile: string };
   console.log("Resident Profile ID:", residentProfile);
 

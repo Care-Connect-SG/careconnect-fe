@@ -75,8 +75,8 @@ export default function ViewReportPage() {
                             {report?.status}
                         </Badge>
                         {
-                            report?.published_date &&
-                            <p className="text-sm mt-2 mb-4">Published At: {report?.published_date}</p>
+                            report?.created_at &&
+                            <p className="text-sm mt-2 mb-4">Published At: {new Date(report?.created_at).toLocaleDateString()}</p>
                         }
                         <div className="my-4">
                             <h1 className="font-bold">Involved Personnel</h1>

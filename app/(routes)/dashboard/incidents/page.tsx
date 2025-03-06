@@ -98,13 +98,13 @@ export default function IncidentReports() {
 
       if (
         filterOptions.startDate &&
-        new Date(report.published_date!) < filterOptions.startDate
+        new Date(report.created_at!) < filterOptions.startDate
       )
         return false;
 
       if (
         filterOptions.endDate &&
-        new Date(report.published_date!) > filterOptions.endDate
+        new Date(report.created_at!) > filterOptions.endDate
       )
         return false;
 

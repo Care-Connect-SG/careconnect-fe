@@ -21,8 +21,7 @@ export interface ReportCreate {
 
 export interface ReportResponse extends ReportCreate {
   id: string;
-  created_date: string;
-  published_date?: string;
+  created_at: Date;
 }
 
 export interface ResidentTag {

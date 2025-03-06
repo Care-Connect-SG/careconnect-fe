@@ -39,7 +39,7 @@ export default function IncidentReportingForms() {
               id={form.id}
               title={form.title}
               description={form.description}
-              created_date={form.created_date}
+              created_date={new Date(form.created_at).toLocaleDateString()}
             />
           </div>
         ))}

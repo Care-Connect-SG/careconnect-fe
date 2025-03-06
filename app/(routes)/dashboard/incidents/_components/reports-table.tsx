@@ -42,7 +42,7 @@ export default function ReportsTable({ reports, activeTab }: ReportsTableProps) 
       <Table className="text-center">
         <TableHeader>
           <TableRow>
-            <TableHead className="text-center">Published Date</TableHead>
+            <TableHead className="text-center">Created Date</TableHead>
             <TableHead className="text-center">Form</TableHead>
             {activeTab === "all" && <TableHead className="text-center">Reporter</TableHead>}
             <TableHead className="text-center">Resident</TableHead>
@@ -60,7 +60,7 @@ export default function ReportsTable({ reports, activeTab }: ReportsTableProps) 
           ) : (
             reports.map((report) => (
               <TableRow key={report.id}>
-                <TableCell className="font-medium">{report.published_date || "-"}</TableCell>
+                <TableCell className="font-medium">{new Date(report.created_at).toLocaleDateString()}</TableCell>
                 <TableCell>{report.form_name}</TableCell>
                 {activeTab == "all" && <TableCell>{report.reporter.name}</TableCell>}
                 <TableCell>{report.primary_resident?.name}</TableCell>

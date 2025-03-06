@@ -81,7 +81,7 @@ export default function Incident() {
               id={form.id}
               title={form.title}
               description={form.description}
-              created_at={form.created_at.toDateString()}
+              created_at={new Date(form.created_at).toLocaleDateString()}
               status={form.status}
               onPublish={handlePublish}
               onDelete={handleDelete}

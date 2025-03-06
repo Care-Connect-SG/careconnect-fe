@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useSession } from "next-auth/react";
 
 interface Group {
   _id: string;
@@ -14,14 +15,24 @@ interface Group {
   members?: string[];
 }
 
+interface User {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  }
+
 export default function EditGroupPage() {
   const { groupId } = useParams();
   const router = useRouter();
   const { toast } = useToast();
+  const { data: session } = useSession();
+
 
   const [group, setGroup] = useState<Group | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
 
   // Form state for editing group details
   const [newName, setNewName] = useState("");
@@ -53,6 +64,21 @@ export default function EditGroupPage() {
         setLoading(false);
       });
   }, [groupId]);
+  
+  useEffect(() => {
+    fetch("/api/users")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch users");
+        return res.json();
+      })
+      .then((data: User[]) => {
+        setUsers(data);
+      })
+      .catch((err) => {
+        console.error("Error fetching users:", err);
+      });
+  }, []);
+
 
   // Handle form submission to update group details.
   const handleUpdateGroup = async (e: FormEvent) => {
@@ -122,6 +148,11 @@ export default function EditGroupPage() {
     }
   };
 
+  const isAdmin = session?.user?.email
+  ? users.find((u) => u.email === session.user!.email)?.role === "Admin"
+  : false;
+
+
   if (loading) return <Spinner />;
   if (error || !group) return <p className="text-red-500">{error || "Group not found"}</p>;
 
@@ -135,9 +166,11 @@ export default function EditGroupPage() {
         <h1 className="text-3xl font-bold">Edit Group</h1>
         <div className="flex gap-1">
           
-          <Button variant="destructive" onClick={handleDeleteGroup}>
-            Delete Group
-          </Button>
+        {isAdmin && (
+            <Button variant="destructive" onClick={handleDeleteGroup}>
+              Delete Group
+            </Button>
+          )}
         </div>
       </div>
 

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { UserPlus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface Group {
   id: string;
@@ -24,6 +25,7 @@ interface User {
 export default function ViewGroupPage() {
   const { groupId } = useParams();
   const router = useRouter();
+  const { toast } = useToast();
 
   const [group, setGroup] = useState<Group | null>(null);
   const [users, setUsers] = useState<User[]>([]);
@@ -76,6 +78,16 @@ export default function ViewGroupPage() {
 
   // Remove user function.
   const handleRemoveUser = async (userId: string) => {
+    const user = getUserById(userId);
+    if (!user) return;
+  
+    // 🔹 Show confirmation before removing
+    const confirmed = window.confirm(
+      `Are you sure you want to remove ${user.name} from this group?`
+    );
+  
+    if (!confirmed) return; // If canceled, do nothing
+  
     try {
       const res = await fetch(
         `/api/groups/remove-user?group_id=${groupId}&user_id=${encodeURIComponent(
@@ -85,23 +97,36 @@ export default function ViewGroupPage() {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            // Uncomment below if needed:
-            // Authorization: `Bearer ${process.env.BE_API_SECRET}`,
           },
         }
       );
       if (!res.ok) {
         throw new Error("Failed to remove user");
       }
-      // Update state to remove user.
+  
+      // Update state to remove user
       setGroup((prev) => {
         if (!prev) return prev;
         return { ...prev, members: prev.members.filter((m) => m !== userId) };
       });
+  
+      // 🔹 Show Toast Notification
+      toast({
+        title: "User Removed",
+        description: `${user.name} has been successfully removed from the group.`,
+      });
     } catch (err: any) {
       console.error("Error removing user:", err.message || err);
+  
+      // 🔹 Show Error Toast if removal fails
+      toast({
+        title: "Error",
+        description: "Failed to remove user. Please try again.",
+        variant: "destructive",
+      });
     }
   };
+  
 
   if (loading) return <Spinner />;
   if (error || !group)

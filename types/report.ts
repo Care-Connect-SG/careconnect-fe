@@ -5,10 +5,15 @@ export interface ReportSectionContent {
 
 export interface ReportCreate {
   form_id: string;
+  form_name: string;
   reporter_id: string;
+  reporter_name: string;
   primary_resident?: string;
+  primary_resident_name?: string;
   involved_residents?: string[];
+  involved_residents_name?: string[];
   involved_caregivers?: string[];
+  involved_caregivers_name?: string[];
   report_content: ReportSectionContent[];
   status: "Draft" | "Published";
 }

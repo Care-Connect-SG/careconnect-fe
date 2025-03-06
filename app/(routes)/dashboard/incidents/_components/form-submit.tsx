@@ -71,18 +71,23 @@ export default function FormSubmit({ form }: FormSubmitProps) {
     try {
       const submissionData: ReportCreate = {
         form_id: form.id,
+        form_name: form.title,
         reporter_id: user.id,
+        reporter_name:  user.name,
         report_content: state.report.map((section) => ({
           form_element_id: section.form_element_id,
           input: section.input ?? "",
         })),
         primary_resident: state.primaryResident?.id,
+        primary_resident_name: state.primaryResident?.name,
         involved_residents: state.involvedResidents.map((res) => res.id),
+        involved_residents_name: state.involvedResidents.map((res) => res.name),
         involved_caregivers: state.involvedCaregivers.map((cg) => cg.id),
+        involved_caregivers_name: state.involvedCaregivers.map((cg) => cg.name),
         status: "Published",
       };
       await createReport(submissionData);
-      router.replace(`/dashboard/form`);
+      router.replace(`/dashboard/incidents`);
     } catch (error) {
       console.error("Error submitting report: ", error);
       dispatch({ type: "SET_ERROR", payload: "Failed to submit the report." });

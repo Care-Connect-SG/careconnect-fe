@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/table";
 import { ReportResponse } from "@/types/report";
 import { Edit, Eye, MoreHorizontal } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 interface ReportsTableProps {
@@ -28,22 +29,14 @@ interface ReportsTableProps {
 export default function ReportsTable({ reports, activeTab }: ReportsTableProps) {
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [selectedReport, setSelectedReport] = useState<ReportResponse | null>(
-    null,
-  );
+  const router = useRouter();
 
   const handleView = (report: ReportResponse) => {
-    setSelectedReport(report);
-    setViewDialogOpen(true);
-    // In a real app, you would navigate to a view page or open a modal
-    console.log("Viewing report:", report.id);
+    router.push(`/dashboard/incidents/view?reportId=${report.id}`)
   };
 
   const handleEdit = (report: ReportResponse) => {
-    setSelectedReport(report);
-    setEditDialogOpen(true);
-    // In a real app, you would navigate to an edit page or open a modal
-    console.log("Editing report:", report.id);
+    router.push(`/dashboard/incidents/fill?formId=${report.form_id}&reportId=${report.id}`)
   };
 
   return (

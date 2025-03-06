@@ -11,6 +11,7 @@ import { notFound } from "next/navigation";
 import { useEffect, useState } from "react";
 import FormElementView from "../../../_components/form-element-view";
 import { FormHeaderView } from "../../../_components/form-header";
+import { LoadingSkeleton } from "../../../_components/loading-skeleton";
 
 export default function FormView({
   params,
@@ -43,7 +44,7 @@ export default function FormView({
   }, [formId, setPageName]);
 
   if (!form) {
-    return <p>Loading form...</p>;
+    return <LoadingSkeleton></LoadingSkeleton>;
   }
 
   return (

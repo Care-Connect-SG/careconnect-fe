@@ -93,8 +93,7 @@ export const TaskDetailHeader = ({ task }: TaskDetailHeaderProps) => {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Complete Task</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to mark this task as completed? This
-                    action cannot be undone.
+                    Are you sure you want to mark this task as completed?
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

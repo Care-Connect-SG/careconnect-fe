@@ -1,23 +1,20 @@
 "use client";
 
 import React from "react";
-import { AppSidebar } from "@/components/app-sidebar";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import ActivityManagement from "./components/ActivityManagement";
+import { useState } from "react";
+import ActivityList from "./_components/activity-list";
+import CalendarHeader from "./_components/calendar-header";
+import CalendarTable from "./_components/calendar-table";
 
-const ActivityManagementPage = () => {
+const CalendarManagementPage = () => {
+  const [view, setView] = useState<"calendar" | "list">("list");
+
   return (
-    <SidebarProvider>
-      <div className="flex h-screen w-full">
-        {/* Main Content Area */}
-        <div className="flex flex-col flex-1 w-full">
-          <main className="flex-1 overflow-auto w-full bg-gray-50">
-            <ActivityManagement />
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
+    <div className="flex-1 p-8">
+      <CalendarHeader view={view} setView={setView} />
+      {view === "calendar" ? <CalendarTable /> : <ActivityList />}
+    </div>
   );
 };
 
-export default ActivityManagementPage;
+export default CalendarManagementPage;

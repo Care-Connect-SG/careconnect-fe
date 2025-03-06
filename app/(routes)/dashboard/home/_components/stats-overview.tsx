@@ -1,14 +1,34 @@
 "use client";
 
-import { UserCheck, Clock, AlertTriangle, Users } from "lucide-react";
+import { AlertTriangle, Clock, UserCheck, Users } from "lucide-react";
 
 const StatsOverview = () => (
   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
     {[
-      { title: "Active Staff", value: "24", icon: UserCheck, color: "text-blue-500" },
-      { title: "Pending Tasks", value: "12", icon: Clock, color: "text-yellow-500" },
-      { title: "Critical Alerts", value: "3", icon: AlertTriangle, color: "text-red-500" },
-      { title: "Total Residents", value: "86", icon: Users, color: "text-green-500" },
+      {
+        title: "Active Staff",
+        value: "24",
+        icon: UserCheck,
+        color: "text-blue-500",
+      },
+      {
+        title: "Pending Tasks",
+        value: "12",
+        icon: Clock,
+        color: "text-yellow-500",
+      },
+      {
+        title: "Critical Alerts",
+        value: "3",
+        icon: AlertTriangle,
+        color: "text-red-500",
+      },
+      {
+        title: "Total Residents",
+        value: "86",
+        icon: Users,
+        color: "text-green-500",
+      },
     ].map((stat, i) => (
       <div key={i} className="bg-white p-6 rounded-lg border border-gray-200">
         <div className="flex items-center justify-between">

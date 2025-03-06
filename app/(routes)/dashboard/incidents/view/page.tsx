@@ -61,7 +61,7 @@ export default function ViewReportPage() {
             </Link>
             <Card>
                 <CardHeader className="pb-2">
-                    <CardTitle className="pb-2">Form Title {form?.title}</CardTitle>
+                    <CardTitle className="pb-2">{form?.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div>

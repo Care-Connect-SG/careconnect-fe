@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
-import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
-import { UserPlus } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
+import { UserPlus } from "lucide-react";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface Group {
   id: string;
@@ -80,36 +80,36 @@ export default function ViewGroupPage() {
   const handleRemoveUser = async (userId: string) => {
     const user = getUserById(userId);
     if (!user) return;
-  
+
     // 🔹 Show confirmation before removing
     const confirmed = window.confirm(
-      `Are you sure you want to remove ${user.name} from this group?`
+      `Are you sure you want to remove ${user.name} from this group?`,
     );
-  
+
     if (!confirmed) return; // If canceled, do nothing
-  
+
     try {
       const res = await fetch(
         `/api/groups/remove-user?group_id=${groupId}&user_id=${encodeURIComponent(
-          userId
+          userId,
         )}`,
         {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
       if (!res.ok) {
         throw new Error("Failed to remove user");
       }
-  
+
       // Update state to remove user
       setGroup((prev) => {
         if (!prev) return prev;
         return { ...prev, members: prev.members.filter((m) => m !== userId) };
       });
-  
+
       // 🔹 Show Toast Notification
       toast({
         title: "User Removed",
@@ -117,7 +117,7 @@ export default function ViewGroupPage() {
       });
     } catch (err: any) {
       console.error("Error removing user:", err.message || err);
-  
+
       // 🔹 Show Error Toast if removal fails
       toast({
         title: "Error",
@@ -126,18 +126,24 @@ export default function ViewGroupPage() {
       });
     }
   };
-  
 
   if (loading) return <Spinner />;
   if (error || !group)
-    return <p className="text-red-500 text-center p-4">{error || "Group not found"}</p>;
+    return (
+      <p className="text-red-500 text-center p-4">
+        {error || "Group not found"}
+      </p>
+    );
 
   return (
     <>
       {/* Header in a larger container */}
       <div className="max-w-3xl mx-auto p-6">
         <header className="flex items-center justify-between">
-        <Button variant="secondary" onClick={() => router.push("/dashboard/group")}>
+          <Button
+            variant="secondary"
+            onClick={() => router.push("/dashboard/group")}
+          >
             &lt; Back
           </Button>
           <h1 className="text-3xl font-bold flex-1 text-center">

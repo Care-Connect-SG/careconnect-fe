@@ -1,20 +1,20 @@
 "use client";
 
-import { useEffect, useState, FormEvent } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
-import { useToast } from "@/hooks/use-toast";
 import {
   Select,
-  SelectTrigger,
   SelectContent,
   SelectItem,
+  SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
+import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
+import { FormEvent, useEffect, useState } from "react";
 
 interface User {
-  id: string;    // Use the user id
+  id: string; // Use the user id
   email: string;
   name: string;
   role: string;
@@ -59,7 +59,9 @@ export default function CreateGroupPage() {
   };
 
   const handleRemoveMember = (userId: string) => {
-    setSelectedMembers((prev) => prev.filter((memberId) => memberId !== userId));
+    setSelectedMembers((prev) =>
+      prev.filter((memberId) => memberId !== userId),
+    );
   };
 
   const handleCreateGroup = async (e: FormEvent) => {
@@ -144,7 +146,7 @@ export default function CreateGroupPage() {
                 {users
                   .filter(
                     (user: User) =>
-                      user.role === "Admin" || user.role === "Nurse"
+                      user.role === "Admin" || user.role === "Nurse",
                   )
                   .map((user) => (
                     <SelectItem key={user.id} value={user.id}>

@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect, FormEvent } from "react";
-import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
-import { Spinner } from "@/components/ui/spinner";
+import { fetchUser } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
 import { useSession } from "next-auth/react";
-import { fetchUser } from "@/app/api/user";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { FormEvent, useEffect, useState } from "react";
 
 interface Group {
   _id: string;
@@ -17,11 +17,11 @@ interface Group {
 }
 
 interface User {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-  }
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
 
 export default function EditGroupPage() {
   const { groupId } = useParams();
@@ -29,7 +29,6 @@ export default function EditGroupPage() {
   const { toast } = useToast();
   const { data: session } = useSession();
   const [isAdmin, setIsAdmin] = useState(false);
-
 
   const [group, setGroup] = useState<Group | null>(null);
   const [loading, setLoading] = useState(true);
@@ -51,7 +50,9 @@ export default function EditGroupPage() {
         return res.json();
       })
       .then((data) => {
-        const found = data.find((g: any) => g._id === groupId || g.id === groupId);
+        const found = data.find(
+          (g: any) => g._id === groupId || g.id === groupId,
+        );
         if (!found) {
           setError("Group not found");
         } else {
@@ -81,7 +82,6 @@ export default function EditGroupPage() {
       });
   }, []);
 
-
   // Handle form submission to update group details.
   const handleUpdateGroup = async (e: FormEvent) => {
     e.preventDefault();
@@ -106,7 +106,7 @@ export default function EditGroupPage() {
       await res.json();
       setUpdateSuccess("Group updated successfully!");
       setGroup((prev) =>
-        prev ? { ...prev, name: newName, description: newDescription } : prev
+        prev ? { ...prev, name: newName, description: newDescription } : prev,
       );
     } catch (error: any) {
       setUpdateError(error.message || "Error updating group");
@@ -123,14 +123,19 @@ export default function EditGroupPage() {
       return;
     }
     const id = Array.isArray(groupId) ? groupId[0] : groupId;
-    
-    const confirmDelete = window.confirm("Are you sure you want to delete this group?");
+
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this group?",
+    );
     if (!confirmDelete) return;
     try {
-      const res = await fetch(`/api/groups?group_id=${encodeURIComponent(id)}`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-      });
+      const res = await fetch(
+        `/api/groups?group_id=${encodeURIComponent(id)}`,
+        {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+        },
+      );
       if (!res.ok) {
         const errData = await res.json();
         throw new Error(errData.error?.detail || "Failed to delete group");
@@ -169,21 +174,23 @@ export default function EditGroupPage() {
     checkAdminStatus();
   }, [session?.user?.email]);
 
-
   if (loading) return <Spinner />;
-  if (error || !group) return <p className="text-red-500">{error || "Group not found"}</p>;
+  if (error || !group)
+    return <p className="text-red-500">{error || "Group not found"}</p>;
 
   return (
     <main className="p-6 max-w-3xl mx-auto space-y-8 relative">
       {/* Header with Edit title and action buttons */}
       <div className="flex items-center justify-between">
-      <Button variant="secondary" onClick={() => router.push(`/dashboard/group/${groupId}`)}>
+        <Button
+          variant="secondary"
+          onClick={() => router.push(`/dashboard/group/${groupId}`)}
+        >
           Back
         </Button>
         <h1 className="text-3xl font-bold">Edit Group</h1>
         <div className="flex gap-1">
-          
-        {isAdmin && (
+          {isAdmin && (
             <Button variant="destructive" onClick={handleDeleteGroup}>
               Delete Group
             </Button>
@@ -192,7 +199,10 @@ export default function EditGroupPage() {
       </div>
 
       {/* Edit Group Form */}
-      <form onSubmit={handleUpdateGroup} className="space-y-4 bg-white p-6 border rounded-lg shadow-sm">
+      <form
+        onSubmit={handleUpdateGroup}
+        className="space-y-4 bg-white p-6 border rounded-lg shadow-sm"
+      >
         <div>
           <label htmlFor="groupName" className="block font-medium mb-1">
             Group Name
@@ -223,7 +233,9 @@ export default function EditGroupPage() {
           {updating ? "Updating..." : "Update Group"}
         </Button>
         {updateError && <p className="mt-2 text-red-500">{updateError}</p>}
-        {updateSuccess && <p className="mt-2 text-green-500">{updateSuccess}</p>}
+        {updateSuccess && (
+          <p className="mt-2 text-green-500">{updateSuccess}</p>
+        )}
       </form>
     </main>
   );

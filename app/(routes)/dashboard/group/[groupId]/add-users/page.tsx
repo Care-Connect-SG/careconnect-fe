@@ -1,18 +1,18 @@
 "use client";
 
-import { useEffect, useState, FormEvent } from "react";
-import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
-import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import {
   Select,
-  SelectTrigger,
   SelectContent,
   SelectItem,
+  SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { FormEvent, useEffect, useState } from "react";
 
 interface User {
   id: string; // new: store user id
@@ -114,7 +114,7 @@ export default function AddUsersPage() {
                 {users
                   .filter(
                     (user: User) =>
-                      user.role === "Admin" || user.role === "Nurse"
+                      user.role === "Admin" || user.role === "Nurse",
                   )
                   .map((user) => (
                     <SelectItem key={user.id} value={user.id}>

@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { Spinner } from "@/components/ui/spinner";
+import { fetchUser } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Plus } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { fetchUser } from "@/app/api/user";
-
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 interface Group {
   id: string; // Unique identifier from the backend.
@@ -78,14 +77,13 @@ export default function GroupDashboard() {
     checkAdminStatus();
   }, [session?.user?.email]);
 
-
   // Filter groups based on group name or any member's name.
   const filteredGroups = groups.filter((group) => {
     const term = searchTerm.toLowerCase();
     const groupNameMatches = group.name.toLowerCase().includes(term);
     const memberMatches = group.members
       ? group.members.some((memberId) =>
-          getUserName(memberId).toLowerCase().includes(term)
+          getUserName(memberId).toLowerCase().includes(term),
         )
       : false;
     return groupNameMatches || memberMatches;
@@ -106,13 +104,12 @@ export default function GroupDashboard() {
           />
           {isAdmin && (
             <Link
-  href="/dashboard/group/createGroup"
-  className="inline-flex items-center gap-2 bg-green-500 text-white px-5 py-3 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:bg-green-700 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50"
->
-  <Plus className="w-5 h-5" />
-  <span className="font-medium">Create New Group</span>
-</Link>
-
+              href="/dashboard/group/createGroup"
+              className="inline-flex items-center gap-2 bg-green-500 text-white px-5 py-3 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:bg-green-700 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50"
+            >
+              <Plus className="w-5 h-5" />
+              <span className="font-medium">Create New Group</span>
+            </Link>
           )}
         </div>
       </header>
@@ -129,23 +126,23 @@ export default function GroupDashboard() {
                 ? group.members.map((id) => getUserName(id)).join(", ")
                 : "No members yet.";
 
-                return (
-                  <div
-                    key={groupIdentifier}
-                    className="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
-                  >
-                    <Link href={`/dashboard/group/${groupIdentifier}`}>
-                      <div className="cursor-pointer">
-                        <h2 className="text-xl font-semibold mb-2">{group.name}</h2>
-                        <p className="text-gray-700 mb-2">{group.description}</p>
-                        {/* Use truncate for single-line or line-clamp-2 for two lines */}
-                        <p className="text-sm text-gray-500 truncate">
-                          Members: {memberNames}
-                        </p>
-                      </div>
-                    </Link>
+            return (
+              <div
+                key={groupIdentifier}
+                className="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
+              >
+                <Link href={`/dashboard/group/${groupIdentifier}`}>
+                  <div className="cursor-pointer">
+                    <h2 className="text-xl font-semibold mb-2">{group.name}</h2>
+                    <p className="text-gray-700 mb-2">{group.description}</p>
+                    {/* Use truncate for single-line or line-clamp-2 for two lines */}
+                    <p className="text-sm text-gray-500 truncate">
+                      Members: {memberNames}
+                    </p>
                   </div>
-                );
+                </Link>
+              </div>
+            );
           })}
         </div>
       )}

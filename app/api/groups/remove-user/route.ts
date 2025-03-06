@@ -12,12 +12,12 @@ export async function DELETE(request: Request) {
   if (!group_id || !user_id) {
     return NextResponse.json(
       { error: "Both group_id and user_id are required" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   const url = `${BE_API_URL}/groups/remove-user?group_id=${encodeURIComponent(
-    group_id
+    group_id,
   )}&user_id=${encodeURIComponent(user_id)}`;
 
   try {

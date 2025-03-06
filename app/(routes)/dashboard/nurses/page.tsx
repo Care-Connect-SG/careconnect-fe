@@ -1,7 +1,9 @@
 "use client";
 
+import { deleteUser } from "@/app/api/user";
 import CreateUserModal from "@/components/createUserModal";
 import { Button } from "@/components/ui/button";
+import DeleteConfirmationModal from "@/components/ui/delete-confirmation-modal";
 import { Input } from "@/components/ui/input";
 import RoleChip from "@/components/ui/roleChip";
 import {
@@ -23,7 +25,10 @@ const Nurses = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [filter, setFilter] = useState<string>("All Users");
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // Define the modal state
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] =
+    useState<boolean>(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const router = useRouter();
 
   const fetchUsers = async () => {
@@ -42,6 +47,19 @@ const Nurses = () => {
       console.error("Error fetching users:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (userToDelete) {
+      try {
+        await deleteUser(userToDelete.id);
+        fetchUsers(); // Refresh the user list
+        setIsConfirmationModalOpen(false);
+        setUserToDelete(null);
+      } catch (error) {
+        console.error("Error deleting user:", error);
+      }
     }
   };
 
@@ -130,7 +148,11 @@ const Nurses = () => {
                 <td className="p-4 flex gap-3">
                   <TrashIcon
                     className="h-5 w-5 text-red-600 cursor-pointer hover:text-red-800 transition"
-                    onClick={() => console.log("Delete user:", user.email)}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent row click
+                      setUserToDelete(user); // Set the user to be deleted
+                      setIsConfirmationModalOpen(true); // Open the confirmation modal
+                    }}
                   />
                 </td>
               </tr>
@@ -153,6 +175,12 @@ const Nurses = () => {
           onUserCreated={fetchUsers}
         />
       )}
+
+      <DeleteConfirmationModal
+        isOpen={isConfirmationModalOpen}
+        onClose={() => setIsConfirmationModalOpen(false)}
+        onConfirm={handleDeleteUser}
+      />
     </div>
   );
 };

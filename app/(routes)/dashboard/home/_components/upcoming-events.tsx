@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, MapPin, Users, MoreHorizontal } from "lucide-react";
+import { Clock, MapPin, MoreHorizontal, Users } from "lucide-react";
 
 const UpcomingEvents = () => (
   <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -12,11 +12,29 @@ const UpcomingEvents = () => (
     </div>
     <div className="space-y-4">
       {[
-        { title: "Morning Exercise", time: "Today, 10:00 AM", location: "Activity Room", participants: 12 },
-        { title: "Art & Craft Workshop", time: "Today, 2:00 PM", location: "Craft Room", participants: 8 },
-        { title: "Music Therapy", time: "Tomorrow, 11:00 AM", location: "Common Area", participants: 15 },
+        {
+          title: "Morning Exercise",
+          time: "Today, 10:00 AM",
+          location: "Activity Room",
+          participants: 12,
+        },
+        {
+          title: "Art & Craft Workshop",
+          time: "Today, 2:00 PM",
+          location: "Craft Room",
+          participants: 8,
+        },
+        {
+          title: "Music Therapy",
+          time: "Tomorrow, 11:00 AM",
+          location: "Common Area",
+          participants: 15,
+        },
       ].map((event, i) => (
-        <div key={i} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+        <div
+          key={i}
+          className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+        >
           <div>
             <h3 className="font-medium text-gray-900">{event.title}</h3>
             <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500">

@@ -1,6 +1,12 @@
 "use client";
 
-import { Plus, CheckCircle2, Calendar, AlertTriangle, Users } from "lucide-react";
+import {
+  AlertTriangle,
+  Calendar,
+  CheckCircle2,
+  Plus,
+  Users,
+} from "lucide-react";
 
 const QuickActions = () => (
   <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
@@ -8,7 +14,11 @@ const QuickActions = () => (
       { title: "Create Tasks", icon: Plus, color: "bg-blue-500" },
       { title: "View Tasks", icon: CheckCircle2, color: "bg-green-500" },
       { title: "View Calendar", icon: Calendar, color: "bg-purple-500" },
-      { title: "Incident Reports", icon: AlertTriangle, color: "bg-orange-500" },
+      {
+        title: "Incident Reports",
+        icon: AlertTriangle,
+        color: "bg-orange-500",
+      },
       { title: "View Groups", icon: Users, color: "bg-indigo-500" },
     ].map((action, i) => (
       <button

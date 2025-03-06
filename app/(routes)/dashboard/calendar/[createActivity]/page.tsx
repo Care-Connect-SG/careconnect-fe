@@ -1,19 +1,33 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import * as Dialog from "@radix-ui/react-dialog";
-import { CheckCircle, Clock, Home, User, ChevronLeft, Calendar, MapPin, Bell, Search, Plus, Info, X } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
-import { useBreadcrumb } from "../../../../../context/breadcrumb-context";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
+import {
+  Bell,
+  Calendar,
+  CheckCircle,
+  ChevronLeft,
+  Clock,
+  Home,
+  Info,
+  MapPin,
+  Plus,
+  Search,
+  User,
+  X,
+} from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useBreadcrumb } from "../../../../../context/breadcrumb-context";
 
 const ActivityForm = () => {
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-6">
       <div className="space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Activity Name</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Activity Name
+          </label>
           <input
             type="text"
             placeholder="Enter activity name"
@@ -21,7 +35,9 @@ const ActivityForm = () => {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Activity Type</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Activity Type
+          </label>
           <select className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
             <option value="">Select type...</option>
             <option value="group">Group Activity</option>
@@ -32,7 +48,9 @@ const ActivityForm = () => {
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Date
+            </label>
             <div className="relative">
               <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
@@ -42,7 +60,9 @@ const ActivityForm = () => {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Time
+            </label>
             <div className="relative">
               <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
@@ -53,7 +73,9 @@ const ActivityForm = () => {
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Location
+          </label>
           <div className="relative">
             <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
@@ -122,9 +144,16 @@ const CreateActivity = () => {
     <div className="flex-1 bg-gray-50 p-8">
       <Breadcrumb />
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold text-gray-800">Create New Activity</h1>
+        <h1 className="text-2xl font-semibold text-gray-800">
+          Create New Activity
+        </h1>
         <div className="flex items-center space-x-4">
-          <Button variant="outline" onClick={() => push("/dashboard/activity-management")}>Cancel</Button>
+          <Button
+            variant="outline"
+            onClick={() => push("/dashboard/activity-management")}
+          >
+            Cancel
+          </Button>
           <Button variant="default" className="flex items-center">
             <CheckCircle className="w-4 h-4 mr-2" />
             Create Activity

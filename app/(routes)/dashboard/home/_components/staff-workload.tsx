@@ -14,14 +14,21 @@ const StaffWorkload = () => (
         { name: "Michael Chen", role: "LPN", tasks: 5, workload: 45 },
         { name: "Sarah Williams", role: "CNA", tasks: 10, workload: 90 },
       ].map((staff, i) => (
-        <div key={i} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+        <div
+          key={i}
+          className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+        >
           <div className="flex items-center space-x-4">
             <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-              <span className="text-gray-600 font-medium">{staff.name.charAt(0)}</span>
+              <span className="text-gray-600 font-medium">
+                {staff.name.charAt(0)}
+              </span>
             </div>
             <div>
               <p className="font-medium text-gray-900">{staff.name}</p>
-              <p className="text-sm text-gray-500">{staff.role} • {staff.tasks} tasks</p>
+              <p className="text-sm text-gray-500">
+                {staff.role} • {staff.tasks} tasks
+              </p>
             </div>
           </div>
           <div className="w-32">

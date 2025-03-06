@@ -50,7 +50,7 @@ export default function FormCardPublished({
       <CardFooter className="absolute w-full bottom-0">
         <Button
           variant="outline"
-          onClick={() => router.replace(`/dashboard/form/fill/${id}`)}
+          onClick={() => router.replace(`/dashboard/incidents/fill/${id}`)}
           className="w-full"
         >
           Fill Form

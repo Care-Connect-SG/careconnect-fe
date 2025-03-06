@@ -73,7 +73,8 @@ export default function IncidentReports() {
   const filteredReports = useMemo(() => {
     return reports.filter((report) => {
       if (activeTab === "my" && report.reporter.id != user?.id) return false;
-      if (activeTab !== "my" && report.status != ReportStatus.PUBLISHED) return false;
+      if (activeTab !== "my" && report.status != ReportStatus.PUBLISHED)
+        return false;
 
       if (
         filterOptions.formId &&

@@ -8,7 +8,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import FormCard from "../_components/form-card";
 
-
 export default function IncidentReportingFormsAdmin() {
   const [forms, setForms] = useState<FormResponse[]>([]);
 

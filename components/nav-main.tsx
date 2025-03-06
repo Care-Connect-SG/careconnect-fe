@@ -17,7 +17,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
 
-
 interface submenuItem {
   title: string;
   url: string;
@@ -46,10 +45,16 @@ export function NavMain({
   }, [session?.user?.email]);
 
   const filteredItems = items.map((item) => {
-    if (item.title === "Incident Reports" && item.submenu && userRole !== "Admin") {
+    if (
+      item.title === "Incident Reports" &&
+      item.submenu &&
+      userRole !== "Admin"
+    ) {
       return {
         ...item,
-        submenu: item.submenu.filter((sub) => sub.title !== "Manage Report Forms"),
+        submenu: item.submenu.filter(
+          (sub) => sub.title !== "Manage Report Forms",
+        ),
       };
     }
     return item;
@@ -58,8 +63,8 @@ export function NavMain({
   return (
     <SidebarGroup>
       <SidebarMenu>
-        {filteredItems.map((item) => (
-          item.title === "Incident Reports" ?
+        {filteredItems.map((item) =>
+          item.title === "Incident Reports" ? (
             <Collapsible key={item.title}>
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
@@ -83,7 +88,7 @@ export function NavMain({
                 </CollapsibleContent>
               </SidebarMenuItem>
             </Collapsible>
-            :
+          ) : (
             <SidebarMenuItem key={item.title}>
               <Link href={item.url!} passHref legacyBehavior>
                 <SidebarMenuButton tooltip={item.title}>
@@ -92,7 +97,8 @@ export function NavMain({
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>
-        ))}
+          ),
+        )}
       </SidebarMenu>
     </SidebarGroup>
   );

@@ -5,22 +5,27 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { getFormById } from "@/app/api/form";
-import { getReportById, createReport, updateReport } from "@/app/api/report";
-import { FormResponse } from "@/types/form";
-import { ReportState, useReportReducer } from "@/hooks/useReportReducer";
-import { FormElementData } from "@/hooks/useFormReducer";
-import { CaregiverTag, ReportStatus, ReportCreate, ReportResponse } from "@/types/report";
+import { createReport, getReportById, updateReport } from "@/app/api/report";
 import { getCurrentUser } from "@/app/api/user";
+import { FormElementData } from "@/hooks/useFormReducer";
+import { ReportState, useReportReducer } from "@/hooks/useReportReducer";
+import { FormResponse } from "@/types/form";
+import {
+  CaregiverTag,
+  ReportCreate,
+  ReportResponse,
+  ReportStatus,
+} from "@/types/report";
 
-import { LoadingSkeleton } from "../_components/loading-skeleton";
 import { FormHeaderView } from "../_components/form-header";
-import ResidentSelector from "./_components/tag-personnel";
+import { LoadingSkeleton } from "../_components/loading-skeleton";
 import FormElementFill from "./_components/form-element-fill";
+import ResidentSelector from "./_components/tag-personnel";
 
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { ChevronLeft } from "lucide-react";
+import Link from "next/link";
 
 export default function CreateReportPage() {
   const router = useRouter();
@@ -76,10 +81,12 @@ export default function CreateReportPage() {
       }
     } else {
       // Creating a new blank report
-      const blankReport = formData.json_content.map((element: FormElementData) => ({
-        form_element_id: element.element_id,
-        input: null,
-      }));
+      const blankReport = formData.json_content.map(
+        (element: FormElementData) => ({
+          form_element_id: element.element_id,
+          input: null,
+        }),
+      );
       dispatch({ type: "SET_REPORT_CONTENT", payload: blankReport });
     }
     setLoading(false);
@@ -100,7 +107,7 @@ export default function CreateReportPage() {
 
   const requiresInput = (id: string) => {
     const formElement = form?.json_content.find(
-      (element: FormElementData) => element.element_id === id
+      (element: FormElementData) => element.element_id === id,
     );
     return formElement?.required;
   };
@@ -127,7 +134,11 @@ export default function CreateReportPage() {
     }
 
     const user = await getCurrentUser(session!.user!.email!);
-    const reporter: CaregiverTag = { id: user.id, name: user.email, role: user.role };
+    const reporter: CaregiverTag = {
+      id: user.id,
+      name: user.email,
+      role: user.role,
+    };
 
     const createReportData = (status: ReportStatus) => {
       return {
@@ -142,7 +153,7 @@ export default function CreateReportPage() {
         involved_residents: state.involvedResidents,
         involved_caregivers: state.involvedCaregivers,
         status,
-      } 
+      };
     };
 
     try {
@@ -151,7 +162,9 @@ export default function CreateReportPage() {
 
         if (!reportId) {
           const newReportId = await createReport(reportData);
-          router.replace(`/dashboard/incidents/fill?formId=${formId}&reportId=${newReportId}`);
+          router.replace(
+            `/dashboard/incidents/fill?formId=${formId}&reportId=${newReportId}`,
+          );
         } else {
           await updateReport(reportId, reportData);
         }
@@ -210,7 +223,7 @@ export default function CreateReportPage() {
         <div className="py-4 space-y-4">
           {state.report_content.map((section) => {
             const elementDef = form!.json_content.find(
-              (el) => el.element_id === section.form_element_id
+              (el) => el.element_id === section.form_element_id,
             );
             if (!elementDef) return null;
 

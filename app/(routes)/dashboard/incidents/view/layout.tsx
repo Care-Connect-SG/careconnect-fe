@@ -1,13 +1,12 @@
-"use client"
+"use client";
 
 import { Suspense } from "react";
 import { LoadingSkeleton } from "../_components/loading-skeleton";
 
-
 export default function ViewReportLayout({
-    children,
+  children,
 }: {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-    return <Suspense fallback={<LoadingSkeleton />}>{children}</Suspense>
+  return <Suspense fallback={<LoadingSkeleton />}>{children}</Suspense>;
 }

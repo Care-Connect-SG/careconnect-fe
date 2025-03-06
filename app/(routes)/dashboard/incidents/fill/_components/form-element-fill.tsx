@@ -1,7 +1,7 @@
 "use client";
 
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Card,
   CardContent,
@@ -9,17 +9,21 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
 
 import { FormElementData } from "@/hooks/useFormReducer";
 
 interface FormElementFillProps {
   element: FormElementData;
-  value: string | string[]; 
+  value: string | string[];
   onInputChange: (form_element_id: string, inputValue: any) => void;
 }
 
@@ -30,7 +34,9 @@ export default function FormElementFill({
 }: FormElementFillProps) {
   const { element_id, type, label, required, helptext, options } = element;
 
-  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleTextChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     onInputChange(element_id, e.target.value);
   };
 

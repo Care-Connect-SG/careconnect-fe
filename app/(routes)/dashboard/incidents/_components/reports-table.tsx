@@ -26,15 +26,20 @@ interface ReportsTableProps {
   activeTab: string;
 }
 
-export default function ReportsTable({ reports, activeTab }: ReportsTableProps) {
+export default function ReportsTable({
+  reports,
+  activeTab,
+}: ReportsTableProps) {
   const router = useRouter();
 
   const handleView = (report: ReportResponse) => {
-    router.push(`/dashboard/incidents/view?reportId=${report.id}`)
+    router.push(`/dashboard/incidents/view?reportId=${report.id}`);
   };
 
   const handleEdit = (report: ReportResponse) => {
-    router.push(`/dashboard/incidents/fill?formId=${report.form_id}&reportId=${report.id}`)
+    router.push(
+      `/dashboard/incidents/fill?formId=${report.form_id}&reportId=${report.id}`,
+    );
   };
 
   return (
@@ -44,9 +49,13 @@ export default function ReportsTable({ reports, activeTab }: ReportsTableProps) 
           <TableRow>
             <TableHead className="text-center">Created Date</TableHead>
             <TableHead className="text-center">Form</TableHead>
-            {activeTab === "all" && <TableHead className="text-center">Reporter</TableHead>}
+            {activeTab === "all" && (
+              <TableHead className="text-center">Reporter</TableHead>
+            )}
             <TableHead className="text-center">Resident</TableHead>
-            {activeTab === "my" && <TableHead className="text-center">Status</TableHead>}
+            {activeTab === "my" && (
+              <TableHead className="text-center">Status</TableHead>
+            )}
             <TableHead className="text-center">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -60,21 +69,27 @@ export default function ReportsTable({ reports, activeTab }: ReportsTableProps) 
           ) : (
             reports.map((report) => (
               <TableRow key={report.id}>
-                <TableCell className="font-medium">{new Date(report.created_at).toLocaleDateString()}</TableCell>
+                <TableCell className="font-medium">
+                  {new Date(report.created_at).toLocaleDateString()}
+                </TableCell>
                 <TableCell>{report.form_name}</TableCell>
-                {activeTab == "all" && <TableCell>{report.reporter.name}</TableCell>}
+                {activeTab == "all" && (
+                  <TableCell>{report.reporter.name}</TableCell>
+                )}
                 <TableCell>{report.primary_resident?.name}</TableCell>
-                {activeTab == "my" && <TableCell>
-                  <Badge
-                    className={
-                      report.status === "Draft"
-                        ? "text-yellow-800 bg-yellow-100 h-6"
-                        : "text-green-800 bg-green-100 h-6"
-                    }
-                  >
-                    {report.status}
-                  </Badge>
-                </TableCell>}
+                {activeTab == "my" && (
+                  <TableCell>
+                    <Badge
+                      className={
+                        report.status === "Draft"
+                          ? "text-yellow-800 bg-yellow-100 h-6"
+                          : "text-green-800 bg-green-100 h-6"
+                      }
+                    >
+                      {report.status}
+                    </Badge>
+                  </TableCell>
+                )}
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

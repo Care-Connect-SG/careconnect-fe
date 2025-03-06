@@ -1,7 +1,6 @@
 "use client";
 
-import { fetchUser } from "@/app/api/user";
-import { Button } from "@/components/ui/button";
+import { getUser } from "@/app/api/user";
 import { Spinner } from "@/components/ui/spinner";
 import { Plus } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -66,7 +65,7 @@ export default function GroupDashboard() {
       }
 
       try {
-        const user = await fetchUser(session.user.email);
+        const user = await getUser(session.user.email);
         setIsAdmin(user?.role === "Admin"); // ✅ Update state
       } catch (error) {
         console.error("Error checking admin role:", error);
@@ -93,8 +92,8 @@ export default function GroupDashboard() {
     <main className="p-6 max-w-7xl mx-auto">
       {/* Header */}
       <header className="mb-8 flex items-center justify-between">
-        <h1 className="text-4xl font-bold">Groups</h1>
-        <div className="flex flex-1 mx-8 items-center gap-4">
+        <h1 className="text-2xl font-bold">Groups</h1>
+        <div className="flex flex-1 items-center gap-4">
           <input
             type="text"
             placeholder="Search by group or user's name..."

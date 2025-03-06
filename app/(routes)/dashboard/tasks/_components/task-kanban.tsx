@@ -5,7 +5,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Task } from "@/types/task";
 import { Clock, User } from "lucide-react";
 import { useSession } from "next-auth/react";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 const TaskCard = ({ task }: { task: Task }) => {
   const getPriorityColor = (priority: string) => {

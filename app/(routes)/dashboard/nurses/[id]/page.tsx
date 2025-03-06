@@ -1,5 +1,6 @@
 "use client";
 
+import { getUserById, updateUser } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -9,42 +10,26 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
-import { XIcon } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
+import { UserEdit } from "@/types/user";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-
-interface User {
-  email: string;
-  name: string;
-  contact_number?: string;
-  role: string;
-  organisation_rank?: string;
-  gender: string;
-  created_at: string;
-}
 
 const UserProfile = () => {
   const { id } = useParams();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserEdit | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<string>("overview");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [editedUser, setEditedUser] = useState<User | null>(null);
+  const [editedUser, setEditedUser] = useState<UserEdit | null>(null);
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const getUser = async () => {
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BE_API_URL}/users/${id}`,
-        );
-        if (response.ok) {
-          const data = await response.json();
-          setUser(data);
-          setEditedUser(data); // Set the initial edit state
-        } else {
-          console.error("Failed to fetch user");
-        }
+        const data = await getUserById(id as string);
+        setUser(data);
+        setEditedUser(data);
       } catch (error) {
         console.error("Error fetching user:", error);
       } finally {
@@ -53,7 +38,7 @@ const UserProfile = () => {
     };
 
     if (id) {
-      fetchUser();
+      getUser();
     }
   }, [id]);
 
@@ -86,24 +71,9 @@ const UserProfile = () => {
     if (!editedUser) return;
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BE_API_URL}/users/${id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(editedUser),
-        },
-      );
-
-      if (response.ok) {
-        const updatedUser = await response.json();
-        setUser(updatedUser);
-        setIsModalOpen(false);
-      } else {
-        console.error("Failed to update user");
-      }
+      const updatedUser = await updateUser(id as string, editedUser);
+      setUser(updatedUser);
+      setIsModalOpen(false);
     } catch (error) {
       console.error("Error updating user:", error);
     }
@@ -186,21 +156,15 @@ const UserProfile = () => {
           <DialogHeader>
             <DialogTitle className="flex justify-between items-center">
               Edit Profile
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="text-gray-500 hover:text-gray-800"
-              >
-                <XIcon className="w-5 h-5" />
-              </button>
             </DialogTitle>
           </DialogHeader>
           <div className="p-6">
             <div className="grid grid-cols-1 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <Label className="block text-sm font-medium text-gray-700">
                   Name
-                </label>
-                <input
+                </Label>
+                <Input
                   type="text"
                   value={editedUser?.name || ""}
                   onChange={(e) =>
@@ -211,9 +175,9 @@ const UserProfile = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <Label className="block text-sm font-medium text-gray-700">
                   Email
-                </label>
+                </Label>
                 <Input
                   value={editedUser?.email || ""}
                   disabled
@@ -222,9 +186,9 @@ const UserProfile = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <Label className="block text-sm font-medium text-gray-700">
                   Contact Number
-                </label>
+                </Label>
                 <Input
                   value={editedUser?.contact_number || ""}
                   onChange={(e) =>
@@ -238,9 +202,9 @@ const UserProfile = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <Label className="block text-sm font-medium text-gray-700">
                   Organisation Rank
-                </label>
+                </Label>
                 <Input
                   value={editedUser?.organisation_rank || ""}
                   onChange={(e) =>
@@ -254,9 +218,9 @@ const UserProfile = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <Label className="block text-sm font-medium text-gray-700">
                   Gender
-                </label>
+                </Label>
                 <Input
                   value={editedUser?.gender || ""}
                   onChange={(e) =>

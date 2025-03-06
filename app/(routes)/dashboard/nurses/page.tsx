@@ -1,7 +1,7 @@
 "use client";
 
 import CreateUserDialog from "@/app/(routes)/dashboard/nurses/_components/create-user-dialog";
-import { deleteUser } from "@/app/api/user";
+import { deleteUser, getUsers } from "@/app/api/user";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,16 +43,9 @@ const Nurses = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BE_API_URL}/users`,
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setUsers(data);
-        setFilteredUsers(data);
-      } else {
-        console.error("Failed to fetch users");
-      }
+      const data = await getUsers();
+      setUsers(data);
+      setFilteredUsers(data);
     } catch (error) {
       console.error("Error fetching users:", error);
     } finally {

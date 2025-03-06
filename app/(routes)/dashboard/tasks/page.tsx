@@ -12,6 +12,7 @@ import { Task } from "@/types/task";
 import TaskKanbanView from "./_components/task-kanban";
 import TaskListView from "./_components/task-list";
 import { TaskViewToggle } from "./_components/task-viewtoggle";
+import TaskForm from "./_components/task-form";
 
 const TaskManagement = () => {
   const [currentView, setCurrentView] = useState<"list" | "kanban">("list");
@@ -48,9 +49,7 @@ const TaskManagement = () => {
           </div>
           <div className="flex items-center space-x-4">
             <TaskViewToggle view={currentView} onChange={setCurrentView} />
-            <Button>
-              <Plus className="w-4 h-4 mr-2" /> New Task
-            </Button>
+            <TaskForm />
           </div>
         </div>
         <p className="text-md text-gray-500">{date}</p>

@@ -1,6 +1,6 @@
 "use client";
 
-import { completeTask, uncompleteTask } from "@/app/api/task";
+import { completeTask, reopenTask } from "@/app/api/task";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,7 +30,7 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
     try {
       const updatedTask =
         selectedTask.status === TaskStatus.COMPLETED
-          ? await uncompleteTask(selectedTask.id)
+          ? await reopenTask(selectedTask.id)
           : await completeTask(selectedTask.id);
 
       setTaskList((prevTasks) =>
@@ -47,9 +47,7 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
   };
 
   if (!taskList.length) {
-    return (
-      <p className="text-center text-gray-500">No available tasks, Hooray!</p>
-    );
+    return <p className="text-center text-gray-500 p-8">No available tasks</p>;
   }
 
   return (
@@ -82,7 +80,7 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
             {taskList.map((task) => (
               <tr
                 key={task.id}
-                className="hover:bg-blue-50 hover:cursor-pointer hover:duration-300 ease-in-out"
+                className="hover:bg-muted hover:duration-300 ease-in-out"
               >
                 <td className="px-6 py-4">
                   <AlertDialog>
@@ -90,7 +88,7 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="mr-2"
+                        className="mr-2 hover:bg-transparent z-1 hover:text--600"
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedTask(task);

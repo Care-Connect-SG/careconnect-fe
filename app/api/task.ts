@@ -117,10 +117,7 @@ export const completeTask = async (taskId: string): Promise<Task> => {
     const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/complete`,
       {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        method: "PATCH",
       },
     );
 
@@ -138,15 +135,12 @@ export const completeTask = async (taskId: string): Promise<Task> => {
   }
 };
 
-export const uncompleteTask = async (taskId: string): Promise<Task> => {
+export const reopenTask = async (taskId: string): Promise<Task> => {
   try {
     const response = await fetchWithAuth(
-      `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/incomplete`,
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/reopen`,
       {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        method: "PATCH",
       },
     );
 

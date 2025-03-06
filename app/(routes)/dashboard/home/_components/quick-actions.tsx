@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import {
   AlertTriangle,
   Calendar,
@@ -21,15 +22,16 @@ const QuickActions = () => (
       },
       { title: "View Groups", icon: Users, color: "bg-indigo-500" },
     ].map((action, i) => (
-      <button
+      <Button
         key={i}
-        className="flex items-center p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
+        variant="ghost"
+        className="flex items-center w-full h-full p-4 border"
       >
         <div className={`${action.color} p-2 rounded-lg text-white mr-3`}>
           <action.icon className="w-5 h-5" />
         </div>
         <span className="font-medium text-gray-700">{action.title}</span>
-      </button>
+      </Button>
     ))}
   </div>
 );

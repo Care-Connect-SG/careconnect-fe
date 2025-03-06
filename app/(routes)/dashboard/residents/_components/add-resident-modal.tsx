@@ -1,6 +1,6 @@
 "use client";
 
-import { UserResponse } from "@/types/user";
+import { User } from "@/types/user";
 import { X } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { getAllNurses } from "../../../../api/user";
@@ -37,7 +37,7 @@ const AddResidentModal: React.FC<AddResidentModalProps> = ({
   const [roomNumber, setRoomNumber] = useState("");
   const [additionalNotes, setAdditionalNotes] = useState("");
   const [primaryNurse, setPrimaryNurse] = useState("");
-  const [nurseOptions, setNurseOptions] = useState<UserResponse[]>([]);
+  const [nurseOptions, setNurseOptions] = useState<User[]>([]);
 
   // Fetch nurse options when modal opens
   useEffect(() => {

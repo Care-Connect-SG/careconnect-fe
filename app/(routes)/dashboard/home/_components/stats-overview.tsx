@@ -1,5 +1,6 @@
 "use client";
 
+import { Card } from "@/components/ui/card";
 import { AlertTriangle, Clock, UserCheck, Users } from "lucide-react";
 
 const StatsOverview = () => (
@@ -18,7 +19,7 @@ const StatsOverview = () => (
         color: "text-yellow-500",
       },
       {
-        title: "Critical Alerts",
+        title: "Delayed Tasks",
         value: "3",
         icon: AlertTriangle,
         color: "text-red-500",
@@ -30,7 +31,7 @@ const StatsOverview = () => (
         color: "text-green-500",
       },
     ].map((stat, i) => (
-      <div key={i} className="bg-white p-6 rounded-lg border border-gray-200">
+      <Card key={i} className="p-6">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-gray-500">{stat.title}</p>
@@ -38,7 +39,7 @@ const StatsOverview = () => (
           </div>
           <stat.icon className={`w-8 h-8 ${stat.color}`} />
         </div>
-      </div>
+      </Card>
     ))}
   </div>
 );

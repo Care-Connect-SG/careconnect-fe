@@ -1,14 +1,16 @@
 "use client";
 
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Clock, MapPin, MoreHorizontal, Users } from "lucide-react";
 
 const UpcomingEvents = () => (
-  <div className="bg-white rounded-lg border border-gray-200 p-6">
+  <Card className="p-6">
     <div className="flex items-center justify-between mb-6">
-      <h2 className="text-lg font-semibold text-gray-800">Upcoming Events</h2>
-      <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+      <p className="text-lg font-semibold text-gray-800">Upcoming Events</p>
+      <Button variant="link" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
         View All
-      </button>
+      </Button>
     </div>
     <div className="space-y-4">
       {[
@@ -31,12 +33,9 @@ const UpcomingEvents = () => (
           participants: 15,
         },
       ].map((event, i) => (
-        <div
-          key={i}
-          className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
-        >
+        <Card key={i} className="p-4 bg-gray-50 flex items-center justify-between">
           <div>
-            <h3 className="font-medium text-gray-900">{event.title}</h3>
+            <p className="font-medium text-gray-900">{event.title}</p>
             <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500">
               <div className="flex items-center">
                 <Clock className="w-4 h-4 mr-1" />
@@ -52,13 +51,13 @@ const UpcomingEvents = () => (
               </div>
             </div>
           </div>
-          <button className="text-gray-400 hover:text-gray-600">
+          <Button variant="ghost" size="icon" className="text-gray-400 hover:text-gray-600">
             <MoreHorizontal className="w-5 h-5" />
-          </button>
-        </div>
+          </Button>
+        </Card>
       ))}
     </div>
-  </div>
+  </Card>
 );
 
 export default UpcomingEvents;

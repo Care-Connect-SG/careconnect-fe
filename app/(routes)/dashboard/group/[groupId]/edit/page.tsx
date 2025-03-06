@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 
@@ -51,7 +50,7 @@ export default function EditGroupPage() {
       })
       .then((data) => {
         const found = data.find(
-          (g: any) => g._id === groupId || g.id === groupId
+          (g: any) => g._id === groupId || g.id === groupId,
         );
         if (!found) {
           setError("Group not found");
@@ -106,7 +105,7 @@ export default function EditGroupPage() {
       await res.json();
       setUpdateSuccess("Group updated successfully!");
       setGroup((prev) =>
-        prev ? { ...prev, name: newName, description: newDescription } : prev
+        prev ? { ...prev, name: newName, description: newDescription } : prev,
       );
     } catch (error: any) {
       setUpdateError(error.message || "Error updating group");
@@ -125,7 +124,7 @@ export default function EditGroupPage() {
     const id = Array.isArray(groupId) ? groupId[0] : groupId;
 
     const confirmDelete = window.confirm(
-      "Are you sure you want to delete this group?"
+      "Are you sure you want to delete this group?",
     );
     if (!confirmDelete) return;
     try {
@@ -134,7 +133,7 @@ export default function EditGroupPage() {
         {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
       if (!res.ok) {
         const errData = await res.json();

@@ -11,7 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FormElementData } from "@/hooks/useFormReducer";
-import { CalendarClockIcon, CalendarIcon } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 
 interface FormElementViewProps {
   element: FormElementData;
@@ -58,16 +58,6 @@ export default function FormElementView({ element }: FormElementViewProps) {
             >
               <CalendarIcon />
               <span>Pick a date</span>
-            </Button>
-          )}
-          {element.type === "datetime" && (
-            <Button
-              disabled
-              variant={"outline"}
-              className="w-[240px] justify-start text-left font-normal disabled:opacity-100"
-            >
-              <CalendarClockIcon />
-              <span>MM/DD/YYYY hh:mm</span>
             </Button>
           )}
           {element.type === "radio" && (

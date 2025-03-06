@@ -1,9 +1,9 @@
 "use client";
 
+import { UserResponse } from "@/types/user";
 import { X } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { getAllNurses } from "../../../../api/user";
-import { UserResponse } from "../../../../api/user";
 
 interface AddResidentModalProps {
   isOpen: boolean;

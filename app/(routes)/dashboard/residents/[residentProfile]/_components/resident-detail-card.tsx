@@ -4,7 +4,7 @@ import React from "react";
 
 interface ResidentDetailsCardProps {
   gender: string;
-  dateOfBirth: string; // formatted date string, e.g. "1945-05-12"
+  dateOfBirth: string;
   nricNumber: string;
   emergencyContactName: string;
   emergencyContactNumber: string;

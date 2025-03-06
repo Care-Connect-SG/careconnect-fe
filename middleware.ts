@@ -14,7 +14,7 @@ export async function middleware(req: NextRequest) {
   }
 
   const restrictedRoutes: Record<string, string> = {
-    "/dashboard/incident/admin": Role.ADMIN,
+    "/dashboard/incidents/admin": Role.ADMIN,
   };
 
   try {
@@ -45,5 +45,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/incident/admin"],
+  matcher: ["/dashboard/incidents/admin"],
 };

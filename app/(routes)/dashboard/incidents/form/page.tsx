@@ -5,7 +5,6 @@ import { FormResponse } from "@/types/form";
 import { useEffect, useState } from "react";
 import FormCardPublished from "../_components/form-card-published";
 
-
 export default function IncidentReportingForms() {
   const [forms, setForms] = useState<FormResponse[]>([]);
 

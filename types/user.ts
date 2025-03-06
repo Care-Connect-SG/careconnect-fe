@@ -1,7 +1,7 @@
 export const enum Role {
-    ADMIN = "Admin",
-    NURSE = "Nurse",
-    FAMILY = "Family"
+  ADMIN = "Admin",
+  NURSE = "Nurse",
+  FAMILY = "Family",
 }
 
 export interface UserResponse {
@@ -10,4 +10,3 @@ export interface UserResponse {
   name: string;
   role: Role;
 }
-

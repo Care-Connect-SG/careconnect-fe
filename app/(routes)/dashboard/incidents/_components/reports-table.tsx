@@ -1,37 +1,49 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
-import { Eye, Edit, MoreHorizontal } from "lucide-react"
-import { ReportResponse } from "@/types/report"
-
-
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { ReportResponse } from "@/types/report";
+import { Edit, Eye, MoreHorizontal } from "lucide-react";
+import { useState } from "react";
 
 interface ReportsTableProps {
-  reports: ReportResponse[]
+  reports: ReportResponse[];
 }
 
 export default function ReportsTable({ reports }: ReportsTableProps) {
-  const [viewDialogOpen, setViewDialogOpen] = useState(false)
-  const [editDialogOpen, setEditDialogOpen] = useState(false)
-  const [selectedReport, setSelectedReport] = useState<ReportResponse | null>(null)
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedReport, setSelectedReport] = useState<ReportResponse | null>(
+    null,
+  );
 
   const handleView = (report: ReportResponse) => {
-    setSelectedReport(report)
-    setViewDialogOpen(true)
+    setSelectedReport(report);
+    setViewDialogOpen(true);
     // In a real app, you would navigate to a view page or open a modal
-    console.log("Viewing report:", report.id)
-  }
+    console.log("Viewing report:", report.id);
+  };
 
   const handleEdit = (report: ReportResponse) => {
-    setSelectedReport(report)
-    setEditDialogOpen(true)
+    setSelectedReport(report);
+    setEditDialogOpen(true);
     // In a real app, you would navigate to an edit page or open a modal
-    console.log("Editing report:", report.id)
-  }
+    console.log("Editing report:", report.id);
+  };
 
   return (
     <div className="rounded-md border">
@@ -65,7 +77,11 @@ export default function ReportsTable({ reports }: ReportsTableProps) {
                 <TableCell>
                   <Badge
                     variant={
-                      report.status === "Published" ? "default" : report.status === "Draft" ? "secondary" : "outline"
+                      report.status === "Published"
+                        ? "default"
+                        : report.status === "Draft"
+                          ? "secondary"
+                          : "outline"
                     }
                   >
                     {report.status}
@@ -99,6 +115,5 @@ export default function ReportsTable({ reports }: ReportsTableProps) {
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }
-

@@ -1,6 +1,7 @@
 "use client";
 
 import { createReport } from "@/app/api/report";
+import { getCurrentUser } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { FormElementData } from "@/hooks/useFormReducer";
@@ -8,15 +9,13 @@ import { useReportReducer } from "@/hooks/useReportReducer";
 import { FormResponse } from "@/types/form";
 import { ReportCreate } from "@/types/report";
 import { ChevronLeft } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import FormElementFill from "./form-element-fill";
 import { FormHeaderView } from "./form-header";
 import ResidentSelector from "./tag-personnel";
-import { useSession } from "next-auth/react";
-import { getCurrentUser } from "@/app/api/user";
-
 
 interface FormSubmitProps {
   form: FormResponse;
@@ -73,7 +72,7 @@ export default function FormSubmit({ form }: FormSubmitProps) {
         form_id: form.id,
         form_name: form.title,
         reporter_id: user.id,
-        reporter_name:  user.name,
+        reporter_name: user.name,
         report_content: state.report.map((section) => ({
           form_element_id: section.form_element_id,
           input: section.input ?? "",

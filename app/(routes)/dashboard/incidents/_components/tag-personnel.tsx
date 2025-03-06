@@ -260,35 +260,32 @@ export default function ResidentSelector({
                     <CommandEmpty>No caregiver found.</CommandEmpty>
                     <CommandGroup>
                       {caregiverOptions
-                      .filter(
-                        (caregiver) =>
-                          !(caregiver.id === user?.id),
-                      )
-                      .map((caregiver) => (
-                        <CommandItem
-                          key={caregiver.id}
-                          onSelect={() =>
-                            dispatch({
-                              type: involvedCaregivers.some(
-                                (c) => c.id === caregiver.id,
-                              )
-                                ? "REMOVE_INVOLVED_CAREGIVER"
-                                : "ADD_INVOLVED_CAREGIVER",
-                              payload: caregiver,
-                            })
-                          }
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              involvedCaregivers.includes(caregiver)
-                                ? "opacity-100"
-                                : "opacity-0",
-                            )}
-                          />
-                          {caregiver.name}
-                        </CommandItem>
-                      ))}
+                        .filter((caregiver) => !(caregiver.id === user?.id))
+                        .map((caregiver) => (
+                          <CommandItem
+                            key={caregiver.id}
+                            onSelect={() =>
+                              dispatch({
+                                type: involvedCaregivers.some(
+                                  (c) => c.id === caregiver.id,
+                                )
+                                  ? "REMOVE_INVOLVED_CAREGIVER"
+                                  : "ADD_INVOLVED_CAREGIVER",
+                                payload: caregiver,
+                              })
+                            }
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                involvedCaregivers.includes(caregiver)
+                                  ? "opacity-100"
+                                  : "opacity-0",
+                              )}
+                            />
+                            {caregiver.name}
+                          </CommandItem>
+                        ))}
                     </CommandGroup>
                   </CommandList>
                 </Command>

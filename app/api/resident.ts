@@ -1,9 +1,5 @@
-import { RegistrationCreate, ResidentRecord } from "@/types/resident"; // adjust the path and type names as needed
+import { RegistrationCreate, ResidentRecord } from "@/types/resident";
 
-/**
- * Fetch all resident records.
- * This calls the backend endpoint GET /residents
- */
 export const getResidents = async (): Promise<ResidentRecord[]> => {
   try {
     const response = await fetch(

@@ -48,7 +48,7 @@ const TaskDetailsPage = () => {
     }
   };
 
-  if (!task) return <p>Task not found</p>;
+  if (!task) return;
 
   return (
     <div className="flex p-1 md:p-4 lg:p-8 gap-4 flex-col md:flex-1">
@@ -56,13 +56,17 @@ const TaskDetailsPage = () => {
         <div className="p-8">
           <Spinner />
         </div>
+      ) : !task ? (
+        <p className="text-center">Task not found</p>
       ) : (
         <>
           <TaskDetailHeader task={task} />
           <div className="grid md:grid-cols-3 gap-4">
-            <div className="md:col-span-2">
-              <TaskDescription description={task.task_details || ""} />
-            </div>
+            {task.task_details && (
+              <div className="md:col-span-2">
+                <TaskDescription description={task.task_details} />
+              </div>
+            )}
             <div className="md:col-span-1">
               <ResidentInfo taskResidentInfo={task} />
             </div>

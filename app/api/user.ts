@@ -1,8 +1,4 @@
-export interface UserResponse {
-  id: string;
-  name: string;
-  role: string;
-}
+import { UserResponse } from "@/types/user";
 
 export const getAllNurses = async (): Promise<UserResponse[]> => {
   const response = await fetch(

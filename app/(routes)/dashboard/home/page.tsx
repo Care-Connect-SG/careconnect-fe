@@ -1,15 +1,12 @@
 "use client";
 
+import { Separator } from "@/components/ui/separator";
 import { useSession } from "next-auth/react";
 import QuickActions from "./_components/quick-actions";
 import RecentIncidents from "./_components/recent-incidents";
 import StaffWorkload from "./_components/staff-workload";
 import StatsOverview from "./_components/stats-overview";
-import TaskStats from "./_components/task-stats";
 import UpcomingEvents from "./_components/upcoming-events";
-
-import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 
 export default function Home() {
   const { data: session } = useSession();

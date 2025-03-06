@@ -90,7 +90,7 @@ export default function IncidentReportingFormsAdmin() {
               id={form.id}
               title={form.title}
               description={form.description}
-              created_date={formatDate(form.created_date)}
+              created_at={new Date(form.created_at).toLocaleDateString()}
               status={form.status}
               onPublish={handlePublish}
               onDelete={handleDelete}

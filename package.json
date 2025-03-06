@@ -4,12 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "biome check . --write && next build",
     "start": "next start",
     "lint": "biome check .",
     "lint:fix": "biome check . --write"
   },
   "dependencies": {
+    "@biomejs/biome": "^1.9.4",
     "@hookform/resolvers": "^4.1.0",
     "@radix-ui/primitive": "^1.1.1",
     "@radix-ui/react-alert-dialog": "^1.1.6",

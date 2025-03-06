@@ -22,7 +22,7 @@ interface FormCardProps {
   id: string;
   title: string;
   description: string;
-  created_date: string;
+  created_at: string;
   status: string;
   onPublish: (formId: string) => void;
   onDelete: (formId: string) => void;
@@ -33,7 +33,7 @@ export default function FormCard({
   id,
   title,
   description,
-  created_date,
+  created_at,
   status,
   onPublish,
   onDelete,
@@ -56,7 +56,7 @@ export default function FormCard({
           <div>
             <CardTitle className="text-base font-bold">{title}</CardTitle>
             <p className="hidden sm:block text-xs text-muted-foreground mt-1">
-              Created at {created_date}
+              Created at {created_at}
             </p>
           </div>
           <Badge

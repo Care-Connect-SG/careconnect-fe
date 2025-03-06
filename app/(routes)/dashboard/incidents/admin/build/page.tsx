@@ -8,7 +8,6 @@ import {
 } from "@/app/api/form";
 import { getCurrentUser } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useBreadcrumb } from "@/context/breadcrumb-context";
 import { FormState, useFormReducer } from "@/hooks/useFormReducer";
 import { FormCreate, FormResponse } from "@/types/form";
@@ -16,21 +15,14 @@ import { ChevronLeft, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
-import { Suspense, useState } from "react";
+import { useEffect, useState } from "react";
+import { FormHeaderEdit } from "../../_components/form-header";
 import FormElement from "./_components/form-element";
 import FormElementBar from "./_components/form-element-bar";
-import { FormHeaderEdit } from "../../_components/form-header";
+import { LoadingSkeleton } from "../../_components/loading-skeleton";
 
-export default function FormBuildWrapper() {
-  return (
-    <Suspense fallback={<FormLoadingSkeleton />}>
-      <BuildForm />
-    </Suspense>
-  );
-}
 
-function BuildForm() {
+export default function CreateFormPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const formId = searchParams.get("id");
@@ -62,7 +54,7 @@ function BuildForm() {
     }
   }, [formId, isEditing, dispatch, router, setPageName]);
 
-  if (loading) return <FormLoadingSkeleton />;
+  if (loading) return <LoadingSkeleton />;
 
   const handleSaveDraft = async () => {
     if (!state.title || state.elements.length === 0) {
@@ -237,26 +229,5 @@ function BuildForm() {
         />
       </div>
     </>
-  );
-}
-
-function FormLoadingSkeleton() {
-  return (
-    <div className="px-8 py-4">
-      <h1 className="text-2xl font-semibold tracking-tight py-2">
-        <Skeleton className="h-6 w-48" />
-      </h1>
-      <Skeleton className="h-4 w-80 text-sm text-muted-foreground" />
-
-      <div className="py-4">
-        <Skeleton className="h-12 w-full rounded-md" />
-      </div>
-
-      <div className="py-4 space-y-4">
-        {[...Array(3)].map((_, index) => (
-          <Skeleton key={index} className="h-16 w-full rounded-md" />
-        ))}
-      </div>
-    </div>
   );
 }

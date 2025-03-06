@@ -12,10 +12,11 @@ import {
   ListChecks,
   Type,
 } from "lucide-react";
+import React from "react";
 
 interface FormElementBarItem {
   type: FormElementType;
-  item: React.ReactNode;
+  item: React.ReactElement<{ className?: string }>;
   color: string;
 }
 
@@ -27,32 +28,32 @@ export default function FormElementBar({ onAddElement }: FormElementBarProps) {
   const formElementBarItems: FormElementBarItem[] = [
     {
       type: "text",
-      item: <Type className="h-5 w-5 text-gray-600" />,
+      item: <Type />,
       color: "bg-sky-100",
     },
     {
       type: "textarea",
-      item: <AlignLeft className="h-5 w-5 text-gray-600" />,
+      item: <AlignLeft />,
       color: "bg-orange-100",
     },
     {
       type: "date",
-      item: <Calendar className="h-5 w-5 text-gray-600" />,
+      item: <Calendar />,
       color: "bg-emerald-100",
     },
     {
       type: "datetime",
-      item: <Clock className="h-5 w-5 text-gray-600" />,
+      item: <Clock />,
       color: "bg-lime-100",
     },
     {
       type: "radio",
-      item: <ListChecks className="h-5 w-5 text-gray-600" />,
+      item: <ListChecks />,
       color: "bg-rose-100",
     },
     {
       type: "checkbox",
-      item: <CheckSquare className="h-5 w-5 text-gray-600" />,
+      item: <CheckSquare />,
       color: "bg-purple-100",
     },
   ];
@@ -71,10 +72,13 @@ export default function FormElementBar({ onAddElement }: FormElementBarProps) {
               <Button
                 size="icon"
                 onClick={() => onAddElement(item.type)}
-                className={`h-10 w-10 ${item.color} hover:shadow-md`}
+                className={`group h-10 w-10 ${item.color} hover:shadow-md group-hover:text-white`}
               >
-                {item.item}
+                {React.cloneElement(item.item, {
+                  className: "h-5 w-5 text-gray-600 group-hover:text-white",
+                })}
               </Button>
+
               {index < formElementBarItems.length - 1 && (
                 <Separator orientation="vertical" className="h-6 mx-1" />
               )}

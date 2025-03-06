@@ -71,13 +71,13 @@ export default function LoginForm() {
       }
 
       router.push("/dashboard/home");
-    } catch (error: any) {
+    } catch (error) {
       setLoading(false);
       console.error("Error during login:", error);
       return toast({
         variant: "destructive",
         title: "An error occurred",
-        description: error?.message || "Please try again",
+        description: (error as Error)?.message || "Please try again",
       });
     }
   };

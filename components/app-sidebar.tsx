@@ -31,19 +31,19 @@ const config = {
   },
   navMain: [
     { title: "Home", url: "/dashboard/home", icon: Home },
-    { title: "Tasks", url: "/dashboard/tasks", icon: ClipboardList },
     { title: "Residents", url: "/dashboard/residents", icon: BookUser },
-    {
-      title: "Incident Reports",
-      url: "/dashboard/incidents",
-      icon: AlertTriangle,
-    },
     {
       title: "Announcements",
       url: "/dashboard/announcements",
       icon: Megaphone,
     },
-    // { title: "Calendar", url: "/dashboard/calendar", icon: Calendar },
+    { title: "Tasks", url: "/dashboard/tasks", icon: ClipboardList },
+    { title: "Calendar", url: "/dashboard/calendar", icon: Calendar },
+    {
+      title: "Incident Reports",
+      url: "/dashboard/incidents",
+      icon: AlertTriangle,
+    },
   ],
   navTeam: [{ title: "Group", url: "/dashboard/group", icon: Users }],
 };

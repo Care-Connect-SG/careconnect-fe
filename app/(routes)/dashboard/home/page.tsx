@@ -8,23 +8,28 @@ import StatsOverview from "./_components/stats-overview";
 import TaskStats from "./_components/task-stats";
 import UpcomingEvents from "./_components/upcoming-events";
 
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+
 export default function Home() {
   const { data: session } = useSession();
 
   return (
     <div className="flex flex-col w-full gap-8 p-8">
-      <div className="flex flex-col gap-4 w-full">
-        <h1 className="text-2xl font-semibold text-gray-800">
+        <p className="text-2xl font-semibold text-gray-800">
           Hello, {session?.user?.email}!
-        </h1>
-      </div>
+        </p>
+        <Separator />
+
       <QuickActions />
+      <p className="text-lg font-semibold text-gray-800">Overview</p>
       <StatsOverview />
-      <TaskStats />
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <StaffWorkload />
         <RecentIncidents />
       </div>
+
       <UpcomingEvents />
     </div>
   );

@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Spinner } from "@/components/ui/spinner";
+import { fetchUser } from "@/app/api/user/route";
+import CreateUserModal from "@/components/createUserModal";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import RoleChip from "@/components/ui/roleChip";
 import {
   Select,
   SelectContent,
@@ -11,16 +12,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  PencilIcon,
-  PlusIcon,
-  TrashIcon,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import RoleChip from "@/components/ui/roleChip";
-import CreateUserModal from "@/components/createUserModal";
+import { Spinner } from "@/components/ui/spinner";
+import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { fetchUser } from "@/app/api/user/route";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface User {
   id: string;
@@ -47,7 +43,7 @@ const Nurses = () => {
   const fetchUsers = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BE_API_URL}/users`
+        `${process.env.NEXT_PUBLIC_BE_API_URL}/users`,
       );
       if (response.ok) {
         const data = await response.json();
@@ -62,7 +58,6 @@ const Nurses = () => {
       setLoading(false);
     }
   };
-  
 
   useEffect(() => {
     fetchUsers();
@@ -72,7 +67,7 @@ const Nurses = () => {
     let filtered = users.filter(
       (user) =>
         user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchQuery.toLowerCase())
+        user.email.toLowerCase().includes(searchQuery.toLowerCase()),
     );
 
     if (filter !== "All Users") {

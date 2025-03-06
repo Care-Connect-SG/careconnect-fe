@@ -10,7 +10,7 @@ export const getTasks = async (): Promise<Task[]> => {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -34,7 +34,7 @@ export const getTaskById = async (taskId: string): Promise<Task> => {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -58,12 +58,12 @@ export const completeTask = async (taskId: string): Promise<Task> => {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
       throw new Error(
-        `Error marking task as completed: ${response.statusText}`
+        `Error marking task as completed: ${response.statusText}`,
       );
     }
 

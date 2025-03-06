@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { Spinner } from "@/components/ui/spinner";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input"; // Assuming you have an Input component
 import { Modal } from "@/components/ui/modal"; // Assuming you have a Modal component
+import { Spinner } from "@/components/ui/spinner";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface User {
   email: string;
@@ -31,7 +31,7 @@ const UserProfile = () => {
     const fetchUser = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BE_API_URL}/users/${id}`
+          `${process.env.NEXT_PUBLIC_BE_API_URL}/users/${id}`,
         );
         if (response.ok) {
           const data = await response.json();
@@ -89,7 +89,7 @@ const UserProfile = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(editedUser),
-        }
+        },
       );
 
       if (response.ok) {

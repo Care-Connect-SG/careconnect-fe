@@ -1,8 +1,13 @@
 "use client";
 
-import { Dialog, DialogPanel, DialogTitle, Transition } from "@headlessui/react";
-import { Fragment } from "react";
+import {
+  Dialog,
+  DialogPanel,
+  DialogTitle,
+  Transition,
+} from "@headlessui/react";
 import { XIcon } from "lucide-react";
+import { Fragment } from "react";
 
 interface ModalProps {
   isOpen: boolean;

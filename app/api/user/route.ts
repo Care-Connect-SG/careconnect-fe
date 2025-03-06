@@ -3,7 +3,7 @@ export const fetchUser = async (email: string | undefined) => {
 
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BE_API_URL}/users/email/${email}`
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/users/email/${email}`,
     );
 
     if (!response.ok) {
@@ -12,10 +12,9 @@ export const fetchUser = async (email: string | undefined) => {
     }
 
     const data = await response.json();
-    return data; 
+    return data;
   } catch (error) {
     console.error("Error fetching user role:", error);
     return null;
   }
 };
-

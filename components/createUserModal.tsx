@@ -1,9 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -15,8 +11,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
-import { useToast } from "@/hooks/use-toast";
 import { Spinner } from "@/components/ui/spinner";
+import { useToast } from "@/hooks/use-toast";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 const schema = z
   .object({
@@ -36,21 +36,22 @@ const schema = z
     path: ["confirmPassword"],
   });
 
-
-  interface CreateUserModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onUserCreated: () => void;
-  }
+interface CreateUserModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onUserCreated: () => void;
+}
 interface CreateUserModalProps {
   isOpen: boolean;
   onClose: () => void;
   onUserCreated: () => void;
 }
 
-
-
-export default function CreateUserModal({ isOpen, onClose, onUserCreated }: CreateUserModalProps) {
+export default function CreateUserModal({
+  isOpen,
+  onClose,
+  onUserCreated,
+}: CreateUserModalProps) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -86,7 +87,7 @@ export default function CreateUserModal({ isOpen, onClose, onUserCreated }: Crea
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -107,7 +108,6 @@ export default function CreateUserModal({ isOpen, onClose, onUserCreated }: Crea
       setLoading(false);
     }
   };
-
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Create User">

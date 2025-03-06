@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ResidentRecord } from "@/types/resident";
-import { UserResponse } from "@/types/user";
+import { User } from "@/types/user";
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -37,7 +37,7 @@ export default function AllResidentsPage() {
 
   useEffect(() => {
     getAllNurses()
-      .then((data: UserResponse[]) => {
+      .then((data: User[]) => {
         const options: NurseOption[] = data.map((user) => ({
           id: user.id,
           name: user.name,

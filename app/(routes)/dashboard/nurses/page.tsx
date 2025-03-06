@@ -44,7 +44,7 @@ const Nurses = () => {
   const fetchUsers = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BE_API_URL}/users`,
+        `${process.env.NEXT_PUBLIC_BE_API_URL}/users`
       );
       if (response.ok) {
         const data = await response.json();
@@ -64,7 +64,7 @@ const Nurses = () => {
     if (userToDelete) {
       try {
         await deleteUser(userToDelete.id);
-        fetchUsers(); // Refresh the user list
+        fetchUsers();
         setIsConfirmationModalOpen(false);
         setUserToDelete(null);
       } catch (error) {
@@ -81,7 +81,7 @@ const Nurses = () => {
     let filtered = users.filter(
       (user) =>
         user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchQuery.toLowerCase()),
+        user.email.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     if (filter !== "All Users") {
@@ -159,9 +159,9 @@ const Nurses = () => {
                   <TrashIcon
                     className="h-5 w-5 text-red-600 cursor-pointer hover:text-red-800 transition"
                     onClick={(e) => {
-                      e.stopPropagation(); // Prevent row click
-                      setUserToDelete(user); // Set the user to be deleted
-                      setIsConfirmationModalOpen(true); // Open the confirmation modal
+                      e.stopPropagation();
+                      setUserToDelete(user);
+                      setIsConfirmationModalOpen(true);
                     }}
                   />
                 </td>

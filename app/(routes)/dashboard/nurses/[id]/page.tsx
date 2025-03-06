@@ -26,7 +26,6 @@ interface User {
 
 const UserProfile = () => {
   const { id } = useParams();
-  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<string>("overview");

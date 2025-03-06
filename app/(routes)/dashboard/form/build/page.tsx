@@ -13,7 +13,7 @@ import { FormCreate, FormResponse } from "@/types/form";
 import { ChevronLeft, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import FormElement from "../_components/form-element";
 import FormElementBar from "../_components/form-element-bar";
 import { FormHeaderEdit } from "../_components/form-header";
@@ -55,7 +55,7 @@ export default function CreateFormPage() {
   const handleSaveDraft = async () => {
     if (!state.title || state.elements.length === 0) {
       alert(
-        "Incomplete Form: A form should have at least a title and a form element",
+        "Incomplete Form: A form should have at least a title and a form element"
       );
       return;
     }
@@ -87,7 +87,7 @@ export default function CreateFormPage() {
   const handlePublishDraft = async () => {
     if (!state.title || state.elements.length === 0) {
       alert(
-        "Incomplete Form: A form should have at least a title and a form element",
+        "Incomplete Form: A form should have at least a title and a form element"
       );
       return;
     }

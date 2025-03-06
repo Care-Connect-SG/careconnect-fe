@@ -1,9 +1,18 @@
 "use client";
 
 import { deleteUser } from "@/app/api/user";
-import CreateUserModal from "@/components/createUserModal";
+import CreateUserDialog from "@/components/createUserModal";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import DeleteConfirmationModal from "@/components/ui/delete-confirmation-modal";
 import { Input } from "@/components/ui/input";
 import RoleChip from "@/components/ui/roleChip";
 import {
@@ -15,7 +24,8 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { User } from "@/types/user";
-import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
+import { AlertDialogTrigger } from "@radix-ui/react-alert-dialog";
+import { PlusIcon, TrashIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -169,18 +179,34 @@ const Nurses = () => {
       </Button>
 
       {isModalOpen && (
-        <CreateUserModal
+        <CreateUserDialog
           isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          setIsOpen={setIsModalOpen}
           onUserCreated={fetchUsers}
         />
       )}
 
-      <DeleteConfirmationModal
-        isOpen={isConfirmationModalOpen}
-        onClose={() => setIsConfirmationModalOpen(false)}
-        onConfirm={handleDeleteUser}
-      />
+      <AlertDialog
+        open={isConfirmationModalOpen}
+        onOpenChange={setIsConfirmationModalOpen}
+      >
+        <AlertDialogTrigger asChild></AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this user? This action cannot be
+              undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteUser}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

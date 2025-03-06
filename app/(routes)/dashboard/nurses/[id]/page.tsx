@@ -2,9 +2,15 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input"; // Assuming you have an Input component
-import { Modal } from "@/components/ui/modal"; // Assuming you have a Modal component
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { XIcon } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -176,12 +182,19 @@ const UserProfile = () => {
         </div>
       )}
 
-      {isModalOpen && (
-        <Modal
-          title="Edit Profile"
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-        >
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex justify-between items-center">
+              Edit Profile
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-500 hover:text-gray-800"
+              >
+                <XIcon className="w-5 h-5" />
+              </button>
+            </DialogTitle>
+          </DialogHeader>
           <div className="p-6">
             <div className="grid grid-cols-1 gap-4">
               <div>
@@ -264,8 +277,8 @@ const UserProfile = () => {
               </Button>
             </div>
           </div>
-        </Modal>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

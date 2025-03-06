@@ -1,6 +1,6 @@
-import { UserResponse } from "@/types/user";
+import { User } from "@/types/user";
 
-export const getAllNurses = async (): Promise<UserResponse[]> => {
+export const getAllNurses = async (): Promise<User[]> => {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_BE_API_URL}/users/?role=nurse`,
     {

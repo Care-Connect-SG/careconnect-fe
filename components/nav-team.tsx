@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchUser } from "@/app/api/user/route";
+import { fetchUser } from "@/app/api/user";
 import {
   SidebarGroup,
   SidebarGroupLabel,

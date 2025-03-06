@@ -1,6 +1,5 @@
 "use client";
 
-import { fetchUser } from "@/app/api/user";
 import CreateUserModal from "@/components/createUserModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,17 +15,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { User } from "@/types/user"
 
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  contact_number?: string;
-  role: string;
-  organisation_rank?: string;
-  gender: string;
-  created_at: string;
-}
 
 const Nurses = () => {
   const [users, setUsers] = useState<User[]>([]);

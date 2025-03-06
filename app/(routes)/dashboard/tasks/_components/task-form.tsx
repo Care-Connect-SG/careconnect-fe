@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Task, TaskStatus } from "@/types/task"; 
+import { createTask, updateTask } from "@/app/api/task"; // Import API function
 import { DateTimePickerForm } from "@/components/ui/datetime-picker";
 import {
   Dialog,
@@ -32,9 +34,7 @@ const taskSchema = z
     task_details: z.string().optional(),
     media: z.array(z.string()).optional(),
     notes: z.string().optional(),
-    status: z
-      .enum(["Assigned", "Completed", "Delayed", "Request Reassignment"])
-      .default("Assigned"),
+    status: z.nativeEnum(TaskStatus).default(TaskStatus.ASSIGNED),
     priority: z.enum(["High", "Medium", "Low"]).optional(),
     category: z.enum(["Meals", "Medication", "Therapy", "Outing"]).optional(),
     residents: z.array(z.string()).min(1, "At least one resident is required"),
@@ -71,8 +71,8 @@ const taskSchema = z
 
 type TaskFormData = z.infer<typeof taskSchema>;
 
-export default function TaskForm() {
-  const [open, setOpen] = useState(false);
+export default function TaskForm({ task, onClose }: { task?: Task; onClose?: () => void }) {
+  const [open, setOpen] = useState(!!task);
 
   const form = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
@@ -94,19 +94,57 @@ export default function TaskForm() {
       assigned_to: "",
     },
   });
+  
+  // Reset form values when editing an existing task
+  useEffect(() => {
+    if (task) {
+      form.reset({
+        task_title: task.task_title,
+        task_details: task.task_details,
+        media: task.media || [],
+        notes: task.notes || "",
+        status: task.status,
+        priority: task.priority,
+        category: task.category,
+        resident: task.resident,
+        start_date: new Date(task.start_date),
+        due_date: new Date(task.due_date),
+        recurring: task.recurring,
+        end_recurring_date: task.end_recurring_date ? new Date(task.end_recurring_date) : undefined,
+        remind_prior: task.remind_prior,
+        is_ai_generated: task.is_ai_generated,
+        assigned_to: task.assigned_to,
+      });
+      setOpen(true); // Open modal when editing a task
+    }
+  }, [task]);
+  
 
-  const onSubmit = (data: TaskFormData) => {
-    console.log("Task data:", data);
-    // Here you might call an API to create the task.
-    setOpen(false);
+  const onSubmit = async (data: TaskFormData) => {
+    try {
+      if (task) {
+        const updatedTask = await updateTask(task.id, data); // Update the task
+        setTasks((prevTasks) =>
+          prevTasks.map((t) => (t.id === updatedTask.id ? updatedTask : t)) // Update UI
+        );
+      }
+  
+      setOpen(false);
+      if (onClose) onClose(); // Close the modal without reloading
+    } catch (error) {
+      console.error("Failed to update task:", error);
+    }
   };
-
+   
+  
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="w-4 h-4 mr-2" /> New Task
-        </Button>
+        {!task && (
+          <Button>
+            <Plus className="w-4 h-4 mr-2" /> New Task
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -404,7 +442,7 @@ export default function TaskForm() {
               )}
             />
 
-            <Button type="submit">Create Task</Button>
+            <Button type="submit">{task ? "Update Task" : "Create Task"}</Button>
           </form>
         </Form>
       </DialogContent>

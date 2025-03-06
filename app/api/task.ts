@@ -1,4 +1,4 @@
-import { fetchWithAuth } from "@/lib/fectchWithAuth";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { Task } from "@/types/task";
 
 export const getTasks = async (): Promise<Task[]> => {

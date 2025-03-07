@@ -137,7 +137,9 @@ export default function AllResidentsPage() {
       {/* 🔹 Header: "All Residents" Section */}
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-gray-800">All Residents</h1>
-        <p className="text-sm text-gray-500">Manage resident information and assigned nurses.</p>
+        <p className="text-sm text-gray-500">
+          Manage resident information and assigned nurses.
+        </p>
         <hr className="mt-3 border-gray-300" />
       </div>
       {/* Search Bar with Add Buttons */}

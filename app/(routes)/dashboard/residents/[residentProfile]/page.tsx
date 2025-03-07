@@ -1,13 +1,15 @@
 "use client";
 
+import { getCarePlansForResident } from "@/app/api/careplan";
 import { getMedicationsForResident } from "@/app/api/medication";
 import { Button } from "@/components/ui/button";
+import { CarePlanRecord } from "@/types/careplan";
 import { MedicationRecord } from "@/types/medication";
 import { ResidentRecord } from "@/types/resident";
-import { CarePlanRecord } from "@/types/careplan";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { getResidentById, updateResident } from "../../../../api/resident";
+import CarePlanDisplay from "../_components/careplan-display";
 import CreateMedication from "../_components/create-medication";
 import EditMedication from "../_components/edit-medication";
 import EditProfileModal from "../_components/edit-modal";
@@ -15,8 +17,6 @@ import MedicationDisplay from "../_components/medication-display";
 import ResidentDetailsCard from "./_components/resident-detail-card";
 import ResidentDetailsNotesCard from "./_components/resident-detail-notes";
 import ResidentProfileCard from "./_components/resident-profile-card";
-import { getCarePlansForResident } from "@/app/api/careplan";
-import CarePlanDisplay from "../_components/careplan-display";
 
 const TABS = [
   { label: "Overview", value: "overview" },
@@ -68,7 +68,7 @@ export default function ResidentDashboard() {
         .then(setCarePlans)
         .catch(console.error);
     }
-  }, [activeTab, residentProfile])
+  }, [activeTab, residentProfile]);
 
   // Handle Edit Profile Modal
   const handleEditProfile = () => {
@@ -141,10 +141,11 @@ export default function ResidentDashboard() {
             <button
               key={tab.value}
               onClick={() => setActiveTab(tab.value)}
-              className={`py-2 px-1 text-sm font-medium ${activeTab === tab.value
-                ? "text-blue-600 border-b-2 border-blue-600"
-                : "text-gray-500"
-                }`}
+              className={`py-2 px-1 text-sm font-medium ${
+                activeTab === tab.value
+                  ? "text-blue-600 border-b-2 border-blue-600"
+                  : "text-gray-500"
+              }`}
             >
               {tab.label}
             </button>

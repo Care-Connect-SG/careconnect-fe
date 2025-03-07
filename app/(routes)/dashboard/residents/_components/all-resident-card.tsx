@@ -72,9 +72,17 @@ function ResidentCard({
 
         {/* Resident Details */}
         <div>
-          <Label className="text-base font-semibold text-gray-800">{resident.name}</Label>
-          <p className="text-xs text-gray-500">Age: <span className="font-medium text-gray-700">{resident.age}</span></p>
-          <p className="text-xs text-gray-500">Room: <span className="font-medium text-gray-700">{resident.room}</span></p>
+          <Label className="text-base font-semibold text-gray-800">
+            {resident.name}
+          </Label>
+          <p className="text-xs text-gray-500">
+            Age:{" "}
+            <span className="font-medium text-gray-700">{resident.age}</span>
+          </p>
+          <p className="text-xs text-gray-500">
+            Room:{" "}
+            <span className="font-medium text-gray-700">{resident.room}</span>
+          </p>
         </div>
       </div>
 
@@ -82,14 +90,20 @@ function ResidentCard({
       <div className="flex items-center gap-4">
         {/* Nurse Selection */}
         <div className="flex flex-col">
-          <Label className="text-xs font-medium text-gray-600">Nurse In Charge</Label>
+          <Label className="text-xs font-medium text-gray-600">
+            Nurse In Charge
+          </Label>
           <Select value={currentValue} onValueChange={handleChange}>
             <SelectTrigger className="w-36 h-8 text-sm rounded-md border-gray-300 shadow-sm text-gray-700">
               <SelectValue placeholder="Select Nurse" />
             </SelectTrigger>
             <SelectContent className="bg-white border border-gray-200 shadow-md rounded-md">
               {nurseOptions.map((option) => (
-                <SelectItem key={option.id} value={option.name} className="hover:bg-gray-100 text-sm">
+                <SelectItem
+                  key={option.id}
+                  value={option.name}
+                  className="hover:bg-gray-100 text-sm"
+                >
                   {option.name}
                 </SelectItem>
               ))}

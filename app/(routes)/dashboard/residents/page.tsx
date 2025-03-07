@@ -1,9 +1,17 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ResidentRecord } from "@/types/resident";
-import { UserResponse } from "@/types/user";
+import { User } from "@/types/user";
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -14,7 +22,6 @@ import {
   updateResidentNurse,
 } from "../../../api/resident";
 import { getAllNurses } from "../../../api/user";
-import AddResidentModal from "./_components/add-resident-modal";
 import ResidentCard, { NurseOption } from "./_components/all-resident-card";
 
 export default function AllResidentsPage() {
@@ -22,6 +29,8 @@ export default function AllResidentsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [nurseOptions, setNurseOptions] = useState<NurseOption[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [residentToDelete, setResidentToDelete] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -37,7 +46,7 @@ export default function AllResidentsPage() {
 
   useEffect(() => {
     getAllNurses()
-      .then((data: UserResponse[]) => {
+      .then((data: User[]) => {
         const options: NurseOption[] = data.map((user) => ({
           id: user.id,
           name: user.name,
@@ -87,12 +96,18 @@ export default function AllResidentsPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this resident?")) return;
+  const openDeleteModal = (id: string) => {
+    setResidentToDelete(id);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!residentToDelete) return;
     try {
-      await deleteResident(id);
-      setResidents((prev) => prev.filter((res) => res.id !== id));
-      console.log("Deleted resident with id:", id);
+      await deleteResident(residentToDelete);
+      setResidents((prev) => prev.filter((res) => res.id !== residentToDelete));
+      console.log("Deleted resident with id:", residentToDelete);
+      setIsDeleteModalOpen(false);
     } catch (error) {
       console.error("Error deleting resident:", error);
     }
@@ -140,11 +155,51 @@ export default function AllResidentsPage() {
         </div>
       </div>
 
-      <AddResidentModal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onSave={handleAddResidentSave}
-      />
+      {/* Add Resident Modal */}
+      <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add New Resident</DialogTitle>
+            <DialogDescription>
+              Fill in the details to add a new resident.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="p-6">
+            {/* Add form fields for new resident details here */}
+            <div className="flex justify-end mt-6">
+              <Button
+                className="bg-blue-600 hover:bg-blue-800"
+                onClick={handleAddResidentSave}
+              >
+                Save Changes
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this resident?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="secondary"
+              onClick={() => setIsDeleteModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="space-y-4">
         {filteredResidents.length > 0 ? (
@@ -161,7 +216,7 @@ export default function AllResidentsPage() {
               }}
               onNurseChange={handleNurseChange}
               onClick={handleCardClick}
-              onDelete={handleDelete}
+              onDelete={openDeleteModal}
               nurseOptions={nurseOptions}
             />
           ))

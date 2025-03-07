@@ -6,18 +6,13 @@ import {
   Bell,
   Calendar,
   CheckCircle,
-  ChevronLeft,
   Clock,
-  Home,
-  Info,
   MapPin,
   Plus,
   Search,
-  User,
-  X,
 } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import React, { useEffect } from "react";
 import { useBreadcrumb } from "../../../../../context/breadcrumb-context";
 
 const ActivityForm = () => {

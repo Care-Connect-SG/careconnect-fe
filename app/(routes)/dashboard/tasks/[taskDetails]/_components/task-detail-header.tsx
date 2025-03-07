@@ -57,7 +57,18 @@ export const TaskDetailHeader = ({ task }: TaskDetailHeaderProps) => {
             <h1 className="text-2xl font-semibold text-gray-800">
               {task.task_title || "Untitled Task"}
             </h1>
-            <span className="ml-2 text-sm text-gray-500 rounded-full border px-2 py-1">
+
+            <span
+              className={`ml-2 text-sm rounded-full px-2 py-1 ${
+                taskStatus === TaskStatus.COMPLETED
+                  ? "bg-green-100 text-green-800"
+                  : taskStatus === TaskStatus.DELAYED
+                    ? "bg-red-100 text-red-800"
+                    : taskStatus === TaskStatus.REQUEST_REASSIGNMENT
+                      ? "bg-yellow-100 text-yellow-800"
+                      : "bg-gray-100 text-gray-800"
+              }`}
+            >
               {taskStatus}
             </span>
           </div>

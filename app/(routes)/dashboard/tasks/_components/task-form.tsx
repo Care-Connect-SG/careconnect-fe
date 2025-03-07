@@ -1,22 +1,16 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Plus } from "lucide-react";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Task, TaskStatus } from "@/types/task"; 
-import { createTask, updateTask } from "@/app/api/task"; // Import API function
-import { DateTimePickerForm } from "@/components/ui/datetime-picker";
+import { createTask, updateTask } from "@/app/api/task";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Form, FormField, FormItem, FormControl } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -25,8 +19,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { Task, TaskStatus } from "@/types/task";
+import { TaskPriority } from "@/types/task";
+import { TaskCategory } from "@/types/task";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Plus } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 const taskSchema = z
   .object({
@@ -66,22 +68,31 @@ const taskSchema = z
     {
       message: "Due date must be before end recurring date",
       path: ["end_recurring_date"],
-    }
+    },
   );
 
-type TaskFormData = z.infer<typeof taskSchema>;
+export type TaskForm = z.infer<typeof taskSchema>;
 
-export default function TaskForm({ task, onClose }: { task?: Task; onClose?: () => void }) {
+export default function TaskForm({
+  task,
+  onClose,
+  setTasks,
+}: {
+  task?: Task;
+  onClose?: () => void;
+  setTasks?: (updater: (prevTasks: Task[]) => Task[]) => void;
+}) {
   const [open, setOpen] = useState(!!task);
+  const { toast } = useToast();
 
-  const form = useForm<TaskFormData>({
+  const form = useForm<TaskForm>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
       task_title: "",
       task_details: "",
       media: [],
       notes: "",
-      status: "Assigned",
+      status: TaskStatus.ASSIGNED,
       priority: undefined,
       category: undefined,
       residents: [],
@@ -94,8 +105,7 @@ export default function TaskForm({ task, onClose }: { task?: Task; onClose?: () 
       assigned_to: "",
     },
   });
-  
-  // Reset form values when editing an existing task
+
   useEffect(() => {
     if (task) {
       form.reset({
@@ -106,37 +116,51 @@ export default function TaskForm({ task, onClose }: { task?: Task; onClose?: () 
         status: task.status,
         priority: task.priority,
         category: task.category,
-        resident: task.resident,
+        residents: task.resident ? [task.resident] : [],
         start_date: new Date(task.start_date),
         due_date: new Date(task.due_date),
         recurring: task.recurring,
-        end_recurring_date: task.end_recurring_date ? new Date(task.end_recurring_date) : undefined,
+        end_recurring_date: task.end_recurring_date
+          ? new Date(task.end_recurring_date)
+          : undefined,
         remind_prior: task.remind_prior,
         is_ai_generated: task.is_ai_generated,
         assigned_to: task.assigned_to,
       });
-      setOpen(true); // Open modal when editing a task
+      setOpen(true);
     }
-  }, [task]);
-  
+  }, [task, form]);
 
-  const onSubmit = async (data: TaskFormData) => {
+  const onSubmit = async (data: TaskForm) => {
     try {
       if (task) {
-        const updatedTask = await updateTask(task.id, data); // Update the task
-        setTasks((prevTasks) =>
-          prevTasks.map((t) => (t.id === updatedTask.id ? updatedTask : t)) // Update UI
-        );
+        // Update an existing task
+        const updatedTask = await updateTask(task.id, data);
+        if (setTasks) {
+          setTasks((prevTasks) =>
+            prevTasks.map((t) => (t.id === updatedTask.id ? updatedTask : t)),
+          );
+        }
+      } else {
+        // Create a new task
+        const newTask = await createTask(data);
+        if (setTasks) {
+          setTasks((prevTasks) => [newTask, ...prevTasks]);
+        } else {
+          toast({
+            variant: "default",
+            title: "Task Created",
+            description: "Task/s created successflly",
+          });
+        }
       }
-  
       setOpen(false);
-      if (onClose) onClose(); // Close the modal without reloading
+      if (onClose) onClose();
     } catch (error) {
-      console.error("Failed to update task:", error);
+      console.error("Failed to submit task:", error);
     }
   };
-   
-  
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -148,9 +172,11 @@ export default function TaskForm({ task, onClose }: { task?: Task; onClose?: () 
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create New Task</DialogTitle>
+          <DialogTitle>{task ? "Edit Task" : "Create New Task"}</DialogTitle>
           <DialogDescription>
-            Fill in the details below to create a new task.
+            {task
+              ? "Edit the details of your task below."
+              : "Fill in the details below to create a new task."}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -205,7 +231,7 @@ export default function TaskForm({ task, onClose }: { task?: Task; onClose?: () 
               )}
             />
 
-            {/* Priority (Select) */}
+            {/* Priority and Category */}
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -230,7 +256,6 @@ export default function TaskForm({ task, onClose }: { task?: Task; onClose?: () 
                 )}
               />
 
-              {/* Category (Select) */}
               <FormField
                 control={form.control}
                 name="category"
@@ -256,8 +281,9 @@ export default function TaskForm({ task, onClose }: { task?: Task; onClose?: () 
               />
             </div>
 
-            {/* Residents (Comma separated input) */}
-            {/* <FormField
+            {/* Uncomment if you want a comma-separated residents input */}
+            {/*
+            <FormField
               control={form.control}
               name="residents"
               render={({ field, fieldState }) => (
@@ -281,7 +307,8 @@ export default function TaskForm({ task, onClose }: { task?: Task; onClose?: () 
                   )}
                 </FormItem>
               )}
-            /> */}
+            />
+            */}
 
             {/* Start Date and Due Date */}
             <div className="grid grid-cols-2 gap-4">
@@ -342,7 +369,7 @@ export default function TaskForm({ task, onClose }: { task?: Task; onClose?: () 
               />
             </div>
 
-            {/* Recurring (Select) */}
+            {/* Recurring and End Recurring Date */}
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -368,7 +395,6 @@ export default function TaskForm({ task, onClose }: { task?: Task; onClose?: () 
                 )}
               />
 
-              {/* End Recurring Date */}
               <FormField
                 control={form.control}
                 name="end_recurring_date"
@@ -442,7 +468,9 @@ export default function TaskForm({ task, onClose }: { task?: Task; onClose?: () 
               )}
             />
 
-            <Button type="submit">{task ? "Update Task" : "Create Task"}</Button>
+            <Button type="submit">
+              {task ? "Update Task" : "Create Task"}
+            </Button>
           </form>
         </Form>
       </DialogContent>

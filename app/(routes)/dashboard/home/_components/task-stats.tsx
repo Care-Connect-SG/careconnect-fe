@@ -1,9 +1,9 @@
 "use client";
 
 import { getTasks } from "@/app/api/task";
+import { Card } from "@/components/ui/card";
 import { Task, TaskStatus } from "@/types/task";
 import { useEffect, useState } from "react";
-import { Card } from "@/components/ui/card";
 
 const TaskStats = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -28,7 +28,8 @@ const TaskStats = () => {
   const stats = {
     total: tasks.length,
     pending: tasks.filter((task) => task.status === TaskStatus.ASSIGNED).length,
-    delayed: tasks.filter((task) => new Date(task.due_date) < new Date()).length,
+    delayed: tasks.filter((task) => new Date(task.due_date) < new Date())
+      .length,
     completed: tasks.filter((task) => task.status === "Completed").length,
   };
 

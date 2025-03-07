@@ -42,7 +42,6 @@ function ResidentCard({
   onDelete,
   nurseOptions,
 }: ResidentCardProps) {
-  // Use an empty string if nurse is not set.
   const currentValue = resident.nurse || "";
 
   const handleChange = (value: string) => {
@@ -56,39 +55,69 @@ function ResidentCard({
 
   return (
     <div
-      className="flex items-center justify-between p-4 bg-white shadow-md rounded-md cursor-pointer"
+      className="flex items-center justify-between p-4 bg-gray-50 shadow-sm rounded-lg border border-gray-200 hover:shadow-md transition-all cursor-pointer"
       onClick={() => onClick && onClick(resident.id)}
     >
+      {/* Left Section: Profile Image & Details */}
       <div className="flex items-center gap-4">
-        <div className="relative w-16 h-16">
+        {/* Profile Image */}
+        <div className="relative w-14 h-14">
           <Image
             src={resident.imageUrl}
             alt={resident.name}
             fill
-            className="rounded-full object-cover"
+            className="rounded-full object-cover border border-gray-300 shadow-sm"
           />
         </div>
+
+        {/* Resident Details */}
         <div>
-          <Label className="text-lg font-semibold">{resident.name}</Label>
-          <p className="text-sm text-gray-600">Age: {resident.age}</p>
-          <p className="text-sm text-gray-600">Room: {resident.room}</p>
+          <Label className="text-base font-semibold text-gray-800">
+            {resident.name}
+          </Label>
+          <p className="text-xs text-gray-500">
+            Age:{" "}
+            <span className="font-medium text-gray-700">{resident.age}</span>
+          </p>
+          <p className="text-xs text-gray-500">
+            Room:{" "}
+            <span className="font-medium text-gray-700">{resident.room}</span>
+          </p>
         </div>
       </div>
-      <div className="flex items-center gap-2">
-        <Select value={currentValue} onValueChange={handleChange}>
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder="Select Nurse" />
-          </SelectTrigger>
-          <SelectContent>
-            {nurseOptions.map((option) => (
-              <SelectItem key={option.id} value={option.name}>
-                {option.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button onClick={handleDelete} className="bg-red-500 hover:bg-red-600">
-          <Trash className="h-4 w-4 text-white" />
+
+      {/* Right Section: Nurse Selection & Delete Button */}
+      <div className="flex items-center gap-4">
+        {/* Nurse Selection */}
+        <div className="flex flex-col">
+          <Label className="text-xs font-medium text-gray-600">
+            Nurse In Charge
+          </Label>
+          <Select value={currentValue} onValueChange={handleChange}>
+            <SelectTrigger className="w-36 h-8 text-sm rounded-md border-gray-300 shadow-sm text-gray-700">
+              <SelectValue placeholder="Select Nurse" />
+            </SelectTrigger>
+            <SelectContent className="bg-white border border-gray-200 shadow-md rounded-md">
+              {nurseOptions.map((option) => (
+                <SelectItem
+                  key={option.id}
+                  value={option.name}
+                  className="hover:bg-gray-100 text-sm"
+                >
+                  {option.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Delete Button */}
+        <Button
+          onClick={handleDelete}
+          className="p-2 rounded-md bg-gray-200 hover:bg-gray-300 transition"
+          title="Delete Resident"
+        >
+          <Trash className="h-5 w-5 text-gray-600" />
         </Button>
       </div>
     </div>

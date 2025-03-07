@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchUser } from "@/app/api/user";
+import { getUser } from "@/app/api/user";
 import {
   SidebarGroup,
   SidebarMenu,
@@ -16,6 +16,7 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
+import router from "next/router";
 
 interface submenuItem {
   title: string;
@@ -36,13 +37,21 @@ export function NavMain({
   const [userRole, setUserRole] = useState<string>("");
 
   useEffect(() => {
-    const getRole = async () => {
-      if (!session?.user?.email) return;
-      const user = await fetchUser(session.user.email);
-      setUserRole(user.role);
-    };
-    getRole();
-  }, [session?.user?.email]);
+      if (status !== "loading" && !session) {
+        router.push("/auth/login");
+      }
+    }, [session, status, router]);
+  
+    useEffect(() => {
+      const getUserRole = async () => {
+        if (!session?.user?.email) return;
+  
+        const user = await getUser(session.user.email);
+        setUserRole(user.role);
+      };
+  
+      getUserRole();
+    }, [session?.user?.email]);
 
   const filteredItems = items.map((item) => {
     if (

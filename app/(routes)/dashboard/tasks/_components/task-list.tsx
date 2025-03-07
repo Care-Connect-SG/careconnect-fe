@@ -1,6 +1,7 @@
 "use client";
 
 import { completeTask, reopenTask } from "@/app/api/task";
+import { deleteTask } from "@/app/api/task";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,16 +14,25 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toTitleCase } from "@/lib/utils";
 import { Task, TaskStatus } from "@/types/task";
-import { CheckCircle, Circle } from "lucide-react";
+import { CheckCircle, Circle, Edit, MoreHorizontal, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import React, { useState } from "react";
+import TaskForm from "./task-form";
 
 export default function TaskListView({ tasks }: { tasks: Task[] }) {
   const router = useRouter();
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [taskList, setTaskList] = useState<Task[]>(tasks);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
   const handleToggleTaskCompletion = async () => {
     if (!selectedTask) return;
@@ -73,6 +83,9 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Status
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Actions
               </th>
             </tr>
           </thead>
@@ -145,7 +158,6 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                 >
                   {toTitleCase(task.assigned_to_name) || "Unassigned"}
                 </td>
-
                 <td className="px-6 py-4">
                   <span
                     className={`px-2 py-1 text-xs rounded-full ${
@@ -175,11 +187,75 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                     {task.status}
                   </span>
                 </td>
+                <td className="px-6 py-4 flex space-x-2">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Open menu</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingTask(task);
+                        }}
+                      >
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="text-red-600"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenDeleteDialog(true);
+                        }}
+                      >
+                        <Trash className="mr-2 h-4 w-4" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <AlertDialog
+                    open={openDeleteDialog}
+                    onOpenChange={setOpenDeleteDialog}
+                  >
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Task</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete this task?
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={async () => {
+                            try {
+                              await deleteTask(task.id);
+                              window.location.reload();
+                            } catch (error) {
+                              alert("Failed to delete task");
+                            }
+                          }}
+                        >
+                          Confirm Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {/* Task Form for Editing */}
+      {editingTask && (
+        <TaskForm task={editingTask} onClose={() => setEditingTask(null)} />
+      )}
     </div>
   );
 }

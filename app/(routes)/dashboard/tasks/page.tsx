@@ -17,6 +17,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Task } from "@/types/task";
 
+import TaskForm from "./_components/task-form";
 import TaskKanbanView from "./_components/task-kanban";
 import TaskListView from "./_components/task-list";
 import { TaskViewToggle } from "./_components/task-viewtoggle";
@@ -84,9 +85,7 @@ const TaskManagement = () => {
           </div>
           <div className="flex items-center space-x-4">
             <TaskViewToggle view={currentView} onChange={setCurrentView} />
-            <Button>
-              <Plus className="w-4 h-4 mr-2" /> New Task
-            </Button>
+            <TaskForm />
           </div>
         </div>
       </div>

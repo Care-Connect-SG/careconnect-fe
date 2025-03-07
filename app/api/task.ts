@@ -1,5 +1,31 @@
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { Task } from "@/types/task";
+import { TaskForm } from "../(routes)/dashboard/tasks/_components/task-form";
+
+export const createTask = async (taskData: TaskForm): Promise<Task> => {
+  try {
+    const response = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(taskData),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Error creating task: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("createTask error:", error);
+    throw error;
+  }
+};
 
 export const getTasks = async (filters?: {
   search?: string;
@@ -59,34 +85,9 @@ export const getTaskById = async (taskId: string): Promise<Task> => {
   }
 };
 
-export const createTask = async (taskData: Partial<Task>): Promise<Task> => {
-  try {
-    const response = await fetchWithAuth(
-      `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(taskData),
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error(`Error creating task: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("createTask error:", error);
-    throw error;
-  }
-};
-
 export const updateTask = async (
   taskId: string,
-  updatedData: Partial<Task>,
+  updatedData: Partial<TaskForm>,
 ): Promise<Task> => {
   try {
     const response = await fetchWithAuth(

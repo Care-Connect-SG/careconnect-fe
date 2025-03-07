@@ -14,9 +14,9 @@ import { Collapsible } from "@radix-ui/react-collapsible";
 import { LucideIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import router from "next/router";
 import { useEffect, useState } from "react";
 import { CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
-import router from "next/router";
 
 interface submenuItem {
   title: string;
@@ -37,21 +37,21 @@ export function NavMain({
   const [userRole, setUserRole] = useState<string>("");
 
   useEffect(() => {
-      if (status !== "loading" && !session) {
-        router.push("/auth/login");
-      }
-    }, [session, status, router]);
-  
-    useEffect(() => {
-      const getUserRole = async () => {
-        if (!session?.user?.email) return;
-  
-        const user = await getUser(session.user.email);
-        setUserRole(user.role);
-      };
-  
-      getUserRole();
-    }, [session?.user?.email]);
+    if (status !== "loading" && !session) {
+      router.push("/auth/login");
+    }
+  }, [session, status, router]);
+
+  useEffect(() => {
+    const getUserRole = async () => {
+      if (!session?.user?.email) return;
+
+      const user = await getUser(session.user.email);
+      setUserRole(user.role);
+    };
+
+    getUserRole();
+  }, [session?.user?.email]);
 
   const filteredItems = items.map((item) => {
     if (

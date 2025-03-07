@@ -42,11 +42,6 @@ export default function FormElementBar({ onAddElement }: FormElementBarProps) {
       color: "bg-emerald-100",
     },
     {
-      type: "datetime",
-      item: <Clock />,
-      color: "bg-lime-100",
-    },
-    {
       type: "radio",
       item: <ListChecks />,
       color: "bg-rose-100",

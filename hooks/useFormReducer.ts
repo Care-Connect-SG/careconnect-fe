@@ -5,7 +5,6 @@ export type FormElementType =
   | "text"
   | "textarea"
   | "date"
-  | "datetime"
   | "radio"
   | "checkbox";
 

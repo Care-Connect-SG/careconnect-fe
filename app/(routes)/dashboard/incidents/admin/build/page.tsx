@@ -6,18 +6,20 @@ import {
   getFormById,
   updateForm,
 } from "@/app/api/form";
+import { getCurrentUser } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import { useBreadcrumb } from "@/context/breadcrumb-context";
 import { FormState, useFormReducer } from "@/hooks/useFormReducer";
 import { FormCreate, FormResponse } from "@/types/form";
 import { ChevronLeft, Trash2 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import FormElement from "../_components/form-element";
-import FormElementBar from "../_components/form-element-bar";
-import { FormHeaderEdit } from "../_components/form-header";
-import { FormLoadingSkeleton } from "./_components/form-skeleton";
+import { FormHeaderEdit } from "../../_components/form-header";
+import { LoadingSkeleton } from "../../_components/loading-skeleton";
+import FormElement from "./_components/form-element";
+import FormElementBar from "./_components/form-element-bar";
 
 export default function CreateFormPage() {
   const router = useRouter();
@@ -25,6 +27,7 @@ export default function CreateFormPage() {
   const formId = searchParams.get("id");
   const isEditing = !!formId;
   const { setPageName } = useBreadcrumb();
+  const { data: session } = useSession();
 
   const [state, dispatch] = useFormReducer();
   const [loading, setLoading] = useState<boolean>(isEditing);
@@ -50,7 +53,7 @@ export default function CreateFormPage() {
     }
   }, [formId, isEditing, dispatch, router, setPageName]);
 
-  if (loading) return <FormLoadingSkeleton />;
+  if (loading) return <LoadingSkeleton />;
 
   const handleSaveDraft = async () => {
     if (!state.title || state.elements.length === 0) {
@@ -60,18 +63,21 @@ export default function CreateFormPage() {
       return;
     }
 
+    const user = await getCurrentUser(session!.user!.email!);
+
     const formData: FormCreate = {
       title: state.title,
       description: state.description,
-      creator_id: "user123", // TODO: Replace with actual user ID
+      creator_id: user.id,
       json_content: state.elements,
       status: "Draft",
     };
 
     if (!formId) {
       try {
-        const newFormId = await createForm(formData);
-        router.replace(`/dashboard/form/build?id=${newFormId}`);
+        const formId = await createForm(formData);
+        console.log(formId);
+        router.replace(`/dashboard/incidents/admin/build?id=${formId}`);
       } catch (error) {
         console.error("Error saving form:", error);
       }
@@ -103,14 +109,14 @@ export default function CreateFormPage() {
     if (!formId) {
       try {
         await createForm(formData);
-        router.replace(`/dashboard/form`);
+        router.replace(`/dashboard/incidents/admin`);
       } catch (error) {
         console.error("Error saving form:", error);
       }
     } else {
       try {
         await updateForm(formId, formData);
-        router.replace(`/dashboard/form`);
+        router.replace(`/dashboard/incidents/admin`);
       } catch (error) {
         console.error("Error updating form:", error);
       }
@@ -120,7 +126,8 @@ export default function CreateFormPage() {
   const handleDeleteDraft = async (formId: string) => {
     try {
       await deleteForm(formId);
-      router.replace(`/dashboard/form`);
+      console.log("Deleted form: ", formId);
+      router.replace(`/dashboard/incidents/admin`);
     } catch (error) {
       console.error("Failed to delete form");
     }
@@ -143,7 +150,7 @@ export default function CreateFormPage() {
 
       <div className="flex items-center justify-between pb-2">
         <div className="flex justify-start gap-2 px-8 pb-2">
-          <Link href="/dashboard/form">
+          <Link href="/dashboard/incidents/admin">
             <Button variant="outline" className="hover:border-gray-50">
               <ChevronLeft />
             </Button>

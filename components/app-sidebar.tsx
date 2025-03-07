@@ -41,8 +41,12 @@ const config = {
     { title: "Calendar", url: "/dashboard/calendar", icon: Calendar },
     {
       title: "Incident Reports",
-      url: "/dashboard/incidents",
       icon: AlertTriangle,
+      submenu: [
+        { title: "View All Reports", url: "/dashboard/incidents" },
+        { title: "Create A Report", url: "/dashboard/incidents/form" },
+        { title: "Manage Report Forms", url: "/dashboard/incidents/admin" },
+      ],
     },
   ],
   navTeam: [{ title: "Group", url: "/dashboard/group", icon: Users }],

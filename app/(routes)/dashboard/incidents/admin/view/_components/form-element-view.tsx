@@ -11,7 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FormElementData } from "@/hooks/useFormReducer";
-import { CalendarClockIcon, CalendarIcon } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 
 interface FormElementViewProps {
   element: FormElementData;
@@ -21,25 +21,17 @@ export default function FormElementView({ element }: FormElementViewProps) {
   return (
     <>
       <Card className="py-0">
-        <CardHeader className="pb-6 pt-2">
+        <CardHeader className="pb-4 pt-2">
           <CardTitle className="p-0 mb-0 max-h-10 flex items-center">
-            <Input
-              value={`${element.label} ${element.required ? "*" : ""}`}
-              disabled
-              className="md:text-base md:max-w-80 max-w-52 pb-0 font-semibold text-black rounded-none border-0 
-                         px-0 focus-visible:ring-0 focus-visible:ring-offset-0 disabled:opacity-100"
-              placeholder="Label"
-            />
+            <h1 className="md:text-base md:max-w-80 max-w-52 pb-0 font-semibold text-black px-0 pt-4">
+              {element.label} {element.required ? "*" : ""}
+            </h1>
           </CardTitle>
           {element.helptext && (
             <CardDescription className="max-h-6">
-              <Input
-                value={element.helptext}
-                disabled
-                className="md:text-xs py-0 font-normal rounded-none border-0 text-gray-500
-                        px-0 focus-visible:ring-0 focus-visible:ring-offset-0 disabled:opacity-100"
-                placeholder="Add a description for the form field"
-              />
+              <p className="md:text-xs py-0 font-normal text-gray-500 px-0">
+                {element.helptext}
+              </p>
             </CardDescription>
           )}
         </CardHeader>
@@ -66,16 +58,6 @@ export default function FormElementView({ element }: FormElementViewProps) {
             >
               <CalendarIcon />
               <span>Pick a date</span>
-            </Button>
-          )}
-          {element.type === "datetime" && (
-            <Button
-              disabled
-              variant={"outline"}
-              className="w-[240px] justify-start text-left font-normal disabled:opacity-100"
-            >
-              <CalendarClockIcon />
-              <span>MM/DD/YYYY hh:mm</span>
             </Button>
           )}
           {element.type === "radio" && (

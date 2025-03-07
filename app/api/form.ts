@@ -1,16 +1,20 @@
 import { FormCreate, FormResponse } from "@/types/form";
 
-export const getForms = async (): Promise<FormResponse[]> => {
+export const getForms = async (status?: string): Promise<FormResponse[]> => {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BE_API_URL}/incident/forms`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
+    let url = `${process.env.NEXT_PUBLIC_BE_API_URL}/incident/forms`;
+
+    if (status) {
+      url += `?status=${encodeURIComponent(status)}`;
+    }
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        // Authorization: `Bearer ${process.env.BE_API_SECRET}`,
       },
-    );
+    });
 
     if (!response.ok) {
       throw new Error(`Error fetching forms: ${response.statusText}`);

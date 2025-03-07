@@ -1,5 +1,33 @@
+import { UserResponse } from "@/types/user";
 import { User, UserEdit } from "@/types/user";
 import { UserForm } from "../(routes)/dashboard/nurses/_components/create-user-dialog";
+
+export const getCurrentUser = async (email: string): Promise<UserResponse> => {
+  try {
+    let url = `${process.env.NEXT_PUBLIC_BE_API_URL}/users`;
+
+    if (email) {
+      url += `?status=${encodeURIComponent(email)}`;
+    }
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error fetching user: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data[0];
+  } catch (error) {
+    console.error("Error fetching user: ", error);
+    throw error;
+  }
+};
 
 export const createUser = async (user: UserForm): Promise<User> => {
   try {
@@ -153,6 +181,5 @@ export const deleteUser = async (userId: string): Promise<void> => {
     console.log(`User with ID ${userId} deleted successfully`);
   } catch (error) {
     console.error("Error deleting user:", error);
-    throw error;
   }
 };

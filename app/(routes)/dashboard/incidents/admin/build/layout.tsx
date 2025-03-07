@@ -1,12 +1,12 @@
 "use client";
 
 import { Suspense } from "react";
-import { FormLoadingSkeleton } from "./_components/form-skeleton";
+import { LoadingSkeleton } from "../../_components/loading-skeleton";
 
 export default function CreateFormLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <Suspense fallback={<FormLoadingSkeleton />}>{children}</Suspense>;
+  return <Suspense fallback={<LoadingSkeleton />}>{children}</Suspense>;
 }

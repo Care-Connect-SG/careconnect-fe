@@ -15,11 +15,10 @@ const items = [
   { key: "home", label: "Home" },
   { key: "tasks", label: "Tasks" },
   { key: "residents", label: "Residents" },
-  { key: "form", label: "Incident Form Management " },
   { key: "announcements", label: "Announcements" },
   { key: "group", label: "Group" },
   { key: "calendar", label: "Calendar" },
-  { key: "incidents", label: "Incident Management" },
+  { key: "incidents", label: "Incident Reporting" },
   { key: "nurses", label: "Nurses" },
 ];
 
@@ -44,16 +43,19 @@ function BreadCrumbDashboard() {
     }
 
     if (index === 1 && segment === "view") {
-      label = "Preview Form";
-      url = "/dashboard/form";
+      label = "Preview Report";
     }
 
-    if (pathname.startsWith("/dashboard/form/view/") && isLast) {
-      label = "Preview Form";
+    if (index === 1 && segment === "fill") {
+      label = "Fill Report";
     }
 
-    if (index === 1 && segment === "build") {
-      label = "Edit Form";
+    if (index === 1 && segment === "admin") {
+      label = "Manage Forms";
+    }
+
+    if (index === 1 && segment === "form") {
+      label = "Create Report";
     }
 
     if (isLast && pageName) {

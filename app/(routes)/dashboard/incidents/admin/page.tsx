@@ -6,9 +6,9 @@ import { FormCreate, FormResponse } from "@/types/form";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import FormCard from "./_components/form-card";
+import FormCard from "../_components/form-card";
 
-export default function Incident() {
+export default function IncidentReportingFormsAdmin() {
   const [forms, setForms] = useState<FormResponse[]>([]);
 
   useEffect(() => {
@@ -90,7 +90,7 @@ export default function Incident() {
           </div>
         ))}
         <Card className="border-dashed w-xs max-w-xs h-[11rem] hover:bg-gray-100">
-          <Link href="/dashboard/form/build">
+          <Link href="/dashboard/incidents/admin/build">
             <div className="flex flex-col justify-center items-center h-full">
               <Plus className="mb-0 h-6 w-6 text-gray-500" />
               <p className="text-sm text-gray-400 mt-1">Create a new form</p>

@@ -22,15 +22,13 @@ import {
   updateResidentNurse,
 } from "../../../api/resident";
 import { getAllNurses } from "../../../api/user";
+import AddResidentModal from "./_components/add-resident-modal";
 import ResidentCard, { NurseOption } from "./_components/all-resident-card";
-
 export default function AllResidentsPage() {
   const [residents, setResidents] = useState<ResidentRecord[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [nurseOptions, setNurseOptions] = useState<NurseOption[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [residentToDelete, setResidentToDelete] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -59,7 +57,7 @@ export default function AllResidentsPage() {
   }, []);
 
   const filteredResidents = residents.filter((resident) =>
-    resident.full_name.toLowerCase().includes(searchTerm.toLowerCase()),
+    resident.full_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const computeAge = (dob: string) => {
@@ -72,6 +70,7 @@ export default function AllResidentsPage() {
   const handleNurseChange = async (id: string, newNurse: string) => {
     const currentResident = residents.find((res) => res.id === id);
     if (!currentResident) return;
+
     const updatePayload = {
       full_name: currentResident.full_name,
       gender: currentResident.gender,
@@ -88,7 +87,7 @@ export default function AllResidentsPage() {
     try {
       const updatedResident = await updateResidentNurse(id, updatePayload);
       setResidents((prev) =>
-        prev.map((res) => (res.id === id ? updatedResident : res)),
+        prev.map((res) => (res.id === id ? updatedResident : res))
       );
       console.log("Updated resident:", updatedResident);
     } catch (error) {
@@ -96,18 +95,12 @@ export default function AllResidentsPage() {
     }
   };
 
-  const openDeleteModal = (id: string) => {
-    setResidentToDelete(id);
-    setIsDeleteModalOpen(true);
-  };
-
-  const handleDelete = async () => {
-    if (!residentToDelete) return;
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this resident?")) return;
     try {
-      await deleteResident(residentToDelete);
-      setResidents((prev) => prev.filter((res) => res.id !== residentToDelete));
-      console.log("Deleted resident with id:", residentToDelete);
-      setIsDeleteModalOpen(false);
+      await deleteResident(id);
+      setResidents((prev) => prev.filter((res) => res.id !== id));
+      console.log("Deleted resident with id:", id);
     } catch (error) {
       console.error("Error deleting resident:", error);
     }
@@ -148,58 +141,18 @@ export default function AllResidentsPage() {
             <Search className="h-5 w-5" />
           </div>
         </div>
-        <div className="flex gap-4 right-4" style={{ marginRight: "25px" }}>
+        <div className="flex gap-4">
           <Button variant="default" onClick={() => setIsAddModalOpen(true)}>
             Add New Resident
           </Button>
         </div>
       </div>
 
-      {/* Add Resident Modal */}
-      <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Add New Resident</DialogTitle>
-            <DialogDescription>
-              Fill in the details to add a new resident.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="p-6">
-            {/* Add form fields for new resident details here */}
-            <div className="flex justify-end mt-6">
-              <Button
-                className="bg-blue-600 hover:bg-blue-800"
-                onClick={handleAddResidentSave}
-              >
-                Save Changes
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation Modal */}
-      <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this resident?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="secondary"
-              onClick={() => setIsDeleteModalOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleDelete}>
-              Confirm
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AddResidentModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSave={handleAddResidentSave}
+      />
 
       <div className="space-y-4">
         {filteredResidents.length > 0 ? (
@@ -216,7 +169,7 @@ export default function AllResidentsPage() {
               }}
               onNurseChange={handleNurseChange}
               onClick={handleCardClick}
-              onDelete={openDeleteModal}
+              onDelete={handleDelete}
               nurseOptions={nurseOptions}
             />
           ))
@@ -227,3 +180,11 @@ export default function AllResidentsPage() {
     </div>
   );
 }
+
+// Helper: simple age calculator
+const computeAge = (dob: string) => {
+  const birthDate = new Date(dob);
+  const diffMs = Date.now() - birthDate.getTime();
+  const ageDt = new Date(diffMs);
+  return Math.abs(ageDt.getUTCFullYear() - 1970);
+};

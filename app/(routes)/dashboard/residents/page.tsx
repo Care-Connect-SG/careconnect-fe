@@ -57,7 +57,7 @@ export default function AllResidentsPage() {
   }, []);
 
   const filteredResidents = residents.filter((resident) =>
-    resident.full_name.toLowerCase().includes(searchTerm.toLowerCase())
+    resident.full_name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const computeAge = (dob: string) => {
@@ -87,7 +87,7 @@ export default function AllResidentsPage() {
     try {
       const updatedResident = await updateResidentNurse(id, updatePayload);
       setResidents((prev) =>
-        prev.map((res) => (res.id === id ? updatedResident : res))
+        prev.map((res) => (res.id === id ? updatedResident : res)),
       );
       console.log("Updated resident:", updatedResident);
     } catch (error) {

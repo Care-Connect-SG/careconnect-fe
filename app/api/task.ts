@@ -2,8 +2,9 @@ import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { Task } from "@/types/task";
 import { TaskForm } from "../(routes)/dashboard/tasks/_components/task-form";
 
-export const createTask = async (taskData: TaskForm): Promise<Task> => {
+export const createTask = async (taskData: TaskForm): Promise<Task[]> => {
   try {
+    console.log('Attempting to create task with data:', taskData);
     const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/`,
       {
@@ -16,13 +17,27 @@ export const createTask = async (taskData: TaskForm): Promise<Task> => {
     );
 
     if (!response.ok) {
-      throw new Error(`Error creating task: ${response.statusText}`);
+      const errorData = await response.json().catch(() => null);
+      console.error('Server response:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData
+      });
+      throw new Error(
+        `Error creating task: ${response.status} ${response.statusText}${
+          errorData ? ` - ${JSON.stringify(errorData)}` : ''
+        }`
+      );
     }
 
     const data = await response.json();
+    console.log('Task created successfully:', data);
     return data;
   } catch (error) {
     console.error("createTask error:", error);
+    if (error instanceof Error) {
+      throw new Error(`Failed to create task: ${error.message}`);
+    }
     throw error;
   }
 };

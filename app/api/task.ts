@@ -1,6 +1,24 @@
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
-import { Task } from "@/types/task";
+import { Task, TaskStatus } from "@/types/task";
 import { TaskForm } from "../(routes)/dashboard/tasks/_components/task-form";
+
+interface TaskUpdateData {
+  task_title?: string;
+  task_details?: string;
+  media?: string[];
+  notes?: string;
+  status?: TaskStatus;
+  priority?: string;
+  category?: string;
+  residents?: string[];
+  start_date?: string;
+  due_date?: string;
+  recurring?: string;
+  end_recurring_date?: string;
+  remind_prior?: number;
+  is_ai_generated?: boolean;
+  assigned_to?: string;
+}
 
 export const createTask = async (taskData: TaskForm): Promise<Task[]> => {
   try {
@@ -114,6 +132,39 @@ export const updateTask = async (
   updatedData: Partial<TaskForm>,
 ): Promise<Task> => {
   try {
+    console.log("Sending update request for task:", taskId);
+    console.log("Update data:", updatedData);
+
+    // Create a copy of the data to modify
+    const dataToSend: TaskUpdateData = {};
+
+    // Copy over all fields, converting as needed
+    if (updatedData.task_title) dataToSend.task_title = updatedData.task_title;
+    if (updatedData.task_details)
+      dataToSend.task_details = updatedData.task_details;
+    if (updatedData.media) dataToSend.media = updatedData.media;
+    if (updatedData.notes) dataToSend.notes = updatedData.notes;
+    if (updatedData.status) dataToSend.status = updatedData.status;
+    if (updatedData.priority) dataToSend.priority = updatedData.priority;
+    if (updatedData.category) dataToSend.category = updatedData.category;
+    if (updatedData.residents)
+      dataToSend.residents = updatedData.residents.map(String);
+    if (updatedData.start_date)
+      dataToSend.start_date = new Date(updatedData.start_date).toISOString();
+    if (updatedData.due_date)
+      dataToSend.due_date = new Date(updatedData.due_date).toISOString();
+    if (updatedData.recurring) dataToSend.recurring = updatedData.recurring;
+    if (updatedData.end_recurring_date)
+      dataToSend.end_recurring_date = new Date(
+        updatedData.end_recurring_date,
+      ).toISOString();
+    if (updatedData.remind_prior)
+      dataToSend.remind_prior = updatedData.remind_prior;
+    if (updatedData.is_ai_generated !== undefined)
+      dataToSend.is_ai_generated = updatedData.is_ai_generated;
+    if (updatedData.assigned_to)
+      dataToSend.assigned_to = String(updatedData.assigned_to);
+
     const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}`,
       {
@@ -121,15 +172,26 @@ export const updateTask = async (
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(updatedData),
+        body: JSON.stringify(dataToSend),
       },
     );
 
     if (!response.ok) {
-      throw new Error(`Error updating task: ${response.statusText}`);
+      const errorData = await response.json().catch(() => null);
+      console.error("Update task error response:", {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData,
+      });
+      throw new Error(
+        `Error updating task: ${response.status} ${response.statusText}${
+          errorData ? ` - ${JSON.stringify(errorData)}` : ""
+        }`,
+      );
     }
 
     const data = await response.json();
+    console.log("Task updated successfully:", data);
     return data;
   } catch (error) {
     console.error("updateTask error:", error);

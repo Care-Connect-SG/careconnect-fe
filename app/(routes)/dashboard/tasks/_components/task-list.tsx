@@ -34,6 +34,30 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
+  const handleTaskUpdate = (
+    updater: Task | ((prevTasks: Task[]) => Task[]),
+  ) => {
+    console.log("handleTaskUpdate called with:", updater);
+    if (typeof updater === "function") {
+      console.log("Updater is a function, calling it with current taskList");
+      setTaskList(updater);
+    } else {
+      console.log(
+        "Updater is a task object, updating task with ID:",
+        updater.id,
+      );
+      setTaskList((prevTasks) => {
+        const newTasks = prevTasks.map((task) =>
+          task.id === updater.id ? updater : task,
+        );
+        console.log("New taskList after update:", newTasks);
+        return newTasks;
+      });
+    }
+    console.log("Closing edit dialog");
+    setEditingTask(null);
+  };
+
   const handleToggleTaskCompletion = async () => {
     if (!selectedTask) return;
 
@@ -254,7 +278,11 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
 
       {/* Task Form for Editing */}
       {editingTask && (
-        <TaskForm task={editingTask} onClose={() => setEditingTask(null)} />
+        <TaskForm
+          task={editingTask}
+          onClose={() => setEditingTask(null)}
+          setTasks={handleTaskUpdate}
+        />
       )}
     </div>
   );

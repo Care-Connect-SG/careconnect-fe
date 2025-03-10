@@ -50,9 +50,12 @@ const taskSchema = z
       required_error: "Due date is required",
       invalid_type_error: "Invalid date",
     }),
-    recurring: z.enum(["Daily", "Weekly", "Monthly", "Annually"]).optional(),
-    end_recurring_date: z.date().optional(),
-    remind_prior: z.number().optional(),
+    recurring: z
+      .enum(["Daily", "Weekly", "Monthly", "Annually"])
+      .nullable()
+      .optional(),
+    end_recurring_date: z.date().nullable().optional(),
+    remind_prior: z.number().nullable().optional(),
     is_ai_generated: z.boolean().default(false),
     assigned_to: z.string().nonempty("Assignee is required"),
   })
@@ -82,7 +85,7 @@ export default function TaskForm({
 }: {
   task?: Task;
   onClose?: () => void;
-  setTasks?: (updater: (prevTasks: Task[]) => Task[]) => void;
+  setTasks?: (updater: Task | ((prevTasks: Task[]) => Task[])) => void;
 }) {
   const [open, setOpen] = useState(!!task);
   const { toast } = useToast();
@@ -159,18 +162,31 @@ export default function TaskForm({
 
   const onSubmit = async (data: TaskForm) => {
     try {
-      console.log("Submitting form data:", data);
+      console.log("Form submitted with data:", data);
       if (task) {
+        console.log("Updating existing task with ID:", task.id);
         // Update an existing task
         const updatedTask = await updateTask(task.id, data);
+        console.log("Received updated task from server:", updatedTask);
+
         if (setTasks) {
-          setTasks((prevTasks) =>
-            prevTasks.map((t) => (t.id === updatedTask.id ? updatedTask : t)),
-          );
+          console.log("Calling setTasks with updater function");
+          setTasks(updatedTask);
+        } else {
+          console.log("setTasks prop not provided");
         }
+
+        toast({
+          variant: "default",
+          title: "Task Updated",
+          description: "Task has been updated successfully",
+        });
       } else {
         // Create a new task
+        console.log("Creating new task");
         const newTasks = await createTask(data);
+        console.log("Received new tasks from server:", newTasks);
+
         if (setTasks) {
           setTasks((prevTasks) => [...newTasks, ...prevTasks]);
         } else {
@@ -181,11 +197,14 @@ export default function TaskForm({
           });
         }
       }
+      console.log("Closing form dialog");
       setOpen(false);
       if (onClose) onClose();
     } catch (error) {
       console.error("Failed to submit task:", error);
-      let errorMessage = "Failed to create task. Please try again.";
+      let errorMessage = task
+        ? "Failed to update task. Please try again."
+        : "Failed to create task. Please try again.";
 
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -198,6 +217,17 @@ export default function TaskForm({
       });
     }
   };
+
+  // Add form validation logging
+  const handleSubmit = form.handleSubmit(
+    (data) => {
+      console.log("Form validation passed, data:", data);
+      onSubmit(data);
+    },
+    (errors) => {
+      console.error("Form validation failed:", errors);
+    },
+  );
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -218,7 +248,7 @@ export default function TaskForm({
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {/* Task Title */}
             <FormField
               control={form.control}

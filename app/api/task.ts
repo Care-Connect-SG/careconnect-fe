@@ -262,3 +262,51 @@ export const deleteTask = async (taskId: string): Promise<void> => {
     throw error;
   }
 };
+
+export const duplicateTask = async (taskId: string): Promise<Task> => {
+  try {
+    const response = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/duplicate`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Error duplicating task: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("duplicateTask error:", error);
+    throw error;
+  }
+};
+
+export const downloadTask = async (taskId: string): Promise<Blob> => {
+  try {
+    const response = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/download`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Error downloading task: ${response.statusText}`);
+    }
+
+    const blob = await response.blob();
+    return blob;
+  } catch (error) {
+    console.error("downloadTask error:", error);
+    throw error;
+  }
+};

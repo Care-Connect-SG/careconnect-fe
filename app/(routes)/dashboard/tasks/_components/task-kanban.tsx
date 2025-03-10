@@ -1,18 +1,24 @@
 "use client";
 
 import { createResident, getResidents } from "@/app/api/resident";
+import { downloadTask, duplicateTask } from "@/app/api/task";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import { Task } from "@/types/task";
+import { useToast } from "@/hooks/use-toast";
+import { toTitleCase } from "@/lib/utils";
 import { ResidentRecord } from "@/types/resident";
-import { Clock, Plus, User } from "lucide-react";
+import { Task } from "@/types/task";
+import { Clock, Copy, Download, Plus, User } from "lucide-react";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useState, Dispatch, SetStateAction } from "react";
-import { toTitleCase } from "@/lib/utils";
-import TaskForm from "./task-form";
 import AddResidentModal from "../../residents/_components/add-resident-modal";
+import TaskForm from "./task-form";
 
-const TaskCard = ({ task }: { task: Task }) => {
+const TaskCard = ({
+  task,
+  setTasks,
+}: { task: Task; setTasks: Dispatch<SetStateAction<Task[]>> }) => {
+  const { toast } = useToast();
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "High":
@@ -24,6 +30,47 @@ const TaskCard = ({ task }: { task: Task }) => {
     }
   };
 
+  const handleDuplicate = async () => {
+    try {
+      const duplicatedTask = await duplicateTask(task.id);
+      setTasks((prev) => [...prev, duplicatedTask]);
+      toast({
+        title: "Task Duplicated",
+        description: "The task has been successfully duplicated.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to duplicate the task.",
+      });
+    }
+  };
+
+  const handleDownload = async () => {
+    try {
+      const blob = await downloadTask(task.id);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `task-${task.id}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      toast({
+        title: "Task Downloaded",
+        description: "The task has been successfully downloaded.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to download the task.",
+      });
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4 mb-3 hover:shadow-md transition-shadow">
       <div className="flex justify-between items-start mb-2">
@@ -32,6 +79,24 @@ const TaskCard = ({ task }: { task: Task }) => {
             {task.task_title}
           </h4>
           <p className="text-xs text-gray-500">{task.category}</p>
+        </div>
+        <div className="flex space-x-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={handleDuplicate}
+          >
+            <Copy className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={handleDownload}
+          >
+            <Download className="h-4 w-4" />
+          </Button>
         </div>
       </div>
       <div className="flex items-center justify-between mt-3">
@@ -55,16 +120,16 @@ const TaskCard = ({ task }: { task: Task }) => {
   );
 };
 
-const ResidentColumn = ({ 
-  resident, 
+const ResidentColumn = ({
+  resident,
   tasks,
-  setTasks
-}: { 
+  setTasks,
+}: {
   resident: ResidentRecord;
   tasks: Task[];
   setTasks: Dispatch<SetStateAction<Task[]>>;
 }) => {
-  const residentTasks = tasks.filter(task => task.resident === resident.id);
+  const residentTasks = tasks.filter((task) => task.resident === resident.id);
   const [showTaskForm, setShowTaskForm] = useState(false);
 
   return (
@@ -75,12 +140,14 @@ const ResidentColumn = ({
             <User className="w-5 h-5 text-blue-600" />
           </div>
           <div>
-            <h3 className="text-sm font-medium text-gray-900">{resident.full_name}</h3>
+            <h3 className="text-sm font-medium text-gray-900">
+              {resident.full_name}
+            </h3>
             <p className="text-xs text-gray-500">Room {resident.room_number}</p>
           </div>
         </div>
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           size="icon"
           onClick={() => setShowTaskForm(true)}
           className="h-8 w-8"
@@ -90,17 +157,17 @@ const ResidentColumn = ({
       </div>
       <div className="space-y-3">
         {residentTasks.map((task) => (
-          <TaskCard key={task.id} task={task} />
+          <TaskCard key={task.id} task={task} setTasks={setTasks} />
         ))}
       </div>
       {showTaskForm && (
         <TaskForm
           onClose={() => setShowTaskForm(false)}
           setTasks={(updater) => {
-            if (typeof updater === 'function') {
+            if (typeof updater === "function") {
               setTasks(updater);
             } else {
-              setTasks(prev => [...prev, updater]);
+              setTasks((prev) => [...prev, updater]);
             }
             setShowTaskForm(false);
           }}
@@ -137,7 +204,7 @@ export default function TaskKanbanView({ tasks }: { tasks: Task[] }) {
   const handleAddResident = async (newResidentData: any) => {
     try {
       const createdResident = await createResident(newResidentData);
-      setResidents(prev => [...prev, createdResident]);
+      setResidents((prev) => [...prev, createdResident]);
       setShowAddResidentModal(false);
     } catch (error) {
       console.error("Error creating resident:", error);
@@ -162,7 +229,10 @@ export default function TaskKanbanView({ tasks }: { tasks: Task[] }) {
     <div className="flex-1 bg-white p-8 pt-0">
       <div className="flex justify-end mb-8">
         <div className="flex space-x-3">
-          <Button variant="secondary" onClick={() => setShowAddResidentModal(true)}>
+          <Button
+            variant="secondary"
+            onClick={() => setShowAddResidentModal(true)}
+          >
             <User className="w-4 h-4 mr-2" /> Add Resident
           </Button>
         </div>
@@ -171,23 +241,24 @@ export default function TaskKanbanView({ tasks }: { tasks: Task[] }) {
         {residentRows.map((row, rowIndex) => (
           <div key={rowIndex} className="flex min-w-full">
             {row.map((resident) => (
-              <ResidentColumn 
-                key={resident.id} 
-                resident={resident} 
+              <ResidentColumn
+                key={resident.id}
+                resident={resident}
                 tasks={taskList}
                 setTasks={setTaskList}
               />
             ))}
-            {rowIndex === residentRows.length - 1 && residents.length % 3 !== 0 && (
-              <div className="flex-none w-96 bg-gray-50 rounded-lg p-4 mr-4 border-2 border-dashed border-gray-200 flex items-center justify-center">
-                <button 
-                  className="text-gray-500 hover:text-gray-700 text-sm font-medium"
-                  onClick={() => setShowAddResidentModal(true)}
-                >
-                  + Add New Resident
-                </button>
-              </div>
-            )}
+            {rowIndex === residentRows.length - 1 &&
+              residents.length % 3 !== 0 && (
+                <div className="flex-none w-96 bg-gray-50 rounded-lg p-4 mr-4 border-2 border-dashed border-gray-200 flex items-center justify-center">
+                  <button
+                    className="text-gray-500 hover:text-gray-700 text-sm font-medium"
+                    onClick={() => setShowAddResidentModal(true)}
+                  >
+                    + Add New Resident
+                  </button>
+                </div>
+              )}
           </div>
         ))}
       </div>

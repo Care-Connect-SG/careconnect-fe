@@ -140,7 +140,7 @@ export default function TaskForm({
       });
       setIsOpen(true);
     } else if (defaultResident) {
-      form.setValue('residents', [defaultResident]);
+      form.setValue("residents", [defaultResident]);
     }
   }, [task, form, defaultResident]);
 

@@ -1,6 +1,11 @@
 "use client";
 
-import { completeTask, reopenTask } from "@/app/api/task";
+import {
+  completeTask,
+  downloadTask,
+  duplicateTask,
+  reopenTask,
+} from "@/app/api/task";
 import { deleteTask } from "@/app/api/task";
 import {
   AlertDialog,
@@ -20,15 +25,25 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useToast } from "@/hooks/use-toast";
 import { toTitleCase } from "@/lib/utils";
 import { Task, TaskStatus } from "@/types/task";
-import { CheckCircle, Circle, Edit, MoreHorizontal, Trash } from "lucide-react";
+import {
+  CheckCircle,
+  Circle,
+  Copy,
+  Download,
+  Edit,
+  MoreHorizontal,
+  Trash,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import TaskForm from "./task-form";
 
 export default function TaskListView({ tasks }: { tasks: Task[] }) {
   const router = useRouter();
+  const { toast } = useToast();
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [taskList, setTaskList] = useState<Task[]>(tasks);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -78,6 +93,47 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
       console.error("Error toggling task status:", error);
     }
     setSelectedTask(null);
+  };
+
+  const handleDuplicate = async (task: Task) => {
+    try {
+      const duplicatedTask = await duplicateTask(task.id);
+      setTaskList((prev) => [...prev, duplicatedTask]);
+      toast({
+        title: "Task Duplicated",
+        description: "The task has been successfully duplicated.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to duplicate the task.",
+      });
+    }
+  };
+
+  const handleDownload = async (task: Task) => {
+    try {
+      const blob = await downloadTask(task.id);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `task-${task.id}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      toast({
+        title: "Task Downloaded",
+        description: "The task has been successfully downloaded.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to download the task.",
+      });
+    }
   };
 
   if (!taskList.length) {
@@ -228,6 +284,24 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                       >
                         <Edit className="mr-2 h-4 w-4" />
                         Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDuplicate(task);
+                        }}
+                      >
+                        <Copy className="mr-2 h-4 w-4" />
+                        Duplicate
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownload(task);
+                        }}
+                      >
+                        <Download className="mr-2 h-4 w-4" />
+                        Download
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="text-red-600"

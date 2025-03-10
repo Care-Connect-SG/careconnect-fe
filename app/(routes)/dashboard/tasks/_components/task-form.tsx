@@ -82,12 +82,16 @@ export default function TaskForm({
   task,
   onClose,
   setTasks,
+  defaultResident,
+  open,
 }: {
   task?: Task;
   onClose?: () => void;
   setTasks?: (updater: Task | ((prevTasks: Task[]) => Task[])) => void;
+  defaultResident?: string;
+  open?: boolean;
 }) {
-  const [open, setOpen] = useState(!!task);
+  const [isOpen, setIsOpen] = useState(!!task || !!open);
   const { toast } = useToast();
   const [nurses, setNurses] = useState<any[]>([]);
   const [residents, setResidents] = useState<any[]>([]);
@@ -102,7 +106,7 @@ export default function TaskForm({
       status: TaskStatus.ASSIGNED,
       priority: undefined,
       category: undefined,
-      residents: [],
+      residents: defaultResident ? [defaultResident] : [],
       start_date: new Date(),
       due_date: new Date(),
       recurring: undefined,
@@ -134,9 +138,24 @@ export default function TaskForm({
         is_ai_generated: task.is_ai_generated,
         assigned_to: task.assigned_to,
       });
-      setOpen(true);
+      setIsOpen(true);
+    } else if (defaultResident) {
+      form.setValue('residents', [defaultResident]);
     }
-  }, [task, form]);
+  }, [task, form, defaultResident]);
+
+  useEffect(() => {
+    if (open !== undefined) {
+      setIsOpen(open);
+    }
+  }, [open]);
+
+  const handleOpenChange = (newOpen: boolean) => {
+    setIsOpen(newOpen);
+    if (!newOpen && onClose) {
+      onClose();
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -198,7 +217,7 @@ export default function TaskForm({
         }
       }
       console.log("Closing form dialog");
-      setOpen(false);
+      setIsOpen(false);
       if (onClose) onClose();
     } catch (error) {
       console.error("Failed to submit task:", error);
@@ -230,9 +249,9 @@ export default function TaskForm({
   );
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        {!task && (
+        {!task && !open && (
           <Button>
             <Plus className="w-4 h-4 mr-2" /> New Task
           </Button>

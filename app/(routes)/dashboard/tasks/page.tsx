@@ -48,14 +48,19 @@ const TaskManagement = () => {
   const fetchTasks = async () => {
     setLoading(true);
     try {
+      console.log("TaskManagement - Fetching tasks with filters:", filters);
       const filteredTasks = await getTasks(
         Object.fromEntries(
           Object.entries(filters).filter(([_, v]) => v !== undefined),
         ),
       );
+      console.log("TaskManagement - Received tasks:", {
+        count: filteredTasks.length,
+        tasks: filteredTasks,
+      });
       setTasks(filteredTasks);
     } catch (err) {
-      console.error("Error fetching tasks:", err);
+      console.error("TaskManagement - Error fetching tasks:", err);
     } finally {
       setLoading(false);
     }

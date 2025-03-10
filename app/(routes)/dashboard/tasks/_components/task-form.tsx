@@ -1,8 +1,8 @@
 "use client";
 
+import { getResidents } from "@/app/api/resident";
 import { createTask, updateTask } from "@/app/api/task";
 import { getAllNurses } from "@/app/api/user";
-import { getResidents } from "@/app/api/resident";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -142,7 +142,7 @@ export default function TaskForm({
           getAllNurses(),
           getResidents(),
         ]);
-        console.log('Fetched nurses:', nursesData);
+        console.log("Fetched nurses:", nursesData);
         setNurses(nursesData);
         setResidents(residentsData);
       } catch (error) {
@@ -159,7 +159,7 @@ export default function TaskForm({
 
   const onSubmit = async (data: TaskForm) => {
     try {
-      console.log('Submitting form data:', data);
+      console.log("Submitting form data:", data);
       if (task) {
         // Update an existing task
         const updatedTask = await updateTask(task.id, data);
@@ -186,11 +186,11 @@ export default function TaskForm({
     } catch (error) {
       console.error("Failed to submit task:", error);
       let errorMessage = "Failed to create task. Please try again.";
-      
+
       if (error instanceof Error) {
         errorMessage = error.message;
       }
-      
+
       toast({
         variant: "destructive",
         title: "Error",

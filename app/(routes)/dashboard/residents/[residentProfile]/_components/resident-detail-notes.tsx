@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { Check, PlusCircle } from "lucide-react";
 import React, { useState } from "react";
 
@@ -35,27 +37,27 @@ const ResidentDetailsNotesCard: React.FC<ResidentDetailsNotesCardProps> = ({
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-xl font-semibold">Additional Notes</h3>
         {isEditing ? (
-          <button
+          <Button
             onClick={handleSaveNote}
             className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
           >
             <Check className="h-4 w-4" />
             <span>Save</span>
-          </button>
+          </Button>
         ) : (
-          <button
+          <Button
             onClick={handleAddNote}
             className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
           >
             <PlusCircle className="h-4 w-4" />
             <span>Add</span>
-          </button>
+          </Button>
         )}
       </div>
 
       <div>
         {isEditing ? (
-          <textarea
+          <Textarea
             className="w-full border border-gray-300 rounded-md p-2 text-sm text-gray-600"
             rows={4}
             value={notes}

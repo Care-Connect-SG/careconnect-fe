@@ -5,6 +5,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Task } from "@/types/task";
 import { Clock, User } from "lucide-react";
 import { useSession } from "next-auth/react";
+import Image from "next/image";
 import React, { useState } from "react";
 
 const TaskCard = ({ task }: { task: Task }) => {
@@ -54,7 +55,7 @@ const TaskCard = ({ task }: { task: Task }) => {
 //   return (
 //     <div className="flex-none w-80 bg-gray-50 rounded-lg p-4 mr-4">
 //       <div className="flex items-center mb-4">
-//         <img
+//         <Image
 //           src={resident.image}
 //           alt={resident.name}
 //           className="w-10 h-10 rounded-full mr-3"
@@ -121,9 +122,9 @@ export default function TaskResidentView({ tasks }: { tasks: Task[] }) {
             <ResidentColumn key={resident.id} resident={resident} />
           ))} */}
           <div className="flex-none w-80 bg-gray-50 rounded-lg p-4 mr-4 border-2 border-dashed border-gray-200 flex items-center justify-center">
-            <button className="text-gray-500 hover:text-gray-700 text-sm font-medium">
+            <Button className="text-gray-500 hover:text-gray-700 text-sm font-medium">
               + Add New Resident
-            </button>
+            </Button>
           </div>
         </div>
       </div>

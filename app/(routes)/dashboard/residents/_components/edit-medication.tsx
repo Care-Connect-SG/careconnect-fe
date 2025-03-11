@@ -12,8 +12,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import { toast } from "react-hot-toast"; // For success notification
 
 interface EditMedicationProps {
   residentId: string;
@@ -30,6 +30,7 @@ const EditMedication: React.FC<EditMedicationProps> = ({
   onClose,
   onMedicationUpdated,
 }) => {
+  const { toast } = useToast();
   const [form, setForm] = useState(medication);
 
   const handleChange = (
@@ -40,7 +41,10 @@ const EditMedication: React.FC<EditMedicationProps> = ({
 
   const handleSubmit = async () => {
     await updateMedication(residentId, form);
-    toast.success("Medication successfully updated!");
+    toast({
+      variant: "default",
+      description: "Medication updated successfully!",
+    });
     onMedicationUpdated();
   };
 

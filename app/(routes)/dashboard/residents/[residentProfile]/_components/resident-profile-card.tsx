@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import React from "react";
 
@@ -43,12 +44,12 @@ const ResidentProfileCard: React.FC<ResidentProfileCardProps> = ({
       </div>
 
       {/* Right section: Edit Button */}
-      <button
+      <Button
         onClick={onEdit}
         className="mt-4 sm:mt-0 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
       >
         Edit Profile
-      </button>
+      </Button>
     </div>
   );
 };

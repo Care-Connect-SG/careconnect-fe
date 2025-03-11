@@ -15,6 +15,7 @@ export async function middleware(req: NextRequest) {
 
   const restrictedRoutes: Record<string, string> = {
     "/dashboard/incidents/admin": Role.ADMIN,
+    "/dashboard/nurses": Role.ADMIN,
   };
 
   try {
@@ -29,7 +30,6 @@ export async function middleware(req: NextRequest) {
 
     const userRole = await res.json();
     const role = userRole.role;
-    console.log("User role:", role);
 
     for (const [path, requiredRole] of Object.entries(restrictedRoutes)) {
       if (req.nextUrl.pathname.startsWith(path) && role !== requiredRole) {
@@ -45,5 +45,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/incidents/admin"],
+  matcher: ["/dashboard/incidents/admin", "/dashboard/nurses"],
 };

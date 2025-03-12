@@ -1,6 +1,8 @@
 "use client";
 
+import { getResidents } from "@/app/api/resident";
 import { createTask, updateTask } from "@/app/api/task";
+import { getAllNurses } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -47,9 +49,12 @@ const taskSchema = z
       required_error: "Due date is required",
       invalid_type_error: "Invalid date",
     }),
-    recurring: z.enum(["Daily", "Weekly", "Monthly", "Annually"]).optional(),
-    end_recurring_date: z.date().optional(),
-    remind_prior: z.number().optional(),
+    recurring: z
+      .enum(["Daily", "Weekly", "Monthly", "Annually"])
+      .nullable()
+      .optional(),
+    end_recurring_date: z.date().nullable().optional(),
+    remind_prior: z.number().nullable().optional(),
     is_ai_generated: z.boolean().default(false),
     assigned_to: z.string().nonempty("Assignee is required"),
   })
@@ -76,13 +81,19 @@ export default function TaskForm({
   task,
   onClose,
   setTasks,
+  defaultResident,
+  open,
 }: {
   task?: Task;
   onClose?: () => void;
-  setTasks?: (updater: (prevTasks: Task[]) => Task[]) => void;
+  setTasks?: (updater: Task | ((prevTasks: Task[]) => Task[])) => void;
+  defaultResident?: string;
+  open?: boolean;
 }) {
-  const [open, setOpen] = useState(!!task);
+  const [isOpen, setIsOpen] = useState(!!task || !!open);
   const { toast } = useToast();
+  const [nurses, setNurses] = useState<any[]>([]);
+  const [residents, setResidents] = useState<any[]>([]);
 
   const form = useForm<TaskForm>({
     resolver: zodResolver(taskSchema),
@@ -94,7 +105,7 @@ export default function TaskForm({
       status: TaskStatus.ASSIGNED,
       priority: undefined,
       category: undefined,
-      residents: [],
+      residents: defaultResident ? [defaultResident] : [],
       start_date: new Date(),
       due_date: new Date(),
       recurring: undefined,
@@ -126,42 +137,99 @@ export default function TaskForm({
         is_ai_generated: task.is_ai_generated,
         assigned_to: task.assigned_to,
       });
-      setOpen(true);
+      setIsOpen(true);
+    } else if (defaultResident) {
+      form.setValue("residents", [defaultResident]);
     }
-  }, [task, form]);
+  }, [task, form, defaultResident]);
+
+  useEffect(() => {
+    if (open !== undefined) {
+      setIsOpen(open);
+    }
+  }, [open]);
+
+  const handleOpenChange = (newOpen: boolean) => {
+    setIsOpen(newOpen);
+    if (!newOpen && onClose) {
+      onClose();
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [nursesData, residentsData] = await Promise.all([
+          getAllNurses(),
+          getResidents(),
+        ]);
+        setNurses(nursesData);
+        setResidents(residentsData);
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load nurses and residents data",
+        });
+      }
+    };
+    fetchData();
+  }, [toast]);
 
   const onSubmit = async (data: TaskForm) => {
     try {
       if (task) {
         const updatedTask = await updateTask(task.id, data);
         if (setTasks) {
-          setTasks((prevTasks) =>
-            prevTasks.map((t) => (t.id === updatedTask.id ? updatedTask : t)),
-          );
+          setTasks(updatedTask);
         }
+        toast({
+          variant: "default",
+          title: "Task Updated",
+          description: "Task has been updated successfully",
+        });
       } else {
-        const newTask = await createTask(data);
+        const newTasks = await createTask(data);
         if (setTasks) {
-          setTasks((prevTasks) => [newTask, ...prevTasks]);
+          setTasks((prevTasks) => [...newTasks, ...prevTasks]);
         } else {
           toast({
             variant: "default",
-            title: "Task Created",
-            description: "Task/s created successflly",
+            title: "Tasks Created",
+            description: `${newTasks.length} task(s) created successfully`,
           });
         }
       }
-      setOpen(false);
+      setIsOpen(false);
       if (onClose) onClose();
     } catch (error) {
-      console.error("Failed to submit task:", error);
+      let errorMessage = task
+        ? "Failed to update task. Please try again."
+        : "Failed to create task. Please try again.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: errorMessage,
+      });
     }
   };
 
+  const handleSubmit = form.handleSubmit(
+    (data) => {
+      onSubmit(data);
+    },
+    (errors) => {
+      // Handle form validation errors if needed
+    },
+  );
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        {!task && (
+        {!task && !open && (
           <Button>
             <Plus className="w-4 h-4 mr-2" /> New Task
           </Button>
@@ -177,13 +245,13 @@ export default function TaskForm({
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <FormField
               control={form.control}
               name="task_title"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <Label htmlFor="task_title">Task Title</Label>
+                  <Label>Task Title</Label>
                   <FormControl>
                     <Input
                       id="task_title"
@@ -199,13 +267,12 @@ export default function TaskForm({
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="task_details"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <Label htmlFor="task_details">Task Details</Label>
+                  <Label>Task Details</Label>
                   <FormControl>
                     <Textarea
                       id="task_details"
@@ -221,7 +288,6 @@ export default function TaskForm({
                 </FormItem>
               )}
             />
-
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -245,7 +311,6 @@ export default function TaskForm({
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="category"
@@ -270,26 +335,29 @@ export default function TaskForm({
                 )}
               />
             </div>
-
-            {/* Uncomment if you want a comma-separated residents input */}
-            {/*
             <FormField
               control={form.control}
-              name="residents"
+              name="assigned_to"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <Label >Residents</Label>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter resident IDs, comma separated"
-                      onChange={(e) =>
-                        field.onChange(
-                          e.target.value.split(",").map((str) => str.trim())
-                        )
-                      }
-                      value={field.value.join(", ")}
-                    />
-                  </FormControl>
+                  <Label>Assigned To</Label>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a nurse" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {nurses.map((nurse) => (
+                        <SelectItem key={nurse.id} value={nurse.id}>
+                          {nurse.name} ({nurse.email})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   {fieldState.error && (
                     <p className="text-sm text-destructive">
                       {fieldState.error.message}
@@ -298,8 +366,37 @@ export default function TaskForm({
                 </FormItem>
               )}
             />
-            */}
-
+            <FormField
+              control={form.control}
+              name="residents"
+              render={({ field, fieldState }) => (
+                <FormItem>
+                  <Label>Residents</Label>
+                  <Select
+                    onValueChange={(value) => field.onChange([value])}
+                    defaultValue={field.value?.[0]}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a resident" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {residents.map((resident) => (
+                        <SelectItem key={resident.id} value={resident.id}>
+                          {resident.full_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {fieldState.error && (
+                    <p className="text-sm text-destructive">
+                      {fieldState.error.message}
+                    </p>
+                  )}
+                </FormItem>
+              )}
+            />
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -309,13 +406,14 @@ export default function TaskForm({
                     <Label>Start Date</Label>
                     <FormControl>
                       <Input
-                        type="date"
-                        onChange={(e) =>
-                          field.onChange(new Date(e.target.value))
-                        }
+                        type="datetime-local"
+                        onChange={(e) => {
+                          const date = new Date(e.target.value);
+                          field.onChange(date);
+                        }}
                         value={
                           field.value
-                            ? new Date(field.value).toISOString().split("T")[0]
+                            ? new Date(field.value).toISOString().slice(0, 16)
                             : ""
                         }
                       />
@@ -328,7 +426,6 @@ export default function TaskForm({
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="due_date"
@@ -337,13 +434,14 @@ export default function TaskForm({
                     <Label>Due Date</Label>
                     <FormControl>
                       <Input
-                        type="date"
-                        onChange={(e) =>
-                          field.onChange(new Date(e.target.value))
-                        }
+                        type="datetime-local"
+                        onChange={(e) => {
+                          const date = new Date(e.target.value);
+                          field.onChange(date);
+                        }}
                         value={
                           field.value
-                            ? new Date(field.value).toISOString().split("T")[0]
+                            ? new Date(field.value).toISOString().slice(0, 16)
                             : ""
                         }
                       />
@@ -357,7 +455,6 @@ export default function TaskForm({
                 )}
               />
             </div>
-
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -382,7 +479,6 @@ export default function TaskForm({
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="end_recurring_date"
@@ -411,7 +507,6 @@ export default function TaskForm({
                 )}
               />
             </div>
-
             <FormField
               control={form.control}
               name="remind_prior"
@@ -433,25 +528,6 @@ export default function TaskForm({
                 </FormItem>
               )}
             />
-
-            <FormField
-              control={form.control}
-              name="assigned_to"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <Label htmlFor="assigned_to">Assigned To</Label>
-                  <FormControl>
-                    <Input id="assigned_to" placeholder="Assignee" {...field} />
-                  </FormControl>
-                  {fieldState.error && (
-                    <p className="text-sm text-destructive">
-                      {fieldState.error.message}
-                    </p>
-                  )}
-                </FormItem>
-              )}
-            />
-
             <Button type="submit">
               {task ? "Update Task" : "Create Task"}
             </Button>

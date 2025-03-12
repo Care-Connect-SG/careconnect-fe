@@ -1,22 +1,75 @@
 "use client";
 
+import { createResident, getResidents } from "@/app/api/resident";
+import { downloadTask, duplicateTask } from "@/app/api/task";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { useToast } from "@/hooks/use-toast";
+import { ResidentRecord } from "@/types/resident";
 import { Task } from "@/types/task";
-import { Clock, User } from "lucide-react";
+import { Clock, Copy, Download, Plus, User } from "lucide-react";
 import { useSession } from "next-auth/react";
-import Image from "next/image";
-import React, { useState } from "react";
+import React, { useEffect, useState, Dispatch, SetStateAction } from "react";
+import AddResidentModal from "../../residents/_components/add-resident-modal";
+import TaskForm from "./task-form";
 
-const TaskCard = ({ task }: { task: Task }) => {
+const TaskCard = ({
+  task,
+  setTasks,
+}: {
+  task: Task;
+  setTasks: Dispatch<SetStateAction<Task[]>>;
+}) => {
+  const { toast } = useToast();
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "high":
+      case "High":
         return "bg-red-100 text-red-800";
-      case "medium":
+      case "Medium":
         return "bg-yellow-100 text-yellow-800";
       default:
         return "bg-green-100 text-green-800";
+    }
+  };
+
+  const handleDuplicate = async () => {
+    try {
+      const duplicatedTask = await duplicateTask(task.id);
+      setTasks((prev) => [...prev, duplicatedTask]);
+      toast({
+        title: "Task Duplicated",
+        description: "The task has been successfully duplicated.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to duplicate the task.",
+      });
+    }
+  };
+
+  const handleDownload = async () => {
+    try {
+      const blob = await downloadTask(task.id);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `task-${task.id}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      toast({
+        title: "Task Downloaded",
+        description: "The task has been successfully downloaded.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to download the task.",
+      });
     }
   };
 
@@ -29,12 +82,30 @@ const TaskCard = ({ task }: { task: Task }) => {
           </h4>
           <p className="text-xs text-gray-500">{task.category}</p>
         </div>
+        <div className="flex space-x-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={handleDuplicate}
+          >
+            <Copy className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={handleDownload}
+          >
+            <Download className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
       <div className="flex items-center justify-between mt-3">
         <div className="flex items-center space-x-2">
           <Clock className="w-4 h-4 text-gray-400" />
           <span className="text-xs text-gray-500">
-            {task.due_date.toLocaleDateString()}
+            {new Date(task.due_date).toLocaleDateString()}
           </span>
         </div>
         {task.priority && (
@@ -51,52 +122,96 @@ const TaskCard = ({ task }: { task: Task }) => {
   );
 };
 
-// const ResidentColumn = ({ resident }: { resident: Resident }) => {
-//   return (
-//     <div className="flex-none w-80 bg-gray-50 rounded-lg p-4 mr-4">
-//       <div className="flex items-center mb-4">
-//         <Image
-//           src={resident.image}
-//           alt={resident.name}
-//           className="w-10 h-10 rounded-full mr-3"
-//         />
-//         <div>
-//           <h3 className="text-sm font-medium text-gray-900">{resident.name}</h3>
-//           <p className="text-xs text-gray-500">Room {resident.room_number}</p>
-//         </div>
-//       </div>
-//       <div className="space-y-3">
-//         {resident.tasks.map((task) => (
-//           <TaskCard key={task.id} task={task} />
-//         ))}
-//       </div>
-//     </div>
-//   );
-// };
+const ResidentColumn = ({
+  resident,
+  tasks,
+  setTasks,
+}: {
+  resident: ResidentRecord;
+  tasks: Task[];
+  setTasks: Dispatch<SetStateAction<Task[]>>;
+}) => {
+  const residentTasks = tasks.filter((task) => task.resident === resident.id);
+  const [showTaskForm, setShowTaskForm] = useState(false);
 
-export default function TaskResidentView({ tasks }: { tasks: Task[] }) {
+  return (
+    <div className="flex-none w-96 bg-gray-50 rounded-lg p-4 mr-4">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center">
+          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+            <User className="w-5 h-5 text-blue-600" />
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-gray-900">
+              {resident.full_name}
+            </h3>
+            <p className="text-xs text-gray-500">Room {resident.room_number}</p>
+          </div>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setShowTaskForm(true)}
+          className="h-8 w-8"
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
+      </div>
+      <div className="space-y-3">
+        {residentTasks.map((task) => (
+          <TaskCard key={task.id} task={task} setTasks={setTasks} />
+        ))}
+      </div>
+      {showTaskForm && (
+        <TaskForm
+          onClose={() => setShowTaskForm(false)}
+          setTasks={(updater) => {
+            if (typeof updater === "function") {
+              setTasks(updater);
+            } else {
+              setTasks((prev) => [...prev, updater]);
+            }
+            setShowTaskForm(false);
+          }}
+          defaultResident={resident.id}
+          open={showTaskForm}
+        />
+      )}
+    </div>
+  );
+};
+
+export default function TaskKanbanView({ tasks }: { tasks: Task[] }) {
   const { data: session } = useSession();
-  const [residents, setResidents] = useState([]);
+  const [residents, setResidents] = useState<ResidentRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [taskList, setTaskList] = useState<Task[]>(tasks);
+  const [showAddResidentModal, setShowAddResidentModal] = useState(false);
 
-  // useEffect(() => {
-  //   const fetchResidents = async () => {
-  //     try {
-  //       const data: ResidentRecord[] = await getResidents();
-  //       const formattedResidents: Resident[] = data.map((resident) => ({
-  //         ...resident,
-  //         tasks: resident.tasks || [],
-  //       }));
-  //       setResidents(formattedResidents);
-  //     } catch (err) {
-  //       setError("Failed to fetch residents");
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   fetchResidents();
-  // }, []);
+  useEffect(() => {
+    const fetchResidents = async () => {
+      try {
+        const data = await getResidents();
+        setResidents(data);
+      } catch (err) {
+        setError("Failed to fetch residents");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchResidents();
+  }, []);
+
+  const handleAddResident = async (newResidentData: any) => {
+    try {
+      const createdResident = await createResident(newResidentData);
+      setResidents((prev) => [...prev, createdResident]);
+      setShowAddResidentModal(false);
+    } catch (error) {
+      console.error("Error creating resident:", error);
+    }
+  };
 
   if (loading)
     return (
@@ -106,28 +221,54 @@ export default function TaskResidentView({ tasks }: { tasks: Task[] }) {
     );
   if (error) return <p className="text-red-500">{error}</p>;
 
+  // Group residents into rows of 3
+  const residentRows = [];
+  for (let i = 0; i < residents.length; i += 3) {
+    residentRows.push(residents.slice(i, i + 3));
+  }
+
   return (
     <div className="flex-1 bg-white p-8 pt-0">
       <div className="flex justify-end mb-8">
         <div className="flex space-x-3">
-          <Button variant="secondary">
+          <Button
+            variant="secondary"
+            onClick={() => setShowAddResidentModal(true)}
+          >
             <User className="w-4 h-4 mr-2" /> Add Resident
           </Button>
-          <Button>Add Task</Button>
         </div>
       </div>
-      <div className="overflow-x-auto pb-4">
-        <div className="flex min-w-full">
-          {/* {residents.map((resident) => (
-            <ResidentColumn key={resident.id} resident={resident} />
-          ))} */}
-          <div className="flex-none w-80 bg-gray-50 rounded-lg p-4 mr-4 border-2 border-dashed border-gray-200 flex items-center justify-center">
-            <Button className="text-gray-500 hover:text-gray-700 text-sm font-medium">
-              + Add New Resident
-            </Button>
+      <div className="space-y-8">
+        {residentRows.map((row, rowIndex) => (
+          <div key={rowIndex} className="flex min-w-full">
+            {row.map((resident) => (
+              <ResidentColumn
+                key={resident.id}
+                resident={resident}
+                tasks={taskList}
+                setTasks={setTaskList}
+              />
+            ))}
+            {rowIndex === residentRows.length - 1 &&
+              residents.length % 3 !== 0 && (
+                <div className="flex-none w-96 bg-gray-50 rounded-lg p-4 mr-4 border-2 border-dashed border-gray-200 flex items-center justify-center">
+                  <button
+                    className="text-gray-500 hover:text-gray-700 text-sm font-medium"
+                    onClick={() => setShowAddResidentModal(true)}
+                  >
+                    + Add New Resident
+                  </button>
+                </div>
+              )}
           </div>
-        </div>
+        ))}
       </div>
+      <AddResidentModal
+        isOpen={showAddResidentModal}
+        onClose={() => setShowAddResidentModal(false)}
+        onSave={handleAddResident}
+      />
     </div>
   );
 }

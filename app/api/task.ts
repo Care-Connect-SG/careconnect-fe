@@ -1,9 +1,28 @@
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
-import { Task } from "@/types/task";
+import { Task, TaskStatus } from "@/types/task";
 import { TaskForm } from "../(routes)/dashboard/tasks/_components/task-form";
 
-export const createTask = async (taskData: TaskForm): Promise<Task> => {
+interface TaskUpdateData {
+  task_title?: string;
+  task_details?: string;
+  media?: string[];
+  notes?: string;
+  status?: TaskStatus;
+  priority?: string;
+  category?: string;
+  residents?: string[];
+  start_date?: string;
+  due_date?: string;
+  recurring?: string;
+  end_recurring_date?: string;
+  remind_prior?: number;
+  is_ai_generated?: boolean;
+  assigned_to?: string;
+}
+
+export const createTask = async (taskData: TaskForm): Promise<Task[]> => {
   try {
+    console.log("Attempting to create task with data:", taskData);
     const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/`,
       {
@@ -16,13 +35,27 @@ export const createTask = async (taskData: TaskForm): Promise<Task> => {
     );
 
     if (!response.ok) {
-      throw new Error(`Error creating task: ${response.statusText}`);
+      const errorData = await response.json().catch(() => null);
+      console.error("Server response:", {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData,
+      });
+      throw new Error(
+        `Error creating task: ${response.status} ${response.statusText}${
+          errorData ? ` - ${JSON.stringify(errorData)}` : ""
+        }`,
+      );
     }
 
     const data = await response.json();
+    console.log("Task created successfully:", data);
     return data;
   } catch (error) {
     console.error("createTask error:", error);
+    if (error instanceof Error) {
+      throw new Error(`Failed to create task: ${error.message}`);
+    }
     throw error;
   }
 };
@@ -33,27 +66,36 @@ export const getTasks = async (filters?: {
   priority?: string;
 }): Promise<Task[]> => {
   try {
+    console.log("getTasks - Starting request with filters:", filters);
     const queryParams = filters
       ? new URLSearchParams(filters as Record<string, string>).toString()
       : "";
 
-    const response = await fetchWithAuth(
-      `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${
-        queryParams ? `?${queryParams}` : ""
-      }`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
+    const url = `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${
+      queryParams ? `?${queryParams}` : ""
+    }`;
+    console.log("getTasks - Requesting URL:", url);
+
+    const response = await fetchWithAuth(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+    });
 
     if (!response.ok) {
+      console.error("getTasks - Response not OK:", {
+        status: response.status,
+        statusText: response.statusText,
+      });
       throw new Error(`Error fetching tasks: ${response.statusText}`);
     }
 
     const data = await response.json();
+    console.log("getTasks - Successfully fetched tasks:", {
+      count: data.length,
+      tasks: data,
+    });
     return data;
   } catch (error) {
     console.error("getTasks error:", error);
@@ -90,6 +132,39 @@ export const updateTask = async (
   updatedData: Partial<TaskForm>,
 ): Promise<Task> => {
   try {
+    console.log("Sending update request for task:", taskId);
+    console.log("Update data:", updatedData);
+
+    // Create a copy of the data to modify
+    const dataToSend: TaskUpdateData = {};
+
+    // Copy over all fields, converting as needed
+    if (updatedData.task_title) dataToSend.task_title = updatedData.task_title;
+    if (updatedData.task_details)
+      dataToSend.task_details = updatedData.task_details;
+    if (updatedData.media) dataToSend.media = updatedData.media;
+    if (updatedData.notes) dataToSend.notes = updatedData.notes;
+    if (updatedData.status) dataToSend.status = updatedData.status;
+    if (updatedData.priority) dataToSend.priority = updatedData.priority;
+    if (updatedData.category) dataToSend.category = updatedData.category;
+    if (updatedData.residents)
+      dataToSend.residents = updatedData.residents.map(String);
+    if (updatedData.start_date)
+      dataToSend.start_date = new Date(updatedData.start_date).toISOString();
+    if (updatedData.due_date)
+      dataToSend.due_date = new Date(updatedData.due_date).toISOString();
+    if (updatedData.recurring) dataToSend.recurring = updatedData.recurring;
+    if (updatedData.end_recurring_date)
+      dataToSend.end_recurring_date = new Date(
+        updatedData.end_recurring_date,
+      ).toISOString();
+    if (updatedData.remind_prior)
+      dataToSend.remind_prior = updatedData.remind_prior;
+    if (updatedData.is_ai_generated !== undefined)
+      dataToSend.is_ai_generated = updatedData.is_ai_generated;
+    if (updatedData.assigned_to)
+      dataToSend.assigned_to = String(updatedData.assigned_to);
+
     const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}`,
       {
@@ -97,15 +172,26 @@ export const updateTask = async (
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(updatedData),
+        body: JSON.stringify(dataToSend),
       },
     );
 
     if (!response.ok) {
-      throw new Error(`Error updating task: ${response.statusText}`);
+      const errorData = await response.json().catch(() => null);
+      console.error("Update task error response:", {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData,
+      });
+      throw new Error(
+        `Error updating task: ${response.status} ${response.statusText}${
+          errorData ? ` - ${JSON.stringify(errorData)}` : ""
+        }`,
+      );
     }
 
     const data = await response.json();
+    console.log("Task updated successfully:", data);
     return data;
   } catch (error) {
     console.error("updateTask error:", error);
@@ -173,6 +259,54 @@ export const deleteTask = async (taskId: string): Promise<void> => {
     }
   } catch (error) {
     console.error("deleteTask error:", error);
+    throw error;
+  }
+};
+
+export const duplicateTask = async (taskId: string): Promise<Task> => {
+  try {
+    const response = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/duplicate`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Error duplicating task: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("duplicateTask error:", error);
+    throw error;
+  }
+};
+
+export const downloadTask = async (taskId: string): Promise<Blob> => {
+  try {
+    const response = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/download`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Error downloading task: ${response.statusText}`);
+    }
+
+    const blob = await response.blob();
+    return blob;
+  } catch (error) {
+    console.error("downloadTask error:", error);
     throw error;
   }
 };

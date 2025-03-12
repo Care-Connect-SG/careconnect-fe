@@ -15,7 +15,9 @@ import FormElementView from "../_components/form-element-view";
 
 export default function FormView({
   params,
-}: { params: Promise<{ id: string }> }) {
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const [formId, setFormId] = useState<string | null>(null);
   const [form, setForm] = useState<FormResponse | null>(null);
   const { setPageName } = useBreadcrumb();
@@ -52,9 +54,9 @@ export default function FormView({
       <div className="flex justify-between pb-2">
         <div className="flex justify-start gap-2">
           <Link href="/dashboard/incidents/admin">
-            <button className="border h-6 w-10 rounded-md hover:bg-gray-50">
+            <Button className="border h-6 w-10 rounded-md hover:bg-gray-50">
               <ChevronLeft className="h-4 w-4 mx-auto" />
-            </button>
+            </Button>
           </Link>
         </div>
         <div className="flex items-end">

@@ -5,7 +5,6 @@ import { downloadTask, duplicateTask } from "@/app/api/task";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
-import { toTitleCase } from "@/lib/utils";
 import { ResidentRecord } from "@/types/resident";
 import { Task } from "@/types/task";
 import { Clock, Copy, Download, Plus, User } from "lucide-react";
@@ -17,7 +16,10 @@ import TaskForm from "./task-form";
 const TaskCard = ({
   task,
   setTasks,
-}: { task: Task; setTasks: Dispatch<SetStateAction<Task[]>> }) => {
+}: {
+  task: Task;
+  setTasks: Dispatch<SetStateAction<Task[]>>;
+}) => {
   const { toast } = useToast();
   const getPriorityColor = (priority: string) => {
     switch (priority) {

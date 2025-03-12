@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Clipboard, Pencil, Pill, Trash2 } from "lucide-react";
 import React from "react";
@@ -22,9 +23,7 @@ const MedicationDisplay: React.FC<MedicationProps> = ({
 }) => {
   return (
     <Card className="w-full border border-gray-200 shadow-md rounded-lg bg-white p-3">
-      {/* Header with Medication Name, Frequency & Action Icons */}
       <CardHeader className="flex items-right justify-between px-4 py-2">
-        {/* Left side: Medication Name & Frequency */}
         <div className="flex-1 flex items-center space-x-2">
           <CardTitle className="text-base font-semibold text-gray-800">
             {medication.medication_name}
@@ -32,21 +31,21 @@ const MedicationDisplay: React.FC<MedicationProps> = ({
           <Badge variant="outline" className="text-xs font-medium px-2 py-1">
             {medication.frequency}
           </Badge>
-          <button
+          <Button
             type="button"
             aria-label="Edit medication"
             className="text-gray-500 hover:text-blue-600 transition"
             onClick={() => onEdit(medication)}
           >
             <Pencil size={18} />
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             aria-label="Delete medication"
             className="text-gray-500 hover:text-red-600 transition"
           >
             <Trash2 size={18} />
-          </button>
+          </Button>
         </div>
       </CardHeader>
 

@@ -12,6 +12,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
@@ -46,7 +47,7 @@ export default function ResidentSelector({
       if (session?.user?.email) {
         try {
           const user = await getCurrentUser(session.user.email);
-          setUser(user); // Assuming the API response contains user ID
+          setUser(user);
         } catch (error) {
           console.error("Error fetching user:", error);
         }
@@ -106,9 +107,9 @@ export default function ResidentSelector({
           <div className="flex gap-2 justify-start items-center">
             <div className="flex items-center gap-1">
               <UserRound className="mb-2" />
-              <label className="block md:text-sm font-semibold pl-1">
+              <Label className="block md:text-sm font-semibold pl-1">
                 Primary Resident
-              </label>
+              </Label>
             </div>
 
             <Popover>
@@ -163,9 +164,9 @@ export default function ResidentSelector({
         <div className="">
           <div className="flex items-center gap-2 pb-2">
             <UsersRound strokeWidth={1} className="mb-2" />
-            <label className="block md:text-sm font-medium">
+            <Label className="block md:text-sm font-medium">
               Involved Residents
-            </label>
+            </Label>
             <Popover>
               <PopoverTrigger asChild>
                 <CirclePlus className="w-4 h-4 text-blue-400" />
@@ -243,9 +244,9 @@ export default function ResidentSelector({
         <div>
           <div className="flex items-center gap-2 pb-2">
             <UsersRound strokeWidth={1} className="mb-2" />
-            <label className="block md:text-sm font-medium">
+            <Label className="block md:text-sm font-medium">
               Involved Caregivers
-            </label>
+            </Label>
             <Popover>
               <PopoverTrigger asChild>
                 <CirclePlus className="w-4 h-4 text-blue-400" />

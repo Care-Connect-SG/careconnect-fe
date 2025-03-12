@@ -80,7 +80,6 @@ const TaskManagement = () => {
 
   return (
     <div className="flex flex-col w-full gap-8 p-8">
-      {/* Header */}
       <div className="flex flex-col">
         <div className="flex items-center justify-between">
           <div className="flex flex-col space-y-2">
@@ -94,7 +93,7 @@ const TaskManagement = () => {
           </div>
         </div>
       </div>
-      {/* Filters */}
+
       <div className="flex justify-between items-center">
         <div className="flex flex-row space-x-5 items-center">
           <div className="flex items-center space-x-2">
@@ -108,8 +107,6 @@ const TaskManagement = () => {
           <p className="text-md text-gray-500">{date}</p>
         </div>
         <div className="flex flex-row gap-4 rounded-lg items-center">
-          {/* Search Bar */}
-
           <div className="relative w-full md:w-1/3">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
               <Search className="w-4 h-4 text-gray-400" />
@@ -123,7 +120,6 @@ const TaskManagement = () => {
             />
           </div>
 
-          {/* Status Filter */}
           <Select
             value={filters.status ?? ""}
             onValueChange={(value) => updateFilter("status", value)}
@@ -138,7 +134,6 @@ const TaskManagement = () => {
             </SelectContent>
           </Select>
 
-          {/* Priority Filter */}
           <Select
             value={filters.priority ?? ""}
             onValueChange={(value) => updateFilter("priority", value)}
@@ -153,7 +148,6 @@ const TaskManagement = () => {
             </SelectContent>
           </Select>
 
-          {/* Clear Filters Button */}
           <Button
             variant="outline"
             onClick={clearFilters}
@@ -164,7 +158,7 @@ const TaskManagement = () => {
           </Button>
         </div>
       </div>
-      {/* Task List / Kanban View */}
+
       {loading ? (
         <div className="p-8">
           <Spinner />

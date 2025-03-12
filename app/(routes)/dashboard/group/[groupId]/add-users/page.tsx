@@ -1,6 +1,9 @@
 "use client";
 
+import { addUserToGroup } from "@/app/api/group";
+import { getAllNurses } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -9,20 +12,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
-import { useParams, useRouter } from "next/navigation";
+import { User } from "@/types/user";
+import { usePathname, useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 
-interface User {
-  id: string; // new: store user id
-  email: string;
-  name: string;
-  role: string; // Role property to filter Admin or Nurse
-}
-
 export default function AddUsersPage() {
-  const { groupId } = useParams();
   const router = useRouter();
-
+  const pathname = usePathname();
+  const groupId = pathname.split("/")[3];
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -31,23 +28,18 @@ export default function AddUsersPage() {
   const [addError, setAddError] = useState<string | null>(null);
   const [addSuccess, setAddSuccess] = useState<string | null>(null);
 
-  // Fetch all users dynamically from the backend.
   useEffect(() => {
-    fetch("/api/users")
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Failed to fetch users");
-        }
-        return res.json();
-      })
-      .then((data) => {
-        setUsers(data);
+    async function fetchNurses() {
+      try {
+        const nurses = await getAllNurses();
+        setUsers(nurses);
         setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message || "An error occurred while fetching users");
+      } catch (err: any) {
+        setError(err.message || "An error occurred while fetching nurses");
         setLoading(false);
-      });
+      }
+    }
+    fetchNurses();
   }, []);
 
   const handleAddUser = async (e: FormEvent) => {
@@ -57,22 +49,8 @@ export default function AddUsersPage() {
     setAddError(null);
     setAddSuccess(null);
     try {
-      const res = await fetch("/api/groups/add-user", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          group_id: groupId, // Using the stable group identifier from the URL.
-          user_id: selectedUser, // Now using user_id instead of user_email.
-        }),
-      });
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error?.detail || "Failed to add user to group");
-      }
-      await res.json();
-      setAddSuccess(`User added successfully!`);
+      await addUserToGroup({ group_id: groupId, user_id: selectedUser });
+      setAddSuccess("User added successfully!");
       setSelectedUser("");
     } catch (error: any) {
       setAddError(error.message || "Error adding user");
@@ -82,9 +60,8 @@ export default function AddUsersPage() {
   };
 
   return (
-    <main className="p-6 max-w-3xl mx-auto">
-      {/* Header with back button on the left, centered title */}
-      <header className="mb-8 flex items-center justify-between">
+    <div className="p-6 max-w-3xl mx-auto">
+      <div className="mb-8 flex items-center justify-between">
         <Button variant="secondary" onClick={() => router.back()}>
           Back
         </Button>
@@ -92,8 +69,7 @@ export default function AddUsersPage() {
           Add User to Group
         </h1>
         <div className="w-24" />
-      </header>
-
+      </div>
       {loading && <Spinner />}
       {error && <p className="text-red-500 text-center">{error}</p>}
       {!loading && !error && (
@@ -102,22 +78,17 @@ export default function AddUsersPage() {
           className="space-y-6 bg-white p-6 border rounded-lg shadow-sm"
         >
           <div>
-            <label className="block font-medium mb-2">Select User</label>
+            <Label className="block font-medium mb-2">Select User</Label>
             <Select value={selectedUser} onValueChange={setSelectedUser}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a user to add" />
               </SelectTrigger>
               <SelectContent>
-                {users
-                  .filter(
-                    (user: User) =>
-                      user.role === "Admin" || user.role === "Nurse",
-                  )
-                  .map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.name} ({user.email})
-                    </SelectItem>
-                  ))}
+                {users.map((user) => (
+                  <SelectItem key={user.id} value={user.id}>
+                    {user.name} ({user.email})
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -130,6 +101,6 @@ export default function AddUsersPage() {
           </div>
         </form>
       )}
-    </main>
+    </div>
   );
 }

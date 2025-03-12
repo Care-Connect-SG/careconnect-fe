@@ -8,7 +8,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { FormElementData } from "@/hooks/useFormReducer";
 import { CalendarIcon } from "lucide-react";
@@ -41,14 +43,14 @@ export default function FormElementView({ element }: FormElementViewProps) {
               disabled
               className="disabled:opacity-100"
               placeholder="Short answer text"
-            ></Input>
+            />
           )}
           {element.type === "textarea" && (
             <Textarea
               disabled
               placeholder="Long answer text"
               className="resize-none disabled:opacity-100"
-            ></Textarea>
+            />
           )}
           {element.type === "date" && (
             <Button
@@ -61,10 +63,15 @@ export default function FormElementView({ element }: FormElementViewProps) {
             </Button>
           )}
           {element.type === "radio" && (
-            <div className="flex flex-col space-y-2">
+            <RadioGroup className="flex flex-col space-y-2">
               {element.options?.map((option, index) => (
                 <div key={index} className="flex items-center space-x-2">
-                  <input type="radio" disabled className="mr-2" />
+                  <RadioGroupItem
+                    disabled
+                    value={option}
+                    id={`option-${element.element_id}-${index}`}
+                    className="mr-2"
+                  />
                   <Input
                     value={option}
                     disabled
@@ -72,13 +79,13 @@ export default function FormElementView({ element }: FormElementViewProps) {
                   />
                 </div>
               ))}
-            </div>
+            </RadioGroup>
           )}
           {element.type === "checkbox" && (
             <div className="flex flex-col space-y-2">
               {element.options?.map((option, index) => (
                 <div key={index} className="flex items-center space-x-2">
-                  <input type="checkbox" disabled className="mr-2" />
+                  <Checkbox disabled className="mr-2" />
                   <Input
                     value={option}
                     disabled

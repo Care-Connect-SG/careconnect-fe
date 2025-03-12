@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -24,8 +25,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Task, TaskStatus } from "@/types/task";
-import { TaskPriority } from "@/types/task";
-import { TaskCategory } from "@/types/task";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
 import React, { useEffect, useState } from "react";
@@ -164,11 +163,9 @@ export default function TaskForm({
           getAllNurses(),
           getResidents(),
         ]);
-        console.log("Fetched nurses:", nursesData);
         setNurses(nursesData);
         setResidents(residentsData);
       } catch (error) {
-        console.error("Error fetching data:", error);
         toast({
           variant: "destructive",
           title: "Error",
@@ -181,31 +178,18 @@ export default function TaskForm({
 
   const onSubmit = async (data: TaskForm) => {
     try {
-      console.log("Form submitted with data:", data);
       if (task) {
-        console.log("Updating existing task with ID:", task.id);
-        // Update an existing task
         const updatedTask = await updateTask(task.id, data);
-        console.log("Received updated task from server:", updatedTask);
-
         if (setTasks) {
-          console.log("Calling setTasks with updater function");
           setTasks(updatedTask);
-        } else {
-          console.log("setTasks prop not provided");
         }
-
         toast({
           variant: "default",
           title: "Task Updated",
           description: "Task has been updated successfully",
         });
       } else {
-        // Create a new task
-        console.log("Creating new task");
         const newTasks = await createTask(data);
-        console.log("Received new tasks from server:", newTasks);
-
         if (setTasks) {
           setTasks((prevTasks) => [...newTasks, ...prevTasks]);
         } else {
@@ -216,19 +200,15 @@ export default function TaskForm({
           });
         }
       }
-      console.log("Closing form dialog");
       setIsOpen(false);
       if (onClose) onClose();
     } catch (error) {
-      console.error("Failed to submit task:", error);
       let errorMessage = task
         ? "Failed to update task. Please try again."
         : "Failed to create task. Please try again.";
-
       if (error instanceof Error) {
         errorMessage = error.message;
       }
-
       toast({
         variant: "destructive",
         title: "Error",
@@ -237,14 +217,12 @@ export default function TaskForm({
     }
   };
 
-  // Add form validation logging
   const handleSubmit = form.handleSubmit(
     (data) => {
-      console.log("Form validation passed, data:", data);
       onSubmit(data);
     },
     (errors) => {
-      console.error("Form validation failed:", errors);
+      // Handle form validation errors if needed
     },
   );
 
@@ -268,15 +246,12 @@ export default function TaskForm({
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Task Title */}
             <FormField
               control={form.control}
               name="task_title"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <label htmlFor="task_title" className="label">
-                    Task Title
-                  </label>
+                  <Label>Task Title</Label>
                   <FormControl>
                     <Input
                       id="task_title"
@@ -292,16 +267,12 @@ export default function TaskForm({
                 </FormItem>
               )}
             />
-
-            {/* Task Details */}
             <FormField
               control={form.control}
               name="task_details"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <label htmlFor="task_details" className="label">
-                    Task Details
-                  </label>
+                  <Label>Task Details</Label>
                   <FormControl>
                     <Textarea
                       id="task_details"
@@ -317,15 +288,13 @@ export default function TaskForm({
                 </FormItem>
               )}
             />
-
-            {/* Priority and Category */}
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="priority"
                 render={({ field }) => (
                   <FormItem>
-                    <label className="label">Priority</label>
+                    <Label>Priority</Label>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value || ""}
@@ -342,13 +311,12 @@ export default function TaskForm({
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="category"
                 render={({ field }) => (
                   <FormItem>
-                    <label className="label">Category</label>
+                    <Label>Category</Label>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value || ""}
@@ -367,16 +335,12 @@ export default function TaskForm({
                 )}
               />
             </div>
-
-            {/* Assigned To */}
             <FormField
               control={form.control}
               name="assigned_to"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <label htmlFor="assigned_to" className="label">
-                    Assigned To
-                  </label>
+                  <Label>Assigned To</Label>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
@@ -402,16 +366,12 @@ export default function TaskForm({
                 </FormItem>
               )}
             />
-
-            {/* Residents */}
             <FormField
               control={form.control}
               name="residents"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <label htmlFor="residents" className="label">
-                    Residents
-                  </label>
+                  <Label>Residents</Label>
                   <Select
                     onValueChange={(value) => field.onChange([value])}
                     defaultValue={field.value?.[0]}
@@ -437,15 +397,13 @@ export default function TaskForm({
                 </FormItem>
               )}
             />
-
-            {/* Start Date and Due Date */}
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="start_date"
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <label className="label">Start Date</label>
+                    <Label>Start Date</Label>
                     <FormControl>
                       <Input
                         type="datetime-local"
@@ -468,13 +426,12 @@ export default function TaskForm({
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="due_date"
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <label className="label">Due Date</label>
+                    <Label>Due Date</Label>
                     <FormControl>
                       <Input
                         type="datetime-local"
@@ -498,15 +455,13 @@ export default function TaskForm({
                 )}
               />
             </div>
-
-            {/* Recurring and End Recurring Date */}
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="recurring"
                 render={({ field }) => (
                   <FormItem>
-                    <label className="label">Recurring</label>
+                    <Label>Recurring</Label>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value || ""}
@@ -524,13 +479,12 @@ export default function TaskForm({
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="end_recurring_date"
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <label className="label">End Recurring Date</label>
+                    <Label>End Recurring Date</Label>
                     <FormControl>
                       <Input
                         type="date"
@@ -553,14 +507,12 @@ export default function TaskForm({
                 )}
               />
             </div>
-
-            {/* Remind Prior */}
             <FormField
               control={form.control}
               name="remind_prior"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <label className="label">Remind Prior (minutes)</label>
+                  <Label>Remind Prior (minutes)</Label>
                   <FormControl>
                     <Input
                       type="number"
@@ -576,7 +528,6 @@ export default function TaskForm({
                 </FormItem>
               )}
             />
-
             <Button type="submit">
               {task ? "Update Task" : "Create Task"}
             </Button>

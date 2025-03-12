@@ -23,6 +23,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { User } from "@/types/user";
 import { AlertDialogTrigger } from "@radix-ui/react-alert-dialog";
 import { PlusIcon, TrashIcon } from "lucide-react";
@@ -119,36 +127,40 @@ const Nurses = () => {
       </div>
 
       <div className="flex mx-auto">
-        <table className="w-full max-w-5xl border-collapse shadow-lg rounded-lg overflow-hidden">
-          <thead>
-            <tr className="bg-gray-900 text-white">
-              <th className="p-4 text-left">Email</th>
-              <th className="p-4 text-left">Name</th>
-              <th className="p-4 text-left">Contact Number</th>
-              <th className="p-4 text-left">Role</th>
-              <th className="p-4 text-left">Organisation Rank</th>
-              <th className="p-4 text-left">Gender</th>
-              <th className="p-4 text-left">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table className="w-full max-w-5xl shadow-lg rounded-lg overflow-hidden">
+          <TableHeader>
+            <TableRow className="bg-gray-900 text-white">
+              <TableHead className="p-4 text-left">Email</TableHead>
+              <TableHead className="p-4 text-left">Name</TableHead>
+              <TableHead className="p-4 text-left">Contact Number</TableHead>
+              <TableHead className="p-4 text-left">Role</TableHead>
+              <TableHead className="p-4 text-left">Organisation Rank</TableHead>
+              <TableHead className="p-4 text-left">Gender</TableHead>
+              <TableHead className="p-4 text-left">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {filteredUsers.map((user, index) => (
-              <tr
+              <TableRow
                 key={user.id}
                 className={`border-b ${
                   index % 2 === 0 ? "bg-gray-50" : "bg-white"
                 } hover:bg-gray-100 transition cursor-pointer`}
                 onClick={() => router.push(`/dashboard/nurses/${user.id}`)}
               >
-                <td className="p-4">{user.email}</td>
-                <td className="p-4">{user.name}</td>
-                <td className="p-4">{user.contact_number || "N/A"}</td>
-                <td className="p-4">
+                <TableCell className="p-4">{user.email}</TableCell>
+                <TableCell className="p-4">{user.name}</TableCell>
+                <TableCell className="p-4">
+                  {user.contact_number || "N/A"}
+                </TableCell>
+                <TableCell className="p-4">
                   <RoleChip role={user.role} />
-                </td>
-                <td className="p-4">{user.organisation_rank || "N/A"}</td>
-                <td className="p-4">{user.gender}</td>
-                <td className="p-4 flex gap-3">
+                </TableCell>
+                <TableCell className="p-4">
+                  {user.organisation_rank || "N/A"}
+                </TableCell>
+                <TableCell className="p-4">{user.gender}</TableCell>
+                <TableCell className="p-4 flex gap-3">
                   <TrashIcon
                     className="h-5 w-5 text-red-600 cursor-pointer hover:text-red-800 transition"
                     onClick={(e) => {
@@ -157,11 +169,11 @@ const Nurses = () => {
                       setIsConfirmationModalOpen(true);
                     }}
                   />
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
       <Button

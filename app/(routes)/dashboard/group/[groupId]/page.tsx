@@ -1,30 +1,23 @@
 "use client";
 
+import { getGroups } from "@/app/api/group";
+import { removeUserFromGroup } from "@/app/api/group";
+import { getAllNurses } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
+import { Group } from "@/types/group";
+import { User } from "@/types/user";
 import { UserPlus } from "lucide-react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-interface Group {
-  id: string;
-  name: string;
-  description: string;
-  members: string[]; // array of user IDs
-}
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatarUrl?: string; // optional avatar URL
-}
-
 export default function ViewGroupPage() {
-  const { groupId } = useParams();
   const router = useRouter();
+  const pathname = usePathname();
+  const groupId = pathname.split("/")[3];
   const { toast } = useToast();
 
   const [group, setGroup] = useState<Group | null>(null);
@@ -32,93 +25,62 @@ export default function ViewGroupPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch group details.
   useEffect(() => {
-    fetch("/api/groups")
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch groups");
-        return res.json();
-      })
-      .then((data) => {
+    const fetchGroup = async () => {
+      try {
+        const data = await getGroups();
         const found = data.find((g: any) => g.id === groupId);
         if (!found) {
           setError("Group not found");
         } else {
           setGroup(found);
         }
-        setLoading(false);
-      })
-      .catch((err) => {
+      } catch (err: any) {
         setError(err.message || "An error occurred while fetching groups");
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    fetchGroup();
   }, [groupId]);
 
-  // Fetch all users (or just the members).
   useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const data = await getAllNurses();
+        setUsers(data);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+
     if (group && group.members.length > 0) {
-      fetch("/api/users")
-        .then((res) => {
-          if (!res.ok) throw new Error("Failed to fetch users");
-          return res.json();
-        })
-        .then((data: User[]) => {
-          setUsers(data);
-        })
-        .catch((err) => {
-          console.error("Error fetching users:", err);
-        });
+      fetchUsers();
     }
   }, [group]);
 
-  // Helper: get user's name by ID.
   const getUserById = (userId: string) => {
     return users.find((u) => u.id === userId);
   };
 
-  // Remove user function.
   const handleRemoveUser = async (userId: string) => {
     const user = getUserById(userId);
     if (!user) return;
 
-    // 🔹 Show confirmation before removing
-    const confirmed = window.confirm(
-      `Are you sure you want to remove ${user.name} from this group?`,
-    );
-
-    if (!confirmed) return; // If canceled, do nothing
-
     try {
-      const res = await fetch(
-        `/api/groups/remove-user?group_id=${groupId}&user_id=${encodeURIComponent(
-          userId,
-        )}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
+      await removeUserFromGroup(groupId, userId);
+      setGroup((prev) =>
+        prev
+          ? { ...prev, members: prev.members.filter((m) => m !== userId) }
+          : prev,
       );
-      if (!res.ok) {
-        throw new Error("Failed to remove user");
-      }
-
-      // Update state to remove user
-      setGroup((prev) => {
-        if (!prev) return prev;
-        return { ...prev, members: prev.members.filter((m) => m !== userId) };
-      });
-
-      // 🔹 Show Toast Notification
       toast({
         title: "User Removed",
         description: `${user.name} has been successfully removed from the group.`,
       });
     } catch (err: any) {
       console.error("Error removing user:", err.message || err);
-
-      // 🔹 Show Error Toast if removal fails
       toast({
         title: "Error",
         description: "Failed to remove user. Please try again.",
@@ -137,9 +99,8 @@ export default function ViewGroupPage() {
 
   return (
     <>
-      {/* Header in a larger container */}
       <div className="max-w-3xl mx-auto p-6">
-        <header className="flex items-center justify-between">
+        <div className="flex items-center justify-between">
           <Button
             variant="secondary"
             onClick={() => router.push("/dashboard/group")}
@@ -155,32 +116,29 @@ export default function ViewGroupPage() {
           >
             Edit
           </Link>
-        </header>
+        </div>
       </div>
 
-      {/* Main content in a narrower container */}
       <div className="max-w-lg mx-auto p-4 space-y-5">
-        {/* Group Name / Description */}
         <div className="space-y-3">
           <div>
-            <label className="block text-sm font-medium text-gray-600">
+            <Label className="block text-sm font-medium text-gray-600">
               Group Name
-            </label>
+            </Label>
             <div className="mt-1 bg-white rounded px-3 py-2 shadow-sm">
               {group.name}
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600">
+            <Label className="block text-sm font-medium text-gray-600">
               Group Description
-            </label>
+            </Label>
             <div className="mt-1 bg-white rounded px-3 py-2 shadow-sm">
               {group.description}
             </div>
           </div>
         </div>
 
-        {/* Add Users */}
         <Link
           href={`/dashboard/group/${groupId}/add-users`}
           className="inline-flex items-center gap-1 text-blue-600 hover:underline"
@@ -189,7 +147,6 @@ export default function ViewGroupPage() {
           <span>Add Users</span>
         </Link>
 
-        {/* Spacer using margin on Current Users section */}
         <div className="mt-20">
           <h2 className="text-sm font-medium text-gray-600 mb-2">
             Current Users
@@ -207,32 +164,23 @@ export default function ViewGroupPage() {
                     className="flex items-center justify-between bg-white rounded px-3 py-2 shadow-sm"
                   >
                     <div className="flex items-center gap-3">
-                      {/* Avatar */}
                       <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                        {user.avatarUrl ? (
-                          <img
-                            src={user.avatarUrl}
-                            alt={user.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <span className="text-gray-700 font-semibold">
-                            {user.name.charAt(0).toUpperCase()}
-                          </span>
-                        )}
+                        <span className="text-gray-700 font-semibold">
+                          {user.name.charAt(0).toUpperCase()}
+                        </span>
                       </div>
-                      {/* Name */}
+
                       <span className="text-gray-800 font-medium">
                         {user.name}
                       </span>
                     </div>
-                    {/* Remove Button */}
-                    <button
+
+                    <Button
                       onClick={() => handleRemoveUser(user.id)}
                       className="text-red-500 text-sm hover:underline"
                     >
                       Remove
-                    </button>
+                    </Button>
                   </div>
                 );
               })

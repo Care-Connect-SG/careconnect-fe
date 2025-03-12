@@ -1,9 +1,27 @@
 "use client";
 
+import { getAllNurses } from "@/app/api/user";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { User } from "@/types/user";
 import { X } from "lucide-react";
 import React, { useState, useEffect } from "react";
-import { getAllNurses } from "../../../../api/user";
 
 interface AddResidentModalProps {
   isOpen: boolean;
@@ -43,12 +61,10 @@ const AddResidentModal: React.FC<AddResidentModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       getAllNurses()
-        .then((data) => {
-          setNurseOptions(data);
-        })
-        .catch((error) => {
-          console.error("Error fetching nurse options:", error);
-        });
+        .then((data) => setNurseOptions(data))
+        .catch((error) =>
+          console.error("Error fetching nurse options:", error),
+        );
     }
   }, [isOpen]);
 
@@ -66,182 +82,174 @@ const AddResidentModal: React.FC<AddResidentModalProps> = ({
       additional_notes: additionalNotes,
       primary_nurse: primaryNurse,
     });
-    // Optionally, reset the form here.
     onClose();
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black opacity-50" onClick={onClose} />
-      {/* Modal Container with max-height and scrolling */}
-      <div className="relative z-10 bg-white rounded-lg shadow-lg max-w-lg w-full p-6 max-h-[80vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold">Add New Resident</h2>
-          <button
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Add New Resident</DialogTitle>
+          <DialogClose
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <X />
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Full Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Full Name
-            </label>
-            <input
-              type="text"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-            />
+            className="absolute right-4 top-4"
+          ></DialogClose>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Row 1: Full Name & Gender */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="fullName">Full Name</Label>
+              <Input
+                id="fullName"
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+                className="mt-1 block w-full"
+              />
+            </div>
+            <div>
+              <Label htmlFor="gender">Gender</Label>
+              <Select
+                value={gender}
+                onValueChange={(value) => setGender(value)}
+              >
+                <SelectTrigger id="gender" className="mt-1 w-full">
+                  <SelectValue placeholder="Select gender" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Female">Female</SelectItem>
+                  <SelectItem value="Male">Male</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          {/* Gender */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Gender
-            </label>
-            <select
-              value={gender}
-              onChange={(e) => setGender(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-            >
-              <option value="">Select gender</option>
-              <option value="Female">Female</option>
-              <option value="Male">Male</option>
-              <option value="Other">Other</option>
-            </select>
+
+          {/* Row 2: Date of Birth & NRIC Number */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="dateOfBirth">Date of Birth</Label>
+              <Input
+                id="dateOfBirth"
+                type="date"
+                value={dateOfBirth}
+                onChange={(e) => setDateOfBirth(e.target.value)}
+                required
+                className="mt-1 block w-full"
+              />
+            </div>
+            <div>
+              <Label htmlFor="nricNumber">NRIC Number</Label>
+              <Input
+                id="nricNumber"
+                type="text"
+                value={nricNumber}
+                onChange={(e) => setNricNumber(e.target.value)}
+                required
+                className="mt-1 block w-full"
+              />
+            </div>
           </div>
-          {/* Date of Birth */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Date of Birth
-            </label>
-            <input
-              type="date"
-              value={dateOfBirth}
-              onChange={(e) => setDateOfBirth(e.target.value)}
-              required
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-            />
+
+          {/* Row 3: Emergency Contact Name & Number */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="emergencyContactName">
+                Emergency Contact Name
+              </Label>
+              <Input
+                id="emergencyContactName"
+                type="text"
+                value={emergencyContactName}
+                onChange={(e) => setEmergencyContactName(e.target.value)}
+                required
+                className="mt-1 block w-full"
+              />
+            </div>
+            <div>
+              <Label htmlFor="emergencyContactNumber">
+                Emergency Contact Number
+              </Label>
+              <Input
+                id="emergencyContactNumber"
+                type="text"
+                value={emergencyContactNumber}
+                onChange={(e) => setEmergencyContactNumber(e.target.value)}
+                required
+                className="mt-1 block w-full"
+              />
+            </div>
           </div>
-          {/* NRIC Number */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              NRIC Number
-            </label>
-            <input
-              type="text"
-              value={nricNumber}
-              onChange={(e) => setNricNumber(e.target.value)}
-              required
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-            />
+
+          {/* Row 4: Relationship & Room Number */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="relationship">Relationship</Label>
+              <Input
+                id="relationship"
+                type="text"
+                value={relationship}
+                onChange={(e) => setRelationship(e.target.value)}
+                required
+                className="mt-1 block w-full"
+              />
+            </div>
+            <div>
+              <Label htmlFor="roomNumber">Room Number</Label>
+              <Input
+                id="roomNumber"
+                type="text"
+                value={roomNumber}
+                onChange={(e) => setRoomNumber(e.target.value)}
+                className="mt-1 block w-full"
+              />
+            </div>
           </div>
-          {/* Emergency Contact Name */}
+
+          {/* Row 5: Additional Notes (full width) */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Emergency Contact
-            </label>
-            <input
-              type="text"
-              value={emergencyContactName}
-              onChange={(e) => setEmergencyContactName(e.target.value)}
-              required
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-            />
-          </div>
-          {/* Emergency Contact Number */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Contact Number
-            </label>
-            <input
-              type="text"
-              value={emergencyContactNumber}
-              onChange={(e) => setEmergencyContactNumber(e.target.value)}
-              required
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-            />
-          </div>
-          {/* Relationship */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Relationship
-            </label>
-            <input
-              type="text"
-              value={relationship}
-              onChange={(e) => setRelationship(e.target.value)}
-              required
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-            />
-          </div>
-          {/* Room Number */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Room Number
-            </label>
-            <input
-              type="text"
-              value={roomNumber}
-              onChange={(e) => setRoomNumber(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-            />
-          </div>
-          {/* Additional Notes */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Additional Notes
-            </label>
-            <textarea
+            <Label htmlFor="additionalNotes">Additional Notes</Label>
+            <Textarea
+              id="additionalNotes"
               value={additionalNotes}
               onChange={(e) => setAdditionalNotes(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+              className="mt-1 block w-full"
               rows={3}
             />
           </div>
-          {/* Primary Nurse Dropdown */}
+
+          {/* Row 6: Primary Nurse (full width) */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Primary Nurse
-            </label>
-            <select
+            <Label htmlFor="primaryNurse">Primary Nurse</Label>
+            <Select
               value={primaryNurse}
-              onChange={(e) => setPrimaryNurse(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+              onValueChange={(value) => setPrimaryNurse(value)}
             >
-              <option value="">Select Nurse</option>
-              {nurseOptions.map((nurse) => (
-                <option key={nurse.id} value={nurse.name}>
-                  {nurse.name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger id="primaryNurse" className="mt-1 w-full">
+                <SelectValue placeholder="Select Nurse" />
+              </SelectTrigger>
+              <SelectContent>
+                {nurseOptions.map((nurse) => (
+                  <SelectItem key={nurse.id} value={nurse.name}>
+                    {nurse.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+
+          {/* Action Buttons */}
           <div className="flex justify-end space-x-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md"
-            >
+            <Button variant="outline" type="button" onClick={onClose}>
               Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-            >
-              Save
-            </button>
+            </Button>
+            <Button type="submit">Save</Button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

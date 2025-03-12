@@ -9,6 +9,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import React, { useState } from "react";
 
 interface EditProfileModalProps {
@@ -112,16 +119,19 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
           {/* Gender */}
           <div>
             <Label htmlFor="gender">Gender</Label>
-            <select
-              id="gender"
-              value={gender}
-              onChange={(e) => setGender(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2"
-            >
-              <option value="Female">Female</option>
-              <option value="Male">Male</option>
-              <option value="Other">Other</option>
-            </select>
+            <Select value={gender} onValueChange={(value) => setGender(value)}>
+              <SelectTrigger
+                id="gender"
+                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+              >
+                <SelectValue placeholder="Select a gender" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Female">Female</SelectItem>
+                <SelectItem value="Male">Male</SelectItem>
+                <SelectItem value="Other">Other</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           {/* Date of Birth */}
           <div>

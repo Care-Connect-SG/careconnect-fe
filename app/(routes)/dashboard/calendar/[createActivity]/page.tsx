@@ -2,6 +2,15 @@
 
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Bell,
   Calendar,
@@ -20,47 +29,52 @@ const ActivityForm = () => {
     <div className="bg-white border border-gray-200 rounded-lg p-6">
       <div className="space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <Label className="block text-sm font-medium text-gray-700 mb-1">
             Activity Name
-          </label>
-          <input
+          </Label>
+          <Input
             type="text"
             placeholder="Enter activity name"
             className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <Label className="block text-sm font-medium text-gray-700 mb-1">
             Activity Type
-          </label>
-          <select className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option value="">Select type...</option>
-            <option value="group">Group Activity</option>
-            <option value="therapy">Therapy Session</option>
-            <option value="social">Social Event</option>
-            <option value="medical">Medical Appointment</option>
-          </select>
+          </Label>
+          <Select>
+            <SelectTrigger className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <SelectValue placeholder="Select type..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Select type...</SelectItem>
+              <SelectItem value="group">Group Activity</SelectItem>
+              <SelectItem value="therapy">Therapy Session</SelectItem>
+              <SelectItem value="social">Social Event</SelectItem>
+              <SelectItem value="medical">Medical Appointment</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <Label className="block text-sm font-medium text-gray-700 mb-1">
               Date
-            </label>
+            </Label>
             <div className="relative">
               <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <input
+              <Input
                 type="date"
                 className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <Label className="block text-sm font-medium text-gray-700 mb-1">
               Time
-            </label>
+            </Label>
             <div className="relative">
               <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <input
+              <Input
                 type="time"
                 className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -68,12 +82,12 @@ const ActivityForm = () => {
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <Label className="block text-sm font-medium text-gray-700 mb-1">
             Location
-          </label>
+          </Label>
           <div className="relative">
             <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
+            <Input
               type="text"
               placeholder="Enter location"
               className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -91,16 +105,16 @@ const ParticipantSelector = () => {
       <h3 className="text-lg font-semibold text-gray-900 mb-4">Participants</h3>
       <div className="relative mb-4">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-        <input
+        <Input
           type="text"
           placeholder="Search residents..."
           className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
-      <button className="w-full px-4 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 flex items-center justify-center">
+      <Button className="w-full px-4 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 flex items-center justify-center">
         <Plus className="w-4 h-4 mr-2" />
         Add More Participants
-      </button>
+      </Button>
     </div>
   );
 };
@@ -115,12 +129,17 @@ const ReminderSettings = () => {
             <Bell className="w-4 h-4 text-gray-400 mr-2" />
             <span className="text-sm text-gray-700">Notification</span>
           </div>
-          <select className="px-3 py-1 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option>15 minutes before</option>
-            <option>30 minutes before</option>
-            <option>1 hour before</option>
-            <option>1 day before</option>
-          </select>
+          <Select>
+            <SelectTrigger className="px-3 py-1 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <SelectValue placeholder="15 minutes before" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="15">15 minutes before</SelectItem>
+              <SelectItem value="30">30 minutes before</SelectItem>
+              <SelectItem value="60">1 hour before</SelectItem>
+              <SelectItem value="1440">1 day before</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
     </div>

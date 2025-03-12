@@ -140,7 +140,7 @@ export default function ResidentDashboard() {
       <div className="mt-6 border-b border-gray-200">
         <div className="flex space-x-8">
           {TABS.map((tab) => (
-            <button
+            <Button
               key={tab.value}
               onClick={() => setActiveTab(tab.value)}
               className={`py-2 px-1 text-sm font-medium ${
@@ -150,7 +150,7 @@ export default function ResidentDashboard() {
               }`}
             >
               {tab.label}
-            </button>
+            </Button>
           ))}
         </div>
       </div>

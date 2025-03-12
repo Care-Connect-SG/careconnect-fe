@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -8,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
   TooltipContent,
@@ -44,15 +46,13 @@ export default function FormCard({
   return (
     <Card
       className={`w-xs max-w-xs h-[11rem] overflow-hidden ${
-        status == "Published"
+        status === "Published"
           ? "border-l-4 border-l-green-500"
           : "border-l-4 border-l-yellow-500"
       }`}
     >
       <Link href={`/dashboard/incidents/admin/view/${id}`}>
-        <CardHeader
-          className={`max-h-24 flex flex-row items-start justify-between space-y-0 my-0`}
-        >
+        <CardHeader className="max-h-24 flex flex-row items-start justify-between space-y-0 my-0">
           <div>
             <CardTitle className="text-base font-bold">{title}</CardTitle>
             <p className="hidden sm:block text-xs text-muted-foreground mt-1">
@@ -79,14 +79,17 @@ export default function FormCard({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="p-0"
                     onClick={(e) => {
                       e.stopPropagation();
                       router.push(`/dashboard/incidents/admin/build?id=${id}`);
                     }}
                   >
                     <FilePenLine className="h-4 w-4 hover:text-gray-600" />
-                  </button>
+                  </Button>
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>Edit</p>
@@ -96,35 +99,41 @@ export default function FormCard({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="p-0"
                     onClick={(e) => {
                       e.stopPropagation();
                       onPublish(id);
                     }}
                   >
                     <BookPlus className="h-4 w-4 hover:text-gray-600" />
-                  </button>
+                  </Button>
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>Publish</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            <div className="w-[1.5px] h-5 bg-gray-300"></div>
+            <Separator orientation="vertical" className="h-5" />
           </div>
         )}
         <div className="flex gap-4 items-center">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="p-0"
                   onClick={(e) => {
                     e.stopPropagation();
                     onDuplicate(id);
                   }}
                 >
                   <Copy className="h-4 w-4 hover:text-gray-600" />
-                </button>
+                </Button>
               </TooltipTrigger>
               <TooltipContent>
                 <p>Duplicate</p>
@@ -134,14 +143,17 @@ export default function FormCard({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="p-0"
                   onClick={(e) => {
                     e.stopPropagation();
                     onDelete(id);
                   }}
                 >
                   <Trash2 className="h-4 w-4 hover:text-gray-600" />
-                </button>
+                </Button>
               </TooltipTrigger>
               <TooltipContent>
                 <p>Delete</p>

@@ -142,7 +142,6 @@ export default function TaskForm({
           getAllNurses(),
           getResidents(),
         ]);
-        console.log("Fetched nurses:", nursesData);
         setNurses(nursesData);
         setResidents(residentsData);
       } catch (error) {

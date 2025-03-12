@@ -4,7 +4,6 @@ import { TaskForm } from "../(routes)/dashboard/tasks/_components/task-form";
 
 export const createTask = async (taskData: TaskForm): Promise<Task[]> => {
   try {
-    console.log("Attempting to create task with data:", taskData);
     const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/`,
       {
@@ -18,11 +17,6 @@ export const createTask = async (taskData: TaskForm): Promise<Task[]> => {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
-      console.error("Server response:", {
-        status: response.status,
-        statusText: response.statusText,
-        error: errorData,
-      });
       throw new Error(
         `Error creating task: ${response.status} ${response.statusText}${
           errorData ? ` - ${JSON.stringify(errorData)}` : ""
@@ -31,7 +25,6 @@ export const createTask = async (taskData: TaskForm): Promise<Task[]> => {
     }
 
     const data = await response.json();
-    console.log("Task created successfully:", data);
     return data;
   } catch (error) {
     console.error("createTask error:", error);
@@ -48,7 +41,6 @@ export const getTasks = async (filters?: {
   priority?: string;
 }): Promise<Task[]> => {
   try {
-    console.log("getTasks - Starting request with filters:", filters);
     const queryParams = filters
       ? new URLSearchParams(filters as Record<string, string>).toString()
       : "";
@@ -56,28 +48,16 @@ export const getTasks = async (filters?: {
     const url = `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${
       queryParams ? `?${queryParams}` : ""
     }`;
-    console.log("getTasks - Requesting URL:", url);
 
     const response = await fetchWithAuth(url, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
     });
 
     if (!response.ok) {
-      console.error("getTasks - Response not OK:", {
-        status: response.status,
-        statusText: response.statusText,
-      });
       throw new Error(`Error fetching tasks: ${response.statusText}`);
     }
 
     const data = await response.json();
-    console.log("getTasks - Successfully fetched tasks:", {
-      count: data.length,
-      tasks: data,
-    });
     return data;
   } catch (error) {
     console.error("getTasks error:", error);
@@ -87,13 +67,10 @@ export const getTasks = async (filters?: {
 
 export const getTaskById = async (taskId: string): Promise<Task> => {
   try {
-    const response = await fetchWithAuth(
+    const response = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}`,
       {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
       },
     );
 
@@ -114,7 +91,7 @@ export const updateTask = async (
   updatedData: Partial<TaskForm>,
 ): Promise<Task> => {
   try {
-    const response = await fetchWithAuth(
+    const response = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}`,
       {
         method: "PUT",
@@ -139,7 +116,7 @@ export const updateTask = async (
 
 export const completeTask = async (taskId: string): Promise<Task> => {
   try {
-    const response = await fetchWithAuth(
+    const response = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/complete`,
       {
         method: "PATCH",
@@ -162,7 +139,7 @@ export const completeTask = async (taskId: string): Promise<Task> => {
 
 export const reopenTask = async (taskId: string): Promise<Task> => {
   try {
-    const response = await fetchWithAuth(
+    const response = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/reopen`,
       {
         method: "PATCH",
@@ -185,7 +162,7 @@ export const reopenTask = async (taskId: string): Promise<Task> => {
 
 export const deleteTask = async (taskId: string): Promise<void> => {
   try {
-    const response = await fetchWithAuth(
+    const response = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}`,
       {
         method: "DELETE",

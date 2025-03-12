@@ -38,7 +38,7 @@ export default function IncidentReports() {
       if (session?.user?.email) {
         try {
           const user = await getCurrentUser(session.user.email);
-          setUser(user); // Assuming the API response contains user ID
+          setUser(user);
         } catch (error) {
           console.error("Error fetching user:", error);
         }

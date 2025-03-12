@@ -28,8 +28,6 @@ const TABS = [
 
 export default function ResidentDashboard() {
   const { residentProfile } = useParams() as { residentProfile: string };
-
-  // State Variables
   const [activeTab, setActiveTab] = useState("overview");
   const [primaryNurse, setPrimaryNurse] = useState("");
   const [medications, setMedications] = useState<MedicationRecord[]>([]);
@@ -41,7 +39,6 @@ export default function ResidentDashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [carePlans, setCarePlans] = useState<CarePlanRecord[]>([]);
 
-  // Fetch resident data on mount or when `residentProfile` changes
   useEffect(() => {
     if (residentProfile) {
       getResidentById(residentProfile)
@@ -53,7 +50,6 @@ export default function ResidentDashboard() {
     }
   }, [residentProfile]);
 
-  // Fetch medications when the "Medication" tab is active
   useEffect(() => {
     if (activeTab === "medication" && residentProfile) {
       getMedicationsForResident(residentProfile)
@@ -70,12 +66,10 @@ export default function ResidentDashboard() {
     }
   }, [activeTab, residentProfile]);
 
-  // Handle Edit Profile Modal
   const handleEditProfile = () => {
     setIsModalOpen(true);
   };
 
-  // Save Profile Changes
   const handleModalSave = async (updatedData: any) => {
     if (!resident) return;
     try {
@@ -88,7 +82,6 @@ export default function ResidentDashboard() {
     setIsModalOpen(false);
   };
 
-  // Save Additional Notes
   const handleSaveAdditionalNotes = async (newNotes: string) => {
     if (!resident) return;
     try {
@@ -102,7 +95,6 @@ export default function ResidentDashboard() {
     }
   };
 
-  // Handle Edit Medication Click
   const handleEditMedication = (medication: MedicationRecord) => {
     setSelectedMedication(medication);
     setIsEditModalOpen(true);
@@ -114,7 +106,6 @@ export default function ResidentDashboard() {
 
   return (
     <div className="w-full max-w-4xl mx-auto mt-10">
-      {/* Profile Card */}
       <ResidentProfileCard
         name={resident.full_name}
         age={
@@ -126,7 +117,6 @@ export default function ResidentDashboard() {
         onEdit={handleEditProfile}
       />
 
-      {/* Edit Profile Modal */}
       <EditProfileModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -134,7 +124,6 @@ export default function ResidentDashboard() {
         onSave={handleModalSave}
       />
 
-      {/* Tab Navigation */}
       <div className="mt-6 border-b border-gray-200">
         <div className="flex space-x-8">
           {TABS.map((tab) => (
@@ -153,7 +142,6 @@ export default function ResidentDashboard() {
         </div>
       </div>
 
-      {/* Overview Tab */}
       {activeTab === "overview" && (
         <div className="flex flex-col sm:flex-row items-start justify-between gap-6 mt-6">
           <ResidentDetailsCard
@@ -172,7 +160,6 @@ export default function ResidentDashboard() {
         </div>
       )}
 
-      {/* Medication Tab */}
       {activeTab === "medication" && (
         <div className="mt-6">
           <div className="flex justify-between items-center">
@@ -198,7 +185,6 @@ export default function ResidentDashboard() {
         </div>
       )}
 
-      {/* Create Medication Modal */}
       <CreateMedication
         residentId={residentProfile}
         isOpen={isCreateModalOpen}
@@ -209,7 +195,6 @@ export default function ResidentDashboard() {
         }}
       />
 
-      {/* Edit Medication Modal */}
       {selectedMedication && (
         <EditMedication
           residentId={residentProfile}

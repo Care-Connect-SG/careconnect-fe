@@ -221,7 +221,6 @@ export default function TaskKanbanView({ tasks }: { tasks: Task[] }) {
     );
   if (error) return <p className="text-red-500">{error}</p>;
 
-  // Group residents into rows of 3
   const residentRows = [];
   for (let i = 0; i < residents.length; i += 3) {
     residentRows.push(residents.slice(i, i + 3));

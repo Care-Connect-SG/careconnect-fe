@@ -60,13 +60,11 @@ const UserProfile = () => {
     { value: "permissions", label: "Permissions" },
   ];
 
-  // Handle opening the modal
   const handleEditProfile = () => {
-    setEditedUser(user); // Set current user data for editing
+    setEditedUser(user);
     setIsModalOpen(true);
   };
 
-  // Handle saving the changes
   const handleSaveChanges = async () => {
     if (!editedUser) return;
 
@@ -81,7 +79,6 @@ const UserProfile = () => {
 
   return (
     <div className="w-full max-w-4xl mx-auto mt-10">
-      {/* Profile Card (Always Visible) */}
       <Card className="p-6 shadow-md bg-white rounded-lg flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">{user.name}</h1>
@@ -95,7 +92,6 @@ const UserProfile = () => {
         </Button>
       </Card>
 
-      {/* Tab Bar */}
       <div className="mt-6 border-b border-gray-200">
         <div className="flex space-x-8">
           {TABS.map((tab) => (
@@ -115,7 +111,6 @@ const UserProfile = () => {
         </div>
       </div>
 
-      {/* Tab Content */}
       {activeTab === "overview" && (
         <Card className="p-6 shadow-md bg-white rounded-lg mt-6">
           <h2 className="text-xl font-semibold mb-4">User Details</h2>

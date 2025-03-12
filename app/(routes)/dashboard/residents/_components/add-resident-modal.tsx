@@ -57,7 +57,6 @@ const AddResidentModal: React.FC<AddResidentModalProps> = ({
   const [primaryNurse, setPrimaryNurse] = useState("");
   const [nurseOptions, setNurseOptions] = useState<User[]>([]);
 
-  // Fetch nurse options when modal opens
   useEffect(() => {
     if (isOpen) {
       getAllNurses()

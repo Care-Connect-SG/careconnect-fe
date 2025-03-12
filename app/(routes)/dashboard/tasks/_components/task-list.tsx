@@ -20,6 +20,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { toTitleCase } from "@/lib/utils";
 import { Task, TaskStatus } from "@/types/task";
 import { CheckCircle, Circle, Edit, MoreHorizontal, Trash } from "lucide-react";
@@ -63,39 +71,39 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+        <Table className="w-full">
+          <TableHeader className="bg-gray-50">
+            <TableRow>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Complete?
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Task
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Resident
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Assigned To
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Priority
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody className="divide-y divide-gray-200">
             {taskList.map((task) => (
-              <tr
+              <TableRow
                 key={task.id}
                 className="hover:bg-muted hover:duration-300 ease-in-out"
               >
-                <td className="px-6 py-4">
+                <TableCell className="px-6 py-4">
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button
@@ -137,28 +145,27 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
-                </td>
+                </TableCell>
 
-                {/* Task Details - Clicking the row navigates */}
-                <td
+                <TableCell
                   className="px-6 py-4 font-medium text-gray-900"
                   onClick={() => router.push(`/dashboard/tasks/${task.id}`)}
                 >
                   {task.task_title}
-                </td>
-                <td
+                </TableCell>
+                <TableCell
                   className="px-6 py-4 text-gray-900"
                   onClick={() => router.push(`/dashboard/tasks/${task.id}`)}
                 >
                   {toTitleCase(task.resident_name) || "N/A"}
-                </td>
-                <td
+                </TableCell>
+                <TableCell
                   className="px-6 py-4 text-gray-900"
                   onClick={() => router.push(`/dashboard/tasks/${task.id}`)}
                 >
                   {toTitleCase(task.assigned_to_name) || "Unassigned"}
-                </td>
-                <td className="px-6 py-4">
+                </TableCell>
+                <TableCell className="px-6 py-4">
                   <span
                     className={`px-2 py-1 text-xs rounded-full ${
                       task.priority === "High"
@@ -170,9 +177,8 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                   >
                     {task.priority || "Low"}
                   </span>
-                </td>
-
-                <td className="px-6 py-4">
+                </TableCell>
+                <TableCell className="px-6 py-4">
                   <span
                     className={`px-2 py-1 text-xs rounded-full ${
                       task.status === "Assigned"
@@ -186,8 +192,8 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                   >
                     {task.status}
                   </span>
-                </td>
-                <td className="px-6 py-4 flex space-x-2">
+                </TableCell>
+                <TableCell className="px-6 py-4 flex space-x-2">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon">
@@ -245,14 +251,13 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
-      {/* Task Form for Editing */}
       {editingTask && (
         <TaskForm task={editingTask} onClose={() => setEditingTask(null)} />
       )}

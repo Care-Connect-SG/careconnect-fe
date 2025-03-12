@@ -8,12 +8,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { FormElementData } from "@/hooks/useFormReducer";
-import { CalendarClockIcon, CalendarIcon, Trash2, X } from "lucide-react";
+import { CalendarIcon, Trash2, X } from "lucide-react";
 
 interface FormElementProps {
   element: FormElementData;
@@ -49,7 +51,7 @@ export default function FormElement({
               onChange={(e) =>
                 onUpdate(element.element_id, { label: e.target.value })
               }
-              className="md:text-base md:max-w-80 max-w-52 pb-0 font-semibold text-black rounded-none border-0 border-b-2 border-transparent 
+              className="md:text-base md:max-w-80 max-w-52 pb-0 font-semibold text-black rounded-none border-0 border-b-2 border-transparent
                             hover:border-gray-500 focus:border-gray-500 px-0 focus-visible:ring-0 focus-visible:ring-offset-0"
               placeholder="Label"
             />
@@ -70,7 +72,7 @@ export default function FormElement({
                 className="text-gray-500"
                 onClick={() => onRemove(element.element_id)}
               >
-                <Trash2></Trash2>
+                <Trash2 />
               </Button>
             </div>
           </CardTitle>
@@ -88,14 +90,14 @@ export default function FormElement({
         </CardHeader>
         <CardContent className="">
           {element.type === "text" && (
-            <Input disabled placeholder="Short answer text"></Input>
+            <Input disabled placeholder="Short answer text" />
           )}
           {element.type === "textarea" && (
             <Textarea
               disabled
               placeholder="Long answer text"
               className="resize-none"
-            ></Textarea>
+            />
           )}
           {element.type === "date" && (
             <Button
@@ -108,10 +110,15 @@ export default function FormElement({
             </Button>
           )}
           {element.type === "radio" && (
-            <div className="flex flex-col space-y-2">
+            <RadioGroup className="flex flex-col space-y-2">
               {element.options?.map((option, index) => (
                 <div key={index} className="flex items-center space-x-2">
-                  <input type="radio" disabled className="mr-2" />
+                  <RadioGroupItem
+                    disabled
+                    value={option}
+                    id={`option-${element.element_id}-${index}`}
+                    className="mr-2"
+                  />
                   <Input
                     value={option}
                     onChange={(e) => handleOptionChange(index, e.target.value)}
@@ -129,7 +136,6 @@ export default function FormElement({
                   </Button>
                 </div>
               ))}
-              {/* TODO: Validate that option value is not empty */}
               <Button
                 variant="outline"
                 size="sm"
@@ -141,13 +147,13 @@ export default function FormElement({
               >
                 + Add Option
               </Button>
-            </div>
+            </RadioGroup>
           )}
           {element.type === "checkbox" && (
             <div className="flex flex-col space-y-2">
               {element.options?.map((option, index) => (
                 <div key={index} className="flex items-center space-x-2">
-                  <input type="checkbox" disabled className="mr-2" />
+                  <Checkbox disabled className="mr-2" />
                   <Input
                     value={option}
                     onChange={(e) => {
@@ -169,7 +175,6 @@ export default function FormElement({
                   </Button>
                 </div>
               ))}
-              {/* TODO: Validate that option value is not empty */}
               <Button
                 variant="outline"
                 size="sm"

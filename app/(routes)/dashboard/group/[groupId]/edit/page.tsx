@@ -1,91 +1,49 @@
 "use client";
 
-import { getUser } from "@/app/api/user";
+import { deleteGroup, getGroupById, updateGroup } from "@/app/api/group";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { useSession } from "next-auth/react";
-import { useParams, useRouter } from "next/navigation";
+import { Group } from "@/types/group";
+import { usePathname } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 
-interface Group {
-  _id: string;
-  name: string;
-  description: string;
-  members?: string[];
-}
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
-
 export default function EditGroupPage() {
-  const { groupId } = useParams();
-  const router = useRouter();
   const { toast } = useToast();
-  const { data: session } = useSession();
-  const [isAdmin, setIsAdmin] = useState(false);
-
+  const pathname = usePathname();
+  const groupId = pathname.split("/")[3];
   const [group, setGroup] = useState<Group | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
-
-  // Form state for editing group details
   const [newName, setNewName] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [updating, setUpdating] = useState(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [updateSuccess, setUpdateSuccess] = useState<string | null>(null);
 
-  // Fetch the group details using the groupId.
   useEffect(() => {
-    fetch("/api/groups")
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch groups");
-        return res.json();
-      })
-      .then((data) => {
-        const found = data.find(
-          (g: any) => g._id === groupId || g.id === groupId,
-        );
-        if (!found) {
-          setError("Group not found");
-        } else {
-          setGroup(found);
-          setNewName(found.name);
-          setNewDescription(found.description);
-        }
+    const fetchGroup = async () => {
+      try {
+        const groupData = await getGroupById(groupId);
+        setGroup(groupData);
+        setNewName(groupData.name);
+        setNewDescription(groupData.description);
+      } catch (err: any) {
+        setError(err.message || "An error occurred while fetching group");
+      } finally {
         setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message || "An error occurred while fetching groups");
-        setLoading(false);
-      });
+      }
+    };
+    fetchGroup();
   }, [groupId]);
 
-  useEffect(() => {
-    fetch("/api/users")
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch users");
-        return res.json();
-      })
-      .then((data: User[]) => {
-        setUsers(data);
-      })
-      .catch((err) => {
-        console.error("Error fetching users:", err);
-      });
-  }, []);
-
-  // Handle form submission to update group details.
   const handleUpdateGroup = async (e: FormEvent) => {
     e.preventDefault();
     const payload = {
-      group_id: String(groupId),
+      group_id: groupId,
       new_name: newName,
       new_description: newDescription,
     };
@@ -93,16 +51,7 @@ export default function EditGroupPage() {
     setUpdateError(null);
     setUpdateSuccess(null);
     try {
-      const res = await fetch("/api/groups", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error?.detail || "Failed to update group");
-      }
-      await res.json();
+      await updateGroup(payload);
       setUpdateSuccess("Group updated successfully!");
       setGroup((prev) =>
         prev ? { ...prev, name: newName, description: newDescription } : prev,
@@ -114,37 +63,23 @@ export default function EditGroupPage() {
     }
   };
 
-  // Handle group deletion with toast notifications.
   const handleDeleteGroup = async () => {
-    // Ensure groupId is a single string.
     if (!groupId) {
       alert("Group id is missing");
       return;
     }
-    const id = Array.isArray(groupId) ? groupId[0] : groupId;
-
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this group?",
     );
     if (!confirmDelete) return;
     try {
-      const res = await fetch(
-        `/api/groups?group_id=${encodeURIComponent(id)}`,
-        {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-        },
-      );
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error?.detail || "Failed to delete group");
-      }
+      await deleteGroup(groupId);
       toast({
         title: "Group Deleted",
         description: "The group was successfully deleted.",
         variant: "default",
       });
-      router.push("/dashboard/group");
+      window.location.href = "/dashboard/group";
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -154,59 +89,35 @@ export default function EditGroupPage() {
     }
   };
 
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      if (!session?.user?.email) {
-        setIsAdmin(false);
-        return;
-      }
-
-      try {
-        const user = await getUser(session.user.email);
-        setIsAdmin(user?.role === "Admin"); // ✅ Update state
-      } catch (error) {
-        console.error("Error checking admin role:", error);
-        setIsAdmin(false);
-      }
-    };
-
-    checkAdminStatus();
-  }, [session?.user?.email]);
-
   if (loading) return <Spinner />;
   if (error || !group)
     return <p className="text-red-500">{error || "Group not found"}</p>;
 
   return (
-    <main className="p-6 max-w-3xl mx-auto space-y-8 relative">
-      {/* Header with Edit title and action buttons */}
+    <div className="p-6 max-w-3xl mx-auto space-y-8 relative">
       <div className="flex items-center justify-between">
         <Button
           variant="secondary"
-          onClick={() => router.push(`/dashboard/group/${groupId}`)}
+          onClick={() => (window.location.href = `/dashboard/group/${groupId}`)}
         >
           Back
         </Button>
         <h1 className="text-3xl font-bold">Edit Group</h1>
         <div className="flex gap-1">
-          {isAdmin && (
-            <Button variant="destructive" onClick={handleDeleteGroup}>
-              Delete Group
-            </Button>
-          )}
+          <Button variant="destructive" onClick={handleDeleteGroup}>
+            Delete Group
+          </Button>
         </div>
       </div>
-
-      {/* Edit Group Form */}
       <form
         onSubmit={handleUpdateGroup}
         className="space-y-4 bg-white p-6 border rounded-lg shadow-sm"
       >
         <div>
-          <label htmlFor="groupName" className="block font-medium mb-1">
+          <Label htmlFor="groupName" className="block font-medium mb-1">
             Group Name
-          </label>
-          <input
+          </Label>
+          <Input
             id="groupName"
             type="text"
             value={newName}
@@ -216,10 +127,10 @@ export default function EditGroupPage() {
           />
         </div>
         <div>
-          <label htmlFor="groupDescription" className="block font-medium mb-1">
+          <Label htmlFor="groupDescription" className="block font-medium mb-1">
             Description
-          </label>
-          <textarea
+          </Label>
+          <Textarea
             id="groupDescription"
             value={newDescription}
             onChange={(e) => setNewDescription(e.target.value)}
@@ -236,6 +147,6 @@ export default function EditGroupPage() {
           <p className="mt-2 text-green-500">{updateSuccess}</p>
         )}
       </form>
-    </main>
+    </div>
   );
 }

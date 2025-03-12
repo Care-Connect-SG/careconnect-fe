@@ -71,27 +71,6 @@ const ResidentDetailsCard: React.FC<ResidentDetailsCardProps> = ({
             <span className="font-medium">Nurse:</span> {primaryNurse}
           </p>
         </div>
-
-        {/* <div className="sm:col-span-2">
-          <label
-            htmlFor="primaryNurse"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Primary Nurse
-          </label>
-          <select
-            id="primaryNurse"
-            value={primaryNurse}
-            onChange={(e) => onPrimaryNurseChange(e.target.value)}
-            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-          >
-            {nurseOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div> */}
       </div>
     </div>
   );

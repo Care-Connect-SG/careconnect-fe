@@ -1,8 +1,5 @@
 import { MedicationRecord } from "@/types/medication";
 
-/**
- * Fetch medication records for a specific resident.
- */
 export const getMedicationsForResident = async (
   residentId: string,
 ): Promise<MedicationRecord[]> => {

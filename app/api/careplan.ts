@@ -1,8 +1,5 @@
 import { CarePlanRecord } from "@/types/careplan";
 
-/**
- * Fetch care plans for a specific resident.
- */
 export const getCarePlansForResident = async (
   residentId: string,
 ): Promise<CarePlanRecord[]> => {
@@ -29,9 +26,6 @@ export const getCarePlansForResident = async (
   }
 };
 
-/**
- * Create a new care plan for a resident.
- */
 export const createCarePlan = async (residentId: string, carePlanData: any) => {
   try {
     const response = await fetch(
@@ -56,9 +50,6 @@ export const createCarePlan = async (residentId: string, carePlanData: any) => {
   }
 };
 
-/**
- * Update an existing care plan for a resident.
- */
 export const updateCarePlan = async (residentId: string, carePlanData: any) => {
   try {
     const response = await fetch(

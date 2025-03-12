@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { PlusCircle, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Check, PlusCircle } from "lucide-react";
+import React, { useState, useEffect } from "react";
 
 interface ResidentDetailsNotesCardProps {
   additionalNotes?: string;
@@ -20,7 +20,7 @@ const ResidentDetailsNotesCard: React.FC<ResidentDetailsNotesCardProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [notes, setNotes] = useState(additionalNotes || "");
   const [lastModified, setLastModified] = useState<Date | null>(
-    initialLastSaved ? new Date(initialLastSaved) : null
+    initialLastSaved ? new Date(initialLastSaved) : null,
   );
 
   // Update local notes if the additionalNotes prop changes.

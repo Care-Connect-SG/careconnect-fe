@@ -52,7 +52,7 @@ export const updateResident = async (
     // Convert current local time to an ISO string that reflects your local time.
     const localDate = new Date();
     const localISOString = new Date(
-      localDate.getTime() - localDate.getTimezoneOffset() * 60000
+      localDate.getTime() - localDate.getTimezoneOffset() * 60000,
     ).toISOString();
 
     // Set the additional_notes_timestamp field in the payload.
@@ -76,7 +76,6 @@ export const updateResident = async (
     throw error;
   }
 };
-
 
 export const updateResidentNurse = async (
   residentId: string,

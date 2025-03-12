@@ -96,7 +96,6 @@ export default function ResidentDashboard() {
         ...resident,
         additional_notes: newNotes,
         additional_notes_timestamp: new Date().toISOString(),
-        
       });
       setResident(updatedResident);
     } catch (error) {

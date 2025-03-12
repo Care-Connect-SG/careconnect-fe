@@ -12,7 +12,7 @@ export const createTask = async (taskData: TaskForm): Promise<Task[]> => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(taskData),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -25,7 +25,7 @@ export const createTask = async (taskData: TaskForm): Promise<Task[]> => {
       throw new Error(
         `Error creating task: ${response.status} ${response.statusText}${
           errorData ? ` - ${JSON.stringify(errorData)}` : ""
-        }`
+        }`,
       );
     }
 
@@ -88,7 +88,7 @@ export const getTaskById = async (taskId: string): Promise<Task> => {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -105,7 +105,7 @@ export const getTaskById = async (taskId: string): Promise<Task> => {
 
 export const updateTask = async (
   taskId: string,
-  updatedData: Partial<TaskForm>
+  updatedData: Partial<TaskForm>,
 ): Promise<Task> => {
   try {
     const dataToSend: TaskUpdate = {};
@@ -127,7 +127,7 @@ export const updateTask = async (
     if (updatedData.recurring) dataToSend.recurring = updatedData.recurring;
     if (updatedData.end_recurring_date)
       dataToSend.end_recurring_date = new Date(
-        updatedData.end_recurring_date
+        updatedData.end_recurring_date,
       ).toISOString();
     if (updatedData.remind_prior)
       dataToSend.remind_prior = updatedData.remind_prior;
@@ -144,7 +144,7 @@ export const updateTask = async (
           "Content-Type": "application/json",
         },
         body: JSON.stringify(dataToSend),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -157,7 +157,7 @@ export const updateTask = async (
       throw new Error(
         `Error updating task: ${response.status} ${response.statusText}${
           errorData ? ` - ${JSON.stringify(errorData)}` : ""
-        }`
+        }`,
       );
     }
 
@@ -176,12 +176,12 @@ export const completeTask = async (taskId: string): Promise<Task> => {
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/complete`,
       {
         method: "PATCH",
-      }
+      },
     );
 
     if (!response.ok) {
       throw new Error(
-        `Error marking task as completed: ${response.statusText}`
+        `Error marking task as completed: ${response.statusText}`,
       );
     }
 
@@ -199,12 +199,12 @@ export const reopenTask = async (taskId: string): Promise<Task> => {
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/reopen`,
       {
         method: "PATCH",
-      }
+      },
     );
 
     if (!response.ok) {
       throw new Error(
-        `Error marking task as incomplete: ${response.statusText}`
+        `Error marking task as incomplete: ${response.statusText}`,
       );
     }
 
@@ -222,7 +222,7 @@ export const deleteTask = async (taskId: string): Promise<void> => {
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}`,
       {
         method: "DELETE",
-      }
+      },
     );
 
     if (!response.ok) {
@@ -243,7 +243,7 @@ export const duplicateTask = async (taskId: string): Promise<Task> => {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -267,7 +267,7 @@ export const downloadTask = async (taskId: string): Promise<Blob> => {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {

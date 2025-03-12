@@ -27,7 +27,6 @@ export default function AllResidentsPage() {
     getResidents()
       .then((data: ResidentRecord[]) => {
         setResidents(data);
-        console.log("Residents fetched:", data);
       })
       .catch((error) => {
         console.error("Error fetching residents:", error);
@@ -81,7 +80,6 @@ export default function AllResidentsPage() {
       setResidents((prev) =>
         prev.map((res) => (res.id === id ? updatedResident : res)),
       );
-      console.log("Updated resident:", updatedResident);
     } catch (error) {
       console.error("Error updating nurse:", error);
     }
@@ -92,7 +90,6 @@ export default function AllResidentsPage() {
     try {
       await deleteResident(id);
       setResidents((prev) => prev.filter((res) => res.id !== id));
-      console.log("Deleted resident with id:", id);
     } catch (error) {
       console.error("Error deleting resident:", error);
     }
@@ -110,7 +107,6 @@ export default function AllResidentsPage() {
     try {
       const createdResident = await createResident(newResidentData);
       setResidents((prev) => [...prev, createdResident]);
-      console.log("Created new resident:", createdResident);
     } catch (error) {
       console.error("Error creating resident:", error);
     }

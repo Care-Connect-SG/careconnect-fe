@@ -1,28 +1,9 @@
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
-import { Task, TaskStatus } from "@/types/task";
+import { Task, TaskUpdate } from "@/types/task";
 import { TaskForm } from "../(routes)/dashboard/tasks/_components/task-form";
-
-interface TaskUpdateData {
-  task_title?: string;
-  task_details?: string;
-  media?: string[];
-  notes?: string;
-  status?: TaskStatus;
-  priority?: string;
-  category?: string;
-  residents?: string[];
-  start_date?: string;
-  due_date?: string;
-  recurring?: string;
-  end_recurring_date?: string;
-  remind_prior?: number;
-  is_ai_generated?: boolean;
-  assigned_to?: string;
-}
 
 export const createTask = async (taskData: TaskForm): Promise<Task[]> => {
   try {
-    console.log("Attempting to create task with data:", taskData);
     const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/`,
       {
@@ -31,7 +12,7 @@ export const createTask = async (taskData: TaskForm): Promise<Task[]> => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(taskData),
-      },
+      }
     );
 
     if (!response.ok) {
@@ -44,12 +25,12 @@ export const createTask = async (taskData: TaskForm): Promise<Task[]> => {
       throw new Error(
         `Error creating task: ${response.status} ${response.statusText}${
           errorData ? ` - ${JSON.stringify(errorData)}` : ""
-        }`,
+        }`
       );
     }
 
     const data = await response.json();
-    console.log("Task created successfully:", data);
+
     return data;
   } catch (error) {
     console.error("createTask error:", error);
@@ -66,7 +47,6 @@ export const getTasks = async (filters?: {
   priority?: string;
 }): Promise<Task[]> => {
   try {
-    console.log("getTasks - Starting request with filters:", filters);
     const queryParams = filters
       ? new URLSearchParams(filters as Record<string, string>).toString()
       : "";
@@ -74,7 +54,6 @@ export const getTasks = async (filters?: {
     const url = `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${
       queryParams ? `?${queryParams}` : ""
     }`;
-    console.log("getTasks - Requesting URL:", url);
 
     const response = await fetchWithAuth(url, {
       method: "GET",
@@ -92,10 +71,7 @@ export const getTasks = async (filters?: {
     }
 
     const data = await response.json();
-    console.log("getTasks - Successfully fetched tasks:", {
-      count: data.length,
-      tasks: data,
-    });
+
     return data;
   } catch (error) {
     console.error("getTasks error:", error);
@@ -112,7 +88,7 @@ export const getTaskById = async (taskId: string): Promise<Task> => {
         headers: {
           "Content-Type": "application/json",
         },
-      },
+      }
     );
 
     if (!response.ok) {
@@ -129,16 +105,11 @@ export const getTaskById = async (taskId: string): Promise<Task> => {
 
 export const updateTask = async (
   taskId: string,
-  updatedData: Partial<TaskForm>,
+  updatedData: Partial<TaskForm>
 ): Promise<Task> => {
   try {
-    console.log("Sending update request for task:", taskId);
-    console.log("Update data:", updatedData);
+    const dataToSend: TaskUpdate = {};
 
-    // Create a copy of the data to modify
-    const dataToSend: TaskUpdateData = {};
-
-    // Copy over all fields, converting as needed
     if (updatedData.task_title) dataToSend.task_title = updatedData.task_title;
     if (updatedData.task_details)
       dataToSend.task_details = updatedData.task_details;
@@ -156,7 +127,7 @@ export const updateTask = async (
     if (updatedData.recurring) dataToSend.recurring = updatedData.recurring;
     if (updatedData.end_recurring_date)
       dataToSend.end_recurring_date = new Date(
-        updatedData.end_recurring_date,
+        updatedData.end_recurring_date
       ).toISOString();
     if (updatedData.remind_prior)
       dataToSend.remind_prior = updatedData.remind_prior;
@@ -173,7 +144,7 @@ export const updateTask = async (
           "Content-Type": "application/json",
         },
         body: JSON.stringify(dataToSend),
-      },
+      }
     );
 
     if (!response.ok) {
@@ -186,12 +157,12 @@ export const updateTask = async (
       throw new Error(
         `Error updating task: ${response.status} ${response.statusText}${
           errorData ? ` - ${JSON.stringify(errorData)}` : ""
-        }`,
+        }`
       );
     }
 
     const data = await response.json();
-    console.log("Task updated successfully:", data);
+
     return data;
   } catch (error) {
     console.error("updateTask error:", error);
@@ -205,12 +176,12 @@ export const completeTask = async (taskId: string): Promise<Task> => {
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/complete`,
       {
         method: "PATCH",
-      },
+      }
     );
 
     if (!response.ok) {
       throw new Error(
-        `Error marking task as completed: ${response.statusText}`,
+        `Error marking task as completed: ${response.statusText}`
       );
     }
 
@@ -228,12 +199,12 @@ export const reopenTask = async (taskId: string): Promise<Task> => {
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/reopen`,
       {
         method: "PATCH",
-      },
+      }
     );
 
     if (!response.ok) {
       throw new Error(
-        `Error marking task as incomplete: ${response.statusText}`,
+        `Error marking task as incomplete: ${response.statusText}`
       );
     }
 
@@ -251,7 +222,7 @@ export const deleteTask = async (taskId: string): Promise<void> => {
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}`,
       {
         method: "DELETE",
-      },
+      }
     );
 
     if (!response.ok) {
@@ -272,7 +243,7 @@ export const duplicateTask = async (taskId: string): Promise<Task> => {
         headers: {
           "Content-Type": "application/json",
         },
-      },
+      }
     );
 
     if (!response.ok) {
@@ -296,7 +267,7 @@ export const downloadTask = async (taskId: string): Promise<Blob> => {
         headers: {
           "Content-Type": "application/json",
         },
-      },
+      }
     );
 
     if (!response.ok) {

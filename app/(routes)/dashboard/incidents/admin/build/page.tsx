@@ -76,7 +76,7 @@ export default function CreateFormPage() {
     if (!formId) {
       try {
         const formId = await createForm(formData);
-        console.log(formId);
+
         router.replace(`/dashboard/incidents/admin/build?id=${formId}`);
       } catch (error) {
         console.error("Error saving form:", error);
@@ -126,7 +126,7 @@ export default function CreateFormPage() {
   const handleDeleteDraft = async (formId: string) => {
     try {
       await deleteForm(formId);
-      console.log("Deleted form: ", formId);
+
       router.replace(`/dashboard/incidents/admin`);
     } catch (error) {
       console.error("Failed to delete form");

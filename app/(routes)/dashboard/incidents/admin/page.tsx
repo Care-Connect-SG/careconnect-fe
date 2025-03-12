@@ -18,7 +18,7 @@ export default function IncidentReportingFormsAdmin() {
   const fetchForms = async () => {
     try {
       const data = await getForms();
-      console.log(data);
+
       setForms(data);
     } catch (error) {
       console.error("Failed to fetch forms");
@@ -28,7 +28,7 @@ export default function IncidentReportingFormsAdmin() {
   const handlePublish = async (formId: string) => {
     try {
       await publishForm(formId);
-      console.log("Published form: ", formId);
+
       fetchForms();
     } catch (error) {
       console.error("Failed to publish form");
@@ -38,7 +38,7 @@ export default function IncidentReportingFormsAdmin() {
   const handleDelete = async (formId: string) => {
     try {
       await deleteForm(formId);
-      console.log("Deleted form: ", formId);
+
       fetchForms();
     } catch (error) {
       console.error("Failed to delete form");

@@ -25,6 +25,24 @@ export enum Recurrence {
   ANNUALLY = "Annually",
 }
 
+export interface TaskUpdate {
+  task_title?: string;
+  task_details?: string;
+  media?: string[];
+  notes?: string;
+  status?: TaskStatus;
+  priority?: string;
+  category?: string;
+  residents?: string[];
+  start_date?: string;
+  due_date?: string;
+  recurring?: string;
+  end_recurring_date?: string;
+  remind_prior?: number;
+  is_ai_generated?: boolean;
+  assigned_to?: string;
+}
+
 export interface Task {
   id: string;
   task_title: string;

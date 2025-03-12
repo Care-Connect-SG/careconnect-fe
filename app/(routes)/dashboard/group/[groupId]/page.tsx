@@ -100,7 +100,7 @@ export default function ViewGroupPage() {
   return (
     <>
       <div className="max-w-3xl mx-auto p-6">
-        <header className="flex items-center justify-between">
+        <div className="flex items-center justify-between">
           <Button
             variant="secondary"
             onClick={() => router.push("/dashboard/group")}
@@ -116,7 +116,7 @@ export default function ViewGroupPage() {
           >
             Edit
           </Link>
-        </header>
+        </div>
       </div>
 
       <div className="max-w-lg mx-auto p-4 space-y-5">

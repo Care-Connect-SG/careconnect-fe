@@ -2,6 +2,7 @@
 
 import { createGroup } from "@/app/api/group";
 import { getUsers } from "@/app/api/user";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +17,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "@/types/user";
+import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 
@@ -138,25 +140,24 @@ export default function CreateGroupPage() {
               </SelectContent>
             </Select>
           )}
-          {/* Display selected members with names */}
           {selectedMembers.length > 0 && (
-            <ul className="mt-2">
+            <div className="flex flex-wrap gap-2 mt-2">
               {selectedMembers.map((userId) => {
                 const user = users.find((u) => u.id === userId);
                 return (
-                  <li key={userId} className="flex items-center">
-                    <span>{user ? user.name : userId}</span>
+                  <Badge key={userId} className="flex items-center gap-1">
+                    {user ? user.name : userId}
                     <Button
-                      type="button"
+                      variant="ghost"
+                      size="icon"
                       onClick={() => handleRemoveMember(userId)}
-                      className="ml-2 text-red-500"
                     >
-                      Remove
+                      <X className="w-4 h-4" />
                     </Button>
-                  </li>
+                  </Badge>
                 );
               })}
-            </ul>
+            </div>
           )}
         </div>
         {error && <p className="text-red-500">{error}</p>}

@@ -20,6 +20,7 @@ import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 
 import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { FormElementData } from "@/hooks/useFormReducer";
 
@@ -120,9 +121,9 @@ export default function FormElementFill({
                   id={`option-${element_id}-${option}`}
                   className="mr-2"
                 />
-                <label htmlFor={`option-${element_id}-${option}`}>
+                <Label htmlFor={`option-${element_id}-${option}`}>
                   {option}
-                </label>
+                </Label>
               </div>
             ))}
           </RadioGroup>
@@ -136,7 +137,7 @@ export default function FormElementFill({
                   checked={Array.isArray(value) && value.includes(option)}
                   onCheckedChange={() => handleCheckboxChange(option)}
                 />
-                <label>{option}</label>
+                <Label>{option}</Label>
               </div>
             ))}
           </div>

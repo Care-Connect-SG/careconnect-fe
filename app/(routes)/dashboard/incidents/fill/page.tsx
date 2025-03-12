@@ -10,12 +10,7 @@ import { getCurrentUser } from "@/app/api/user";
 import { FormElementData } from "@/hooks/useFormReducer";
 import { ReportState, useReportReducer } from "@/hooks/useReportReducer";
 import { FormResponse } from "@/types/form";
-import {
-  CaregiverTag,
-  ReportCreate,
-  ReportResponse,
-  ReportStatus,
-} from "@/types/report";
+import { CaregiverTag, ReportResponse, ReportStatus } from "@/types/report";
 
 import { FormHeaderView } from "../_components/form-header";
 import { LoadingSkeleton } from "../_components/loading-skeleton";
@@ -192,9 +187,9 @@ export default function CreateReportPage() {
     <div className="py-4 px-8">
       <div className="flex justify-between">
         <Link href="/dashboard/incidents/form">
-          <button className="border h-10 w-10 rounded-md hover:bg-gray-50">
+          <Button className="border h-10 w-10 rounded-md hover:bg-gray-50">
             <ChevronLeft className="h-4 w-4 mx-auto" />
-          </button>
+          </Button>
         </Link>
         <div className="flex gap-2 justify-end">
           <Button

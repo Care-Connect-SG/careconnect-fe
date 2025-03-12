@@ -1,14 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ResidentRecord } from "@/types/resident";
 import { User } from "@/types/user";
@@ -188,11 +180,3 @@ export default function AllResidentsPage() {
     </div>
   );
 }
-
-// Helper: simple age calculator
-const computeAge = (dob: string) => {
-  const birthDate = new Date(dob);
-  const diffMs = Date.now() - birthDate.getTime();
-  const ageDt = new Date(diffMs);
-  return Math.abs(ageDt.getUTCFullYear() - 1970);
-};

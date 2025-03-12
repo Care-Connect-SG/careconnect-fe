@@ -19,6 +19,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { FormElementData } from "@/hooks/useFormReducer";
 
 interface FormElementFillProps {
@@ -106,33 +109,36 @@ export default function FormElementFill({
         )}
 
         {type === "radio" && options && (
-          <div className="flex flex-col gap-2">
+          <RadioGroup
+            className="flex flex-col gap-2"
+            value={typeof value === "string" ? value : ""}
+            onValueChange={handleRadioChange}
+          >
             {options.map((option) => (
-              <label key={option} className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name={element_id}
+              <div key={option} className="flex items-center gap-2">
+                <RadioGroupItem
                   value={option}
-                  checked={value === option}
-                  onChange={() => handleRadioChange(option)}
+                  id={`option-${element_id}-${option}`}
+                  className="mr-2"
                 />
-                {option}
-              </label>
+                <Label htmlFor={`option-${element_id}-${option}`}>
+                  {option}
+                </Label>
+              </div>
             ))}
-          </div>
+          </RadioGroup>
         )}
 
         {type === "checkbox" && options && (
           <div className="flex flex-col gap-2">
             {options.map((option) => (
-              <label key={option} className="flex items-center gap-2">
-                <input
-                  type="checkbox"
+              <div key={option} className="flex items-center gap-2">
+                <Checkbox
                   checked={Array.isArray(value) && value.includes(option)}
-                  onChange={() => handleCheckboxChange(option)}
+                  onCheckedChange={() => handleCheckboxChange(option)}
                 />
-                {option}
-              </label>
+                <Label>{option}</Label>
+              </div>
             ))}
           </div>
         )}

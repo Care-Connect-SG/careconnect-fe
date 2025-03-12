@@ -3,6 +3,7 @@
 import { getFormById } from "@/app/api/form";
 import { getReportById } from "@/app/api/report";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormResponse } from "@/types/form";
 import { ReportResponse } from "@/types/report";
@@ -53,9 +54,9 @@ export default function ViewReportPage() {
   return (
     <div className="py-4 px-8">
       <Link href="/dashboard/incidents">
-        <button className="border h-10 w-10 rounded-md hover:bg-gray-50">
+        <Button className="border h-10 w-10 rounded-md hover:bg-gray-50">
           <ChevronLeft className="h-4 w-4 mx-auto" />
-        </button>
+        </Button>
       </Link>
       <Card>
         <CardHeader className="pb-2">

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -22,8 +23,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Task, TaskStatus } from "@/types/task";
-import { TaskPriority } from "@/types/task";
-import { TaskCategory } from "@/types/task";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
 import React, { useEffect, useState } from "react";
@@ -134,7 +133,6 @@ export default function TaskForm({
   const onSubmit = async (data: TaskForm) => {
     try {
       if (task) {
-        // Update an existing task
         const updatedTask = await updateTask(task.id, data);
         if (setTasks) {
           setTasks((prevTasks) =>
@@ -142,7 +140,6 @@ export default function TaskForm({
           );
         }
       } else {
-        // Create a new task
         const newTask = await createTask(data);
         if (setTasks) {
           setTasks((prevTasks) => [newTask, ...prevTasks]);
@@ -181,15 +178,12 @@ export default function TaskForm({
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Task Title */}
             <FormField
               control={form.control}
               name="task_title"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <label htmlFor="task_title" className="label">
-                    Task Title
-                  </label>
+                  <Label htmlFor="task_title">Task Title</Label>
                   <FormControl>
                     <Input
                       id="task_title"
@@ -206,15 +200,12 @@ export default function TaskForm({
               )}
             />
 
-            {/* Task Details */}
             <FormField
               control={form.control}
               name="task_details"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <label htmlFor="task_details" className="label">
-                    Task Details
-                  </label>
+                  <Label htmlFor="task_details">Task Details</Label>
                   <FormControl>
                     <Textarea
                       id="task_details"
@@ -231,14 +222,13 @@ export default function TaskForm({
               )}
             />
 
-            {/* Priority and Category */}
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="priority"
                 render={({ field }) => (
                   <FormItem>
-                    <label className="label">Priority</label>
+                    <Label>Priority</Label>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value || ""}
@@ -261,7 +251,7 @@ export default function TaskForm({
                 name="category"
                 render={({ field }) => (
                   <FormItem>
-                    <label className="label">Category</label>
+                    <Label>Category</Label>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value || ""}
@@ -288,7 +278,7 @@ export default function TaskForm({
               name="residents"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <label className="label">Residents</label>
+                  <Label >Residents</Label>
                   <FormControl>
                     <Input
                       placeholder="Enter resident IDs, comma separated"
@@ -310,14 +300,13 @@ export default function TaskForm({
             />
             */}
 
-            {/* Start Date and Due Date */}
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="start_date"
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <label className="label">Start Date</label>
+                    <Label>Start Date</Label>
                     <FormControl>
                       <Input
                         type="date"
@@ -345,7 +334,7 @@ export default function TaskForm({
                 name="due_date"
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <label className="label">Due Date</label>
+                    <Label>Due Date</Label>
                     <FormControl>
                       <Input
                         type="date"
@@ -369,14 +358,13 @@ export default function TaskForm({
               />
             </div>
 
-            {/* Recurring and End Recurring Date */}
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="recurring"
                 render={({ field }) => (
                   <FormItem>
-                    <label className="label">Recurring</label>
+                    <Label>Recurring</Label>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value || ""}
@@ -400,7 +388,7 @@ export default function TaskForm({
                 name="end_recurring_date"
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <label className="label">End Recurring Date</label>
+                    <Label>End Recurring Date</Label>
                     <FormControl>
                       <Input
                         type="date"
@@ -424,13 +412,12 @@ export default function TaskForm({
               />
             </div>
 
-            {/* Remind Prior */}
             <FormField
               control={form.control}
               name="remind_prior"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <label className="label">Remind Prior (minutes)</label>
+                  <Label>Remind Prior (minutes)</Label>
                   <FormControl>
                     <Input
                       type="number"
@@ -447,15 +434,12 @@ export default function TaskForm({
               )}
             />
 
-            {/* Assigned To */}
             <FormField
               control={form.control}
               name="assigned_to"
               render={({ field, fieldState }) => (
                 <FormItem>
-                  <label htmlFor="assigned_to" className="label">
-                    Assigned To
-                  </label>
+                  <Label htmlFor="assigned_to">Assigned To</Label>
                   <FormControl>
                     <Input id="assigned_to" placeholder="Assignee" {...field} />
                   </FormControl>

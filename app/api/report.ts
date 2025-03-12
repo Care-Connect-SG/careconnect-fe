@@ -19,7 +19,6 @@ export const getReports = async (
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        // Authorization: `Bearer ${process.env.BE_API_SECRET}`,
       },
     });
 
@@ -45,7 +44,6 @@ export const createReport = async (
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // Authorization: `Bearer ${process.env.BE_API_SECRET}`,
         },
         body: JSON.stringify(reportData),
       },
@@ -74,7 +72,6 @@ export const updateReport = async (
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          // Authorization: `Bearer ${process.env.BE_API_SECRET}`,
         },
         body: JSON.stringify(reportData),
       },
@@ -100,7 +97,6 @@ export const submitForm = async (reportId: string): Promise<string> => {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          // Authorization: `Bearer ${process.env.BE_API_SECRET}`,
         },
       },
     );
@@ -127,7 +123,6 @@ export const getReportById = async (
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          // Authorization: `Bearer ${process.env.BE_API_SECRET}`,
         },
       },
     );
@@ -154,7 +149,6 @@ export const deleteReport = async (reportId: string): Promise<void> => {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          // Authorization: `Bearer ${process.env.BE_API_SECRET}`,
         },
       },
     );
@@ -182,7 +176,6 @@ export const getResidentTags = async (
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        // Authorization: `Bearer ${process.env.BE_API_SECRET}`,
       },
     });
 
@@ -214,7 +207,6 @@ export const getCaregiverTags = async (
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        // Authorization: `Bearer ${process.env.BE_API_SECRET}`,
       },
     });
 

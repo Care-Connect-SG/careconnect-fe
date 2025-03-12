@@ -12,7 +12,6 @@ export const getForms = async (status?: string): Promise<FormResponse[]> => {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        // Authorization: `Bearer ${process.env.BE_API_SECRET}`,
       },
     });
 

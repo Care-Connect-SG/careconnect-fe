@@ -221,7 +221,9 @@ export default function TaskForm({
     (data) => {
       onSubmit(data);
     },
-    (errors) => {},
+    (errors) => {
+      console.log(errors);
+    },
   );
 
   return (

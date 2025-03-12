@@ -21,7 +21,6 @@ interface CarePlanProps {
 }
 
 const CarePlanDisplay: React.FC<CarePlanProps> = ({ careplan }) => {
-  // Helper function for formatting dietary restrictions
   const formatDietaryRestrictions = (restrictions: string | undefined) => {
     if (!restrictions) return "None";
     return restrictions.split(",").map((item, index) => (
@@ -34,7 +33,6 @@ const CarePlanDisplay: React.FC<CarePlanProps> = ({ careplan }) => {
     ));
   };
 
-  // Helper function for formatting meal plans
   const formatMealPlan = (mealPlan: string | undefined) => {
     if (!mealPlan) return "No meal plan specified.";
     const meals = mealPlan.split("\n");

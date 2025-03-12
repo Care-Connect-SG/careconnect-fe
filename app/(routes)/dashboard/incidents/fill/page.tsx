@@ -68,14 +68,12 @@ export default function CreateReportPage() {
     const formData = await fetchForm();
     if (!formData) return;
 
-    // If editing an existing report
     if (isEditing) {
       const reportState = await fetchReport();
       if (reportState) {
         dispatch({ type: "SET_REPORT", payload: reportState });
       }
     } else {
-      // Creating a new blank report
       const blankReport = formData.json_content.map(
         (element: FormElementData) => ({
           form_element_id: element.element_id,
@@ -111,7 +109,6 @@ export default function CreateReportPage() {
     dispatch({ type: "SET_SUBMITTING", payload: true });
     dispatch({ type: "SET_ERROR", payload: null });
 
-    // Check required fields
     for (const section of state.report_content) {
       if (requiresInput(section.form_element_id) && !section.input) {
         dispatch({

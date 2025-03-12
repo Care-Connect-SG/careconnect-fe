@@ -172,7 +172,6 @@ export const DatePicker = <T extends DatePickerMode = "single">({
   disabled,
   required = false,
 }: DatePickerProps) => {
-  // Use `null` as empty value when in controlled mode.
   const [value, setValue] = useControllableState<DatePickerValue<T>>({
     prop: valueProp as DatePickerValue<T>,
     defaultProp: defaultValue as DatePickerValue<T>,
@@ -362,7 +361,9 @@ export const DatePickerValue = React.forwardRef<
     if (mode === "multiple") {
       return value.map((v) => format(v, formatStr)).join(", ");
     }
-    return `${value.from ? format(value.from, formatStr) : "Select a date"} - ${value.to ? format(value.to, formatStr) : "Select a date"}`;
+    return `${value.from ? format(value.from, formatStr) : "Select a date"} - ${
+      value.to ? format(value.to, formatStr) : "Select a date"
+    }`;
   }, [mode, value, formatStr]);
 
   return (

@@ -221,9 +221,7 @@ export default function TaskForm({
     (data) => {
       onSubmit(data);
     },
-    (errors) => {
-      // Handle form validation errors if needed
-    },
+    (errors) => {},
   );
 
   return (

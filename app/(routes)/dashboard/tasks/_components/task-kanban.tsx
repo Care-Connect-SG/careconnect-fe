@@ -164,17 +164,18 @@ const ResidentColumn = ({
       </div>
       {showTaskForm && (
         <TaskForm
-          onClose={() => setShowTaskForm(false)}
+          onClose={() => {
+            setShowTaskForm(false);
+          }}
           setTasks={(updater) => {
             if (typeof updater === "function") {
               setTasks(updater);
             } else {
-              setTasks((prev) => [...prev, updater]);
+              setTasks((prevTasks) => [...prevTasks, updater]);
             }
-            setShowTaskForm(false);
           }}
           defaultResident={resident.id}
-          open={showTaskForm}
+          isOpen={showTaskForm}
         />
       )}
     </div>

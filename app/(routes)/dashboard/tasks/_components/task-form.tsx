@@ -6,6 +6,7 @@ import { getAllNurses } from "@/app/api/user";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Command,
   CommandEmpty,
@@ -404,54 +405,38 @@ export default function TaskForm({
                 <FormItem>
                   <Label>Residents</Label>
                   <div className="space-y-2">
-                    <div className="flex flex-wrap gap-2">
-                      {field.value?.map((residentId) => {
-                        const resident = residents.find(
-                          (r) => r.id === residentId,
-                        );
-                        return resident ? (
-                          <Badge key={residentId} variant="secondary">
-                            {resident.full_name}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                field.onChange(
-                                  field.value?.filter(
-                                    (id) => id !== residentId,
-                                  ),
-                                );
-                              }}
-                              className="ml-1 hover:text-destructive"
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          </Badge>
-                        ) : null;
-                      })}
-                    </div>
-                    <Command className="border rounded-lg">
-                      <CommandInput placeholder="Search residents..." />
-                      <CommandEmpty>No residents found.</CommandEmpty>
-                      <CommandGroup>
-                        {residents
-                          .filter(
-                            (resident) => !field.value?.includes(resident.id),
-                          )
-                          .map((resident) => (
-                            <CommandItem
-                              key={resident.id}
-                              onSelect={() => {
-                                field.onChange([
-                                  ...(field.value || []),
-                                  resident.id,
-                                ]);
-                              }}
-                            >
-                              {resident.full_name}
-                            </CommandItem>
-                          ))}
-                      </CommandGroup>
-                    </Command>
+                    {residents.map((resident) => (
+                      <div
+                        key={resident.id}
+                        className="flex items-center space-x-2"
+                      >
+                        <input
+                          type="checkbox"
+                          id={`resident-${resident.id}`}
+                          checked={field.value?.includes(resident.id)}
+                          onChange={(e) => {
+                            const currentValue = field.value || [];
+                            if (e.target.checked) {
+                              field.onChange([...currentValue, resident.id]);
+                            } else {
+                              field.onChange(
+                                currentValue.filter((id) => id !== resident.id),
+                              );
+                            }
+                          }}
+                          className={cn(
+                            "h-4 w-4 rounded border-gray-300",
+                            fieldState.error && "border-red-500",
+                          )}
+                        />
+                        <label
+                          htmlFor={`resident-${resident.id}`}
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          {resident.full_name}
+                        </label>
+                      </div>
+                    ))}
                   </div>
                   {fieldState.error && (
                     <p className="text-sm text-red-500">

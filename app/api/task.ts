@@ -50,9 +50,6 @@ export const getTasks = async (filters?: {
 
     const response = await fetchWithAuth(url, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
     });
 
     if (!response.ok) {

@@ -2,20 +2,20 @@
 
 import { getFormById } from "@/app/api/form";
 import { getReportById } from "@/app/api/report";
+import { getResidentById } from "@/app/api/resident";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatDayMonthYear } from "@/lib/utils";
 import { FormResponse } from "@/types/form";
 import { ReportResponse } from "@/types/report";
+import { ResidentRecord } from "@/types/resident";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { LoadingSkeleton } from "../_components/loading-skeleton";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ResidentRecord } from "@/types/resident";
-import { getResidentById } from "@/app/api/resident";
-import { formatDayMonthYear } from "@/lib/utils";
 
 export default function ViewReportPage() {
   const router = useRouter();
@@ -30,7 +30,9 @@ export default function ViewReportPage() {
     try {
       const data: ReportResponse = await getReportById(reportId!);
       if (data.primary_resident?.id) {
-        const resident: ResidentRecord = await getResidentById(data.primary_resident.id);
+        const resident: ResidentRecord = await getResidentById(
+          data.primary_resident.id,
+        );
         setResident(resident);
       }
       setReport(data);
@@ -84,22 +86,23 @@ export default function ViewReportPage() {
           </div>
           {report?.created_at && (
             <p className="text-gray-500">
-              Reported on {" "}
-              {formatDayMonthYear(new Date(report?.created_at))}
-              {" "}
-              by {report.reporter.name}
+              Reported on {formatDayMonthYear(new Date(report?.created_at))} by{" "}
+              {report.reporter.name}
             </p>
           )}
         </CardHeader>
         <CardContent>
           <div>
             <div className="flex my-4">
-              {
-                resident &&
+              {resident && (
                 <div className="w-1/2">
-                  <h2 className="text-gray-500 font-semibold mb-2">Primary Resident</h2>
-                  <Link href={`/dashboard/residents/${resident.id}`}
-                    className="flex items-center gap-3 group hover">
+                  <h2 className="text-gray-500 font-semibold mb-2">
+                    Primary Resident
+                  </h2>
+                  <Link
+                    href={`/dashboard/residents/${resident.id}`}
+                    className="flex items-center gap-3 group hover"
+                  >
                     <Avatar className="h-16 w-16 group-hover:ring-1 group-hover:ring-primary group-hover:ring-offset-2 transition-all">
                       <AvatarFallback>PR</AvatarFallback>
                     </Avatar>
@@ -110,12 +113,16 @@ export default function ViewReportPage() {
                         </span>
                         <ChevronRight className="h-4 w-4 mb-1 opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
-                      <p className="text-sm text-muted-foreground">Room: {resident.room_number}</p>
-                      <p className="text-sm text-muted-foreground">DOB: {resident.date_of_birth}</p>
+                      <p className="text-sm text-muted-foreground">
+                        Room: {resident.room_number}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        DOB: {resident.date_of_birth}
+                      </p>
                     </div>
                   </Link>
                 </div>
-              }
+              )}
               <div className="w-1/2">
                 <h2 className="text-gray-500 font-semibold mb-2">Reporter</h2>
                 <div className="flex items-center gap-3">
@@ -123,10 +130,10 @@ export default function ViewReportPage() {
                     <AvatarFallback>RE</AvatarFallback>
                   </Avatar>
                   <div>
-                    <div className="mb-1">
-                      {report?.reporter.name}
-                    </div>
-                    <p className="text-sm text-muted-foreground">Nurse [Admin]</p>
+                    <div className="mb-1">{report?.reporter.name}</div>
+                    <p className="text-sm text-muted-foreground">
+                      Nurse [Admin]
+                    </p>
                   </div>
                 </div>
               </div>
@@ -142,7 +149,8 @@ export default function ViewReportPage() {
                     <div className="font-bold text-gray-500 py-2">
                       {
                         form?.json_content.find(
-                          (element) => element.element_id === section.form_element_id
+                          (element) =>
+                            element.element_id === section.form_element_id,
                         )?.label
                       }
                     </div>

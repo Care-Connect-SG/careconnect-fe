@@ -45,11 +45,10 @@ export function formatDateWithoutSeconds(dateInput: string | Date): string {
   return `${dateLabel}, ${formattedTime}`;
 }
 
-
 export function formatDayMonthYear(date: Date): string {
   const day = date.getDate();
 
-  const month = date.toLocaleString('en-US', { month: 'short' });
+  const month = date.toLocaleString("en-US", { month: "short" });
   const year = date.getFullYear();
 
   return `${day} ${month} ${year}`;

@@ -185,7 +185,7 @@ export default function ViewReportPage() {
                         {report.involved_caregivers.map((ir, index) => (
                           <span key={ir.id}>
                             <Link
-                              href={`/dashboard/residents/${ir.id}`}
+                              href={`/dashboard/nurses/${ir.id}`}
                               className="border-b border-dotted border-muted-foreground"
                             >
                               {ir.name}

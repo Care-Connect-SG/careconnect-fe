@@ -7,6 +7,7 @@ import { Separator } from "@radix-ui/react-separator";
 import {
   AlignLeft,
   Calendar,
+  CalendarClock,
   CheckSquare,
   Clock,
   ListChecks,
@@ -40,6 +41,11 @@ export default function FormElementBar({ onAddElement }: FormElementBarProps) {
       type: "date",
       item: <Calendar />,
       color: "bg-emerald-100",
+    },
+    {
+      type: "datetime",
+      item: <CalendarClock />,
+      color: "bg-yellow-100",
     },
     {
       type: "radio",

@@ -19,6 +19,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 
+import DateTimePicker, {
+  convertDateTimeToString,
+  DateTimePickerValue,
+  parseDateTimeString,
+} from "@/components/datetime-picker";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -58,6 +63,11 @@ export default function FormElementFill({
       ? currentValue.filter((item) => item !== option)
       : [...currentValue, option];
     onInputChange(element_id, newValue);
+  };
+
+  const handleDateTimePickerChange = (datetime: DateTimePickerValue) => {
+    const datetimeString = convertDateTimeToString(datetime);
+    onInputChange(element_id, datetimeString);
   };
 
   return (
@@ -106,6 +116,13 @@ export default function FormElementFill({
               />
             </PopoverContent>
           </Popover>
+        )}
+
+        {type === "datetime" && (
+          <DateTimePicker
+            value={value ? parseDateTimeString(value as string) : undefined}
+            onChange={handleDateTimePickerChange}
+          />
         )}
 
         {type === "radio" && options && (

@@ -1,7 +1,8 @@
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
+
 export const getGroups = async (): Promise<any> => {
-  const endpoint = `${process.env.NEXT_PUBLIC_BE_API_URL}/groups`;
   try {
-    const res = await fetch(endpoint, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BE_API_URL}/groups`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });
@@ -13,15 +14,18 @@ export const getGroups = async (): Promise<any> => {
     throw error;
   }
 };
+
 export const getGroupById = async (groupId: string): Promise<any> => {
-  const endpoint = `${
-    process.env.NEXT_PUBLIC_BE_API_URL
-  }/groups/${encodeURIComponent(groupId)}`;
   try {
-    const res = await fetch(endpoint, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    });
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/groups/${encodeURIComponent(
+        groupId,
+      )}`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      },
+    );
     if (!res.ok) {
       throw new Error(`Error fetching group: ${res.statusText}`);
     }
@@ -42,13 +46,15 @@ export const createGroup = async (group: {
     description: group.description,
     members: group.members,
   };
-  const endpoint = `${process.env.NEXT_PUBLIC_BE_API_URL}/groups/create`;
   try {
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    const res = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/groups/create`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      },
+    );
     if (!res.ok) {
       throw new Error(`Error creating group: ${await res.text()}`);
     }
@@ -64,18 +70,20 @@ export const updateGroup = async (params: {
   new_description: string;
 }): Promise<any> => {
   const { group_id, new_name, new_description } = params;
-  const endpoint = `${
-    process.env.NEXT_PUBLIC_BE_API_URL
-  }/groups/edit?group_id=${encodeURIComponent(
-    group_id,
-  )}&new_name=${encodeURIComponent(
-    new_name,
-  )}&new_description=${encodeURIComponent(new_description)}`;
   try {
-    const res = await fetch(endpoint, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-    });
+    const res = await fetchWithAuth(
+      `${
+        process.env.NEXT_PUBLIC_BE_API_URL
+      }/groups/edit?group_id=${encodeURIComponent(
+        group_id,
+      )}&new_name=${encodeURIComponent(
+        new_name,
+      )}&new_description=${encodeURIComponent(new_description)}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+      },
+    );
     if (!res.ok) {
       throw new Error(`Error updating group: ${await res.text()}`);
     }
@@ -87,14 +95,16 @@ export const updateGroup = async (params: {
 
 export const deleteGroup = async (groupId: string): Promise<any> => {
   if (!groupId) throw new Error("Group id is required");
-  const endpoint = `${
-    process.env.NEXT_PUBLIC_BE_API_URL
-  }/groups/delete?group_id=${encodeURIComponent(groupId)}`;
   try {
-    const res = await fetch(endpoint, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-    });
+    const res = await fetchWithAuth(
+      `${
+        process.env.NEXT_PUBLIC_BE_API_URL
+      }/groups/delete?group_id=${encodeURIComponent(groupId)}`,
+      {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      },
+    );
     if (!res.ok) {
       throw new Error(`Error deleting group: ${await res.text()}`);
     }
@@ -108,16 +118,22 @@ export async function addUserToGroup(payload: {
   group_id: string;
   user_id: string;
 }) {
-  const res = await fetch("/api/groups/add-user", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const res = await fetchWithAuth(
+    `${
+      process.env.NEXT_PUBLIC_BE_API_URL
+    }/groups/add-user?group_id=${encodeURIComponent(
+      payload.group_id,
+    )}&user_id=${encodeURIComponent(payload.user_id)}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
     },
-    body: JSON.stringify(payload),
-  });
+  );
   if (!res.ok) {
     const errData = await res.json();
-    throw new Error(errData.error?.detail || "Failed to add user to group");
+    throw new Error(errData.detail || "Failed to add user to group");
   }
   return await res.json();
 }
@@ -126,16 +142,18 @@ export const removeUserFromGroup = async (
   groupId: string,
   userId: string,
 ): Promise<any> => {
-  const endpoint = `${
-    process.env.NEXT_PUBLIC_BE_API_URL
-  }/groups/remove-user?group_id=${encodeURIComponent(
-    groupId,
-  )}&user_id=${encodeURIComponent(userId)}`;
   try {
-    const res = await fetch(endpoint, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-    });
+    const res = await fetchWithAuth(
+      `${
+        process.env.NEXT_PUBLIC_BE_API_URL
+      }/groups/remove-user?group_id=${encodeURIComponent(
+        groupId,
+      )}&user_id=${encodeURIComponent(userId)}`,
+      {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      },
+    );
     if (!res.ok) {
       throw new Error(`Failed to remove user: ${await res.text()}`);
     }

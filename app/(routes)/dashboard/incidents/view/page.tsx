@@ -180,7 +180,7 @@ export default function ViewReportPage() {
                 {report?.involved_caregivers &&
                   report?.involved_caregivers.length > 0 && (
                     <div>
-                      <h2 className="text-gray-500">Involved residents:</h2>
+                      <h2 className="text-gray-500">Involved caregivers:</h2>
                       <div>
                         {report.involved_caregivers.map((ir, index) => (
                           <span key={ir.id}>

@@ -262,6 +262,11 @@ export default function TaskForm({
                       id="task_title"
                       placeholder="Task Title"
                       {...field}
+                      className={
+                        fieldState.invalid
+                          ? "border-destructive focus-visible:ring-destructive"
+                          : ""
+                      }
                     />
                   </FormControl>
                   {fieldState.error && (
@@ -283,6 +288,11 @@ export default function TaskForm({
                       id="task_details"
                       placeholder="Task Details"
                       {...field}
+                      className={
+                        fieldState.invalid
+                          ? "border-destructive focus-visible:ring-destructive"
+                          : ""
+                      }
                     />
                   </FormControl>
                   {fieldState.error && (
@@ -303,6 +313,11 @@ export default function TaskForm({
                     <Select
                       onValueChange={field.onChange}
                       value={field.value || ""}
+                      className={
+                        fieldState.invalid
+                          ? "border-destructive focus-visible:ring-destructive"
+                          : ""
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select priority" />
@@ -325,6 +340,11 @@ export default function TaskForm({
                     <Select
                       onValueChange={field.onChange}
                       value={field.value || ""}
+                      className={
+                        fieldState.invalid
+                          ? "border-destructive focus-visible:ring-destructive"
+                          : ""
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select category" />
@@ -349,6 +369,11 @@ export default function TaskForm({
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
+                    className={
+                      fieldState.invalid
+                        ? "border-destructive focus-visible:ring-destructive"
+                        : ""
+                    }
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -380,6 +405,11 @@ export default function TaskForm({
                   <Select
                     onValueChange={(value) => field.onChange([value])}
                     defaultValue={field.value?.[0]}
+                    className={
+                      fieldState.invalid
+                        ? "border-destructive focus-visible:ring-destructive"
+                        : ""
+                    }
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -421,6 +451,11 @@ export default function TaskForm({
                             ? new Date(field.value).toISOString().slice(0, 16)
                             : ""
                         }
+                        className={
+                          fieldState.invalid
+                            ? "border-destructive focus-visible:ring-destructive"
+                            : ""
+                        }
                       />
                     </FormControl>
                     {fieldState.error && (
@@ -449,6 +484,11 @@ export default function TaskForm({
                             ? new Date(field.value).toISOString().slice(0, 16)
                             : ""
                         }
+                        className={
+                          fieldState.invalid
+                            ? "border-destructive focus-visible:ring-destructive"
+                            : ""
+                        }
                       />
                     </FormControl>
                     {fieldState.error && (
@@ -470,6 +510,11 @@ export default function TaskForm({
                     <Select
                       onValueChange={field.onChange}
                       value={field.value || ""}
+                      className={
+                        fieldState.invalid
+                          ? "border-destructive focus-visible:ring-destructive"
+                          : ""
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select recurrence" />
@@ -501,6 +546,11 @@ export default function TaskForm({
                             ? new Date(field.value).toISOString().split("T")[0]
                             : ""
                         }
+                        className={
+                          fieldState.invalid
+                            ? "border-destructive focus-visible:ring-destructive"
+                            : ""
+                        }
                       />
                     </FormControl>
                     {fieldState.error && (
@@ -523,6 +573,11 @@ export default function TaskForm({
                       type="number"
                       onChange={(e) => field.onChange(Number(e.target.value))}
                       value={field.value || ""}
+                      className={
+                        fieldState.invalid
+                          ? "border-destructive focus-visible:ring-destructive"
+                          : ""
+                      }
                     />
                   </FormControl>
                   {fieldState.error && (

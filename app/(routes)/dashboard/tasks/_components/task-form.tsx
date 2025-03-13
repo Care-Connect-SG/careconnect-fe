@@ -33,7 +33,7 @@ import { z } from "zod";
 
 const taskSchema = z
   .object({
-    task_title: z.string().nonempty("Task title is required"),
+    task_title: z.string().min(3, "Task title must be at least 3 characters").max(255, "Task title must be less than 255 characters"),
     task_details: z.string().optional(),
     media: z.array(z.string()).optional(),
     notes: z.string().optional(),
@@ -185,20 +185,19 @@ export default function TaskForm({
         }
         toast({
           variant: "default",
-          title: "Task Updated",
+          title: "Success",
           description: "Task has been updated successfully",
         });
       } else {
         const newTasks = await createTask(data);
         if (setTasks) {
           setTasks((prevTasks) => [...newTasks, ...prevTasks]);
-        } else {
-          toast({
-            variant: "default",
-            title: "Tasks Created",
-            description: `${newTasks.length} task(s) created successfully`,
-          });
         }
+        toast({
+          variant: "default",
+          title: "Success",
+          description: `${newTasks.length} task(s) created successfully`,
+        });
       }
       setIsOpen(false);
       if (onClose) onClose();
@@ -222,7 +221,13 @@ export default function TaskForm({
       onSubmit(data);
     },
     (errors) => {
-      console.log(errors);
+      // Show validation errors in toast
+      const errorMessages = Object.values(errors).map((error) => error.message);
+      toast({
+        variant: "destructive",
+        title: "Validation Error",
+        description: errorMessages.join(", "),
+      });
     },
   );
 

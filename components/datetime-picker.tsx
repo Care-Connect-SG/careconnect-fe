@@ -1,204 +1,153 @@
 "use client";
 
+import { format, getHours, getMinutes, isValid, parse } from "date-fns";
+
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { format, getHours, getMinutes, isValid, parse } from "date-fns";
 import { CalendarIcon } from "lucide-react";
-import { useEffect, useState } from "react";
-
-export interface DateTimePickerValue {
-  date?: Date;
-  hours?: string;
-  minutes?: string;
-  period?: "AM" | "PM";
-}
+import { useState } from "react";
 
 interface DateTimePickerProps {
-  value?: DateTimePickerValue;
-  onChange?: (newValue: DateTimePickerValue) => void;
+  value?: Date;
+  onChange?: (newValue: Date) => void;
 }
 
-export const convertDateTimeToString = (datetimeValue: DateTimePickerValue) => {
-  if (
-    datetimeValue.date &&
-    datetimeValue.hours &&
-    datetimeValue.minutes &&
-    datetimeValue.period
-  ) {
-    const fullDateTime = new Date(datetimeValue.date);
-    let hours = parseInt(datetimeValue.hours, 10);
+export function convertDateTimeToString(datetime: Date): string {
+  return format(datetime, "MM/dd/yyyy hh:mm aa");
+}
 
-    if (datetimeValue.period === "PM" && hours < 12) hours += 12;
-    if (datetimeValue.period === "AM" && hours === 12) hours = 0;
+export function parseStringToDateTime(datetimeString: string): Date {
+  return parse(datetimeString, "MM/dd/yyyy hh:mm aa", new Date());
+}
 
-    fullDateTime.setHours(hours, parseInt(datetimeValue.minutes, 10));
+export function DateTimePicker({ value, onChange }: DateTimePickerProps) {
+  const [date, setDate] = useState<Date>(value!);
+  const [isOpen, setIsOpen] = useState(false);
 
-    const formattedDateTime = format(fullDateTime, "yyyy-MM-dd hh:mm a");
-    return formattedDateTime;
-  }
-};
-
-export const parseDateTimeString = (
-  datetimeString: string,
-): DateTimePickerValue => {
-  const parsedDate = parse(datetimeString, "yyyy-MM-dd hh:mm a", new Date());
-  if (!isValid(parsedDate)) {
-    return {};
-  }
-
-  let hours24 = getHours(parsedDate);
-  const minutes = getMinutes(parsedDate);
-  const period = hours24 < 12 ? "AM" : "PM";
-
-  // Convert 24-hour to 12-hour
-  if (hours24 === 0) {
-    hours24 = 12;
-  } else if (hours24 > 12) {
-    hours24 = hours24 - 12;
-  }
-
-  const hoursString = String(hours24).padStart(2, "0");
-  const minutesString = String(minutes).padStart(2, "0");
-
-  return {
-    date: parsedDate,
-    hours: hoursString,
-    minutes: minutesString,
-    period,
-  };
-};
-
-export default function DateTimePicker({
-  value,
-  onChange,
-}: DateTimePickerProps) {
-  const [internalValue, setInternalValue] = useState<DateTimePickerValue>(
-    value ?? {},
-  );
-
-  useEffect(() => {
-    if (value) {
-      setInternalValue(value);
+  const hours = Array.from({ length: 12 }, (_, i) => i + 1);
+  const handleDateSelect = (selectedDate: Date | undefined) => {
+    if (selectedDate) {
+      setDate(selectedDate);
+      onChange?.(selectedDate);
     }
-  }, [value]);
+  };
 
-  function updateDateTime(updatedFields: Partial<DateTimePickerValue>) {
-    const merged = { ...internalValue, ...updatedFields };
-    setInternalValue(merged);
-    onChange?.(merged);
-  }
-
-  const hours = Array.from({ length: 12 }, (_, i) =>
-    (i + 1).toString().padStart(2, "0"),
-  );
-  const minutes = Array.from({ length: 60 }, (_, i) =>
-    i.toString().padStart(2, "0"),
-  );
+  const handleTimeChange = (
+    type: "hour" | "minute" | "ampm",
+    value: string,
+  ) => {
+    if (date) {
+      const newDate = new Date(date);
+      if (type === "hour") {
+        newDate.setHours(
+          (parseInt(value) % 12) + (newDate.getHours() >= 12 ? 12 : 0),
+        );
+      } else if (type === "minute") {
+        newDate.setMinutes(parseInt(value));
+      } else if (type === "ampm") {
+        const currentHours = newDate.getHours();
+        newDate.setHours(
+          value === "PM" ? currentHours + 12 : currentHours - 12,
+        );
+      }
+      setDate(newDate);
+      onChange?.(newDate);
+    }
+  };
 
   return (
-    <div className="space-y-3">
-      {/* Date Picker */}
-      <Popover>
-        <PopoverTrigger asChild>
-          <div className="flex flex-col gap-1">
-            <Label>Date</Label>
-            <Button
-              variant="outline"
-              className={cn(
-                "justify-start text-left font-normal",
-                !internalValue.date && "text-muted-foreground",
-              )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {internalValue.date ? (
-                format(internalValue.date, "PPP")
-              ) : (
-                <span>Pick a date</span>
-              )}
-            </Button>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          className={cn(
+            "w-full justify-start text-left font-normal",
+            !date && "text-muted-foreground",
+          )}
+        >
+          <CalendarIcon className="mr-2 h-4 w-4" />
+          {date ? (
+            format(date, "MM/dd/yyyy hh:mm aa")
+          ) : (
+            <span>MM/DD/YYYY hh:mm aa</span>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0">
+        <div className="sm:flex">
+          <Calendar mode="single" selected={date} onSelect={handleDateSelect} />
+          <div className="flex flex-col sm:flex-row sm:h-[300px] divide-y sm:divide-y-0 sm:divide-x">
+            <ScrollArea className="w-64 sm:w-auto">
+              <div className="flex sm:flex-col p-2">
+                {hours.reverse().map((hour) => (
+                  <Button
+                    key={hour}
+                    size="icon"
+                    variant={
+                      date && date.getHours() % 12 === hour % 12
+                        ? "default"
+                        : "ghost"
+                    }
+                    className="sm:w-full shrink-0 aspect-square"
+                    onClick={() => handleTimeChange("hour", hour.toString())}
+                  >
+                    {hour}
+                  </Button>
+                ))}
+              </div>
+              <ScrollBar orientation="horizontal" className="sm:hidden" />
+            </ScrollArea>
+            <ScrollArea className="w-64 sm:w-auto">
+              <div className="flex sm:flex-col p-2">
+                {Array.from({ length: 12 }, (_, i) => i * 5).map((minute) => (
+                  <Button
+                    key={minute}
+                    size="icon"
+                    variant={
+                      date && date.getMinutes() === minute ? "default" : "ghost"
+                    }
+                    className="sm:w-full shrink-0 aspect-square"
+                    onClick={() =>
+                      handleTimeChange("minute", minute.toString())
+                    }
+                  >
+                    {minute}
+                  </Button>
+                ))}
+              </div>
+              <ScrollBar orientation="horizontal" className="sm:hidden" />
+            </ScrollArea>
+            <ScrollArea className="">
+              <div className="flex sm:flex-col p-2">
+                {["AM", "PM"].map((ampm) => (
+                  <Button
+                    key={ampm}
+                    size="icon"
+                    variant={
+                      date &&
+                      ((ampm === "AM" && date.getHours() < 12) ||
+                        (ampm === "PM" && date.getHours() >= 12))
+                        ? "default"
+                        : "ghost"
+                    }
+                    className="sm:w-full shrink-0 aspect-square"
+                    onClick={() => handleTimeChange("ampm", ampm)}
+                  >
+                    {ampm}
+                  </Button>
+                ))}
+              </div>
+            </ScrollArea>
           </div>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0">
-          <Calendar
-            mode="single"
-            selected={internalValue.date}
-            onSelect={(date) => updateDateTime({ date })}
-          />
-        </PopoverContent>
-      </Popover>
-
-      {/* Time Selectors */}
-      <div className="flex items-center gap-2">
-        <div className="w-1/6">
-          <Label>Hours</Label>
-          <Select
-            value={internalValue.hours}
-            onValueChange={(value) => updateDateTime({ hours: value })}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Hour" />
-            </SelectTrigger>
-            <SelectContent>
-              {hours.map((hour) => (
-                <SelectItem key={hour} value={hour}>
-                  {hour}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
-
-        <div className="w-1/6">
-          <Label>Minutes</Label>
-          <Select
-            value={internalValue.minutes}
-            onValueChange={(value) => updateDateTime({ minutes: value })}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Min" />
-            </SelectTrigger>
-            <SelectContent>
-              {minutes.map((minute) => (
-                <SelectItem key={minute} value={minute}>
-                  {minute}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="w-1/6">
-          <Label>AM/PM</Label>
-          <Select
-            value={internalValue.period}
-            onValueChange={(value: "AM" | "PM") =>
-              updateDateTime({ period: value })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="--" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="AM">AM</SelectItem>
-              <SelectItem value="PM">PM</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-    </div>
+      </PopoverContent>
+    </Popover>
   );
 }

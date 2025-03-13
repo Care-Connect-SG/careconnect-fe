@@ -19,10 +19,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 
-import DateTimePicker, {
+import {
+  DateTimePicker,
   convertDateTimeToString,
-  DateTimePickerValue,
-  parseDateTimeString,
+  parseStringToDateTime,
 } from "@/components/datetime-picker";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -65,7 +65,7 @@ export default function FormElementFill({
     onInputChange(element_id, newValue);
   };
 
-  const handleDateTimePickerChange = (datetime: DateTimePickerValue) => {
+  const handleDateTimePickerChange = (datetime: Date) => {
     const datetimeString = convertDateTimeToString(datetime);
     onInputChange(element_id, datetimeString);
   };
@@ -120,7 +120,7 @@ export default function FormElementFill({
 
         {type === "datetime" && (
           <DateTimePicker
-            value={value ? parseDateTimeString(value as string) : undefined}
+            value={value ? parseStringToDateTime(value as string) : undefined}
             onChange={handleDateTimePickerChange}
           />
         )}

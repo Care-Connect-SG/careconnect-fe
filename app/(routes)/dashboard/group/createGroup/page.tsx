@@ -37,9 +37,9 @@ export default function CreateGroupPage() {
       try {
         const data = await getUsers();
         setUsers(data);
-        setLoadingUsers(false);
       } catch (error) {
         console.error("Error fetching users:", error);
+      } finally {
         setLoadingUsers(false);
       }
     };
@@ -77,12 +77,19 @@ export default function CreateGroupPage() {
       });
 
       router.push("/dashboard/group");
-    } catch (error) {
-      console.error("Error fetching users:", error);
+    } catch (error: any) {
+      console.error("Error creating group:", error);
+      setError(error.message || "An error occurred while creating the group.");
     } finally {
       setCreating(false);
     }
   };
+
+  const availableUsers = users.filter(
+    (user) =>
+      (user.role === "Admin" || user.role === "Nurse") &&
+      !selectedMembers.includes(user.id),
+  );
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
@@ -127,16 +134,11 @@ export default function CreateGroupPage() {
                 <SelectValue placeholder="Select a user to add" />
               </SelectTrigger>
               <SelectContent>
-                {users
-                  .filter(
-                    (user: User) =>
-                      user.role === "Admin" || user.role === "Nurse",
-                  )
-                  .map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.name} ({user.email})
-                    </SelectItem>
-                  ))}
+                {availableUsers.map((user) => (
+                  <SelectItem key={user.id} value={user.id}>
+                    {user.name} ({user.email})
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           )}

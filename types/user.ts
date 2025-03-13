@@ -4,13 +4,6 @@ export enum Role {
   FAMILY = "Family",
 }
 
-export interface UserResponse {
-  id: string;
-  email: string;
-  name: string;
-  role: Role;
-}
-
 export enum Gender {
   MALE = "Male",
   FEMALE = "Female",
@@ -35,4 +28,11 @@ export interface User {
   organisation_rank?: string;
   gender: Gender;
   created_at: string;
+}
+
+export interface UserResponse {
+  id: string;
+  email: string;
+  name: string;
+  role: Role;
 }

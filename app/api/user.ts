@@ -1,3 +1,4 @@
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { UserResponse } from "@/types/user";
 import { User, UserEdit } from "@/types/user";
 import { UserForm } from "../(routes)/dashboard/nurses/_components/create-user-dialog";
@@ -25,6 +26,28 @@ export const getCurrentUser = async (email: string): Promise<UserResponse> => {
     return data[0];
   } catch (error) {
     console.error("Error fetching user: ", error);
+    throw error;
+  }
+};
+
+export const getCurrentUserDetails = async (): Promise<User> => {
+  try {
+    const res = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/me`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(
+        errorData.detail || "Failed to fetch current user details",
+      );
+    }
+    return await res.json();
+  } catch (error) {
+    console.error("Error fetching current user details:", error);
     throw error;
   }
 };

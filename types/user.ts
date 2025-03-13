@@ -29,10 +29,3 @@ export interface User {
   gender: Gender;
   created_at: string;
 }
-
-export interface UserResponse {
-  id: string;
-  email: string;
-  name: string;
-  role: Role;
-}

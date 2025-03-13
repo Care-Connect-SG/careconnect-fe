@@ -16,6 +16,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { LoadingSkeleton } from "../_components/loading-skeleton";
+import { User, UserResponse } from "@/types/user";
+import { getUserById } from "@/app/api/user";
 
 export default function ViewReportPage() {
   const router = useRouter();
@@ -23,12 +25,14 @@ export default function ViewReportPage() {
   const reportId = searchParams.get("reportId");
 
   const [report, setReport] = useState<ReportResponse>();
+  const [reporter, setReporter] = useState<User | null>();
   const [resident, setResident] = useState<ResidentRecord>();
   const [form, setForm] = useState<FormResponse>();
 
   const fetchReport = async () => {
     try {
       const data: ReportResponse = await getReportById(reportId!);
+      const reporter = await getUserById(data.reporter.id);
       if (data.primary_resident?.id) {
         const resident: ResidentRecord = await getResidentById(
           data.primary_resident.id,
@@ -36,6 +40,7 @@ export default function ViewReportPage() {
         setResident(resident);
       }
       setReport(data);
+      setReporter(reporter);
       fetchForm(data.form_id);
     } catch {
       console.error("Report not found");
@@ -125,17 +130,25 @@ export default function ViewReportPage() {
               )}
               <div className="w-1/2">
                 <h2 className="text-gray-500 font-semibold mb-2">Reporter</h2>
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-16 w-16">
-                    <AvatarFallback>RE</AvatarFallback>
+                <Link
+                  href={`/dashboard/nurses/${report?.reporter.id}`}
+                  className="flex items-center gap-3 group hover"
+                >
+                  <Avatar className="h-16 w-16 group-hover:ring-1 group-hover:ring-primary group-hover:ring-offset-2 transition-all">
+                    <AvatarFallback>NU</AvatarFallback>
                   </Avatar>
                   <div>
-                    <div className="mb-1">{report?.reporter.name}</div>
+                    <div className="font-medium flex items-center gap-1">
+                      <span className="border-b border-dotted border-muted-foreground group-hover:border-primary mb-1">
+                        {reporter?.name}
+                      </span>
+                      <ChevronRight className="h-4 w-4 mb-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
                     <p className="text-sm text-muted-foreground">
-                      Nurse [Admin]
+                      {reporter?.organisation_rank} [{reporter?.role}]
                     </p>
                   </div>
-                </div>
+                </Link>
               </div>
             </div>
 

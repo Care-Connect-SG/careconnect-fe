@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import { useToast } from "@/hooks/use-toast";
 import { User } from "@/types/user";
 import { usePathname, useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
@@ -21,39 +22,46 @@ export default function AddUsersPage() {
   const pathname = usePathname();
   const groupId = pathname.split("/")[3];
   const [users, setUsers] = useState<User[]>([]);
-  const [selectedUser, setSelectedUser] = useState<string>("");
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
-  const [addError, setAddError] = useState<string | null>(null);
-  const [addSuccess, setAddSuccess] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     async function fetchNurses() {
       try {
         const nurses = await getAllNurses();
         setUsers(nurses);
-        setLoading(false);
       } catch (err: any) {
-        setError(err.message || "An error occurred while fetching nurses");
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: err.message || "An error occurred while fetching nurses",
+        });
+      } finally {
         setLoading(false);
       }
     }
     fetchNurses();
-  }, []);
+  }, [toast]);
 
   const handleAddUser = async (e: FormEvent) => {
     e.preventDefault();
     if (!selectedUser) return;
     setAdding(true);
-    setAddError(null);
-    setAddSuccess(null);
     try {
-      await addUserToGroup({ group_id: groupId, user_id: selectedUser });
-      setAddSuccess("User added successfully!");
-      setSelectedUser("");
+      await addUserToGroup({ group_id: groupId, user_id: selectedUser.id });
+      toast({
+        title: `Successfully added ${selectedUser.name}`,
+        description: "User has been added to the group",
+      });
+      setSelectedUser(null);
     } catch (error: any) {
-      setAddError(error.message || "Error adding user");
+      toast({
+        variant: "destructive",
+        title: "Failed to add user",
+        description: error.message || "Please try again",
+      });
     } finally {
       setAdding(false);
     }
@@ -71,15 +79,20 @@ export default function AddUsersPage() {
         <div className="w-24" />
       </div>
       {loading && <Spinner />}
-      {error && <p className="text-red-500 text-center">{error}</p>}
-      {!loading && !error && (
+      {!loading && (
         <form
           onSubmit={handleAddUser}
           className="space-y-6 bg-white p-6 border rounded-lg shadow-sm"
         >
           <div>
             <Label className="block font-medium mb-2">Select User</Label>
-            <Select value={selectedUser} onValueChange={setSelectedUser}>
+            <Select
+              value={selectedUser?.id || ""}
+              onValueChange={(value: string) => {
+                const user = users.find((u) => u.id === value) || null;
+                setSelectedUser(user);
+              }}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a user to add" />
               </SelectTrigger>
@@ -92,11 +105,9 @@ export default function AddUsersPage() {
               </SelectContent>
             </Select>
           </div>
-          {addError && <p className="text-red-500">{addError}</p>}
-          {addSuccess && <p className="text-green-500">{addSuccess}</p>}
           <div className="flex gap-4 justify-center">
             <Button type="submit" disabled={adding}>
-              {adding ? "Adding..." : "Add User"}
+              {adding ? <Spinner /> : "Add User"}
             </Button>
           </div>
         </form>

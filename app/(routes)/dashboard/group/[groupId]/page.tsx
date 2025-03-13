@@ -76,8 +76,8 @@ export default function ViewGroupPage() {
           : prev,
       );
       toast({
-        title: "User Removed",
-        description: `${user.name} has been successfully removed from the group.`,
+        title: `Successfully removed ${user.name}`,
+        description: "User has been removed from the group",
       });
     } catch (err: any) {
       console.error("Error removing user:", err.message || err);

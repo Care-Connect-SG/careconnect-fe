@@ -93,7 +93,9 @@ export function DateTimePicker({ value, onChange }: DateTimePickerProps) {
                     variant="ghost"
                     className={cn(
                       "sm:w-full shrink-0 aspect-square focus:ring-0 focus:ring-offset-0 hover:ring-0 active:ring-0",
-                      date && date.getHours() % 12 === hour % 12 && "bg-black text-white"
+                      date &&
+                        date.getHours() % 12 === hour % 12 &&
+                        "bg-black text-white",
                     )}
                     onClick={() => handleTimeChange("hour", hour.toString())}
                   >
@@ -107,17 +109,21 @@ export function DateTimePicker({ value, onChange }: DateTimePickerProps) {
               <div className="flex sm:flex-col p-2">
                 {Array.from({ length: 12 }, (_, i) => i * 5).map((minute) => (
                   <Button
-                  key={minute}
-                  size="icon"
-                  variant="ghost"
-                  className={cn(
-                    "sm:w-full shrink-0 aspect-square focus:ring-0 focus:ring-offset-0 hover:ring-0 active:ring-0",
-                    date && date.getMinutes() === minute && "bg-black text-white"
-                  )}
-                  onClick={() => handleTimeChange("minute", minute.toString())}
-                >
-                  {minute}
-                </Button>
+                    key={minute}
+                    size="icon"
+                    variant="ghost"
+                    className={cn(
+                      "sm:w-full shrink-0 aspect-square focus:ring-0 focus:ring-offset-0 hover:ring-0 active:ring-0",
+                      date &&
+                        date.getMinutes() === minute &&
+                        "bg-black text-white",
+                    )}
+                    onClick={() =>
+                      handleTimeChange("minute", minute.toString())
+                    }
+                  >
+                    {minute}
+                  </Button>
                 ))}
               </div>
               <ScrollBar orientation="horizontal" className="sm:hidden" />
@@ -126,20 +132,20 @@ export function DateTimePicker({ value, onChange }: DateTimePickerProps) {
               <div className="flex sm:flex-col p-2">
                 {["AM", "PM"].map((ampm) => (
                   <Button
-                  key={ampm}
-                  size="icon"
-                  variant="ghost"
-                  className={cn(
-                    "sm:w-full shrink-0 aspect-square focus:ring-0 focus:ring-offset-0 hover:ring-0 active:ring-0",
-                    date &&
-                      ((ampm === "AM" && date.getHours() < 12) ||
-                        (ampm === "PM" && date.getHours() >= 12)) &&
-                      "bg-black text-white"
-                  )}
-                  onClick={() => handleTimeChange("ampm", ampm)}
-                >
-                  {ampm}
-                </Button>
+                    key={ampm}
+                    size="icon"
+                    variant="ghost"
+                    className={cn(
+                      "sm:w-full shrink-0 aspect-square focus:ring-0 focus:ring-offset-0 hover:ring-0 active:ring-0",
+                      date &&
+                        ((ampm === "AM" && date.getHours() < 12) ||
+                          (ampm === "PM" && date.getHours() >= 12)) &&
+                        "bg-black text-white",
+                    )}
+                    onClick={() => handleTimeChange("ampm", ampm)}
+                  >
+                    {ampm}
+                  </Button>
                 ))}
               </div>
             </ScrollArea>

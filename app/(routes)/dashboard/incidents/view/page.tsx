@@ -12,7 +12,7 @@ import { formatDayMonthYear } from "@/lib/utils";
 import { FormResponse } from "@/types/form";
 import { ReportResponse } from "@/types/report";
 import { ResidentRecord } from "@/types/resident";
-import { User, UserResponse } from "@/types/user";
+import { User } from "@/types/user";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";

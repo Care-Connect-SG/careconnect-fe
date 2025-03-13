@@ -16,84 +16,91 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { format, isValid, parse } from "date-fns";
+import { format, getHours, getMinutes, isValid, parse } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
-interface DateTimePickerProps {
-  id: string;
-  type: string;
-  value?: string;
-  onChange: (id: string, content: string) => void;
+export interface DateTimePickerValue {
+  date?: Date;
+  hours?: string;
+  minutes?: string;
+  period?: "AM" | "PM";
 }
 
+interface DateTimePickerProps {
+  value?: DateTimePickerValue;
+  onChange?: (newValue: DateTimePickerValue) => void;
+}
+
+export const convertDateTimeToString = (datetimeValue: DateTimePickerValue) => {
+  if (
+    datetimeValue.date &&
+    datetimeValue.hours &&
+    datetimeValue.minutes &&
+    datetimeValue.period
+  ) {
+    const fullDateTime = new Date(datetimeValue.date);
+    let hours = parseInt(datetimeValue.hours, 10);
+
+    if (datetimeValue.period === "PM" && hours < 12) hours += 12;
+    if (datetimeValue.period === "AM" && hours === 12) hours = 0;
+
+    fullDateTime.setHours(hours, parseInt(datetimeValue.minutes, 10));
+
+    const formattedDateTime = format(fullDateTime, "yyyy-MM-dd hh:mm a");
+    return formattedDateTime;
+  }
+};
+
+export const parseDateTimeString = (
+  datetimeString: string,
+): DateTimePickerValue => {
+  const parsedDate = parse(datetimeString, "yyyy-MM-dd hh:mm a", new Date());
+  if (!isValid(parsedDate)) {
+    return {};
+  }
+
+  let hours24 = getHours(parsedDate);
+  const minutes = getMinutes(parsedDate);
+  const period = hours24 < 12 ? "AM" : "PM";
+
+  // Convert 24-hour to 12-hour
+  if (hours24 === 0) {
+    hours24 = 12;
+  } else if (hours24 > 12) {
+    hours24 = hours24 - 12;
+  }
+
+  const hoursString = String(hours24).padStart(2, "0");
+  const minutesString = String(minutes).padStart(2, "0");
+
+  return {
+    date: parsedDate,
+    hours: hoursString,
+    minutes: minutesString,
+    period,
+  };
+};
+
 export default function DateTimePicker({
-  id,
-  type,
   value,
   onChange,
 }: DateTimePickerProps) {
-  const [dateTime, setDateTime] = useState<{
-    date?: Date;
-    hours?: string;
-    minutes?: string;
-    period?: "AM" | "PM";
-  }>({});
+  const [internalValue, setInternalValue] = useState<DateTimePickerValue>(
+    value ?? {},
+  );
 
   useEffect(() => {
-    if (!value || typeof value !== "string") return;
-
     if (value) {
-      try {
-        const parts = value.split(" ");
-        if (parts.length < 3) return;
-
-        const [datePart, timePart, period] = parts;
-
-        const [hours, minutes] = timePart?.split(":");
-
-        let parsedDate = parse(datePart, "yyyy-MM-dd", new Date());
-        if (!isValid(parsedDate)) return;
-
-        let parsedHours = parseInt(hours, 10);
-        if (period === "PM" && parsedHours < 12) parsedHours += 12;
-        if (period === "AM" && parsedHours === 12) parsedHours = 0;
-
-        setDateTime({
-          date: parsedDate,
-          hours: (parsedHours % 12 || 12).toString().padStart(2, "0"),
-          minutes: minutes.padStart(2, "0"),
-          period: period as "AM" | "PM",
-        });
-      } catch (error) {
-        console.error("Failed to parse date-time value:", error);
-      }
+      setInternalValue(value);
     }
   }, [value]);
 
-  const updateDateTime = (updatedValues: Partial<typeof dateTime>) => {
-    const newDateTime = { ...dateTime, ...updatedValues };
-
-    if (
-      newDateTime.date &&
-      newDateTime.hours &&
-      newDateTime.minutes &&
-      newDateTime.period
-    ) {
-      const fullDateTime = new Date(newDateTime.date);
-      let hours = parseInt(newDateTime.hours, 10);
-
-      if (newDateTime.period === "PM" && hours < 12) hours += 12;
-      if (newDateTime.period === "AM" && hours === 12) hours = 0;
-
-      fullDateTime.setHours(hours, parseInt(newDateTime.minutes, 10));
-
-      const formattedDateTime = format(fullDateTime, "yyyy-MM-dd hh:mm a");
-      onChange(id, formattedDateTime);
-    }
-
-    setDateTime(newDateTime);
-  };
+  function updateDateTime(updatedFields: Partial<DateTimePickerValue>) {
+    const merged = { ...internalValue, ...updatedFields };
+    setInternalValue(merged);
+    onChange?.(merged);
+  }
 
   const hours = Array.from({ length: 12 }, (_, i) =>
     (i + 1).toString().padStart(2, "0"),
@@ -111,12 +118,12 @@ export default function DateTimePicker({
             variant="outline"
             className={cn(
               "justify-start text-left font-normal",
-              !dateTime.date && "text-muted-foreground",
+              !internalValue.date && "text-muted-foreground",
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {dateTime.date ? (
-              format(dateTime.date, "PPP")
+            {internalValue.date ? (
+              format(internalValue.date, "PPP")
             ) : (
               <span>Pick a date</span>
             )}
@@ -125,7 +132,7 @@ export default function DateTimePicker({
         <PopoverContent className="w-auto p-0">
           <Calendar
             mode="single"
-            selected={dateTime.date}
+            selected={internalValue.date}
             onSelect={(date) => updateDateTime({ date })}
           />
         </PopoverContent>
@@ -136,7 +143,7 @@ export default function DateTimePicker({
         <div className="w-1/6">
           <Label>Hours</Label>
           <Select
-            value={dateTime.hours}
+            value={internalValue.hours}
             onValueChange={(value) => updateDateTime({ hours: value })}
           >
             <SelectTrigger>
@@ -155,7 +162,7 @@ export default function DateTimePicker({
         <div className="w-1/6">
           <Label>Minutes</Label>
           <Select
-            value={dateTime.minutes}
+            value={internalValue.minutes}
             onValueChange={(value) => updateDateTime({ minutes: value })}
           >
             <SelectTrigger>
@@ -174,7 +181,7 @@ export default function DateTimePicker({
         <div className="w-1/6">
           <Label>AM/PM</Label>
           <Select
-            value={dateTime.period}
+            value={internalValue.period}
             onValueChange={(value: "AM" | "PM") =>
               updateDateTime({ period: value })
             }

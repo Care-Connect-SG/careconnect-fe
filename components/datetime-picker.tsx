@@ -114,20 +114,23 @@ export default function DateTimePicker({
       {/* Date Picker */}
       <Popover>
         <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            className={cn(
-              "justify-start text-left font-normal",
-              !internalValue.date && "text-muted-foreground",
-            )}
-          >
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            {internalValue.date ? (
-              format(internalValue.date, "PPP")
-            ) : (
-              <span>Pick a date</span>
-            )}
-          </Button>
+          <div className="flex flex-col gap-1">
+            <Label>Date</Label>
+            <Button
+              variant="outline"
+              className={cn(
+                "justify-start text-left font-normal",
+                !internalValue.date && "text-muted-foreground",
+              )}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {internalValue.date ? (
+                format(internalValue.date, "PPP")
+              ) : (
+                <span>Pick a date</span>
+              )}
+            </Button>
+          </div>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0">
           <Calendar

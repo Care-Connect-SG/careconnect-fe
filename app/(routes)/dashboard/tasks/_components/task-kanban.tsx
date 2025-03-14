@@ -6,12 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
 import { ResidentRecord } from "@/types/resident";
-import { Task } from "@/types/task";
+import { Task, TaskStatus } from "@/types/task";
 import { Clock, Copy, Download, Plus, User } from "lucide-react";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useState, Dispatch, SetStateAction } from "react";
 import AddResidentModal from "../../residents/_components/add-resident-modal";
 import TaskForm from "./task-form";
+import { TaskReassignmentForm } from "@/app/(routes)/dashboard/tasks/_components/TaskReassignmentForm";
+import { TaskReassignmentActions } from "@/app/(routes)/dashboard/tasks/_components/TaskReassignmentActions";
 
 const TaskCard = ({
   task,
@@ -21,6 +23,7 @@ const TaskCard = ({
   setTasks: Dispatch<SetStateAction<Task[]>>;
 }) => {
   const { toast } = useToast();
+  const { data: session } = useSession();
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "High":
@@ -83,6 +86,23 @@ const TaskCard = ({
           <p className="text-xs text-gray-500">{task.category}</p>
         </div>
         <div className="flex space-x-1">
+          {task.status === TaskStatus.ASSIGNED && task.assigned_to && session?.user?.id && task.assigned_to === session.user.id && task.assigned_to_name && (
+            <TaskReassignmentForm
+              taskId={task.id}
+              currentNurseId={task.assigned_to}
+              currentNurseName={task.assigned_to_name}
+            />
+          )}
+          {task.status === TaskStatus.REASSIGNMENT_REQUESTED && task.reassignment_requested_to && session?.user?.id && task.reassignment_requested_to === session.user.id && task.assigned_to_name && task.reassignment_requested_by_name && (
+            <TaskReassignmentActions
+              taskId={task.id}
+              taskTitle={task.task_title}
+              currentNurseId={task.assigned_to}
+              currentNurseName={task.assigned_to_name}
+              requestingNurseName={task.reassignment_requested_by_name}
+              status={task.status}
+            />
+          )}
           <Button
             variant="ghost"
             size="icon"

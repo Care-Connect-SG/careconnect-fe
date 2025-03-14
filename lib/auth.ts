@@ -72,7 +72,10 @@ export const authOptions: NextAuthOptions = {
           if (!user.refresh_token) {
             console.error("Login response missing refresh_token:", user);
           }
-          return user;
+          return {
+            ...user,
+            id: user.id,
+          };
         }
         console.error("Login failed:", res.status, user);
         return null;
@@ -90,6 +93,7 @@ export const authOptions: NextAuthOptions = {
           refreshToken: user.refresh_token,
           accessTokenExpires: Date.now() + TOKENEXPIRY,
           email: user.email,
+          id: user.id,
         };
       }
       if (Date.now() < (token.accessTokenExpires as number)) {
@@ -103,6 +107,7 @@ export const authOptions: NextAuthOptions = {
       session.user = {
         ...session.user,
         email: token.email,
+        id: token.id,
       };
       return session;
     },

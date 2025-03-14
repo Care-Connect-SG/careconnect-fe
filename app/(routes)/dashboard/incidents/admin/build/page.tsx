@@ -6,7 +6,7 @@ import {
   getFormById,
   updateForm,
 } from "@/app/api/form";
-import { getCurrentUser } from "@/app/api/user";
+import { getCurrentUserDetails } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import { useBreadcrumb } from "@/context/breadcrumb-context";
 import { FormState, useFormReducer } from "@/hooks/useFormReducer";
@@ -27,7 +27,6 @@ export default function CreateFormPage() {
   const formId = searchParams.get("id");
   const isEditing = !!formId;
   const { setPageName } = useBreadcrumb();
-  const { data: session } = useSession();
 
   const [state, dispatch] = useFormReducer();
   const [loading, setLoading] = useState<boolean>(isEditing);
@@ -63,7 +62,7 @@ export default function CreateFormPage() {
       return;
     }
 
-    const user = await getCurrentUser(session!.user!.email!);
+    const user = await getCurrentUserDetails();
 
     const formData: FormCreate = {
       title: state.title,

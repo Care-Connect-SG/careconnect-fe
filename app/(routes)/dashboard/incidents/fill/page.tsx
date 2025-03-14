@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 
 import { getFormById } from "@/app/api/form";
 import { createReport, getReportById, updateReport } from "@/app/api/report";
-import { getCurrentUser } from "@/app/api/user";
+import { getCurrentUserDetails } from "@/app/api/user";
 import { FormElementData } from "@/hooks/useFormReducer";
 import { ReportState, useReportReducer } from "@/hooks/useReportReducer";
 import { FormResponse } from "@/types/form";
@@ -28,7 +28,6 @@ export default function CreateReportPage() {
   const formId = searchParams.get("formId");
   const reportId = searchParams.get("reportId");
   const isEditing = !!reportId;
-  const { data: session } = useSession();
 
   const [state, dispatch] = useReportReducer();
   const [form, setForm] = useState<FormResponse>();
@@ -125,7 +124,7 @@ export default function CreateReportPage() {
       }
     }
 
-    const user = await getCurrentUser(session!.user!.email!);
+    const user = await getCurrentUserDetails();
     const reporter: CaregiverTag = {
       id: user.id,
       name: user.email,

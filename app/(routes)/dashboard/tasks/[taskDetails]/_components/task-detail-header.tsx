@@ -17,12 +17,16 @@ import { convertUTCToLocal, formatDateWithoutSeconds } from "@/lib/utils";
 import { Task, TaskStatus } from "@/types/task";
 import { CheckCircle, Clock, User } from "lucide-react";
 import { useState } from "react";
+import { useSession } from "next-auth/react";
+import { TaskReassignmentForm } from "@/components/tasks/TaskReassignmentForm";
+import { TaskReassignmentActions } from "@/components/tasks/TaskReassignmentActions";
 
 interface TaskDetailHeaderProps {
   task: Task;
 }
 
 export const TaskDetailHeader = ({ task }: TaskDetailHeaderProps) => {
+  const { data: session } = useSession();
   const localDueDate = task.due_date ? convertUTCToLocal(task.due_date) : null;
   const localFinishedAt = task.finished_at
     ? convertUTCToLocal(task.finished_at)
@@ -48,6 +52,18 @@ export const TaskDetailHeader = ({ task }: TaskDetailHeaderProps) => {
       console.error("Error marking task as completed", error);
     }
   };
+
+  const showReassignmentForm = 
+    taskStatus === TaskStatus.ASSIGNED && 
+    task.assigned_to && 
+    session?.user?.id && 
+    task.assigned_to === session.user.id;
+
+  const showReassignmentActions = 
+    taskStatus === TaskStatus.REASSIGNMENT_REQUESTED && 
+    task.reassignment_requested_to && 
+    session?.user?.id && 
+    task.reassignment_requested_to === session.user.id;
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -115,7 +131,25 @@ export const TaskDetailHeader = ({ task }: TaskDetailHeaderProps) => {
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
-            <Button variant="secondary">Request Reassignment</Button>
+            
+            {showReassignmentForm && task.assigned_to_name && (
+              <TaskReassignmentForm
+                taskId={task.id}
+                currentNurseId={task.assigned_to}
+                currentNurseName={task.assigned_to_name}
+              />
+            )}
+            
+            {showReassignmentActions && task.assigned_to_name && task.reassignment_requested_by_name && (
+              <TaskReassignmentActions
+                taskId={task.id}
+                taskTitle={task.task_title}
+                currentNurseId={task.assigned_to}
+                currentNurseName={task.assigned_to_name}
+                requestingNurseName={task.reassignment_requested_by_name}
+                status={task.status}
+              />
+            )}
           </div>
         ) : (
           <div className="flex items-center space-x-2 mt-4 md:mt-0">

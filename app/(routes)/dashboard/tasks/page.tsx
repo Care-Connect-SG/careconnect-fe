@@ -1,6 +1,6 @@
 "use client";
 
-import { format, subDays, addDays } from "date-fns";
+import { addDays, format, subDays } from "date-fns";
 import { ChevronLeft, ChevronRight, Plus, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -43,7 +43,6 @@ const TaskManagement = () => {
   useEffect(() => {
     fetchTasks();
   }, [filters, currentDate]);
-  
 
   const fetchTasks = async () => {
     setLoading(true);
@@ -51,11 +50,11 @@ const TaskManagement = () => {
       const formattedDate = format(currentDate, "yyyy-MM-dd");
       const queryParams = {
         ...Object.fromEntries(
-          Object.entries(filters).filter(([_, v]) => v !== undefined)
+          Object.entries(filters).filter(([_, v]) => v !== undefined),
         ),
         date: formattedDate,
       };
-  
+
       const filteredTasks = await getTasks(queryParams);
       setTasks(filteredTasks);
     } catch (err) {
@@ -64,7 +63,6 @@ const TaskManagement = () => {
       setLoading(false);
     }
   };
-  
 
   const updateFilter = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));

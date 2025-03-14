@@ -1,10 +1,10 @@
 "use client";
 
-import { format, subDays, addDays } from "date-fns";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { addDays, format, subDays } from "date-fns";
 import { Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 import { getResidents } from "@/app/api/resident";
@@ -243,7 +243,10 @@ export default function TaskForm({
     if (pendingFormData && task) {
       try {
         // Spread pendingFormData and add the update_series flag.
-        const payload: TaskForm = { ...pendingFormData, update_series: updateEntireSeries };
+        const payload: TaskForm = {
+          ...pendingFormData,
+          update_series: updateEntireSeries,
+        };
         const updatedTask = await updateTask(task.id, payload);
         if (setTasks) {
           setTasks(updatedTask);
@@ -303,10 +306,16 @@ export default function TaskForm({
                   <FormItem>
                     <Label>Task Title</Label>
                     <FormControl>
-                      <Input id="task_title" placeholder="Task Title" {...field} />
+                      <Input
+                        id="task_title"
+                        placeholder="Task Title"
+                        {...field}
+                      />
                     </FormControl>
                     {fieldState.error && (
-                      <p className="text-sm text-destructive">{fieldState.error.message}</p>
+                      <p className="text-sm text-destructive">
+                        {fieldState.error.message}
+                      </p>
                     )}
                   </FormItem>
                 )}
@@ -318,10 +327,16 @@ export default function TaskForm({
                   <FormItem>
                     <Label>Task Details</Label>
                     <FormControl>
-                      <Textarea id="task_details" placeholder="Task Details" {...field} />
+                      <Textarea
+                        id="task_details"
+                        placeholder="Task Details"
+                        {...field}
+                      />
                     </FormControl>
                     {fieldState.error && (
-                      <p className="text-sm text-destructive">{fieldState.error.message}</p>
+                      <p className="text-sm text-destructive">
+                        {fieldState.error.message}
+                      </p>
                     )}
                   </FormItem>
                 )}
@@ -333,7 +348,10 @@ export default function TaskForm({
                   render={({ field }) => (
                     <FormItem>
                       <Label>Priority</Label>
-                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value || ""}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select priority" />
                         </SelectTrigger>
@@ -352,7 +370,10 @@ export default function TaskForm({
                   render={({ field }) => (
                     <FormItem>
                       <Label>Category</Label>
-                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value || ""}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
@@ -373,7 +394,10 @@ export default function TaskForm({
                 render={({ field, fieldState }) => (
                   <FormItem>
                     <Label>Assigned To</Label>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a nurse" />
@@ -388,7 +412,9 @@ export default function TaskForm({
                       </SelectContent>
                     </Select>
                     {fieldState.error && (
-                      <p className="text-sm text-destructive">{fieldState.error.message}</p>
+                      <p className="text-sm text-destructive">
+                        {fieldState.error.message}
+                      </p>
                     )}
                   </FormItem>
                 )}
@@ -417,7 +443,9 @@ export default function TaskForm({
                       </SelectContent>
                     </Select>
                     {fieldState.error && (
-                      <p className="text-sm text-destructive">{fieldState.error.message}</p>
+                      <p className="text-sm text-destructive">
+                        {fieldState.error.message}
+                      </p>
                     )}
                   </FormItem>
                 )}
@@ -444,7 +472,9 @@ export default function TaskForm({
                         />
                       </FormControl>
                       {fieldState.error && (
-                        <p className="text-sm text-destructive">{fieldState.error.message}</p>
+                        <p className="text-sm text-destructive">
+                          {fieldState.error.message}
+                        </p>
                       )}
                     </FormItem>
                   )}
@@ -470,7 +500,9 @@ export default function TaskForm({
                         />
                       </FormControl>
                       {fieldState.error && (
-                        <p className="text-sm text-destructive">{fieldState.error.message}</p>
+                        <p className="text-sm text-destructive">
+                          {fieldState.error.message}
+                        </p>
                       )}
                     </FormItem>
                   )}
@@ -483,7 +515,10 @@ export default function TaskForm({
                   render={({ field }) => (
                     <FormItem>
                       <Label>Recurring</Label>
-                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value || ""}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select recurrence" />
                         </SelectTrigger>
@@ -506,16 +541,22 @@ export default function TaskForm({
                       <FormControl>
                         <Input
                           type="date"
-                          onChange={(e) => field.onChange(new Date(e.target.value))}
+                          onChange={(e) =>
+                            field.onChange(new Date(e.target.value))
+                          }
                           value={
                             field.value
-                              ? new Date(field.value).toISOString().split("T")[0]
+                              ? new Date(field.value)
+                                  .toISOString()
+                                  .split("T")[0]
                               : ""
                           }
                         />
                       </FormControl>
                       {fieldState.error && (
-                        <p className="text-sm text-destructive">{fieldState.error.message}</p>
+                        <p className="text-sm text-destructive">
+                          {fieldState.error.message}
+                        </p>
                       )}
                     </FormItem>
                   )}
@@ -535,7 +576,9 @@ export default function TaskForm({
                       />
                     </FormControl>
                     {fieldState.error && (
-                      <p className="text-sm text-destructive">{fieldState.error.message}</p>
+                      <p className="text-sm text-destructive">
+                        {fieldState.error.message}
+                      </p>
                     )}
                   </FormItem>
                 )}
@@ -563,7 +606,8 @@ export default function TaskForm({
             <DialogHeader>
               <DialogTitle>Update Recurring Task</DialogTitle>
               <DialogDescription>
-                This is a recurring task. Would you like to update just this task or the entire series?
+                This is a recurring task. Would you like to update just this
+                task or the entire series?
               </DialogDescription>
             </DialogHeader>
             <div className="flex justify-end gap-4 mt-4">

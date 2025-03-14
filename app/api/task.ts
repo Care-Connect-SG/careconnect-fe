@@ -136,7 +136,7 @@ export const updateTask = async (
       dataToSend.is_ai_generated = updatedData.is_ai_generated;
     if (updatedData.assigned_to)
       dataToSend.assigned_to = String(updatedData.assigned_to);
-    
+
     if (updatedData.update_series !== undefined)
       dataToSend.update_series = updatedData.update_series;
 
@@ -172,7 +172,6 @@ export const updateTask = async (
     throw error;
   }
 };
-
 
 export const completeTask = async (taskId: string): Promise<Task> => {
   try {
@@ -220,11 +219,16 @@ export const reopenTask = async (taskId: string): Promise<Task> => {
   }
 };
 
-export const deleteTask = async (taskId: string, delete_series?: boolean): Promise<void> => {
+export const deleteTask = async (
+  taskId: string,
+  delete_series?: boolean,
+): Promise<void> => {
   try {
-    const url = new URL(`${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}`);
+    const url = new URL(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}`,
+    );
     if (delete_series) {
-      url.searchParams.append('delete_series', 'true');
+      url.searchParams.append("delete_series", "true");
     }
 
     const response = await fetchWithAuth(url.toString(), {

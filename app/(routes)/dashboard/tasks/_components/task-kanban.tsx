@@ -1,17 +1,7 @@
 "use client";
 
 import { createResident, getResidents } from "@/app/api/resident";
-import { downloadTask, duplicateTask, deleteTask } from "@/app/api/task";
-import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
-import { useToast } from "@/hooks/use-toast";
-import { ResidentRecord } from "@/types/resident";
-import { Task } from "@/types/task";
-import { Clock, Copy, Download, Plus, User, Trash } from "lucide-react";
-import { useSession } from "next-auth/react";
-import React, { useEffect, useState, Dispatch, SetStateAction } from "react";
-import AddResidentModal from "../../residents/_components/add-resident-modal";
-import TaskForm from "./task-form";
+import { deleteTask, downloadTask, duplicateTask } from "@/app/api/task";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +12,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import { useToast } from "@/hooks/use-toast";
+import { ResidentRecord } from "@/types/resident";
+import { Task } from "@/types/task";
+import { Clock, Copy, Download, Plus, Trash, User } from "lucide-react";
+import { useSession } from "next-auth/react";
+import React, { useEffect, useState, Dispatch, SetStateAction } from "react";
+import AddResidentModal from "../../residents/_components/add-resident-modal";
+import TaskForm from "./task-form";
 
 const TaskCard = ({
   task,
@@ -164,19 +164,14 @@ const TaskCard = ({
         )}
       </div>
 
-      <AlertDialog
-        open={openDeleteDialog}
-        onOpenChange={setOpenDeleteDialog}
-      >
+      <AlertDialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Task</AlertDialogTitle>
             <AlertDialogDescription>
-              {task.recurring ? (
-                "This is a recurring task. Would you like to delete just this task or all tasks in the series?"
-              ) : (
-                "Are you sure you want to delete this task?"
-              )}
+              {task.recurring
+                ? "This is a recurring task. Would you like to delete just this task or all tasks in the series?"
+                : "Are you sure you want to delete this task?"}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

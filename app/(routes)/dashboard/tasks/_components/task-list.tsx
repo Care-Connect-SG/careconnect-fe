@@ -139,7 +139,10 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
     }
   };
 
-  const handleDeleteTask = async (task: Task, deleteSeries: boolean = false) => {
+  const handleDeleteTask = async (
+    task: Task,
+    deleteSeries: boolean = false,
+  ) => {
     try {
       await deleteTask(task.id, deleteSeries);
       setTaskList((prevTasks) =>
@@ -369,11 +372,9 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Task</AlertDialogTitle>
             <AlertDialogDescription>
-              {taskToDelete?.recurring ? (
-                "This is a recurring task. Would you like to delete just this task or all tasks in the series?"
-              ) : (
-                "Are you sure you want to delete this task?"
-              )}
+              {taskToDelete?.recurring
+                ? "This is a recurring task. Would you like to delete just this task or all tasks in the series?"
+                : "Are you sure you want to delete this task?"}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -382,13 +383,17 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
               <>
                 <Button
                   variant="destructive"
-                  onClick={() => taskToDelete && handleDeleteTask(taskToDelete, false)}
+                  onClick={() =>
+                    taskToDelete && handleDeleteTask(taskToDelete, false)
+                  }
                 >
                   Delete This Task
                 </Button>
                 <Button
                   variant="destructive"
-                  onClick={() => taskToDelete && handleDeleteTask(taskToDelete, true)}
+                  onClick={() =>
+                    taskToDelete && handleDeleteTask(taskToDelete, true)
+                  }
                 >
                   Delete Entire Series
                 </Button>

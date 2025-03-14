@@ -1,6 +1,5 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -15,12 +14,13 @@ import { CaregiverTag, ReportResponse, ReportStatus } from "@/types/report";
 import { FormHeaderView } from "../_components/form-header";
 import { LoadingSkeleton } from "../_components/loading-skeleton";
 import FormElementFill from "./_components/form-element-fill";
-import ResidentSelector from "./_components/tag-personnel";
+import PersonSelector from "./_components/tag-personnel";
 
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
+import { User } from "@/types/user";
 
 export default function CreateReportPage() {
   const router = useRouter();
@@ -32,6 +32,19 @@ export default function CreateReportPage() {
   const [state, dispatch] = useReportReducer();
   const [form, setForm] = useState<FormResponse>();
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User>();
+
+  useEffect(() => {
+    async function fetchUser() {
+      try {
+        const user = await getCurrentUserDetails();
+        setUser(user);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    }
+    fetchUser();
+  }, []);
 
   const fetchForm = async () => {
     try {
@@ -124,11 +137,10 @@ export default function CreateReportPage() {
       }
     }
 
-    const user = await getCurrentUserDetails();
     const reporter: CaregiverTag = {
-      id: user.id,
-      name: user.email,
-      role: user.role,
+      id: user!.id,
+      name: user!.email,
+      role: user!.role,
     };
 
     const createReportData = (status: ReportStatus) => {
@@ -208,7 +220,7 @@ export default function CreateReportPage() {
       <div>
         <div className="flex justify-between gap-4">
           <FormHeaderView title={form!.title} description={form!.description} />
-          <ResidentSelector dispatch={dispatch} selectedState={state} />
+          <PersonSelector user={user!} dispatch={dispatch} selectedState={state} />
         </div>
 
         <div className="py-4 space-y-4">

@@ -26,30 +26,19 @@ import debounce from "lodash.debounce";
 import { Check, CirclePlus, UserRound, UsersRound, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
-interface ResidentSelectorProps {
+interface PersonSelectorProps {
+  user: User;
   dispatch: any;
   selectedState: ReportState;
 }
 
-export default function ResidentSelector({
+export default function PersonSelector({
+  user,
   dispatch,
   selectedState,
-}: ResidentSelectorProps) {
+}: PersonSelectorProps) {
   const { primaryResident, involvedResidents, involvedCaregivers } =
     selectedState;
-  const [user, setUser] = useState<User>();
-
-  useEffect(() => {
-    async function fetchUser() {
-      try {
-        const user = await getCurrentUserDetails();
-        setUser(user);
-      } catch (error) {
-        console.error("Error fetching user:", error);
-      }
-    }
-    fetchUser();
-  }, []);
 
   const [primaryResidentOptions, setPrimaryResidentOptions] = useState<
     ResidentTag[]

@@ -1,5 +1,6 @@
 "use client";
 
+import { getCurrentUserDetails } from "@/app/api/user";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,18 +18,23 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ReportResponse } from "@/types/report";
-import { Edit, Eye, MoreHorizontal } from "lucide-react";
+import { Role, User } from "@/types/user";
+import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+
 
 interface ReportsTableProps {
+  user: User;
   reports: ReportResponse[];
   activeTab: string;
+  handleDelete: (reportId: string) => void;
 }
 
 export default function ReportsTable({
+  user,
   reports,
   activeTab,
+  handleDelete
 }: ReportsTableProps) {
   const router = useRouter();
 
@@ -93,7 +99,7 @@ export default function ReportsTable({
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
+                      <Button variant="ghost" size="icon" className="focus:ring-0 focus:ring-offset-0">
                         <MoreHorizontal className="h-4 w-4" />
                         <span className="sr-only">Open menu</span>
                       </Button>
@@ -107,6 +113,12 @@ export default function ReportsTable({
                         <DropdownMenuItem onClick={() => handleEdit(report)}>
                           <Edit className="mr-2 h-4 w-4" />
                           Edit
+                        </DropdownMenuItem>
+                      )}
+                      {(report.status !== "Published" || user?.role === Role.ADMIN) && (
+                        <DropdownMenuItem onClick={() => handleDelete(report.id)}>
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete
                         </DropdownMenuItem>
                       )}
                     </DropdownMenuContent>

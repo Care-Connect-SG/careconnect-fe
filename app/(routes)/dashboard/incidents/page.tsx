@@ -1,7 +1,7 @@
 "use client";
 
 import { getForms } from "@/app/api/form";
-import { getReports } from "@/app/api/report";
+import { deleteReport, getReports } from "@/app/api/report";
 import { getCurrentUserDetails } from "@/app/api/user";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FormResponse } from "@/types/form";
@@ -56,6 +56,15 @@ export default function IncidentReports() {
       console.error("Failed to fetch reports");
     }
   };
+
+  const handleDeleteReport = async (reportId: string) => {
+    try {
+      await deleteReport(reportId);
+      await fetchReports();
+    } catch (error) {
+      console.error("Failed to delete report");
+    }
+  }
 
   const fetchForms = async () => {
     try {
@@ -127,10 +136,10 @@ export default function IncidentReports() {
             <TabsTrigger value="my">My Reports</TabsTrigger>
           </TabsList>
           <TabsContent value="all" className="mt-4">
-            <ReportsTable reports={filteredReports} activeTab="all" />
+            <ReportsTable user={user!} reports={filteredReports} activeTab="all" handleDelete={handleDeleteReport} />
           </TabsContent>
           <TabsContent value="my" className="mt-4">
-            <ReportsTable reports={filteredReports} activeTab="my" />
+            <ReportsTable user={user!} reports={filteredReports} activeTab="my" handleDelete={handleDeleteReport} />
           </TabsContent>
         </Tabs>
       </div>

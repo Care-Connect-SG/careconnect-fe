@@ -15,7 +15,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { FormElementData } from "@/hooks/useFormReducer";
-import { CalendarIcon, Trash2, X } from "lucide-react";
+import { CalendarClockIcon, CalendarIcon, Trash2, X } from "lucide-react";
 
 interface FormElementProps {
   element: FormElementData;
@@ -107,6 +107,16 @@ export default function FormElement({
             >
               <CalendarIcon />
               <span>Pick a date</span>
+            </Button>
+          )}
+          {element.type === "datetime" && (
+            <Button
+              disabled
+              variant={"outline"}
+              className="w-[240px] justify-start text-left font-normal text-muted-foreground"
+            >
+              <CalendarClockIcon />
+              <span>Pick a date and time</span>
             </Button>
           )}
           {element.type === "radio" && (

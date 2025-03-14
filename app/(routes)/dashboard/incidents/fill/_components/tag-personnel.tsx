@@ -1,7 +1,7 @@
 "use client";
 
 import { getCaregiverTags, getResidentTags } from "@/app/api/report";
-import { getCurrentUser } from "@/app/api/user";
+import { getCurrentUserDetails } from "@/app/api/user";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import {
@@ -21,10 +21,9 @@ import {
 import { ReportState } from "@/hooks/useReportReducer";
 import { cn } from "@/lib/utils";
 import { CaregiverTag, ResidentTag } from "@/types/report";
-import { UserResponse } from "@/types/user";
+import { User } from "@/types/user";
 import debounce from "lodash.debounce";
 import { Check, CirclePlus, UserRound, UsersRound, X } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 interface ResidentSelectorProps {
@@ -38,23 +37,19 @@ export default function ResidentSelector({
 }: ResidentSelectorProps) {
   const { primaryResident, involvedResidents, involvedCaregivers } =
     selectedState;
-  const { data: session } = useSession();
-
-  const [user, setUser] = useState<UserResponse>();
+  const [user, setUser] = useState<User>();
 
   useEffect(() => {
-    async function fetchUserId() {
-      if (session?.user?.email) {
-        try {
-          const user = await getCurrentUser(session.user.email);
-          setUser(user);
-        } catch (error) {
-          console.error("Error fetching user:", error);
-        }
+    async function fetchUser() {
+      try {
+        const user = await getCurrentUserDetails();
+        setUser(user);
+      } catch (error) {
+        console.error("Error fetching user:", error);
       }
     }
-    fetchUserId();
-  }, [session]);
+    fetchUser();
+  }, []);
 
   const [primaryResidentOptions, setPrimaryResidentOptions] = useState<
     ResidentTag[]

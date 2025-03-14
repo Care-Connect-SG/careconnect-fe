@@ -117,7 +117,7 @@ export default function ReportsTable({
                             Edit
                           </DropdownMenuItem>
                         )}
-                        {user?.role === Role.ADMIN && (
+                        {(report.status !== "Published" || user?.role === Role.ADMIN) && (
                           <DropdownMenuItem
                             onClick={() => handleDelete(report.id)}
                           >

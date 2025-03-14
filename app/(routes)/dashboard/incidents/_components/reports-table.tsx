@@ -112,7 +112,10 @@ export default function ReportsTable({
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         {report.status !== "Published" && (
-                          <DropdownMenuItem onClick={() => handleEdit(report)}>
+                          <DropdownMenuItem onClick={(e) =>{
+                            e.stopPropagation();
+                            handleEdit(report);
+                          }}>
                             <Edit className="mr-2 h-4 w-4" />
                             Edit
                           </DropdownMenuItem>
@@ -120,7 +123,10 @@ export default function ReportsTable({
                         {(report.status !== "Published" ||
                           user?.role === Role.ADMIN) && (
                           <DropdownMenuItem
-                            onClick={() => handleDelete(report.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(report.id);
+                            }}
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
                             Delete

@@ -18,9 +18,9 @@ import PersonSelector from "./_components/tag-personnel";
 
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import { User } from "@/types/user";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
-import { User } from "@/types/user";
 
 export default function CreateReportPage() {
   const router = useRouter();
@@ -220,7 +220,11 @@ export default function CreateReportPage() {
       <div>
         <div className="flex justify-between gap-4">
           <FormHeaderView title={form!.title} description={form!.description} />
-          <PersonSelector user={user!} dispatch={dispatch} selectedState={state} />
+          <PersonSelector
+            user={user!}
+            dispatch={dispatch}
+            selectedState={state}
+          />
         </div>
 
         <div className="py-4 space-y-4">

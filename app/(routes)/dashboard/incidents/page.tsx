@@ -44,7 +44,7 @@ export default function IncidentReports() {
     } catch (error) {
       console.error("Error fetching user:", error);
     }
-  }
+  };
 
   const fetchReports = async () => {
     try {
@@ -62,7 +62,7 @@ export default function IncidentReports() {
     } catch (error) {
       console.error("Failed to delete report");
     }
-  }
+  };
 
   const fetchForms = async () => {
     try {
@@ -134,10 +134,20 @@ export default function IncidentReports() {
             <TabsTrigger value="my">My Reports</TabsTrigger>
           </TabsList>
           <TabsContent value="all" className="mt-4">
-            <ReportsTable user={user!} reports={filteredReports} activeTab="all" handleDelete={handleDeleteReport} />
+            <ReportsTable
+              user={user!}
+              reports={filteredReports}
+              activeTab="all"
+              handleDelete={handleDeleteReport}
+            />
           </TabsContent>
           <TabsContent value="my" className="mt-4">
-            <ReportsTable user={user!} reports={filteredReports} activeTab="my" handleDelete={handleDeleteReport} />
+            <ReportsTable
+              user={user!}
+              reports={filteredReports}
+              activeTab="my"
+              handleDelete={handleDeleteReport}
+            />
           </TabsContent>
         </Tabs>
       </div>

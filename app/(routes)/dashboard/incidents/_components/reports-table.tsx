@@ -21,7 +21,6 @@ import { Role, User } from "@/types/user";
 import { Edit, MoreHorizontal, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-
 interface ReportsTableProps {
   user: User;
   reports: ReportResponse[];
@@ -33,7 +32,7 @@ export default function ReportsTable({
   user,
   reports,
   activeTab,
-  handleDelete
+  handleDelete,
 }: ReportsTableProps) {
   const router = useRouter();
 
@@ -61,9 +60,9 @@ export default function ReportsTable({
             {activeTab === "my" && (
               <TableHead className="text-center">Status</TableHead>
             )}
-            {
-              (user?.role === Role.ADMIN || activeTab === "my") && <TableHead className="text-center">Actions</TableHead>
-            }
+            {(user?.role === Role.ADMIN || activeTab === "my") && (
+              <TableHead className="text-center">Actions</TableHead>
+            )}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -97,36 +96,39 @@ export default function ReportsTable({
                     </Badge>
                   </TableCell>
                 )}
-                {
-                  (report.status !== "Published" || user?.role === Role.ADMIN) && (
-                    <TableCell className="text-center">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="focus:ring-0 focus:ring-offset-0">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Open menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          {
-                            report.status !== "Published" && (
-                              <DropdownMenuItem onClick={() => handleEdit(report)}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit
-                              </DropdownMenuItem>
-                            )
-                          }
-                          {(user?.role === Role.ADMIN) && (
-                            <DropdownMenuItem onClick={() => handleDelete(report.id)}>
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  )
-                }
+                {(report.status !== "Published" ||
+                  user?.role === Role.ADMIN) && (
+                  <TableCell className="text-center">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="focus:ring-0 focus:ring-offset-0"
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Open menu</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {report.status !== "Published" && (
+                          <DropdownMenuItem onClick={() => handleEdit(report)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                        )}
+                        {user?.role === Role.ADMIN && (
+                          <DropdownMenuItem
+                            onClick={() => handleDelete(report.id)}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                )}
               </TableRow>
             ))
           )}

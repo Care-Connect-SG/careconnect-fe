@@ -1,6 +1,5 @@
 "use client";
 
-import { getCurrentUserDetails } from "@/app/api/user";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,7 +18,7 @@ import {
 } from "@/components/ui/table";
 import { ReportResponse } from "@/types/report";
 import { Role, User } from "@/types/user";
-import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react";
+import { Edit, MoreHorizontal, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 
@@ -62,7 +61,9 @@ export default function ReportsTable({
             {activeTab === "my" && (
               <TableHead className="text-center">Status</TableHead>
             )}
-            <TableHead className="text-center">Actions</TableHead>
+            {
+              (user?.role === Role.ADMIN || activeTab === "my") && <TableHead className="text-center">Actions</TableHead>
+            }
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -74,7 +75,7 @@ export default function ReportsTable({
             </TableRow>
           ) : (
             reports.map((report) => (
-              <TableRow key={report.id}>
+              <TableRow key={report.id} onClick={() => handleView(report)}>
                 <TableCell className="font-medium">
                   {new Date(report.created_at).toLocaleDateString()}
                 </TableCell>
@@ -96,34 +97,36 @@ export default function ReportsTable({
                     </Badge>
                   </TableCell>
                 )}
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="focus:ring-0 focus:ring-offset-0">
-                        <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Open menu</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleView(report)}>
-                        <Eye className="mr-2 h-4 w-4" />
-                        View
-                      </DropdownMenuItem>
-                      {report.status !== "Published" && (
-                        <DropdownMenuItem onClick={() => handleEdit(report)}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                      )}
-                      {(report.status !== "Published" || user?.role === Role.ADMIN) && (
-                        <DropdownMenuItem onClick={() => handleDelete(report.id)}>
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
+                {
+                  (report.status !== "Published" || user?.role === Role.ADMIN) && (
+                    <TableCell className="text-center">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="focus:ring-0 focus:ring-offset-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Open menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {
+                            report.status !== "Published" && (
+                              <DropdownMenuItem onClick={() => handleEdit(report)}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit
+                              </DropdownMenuItem>
+                            )
+                          }
+                          {(user?.role === Role.ADMIN) && (
+                            <DropdownMenuItem onClick={() => handleDelete(report.id)}>
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  )
+                }
               </TableRow>
             ))
           )}

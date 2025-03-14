@@ -32,21 +32,19 @@ export default function IncidentReports() {
   const [user, setUser] = useState<User>();
 
   useEffect(() => {
-    async function fetchUser() {
-      try {
-        const user = await getCurrentUserDetails();
-        setUser(user);
-      } catch (error) {
-        console.error("Error fetching user:", error);
-      }
-    }
     fetchUser();
-  }, []);
-
-  useEffect(() => {
     fetchReports();
     fetchForms();
   }, []);
+
+  const fetchUser = async () => {
+    try {
+      const user = await getCurrentUserDetails();
+      setUser(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+    }
+  }
 
   const fetchReports = async () => {
     try {

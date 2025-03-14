@@ -136,6 +136,9 @@ export const updateTask = async (
       dataToSend.is_ai_generated = updatedData.is_ai_generated;
     if (updatedData.assigned_to)
       dataToSend.assigned_to = String(updatedData.assigned_to);
+    
+    if (updatedData.update_series !== undefined)
+      dataToSend.update_series = updatedData.update_series;
 
     const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}`,
@@ -163,13 +166,13 @@ export const updateTask = async (
     }
 
     const data = await response.json();
-
     return data;
   } catch (error) {
     console.error("updateTask error:", error);
     throw error;
   }
 };
+
 
 export const completeTask = async (taskId: string): Promise<Task> => {
   try {
@@ -217,14 +220,16 @@ export const reopenTask = async (taskId: string): Promise<Task> => {
   }
 };
 
-export const deleteTask = async (taskId: string): Promise<void> => {
+export const deleteTask = async (taskId: string, delete_series?: boolean): Promise<void> => {
   try {
-    const response = await fetchWithAuth(
-      `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}`,
-      {
-        method: "DELETE",
-      },
-    );
+    const url = new URL(`${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}`);
+    if (delete_series) {
+      url.searchParams.append('delete_series', 'true');
+    }
+
+    const response = await fetchWithAuth(url.toString(), {
+      method: "DELETE",
+    });
 
     if (!response.ok) {
       throw new Error(`Error deleting task: ${response.statusText}`);

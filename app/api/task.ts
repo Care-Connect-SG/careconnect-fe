@@ -45,6 +45,7 @@ export const getTasks = async (filters?: {
   search?: string;
   status?: string;
   priority?: string;
+  date?: string;
 }): Promise<Task[]> => {
   try {
     const queryParams = filters

@@ -33,7 +33,10 @@ import { z } from "zod";
 
 const taskSchema = z
   .object({
-    task_title: z.string().min(3, "Task title must be at least 3 characters").max(255, "Task title must be less than 255 characters"),
+    task_title: z
+      .string()
+      .min(3, "Task title must be at least 3 characters")
+      .max(255, "Task title must be less than 255 characters"),
     task_details: z.string().optional(),
     media: z.array(z.string()).optional(),
     notes: z.string().optional(),
@@ -307,19 +310,20 @@ export default function TaskForm({
               <FormField
                 control={form.control}
                 name="priority"
-                render={({ field }) => (
+                render={({ field, fieldState }) => (
                   <FormItem>
                     <Label>Priority</Label>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value || ""}
-                      className={
-                        fieldState.invalid
-                          ? "border-destructive focus-visible:ring-destructive"
-                          : ""
-                      }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger
+                        className={
+                          fieldState.invalid
+                            ? "border-destructive focus-visible:ring-destructive"
+                            : ""
+                        }
+                      >
                         <SelectValue placeholder="Select priority" />
                       </SelectTrigger>
                       <SelectContent>
@@ -334,19 +338,20 @@ export default function TaskForm({
               <FormField
                 control={form.control}
                 name="category"
-                render={({ field }) => (
+                render={({ field, fieldState }) => (
                   <FormItem>
                     <Label>Category</Label>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value || ""}
-                      className={
-                        fieldState.invalid
-                          ? "border-destructive focus-visible:ring-destructive"
-                          : ""
-                      }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger
+                        className={
+                          fieldState.invalid
+                            ? "border-destructive focus-visible:ring-destructive"
+                            : ""
+                        }
+                      >
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
@@ -369,14 +374,15 @@ export default function TaskForm({
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
-                    className={
-                      fieldState.invalid
-                        ? "border-destructive focus-visible:ring-destructive"
-                        : ""
-                    }
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger
+                        className={
+                          fieldState.invalid
+                            ? "border-destructive focus-visible:ring-destructive"
+                            : ""
+                        }
+                      >
                         <SelectValue placeholder="Select a nurse" />
                       </SelectTrigger>
                     </FormControl>
@@ -405,14 +411,15 @@ export default function TaskForm({
                   <Select
                     onValueChange={(value) => field.onChange([value])}
                     defaultValue={field.value?.[0]}
-                    className={
-                      fieldState.invalid
-                        ? "border-destructive focus-visible:ring-destructive"
-                        : ""
-                    }
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger
+                        className={
+                          fieldState.invalid
+                            ? "border-destructive focus-visible:ring-destructive"
+                            : ""
+                        }
+                      >
                         <SelectValue placeholder="Select a resident" />
                       </SelectTrigger>
                     </FormControl>
@@ -504,19 +511,20 @@ export default function TaskForm({
               <FormField
                 control={form.control}
                 name="recurring"
-                render={({ field }) => (
+                render={({ field, fieldState }) => (
                   <FormItem>
                     <Label>Recurring</Label>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value || ""}
-                      className={
-                        fieldState.invalid
-                          ? "border-destructive focus-visible:ring-destructive"
-                          : ""
-                      }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger
+                        className={
+                          fieldState.invalid
+                            ? "border-destructive focus-visible:ring-destructive"
+                            : ""
+                        }
+                      >
                         <SelectValue placeholder="Select recurrence" />
                       </SelectTrigger>
                       <SelectContent>

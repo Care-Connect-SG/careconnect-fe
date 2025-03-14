@@ -112,10 +112,12 @@ export default function ReportsTable({
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         {report.status !== "Published" && (
-                          <DropdownMenuItem onClick={(e) =>{
-                            e.stopPropagation();
-                            handleEdit(report);
-                          }}>
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEdit(report);
+                            }}
+                          >
                             <Edit className="mr-2 h-4 w-4" />
                             Edit
                           </DropdownMenuItem>

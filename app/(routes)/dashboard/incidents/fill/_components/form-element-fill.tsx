@@ -23,7 +23,7 @@ import {
   DateTimePicker,
   convertDateTimeToString,
   parseStringToDateTime,
-} from "@/components/datetime-picker";
+} from "@/components/ui/datetime-picker";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -43,7 +43,7 @@ export default function FormElementFill({
   const { element_id, type, label, required, helptext, options } = element;
 
   const handleTextChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     onInputChange(element_id, e.target.value);
   };

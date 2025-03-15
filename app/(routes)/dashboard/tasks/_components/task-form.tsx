@@ -3,17 +3,7 @@
 import { getResidents } from "@/app/api/resident";
 import { createTask, updateTask } from "@/app/api/task";
 import { getAllNurses } from "@/app/api/user";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
 import {
   Dialog,
   DialogContent,
@@ -26,11 +16,6 @@ import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -39,18 +24,19 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
 import { Task, TaskStatus } from "@/types/task";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { format } from "date-fns";
-import { CalendarIcon, Plus, X } from "lucide-react";
+import { Plus } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 const taskSchema = z
   .object({
-    task_title: z.string().nonempty("Task title is required"),
+    task_title: z
+      .string()
+      .min(3, "Task title must be at least 3 characters")
+      .max(255, "Task title must be less than 255 characters"),
     task_details: z.string().optional(),
     media: z.array(z.string()).optional(),
     notes: z.string().optional(),
@@ -99,15 +85,15 @@ export default function TaskForm({
   onClose,
   setTasks,
   defaultResident,
-  isOpen,
+  open,
 }: {
   task?: Task;
   onClose?: () => void;
   setTasks?: (updater: Task | ((prevTasks: Task[]) => Task[])) => void;
   defaultResident?: string;
-  isOpen?: boolean;
+  open?: boolean;
 }) {
-  const [isDialogOpen, setIsDialogOpen] = useState(!!task || !!isOpen);
+  const [isOpen, setIsOpen] = useState(!!task || !!open);
   const { toast } = useToast();
   const [nurses, setNurses] = useState<any[]>([]);
   const [residents, setResidents] = useState<any[]>([]);
@@ -154,20 +140,20 @@ export default function TaskForm({
         is_ai_generated: task.is_ai_generated,
         assigned_to: task.assigned_to,
       });
-      setIsDialogOpen(true);
+      setIsOpen(true);
     } else if (defaultResident) {
       form.setValue("residents", [defaultResident]);
     }
   }, [task, form, defaultResident]);
 
   useEffect(() => {
-    if (isOpen !== undefined) {
-      setIsDialogOpen(isOpen);
+    if (open !== undefined) {
+      setIsOpen(open);
     }
-  }, [isOpen]);
+  }, [open]);
 
   const handleOpenChange = (newOpen: boolean) => {
-    setIsDialogOpen(newOpen);
+    setIsOpen(newOpen);
     if (!newOpen && onClose) {
       onClose();
     }
@@ -202,22 +188,21 @@ export default function TaskForm({
         }
         toast({
           variant: "default",
-          title: "Task Updated",
+          title: "Success",
           description: "Task has been updated successfully",
         });
       } else {
         const newTasks = await createTask(data);
         if (setTasks) {
           setTasks((prevTasks) => [...newTasks, ...prevTasks]);
-        } else {
-          toast({
-            variant: "default",
-            title: "Tasks Created",
-            description: `${newTasks.length} task(s) created successfully`,
-          });
         }
+        toast({
+          variant: "default",
+          title: "Successully created task(s)",
+          description: `${newTasks.length} task(s) created successfully`,
+        });
       }
-      setIsDialogOpen(false);
+      setIsOpen(false);
       if (onClose) onClose();
     } catch (error) {
       let errorMessage = task
@@ -228,7 +213,7 @@ export default function TaskForm({
       }
       toast({
         variant: "destructive",
-        title: "Error",
+        title: "An error occured, please try again",
         description: errorMessage,
       });
     }
@@ -238,13 +223,20 @@ export default function TaskForm({
     (data) => {
       onSubmit(data);
     },
-    (errors) => {},
+    (errors) => {
+      const errorMessages = Object.values(errors).map((error) => error.message);
+      toast({
+        variant: "destructive",
+        title: "Validation Error",
+        description: errorMessages.join(", "),
+      });
+    },
   );
 
   return (
-    <Dialog open={isDialogOpen} onOpenChange={handleOpenChange}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        {!task && !isOpen && (
+        {!task && !open && (
           <Button>
             <Plus className="w-4 h-4 mr-2" /> New Task
           </Button>
@@ -271,11 +263,12 @@ export default function TaskForm({
                     <Input
                       id="task_title"
                       placeholder="Task Title"
-                      className={cn(
-                        fieldState.error &&
-                          "border-red-500 focus-visible:ring-red-500",
-                      )}
                       {...field}
+                      className={
+                        fieldState.invalid
+                          ? "border-destructive focus-visible:ring-destructive"
+                          : ""
+                      }
                     />
                   </FormControl>
                   {fieldState.error && (
@@ -297,6 +290,11 @@ export default function TaskForm({
                       id="task_details"
                       placeholder="Task Details"
                       {...field}
+                      className={
+                        fieldState.invalid
+                          ? "border-destructive focus-visible:ring-destructive"
+                          : ""
+                      }
                     />
                   </FormControl>
                   {fieldState.error && (
@@ -319,10 +317,11 @@ export default function TaskForm({
                       value={field.value || ""}
                     >
                       <SelectTrigger
-                        className={cn(
-                          fieldState.error &&
-                            "border-red-500 focus-visible:ring-red-500",
-                        )}
+                        className={
+                          fieldState.invalid
+                            ? "border-destructive focus-visible:ring-destructive"
+                            : ""
+                        }
                       >
                         <SelectValue placeholder="Select priority" />
                       </SelectTrigger>
@@ -346,10 +345,11 @@ export default function TaskForm({
                       value={field.value || ""}
                     >
                       <SelectTrigger
-                        className={cn(
-                          fieldState.error &&
-                            "border-red-500 focus-visible:ring-red-500",
-                        )}
+                        className={
+                          fieldState.invalid
+                            ? "border-destructive focus-visible:ring-destructive"
+                            : ""
+                        }
                       >
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
@@ -372,26 +372,29 @@ export default function TaskForm({
                   <Label>Assigned To</Label>
                   <Select
                     onValueChange={field.onChange}
-                    value={field.value || ""}
+                    defaultValue={field.value}
                   >
-                    <SelectTrigger
-                      className={cn(
-                        fieldState.error &&
-                          "border-red-500 focus-visible:ring-red-500",
-                      )}
-                    >
-                      <SelectValue placeholder="Select staff member" />
-                    </SelectTrigger>
+                    <FormControl>
+                      <SelectTrigger
+                        className={
+                          fieldState.invalid
+                            ? "border-destructive focus-visible:ring-destructive"
+                            : ""
+                        }
+                      >
+                        <SelectValue placeholder="Select a nurse" />
+                      </SelectTrigger>
+                    </FormControl>
                     <SelectContent>
                       {nurses.map((nurse) => (
                         <SelectItem key={nurse.id} value={nurse.id}>
-                          {nurse.name}
+                          {nurse.name} ({nurse.email})
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                   {fieldState.error && (
-                    <p className="text-sm text-red-500">
+                    <p className="text-sm text-destructive">
                       {fieldState.error.message}
                     </p>
                   )}
@@ -404,42 +407,31 @@ export default function TaskForm({
               render={({ field, fieldState }) => (
                 <FormItem>
                   <Label>Residents</Label>
-                  <div className="space-y-2">
-                    {residents.map((resident) => (
-                      <div
-                        key={resident.id}
-                        className="flex items-center space-x-2"
+                  <Select
+                    onValueChange={(value) => field.onChange([value])}
+                    defaultValue={field.value?.[0]}
+                  >
+                    <FormControl>
+                      <SelectTrigger
+                        className={
+                          fieldState.invalid
+                            ? "border-destructive focus-visible:ring-destructive"
+                            : ""
+                        }
                       >
-                        <input
-                          type="checkbox"
-                          id={`resident-${resident.id}`}
-                          checked={field.value?.includes(resident.id)}
-                          onChange={(e) => {
-                            const currentValue = field.value || [];
-                            if (e.target.checked) {
-                              field.onChange([...currentValue, resident.id]);
-                            } else {
-                              field.onChange(
-                                currentValue.filter((id) => id !== resident.id),
-                              );
-                            }
-                          }}
-                          className={cn(
-                            "h-4 w-4 rounded border-gray-300",
-                            fieldState.error && "border-red-500",
-                          )}
-                        />
-                        <label
-                          htmlFor={`resident-${resident.id}`}
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                        >
+                        <SelectValue placeholder="Select a resident" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {residents.map((resident) => (
+                        <SelectItem key={resident.id} value={resident.id}>
                           {resident.full_name}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   {fieldState.error && (
-                    <p className="text-sm text-red-500">
+                    <p className="text-sm text-destructive">
                       {fieldState.error.message}
                     </p>
                   )}
@@ -452,63 +444,26 @@ export default function TaskForm({
                 name="start_date"
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <Label>Start Date *</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground",
-                              fieldState.error &&
-                                "border-red-500 focus-visible:ring-red-500",
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP HH:mm")
-                            ) : (
-                              <span>Pick a date and time</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={(date) => {
-                            if (date) {
-                              const currentDate = field.value || new Date();
-                              date.setHours(currentDate.getHours());
-                              date.setMinutes(currentDate.getMinutes());
-                              field.onChange(date);
-                            }
-                          }}
-                          initialFocus
-                        />
-                        <div className="p-3 border-t border-border">
-                          <Input
-                            type="time"
-                            value={
-                              field.value ? format(field.value, "HH:mm") : ""
-                            }
-                            onChange={(e) => {
-                              const [hours, minutes] =
-                                e.target.value.split(":");
-                              const newDate = new Date(
-                                field.value || new Date(),
-                              );
-                              newDate.setHours(parseInt(hours, 10));
-                              newDate.setMinutes(parseInt(minutes, 10));
-                              field.onChange(newDate);
-                            }}
-                            className="w-full"
-                          />
-                        </div>
-                      </PopoverContent>
-                    </Popover>
+                    <Label>Start Date</Label>
+                    <FormControl>
+                      <Input
+                        type="datetime-local"
+                        onChange={(e) => {
+                          const date = new Date(e.target.value);
+                          field.onChange(date);
+                        }}
+                        value={
+                          field.value
+                            ? new Date(field.value).toISOString().slice(0, 16)
+                            : ""
+                        }
+                        className={
+                          fieldState.invalid
+                            ? "border-destructive focus-visible:ring-destructive"
+                            : ""
+                        }
+                      />
+                    </FormControl>
                     {fieldState.error && (
                       <p className="text-sm text-destructive">
                         {fieldState.error.message}
@@ -522,63 +477,26 @@ export default function TaskForm({
                 name="due_date"
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <Label>Due Date *</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground",
-                              fieldState.error &&
-                                "border-red-500 focus-visible:ring-red-500",
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP HH:mm")
-                            ) : (
-                              <span>Pick a date and time</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={(date) => {
-                            if (date) {
-                              const currentDate = field.value || new Date();
-                              date.setHours(currentDate.getHours());
-                              date.setMinutes(currentDate.getMinutes());
-                              field.onChange(date);
-                            }
-                          }}
-                          initialFocus
-                        />
-                        <div className="p-3 border-t border-border">
-                          <Input
-                            type="time"
-                            value={
-                              field.value ? format(field.value, "HH:mm") : ""
-                            }
-                            onChange={(e) => {
-                              const [hours, minutes] =
-                                e.target.value.split(":");
-                              const newDate = new Date(
-                                field.value || new Date(),
-                              );
-                              newDate.setHours(parseInt(hours, 10));
-                              newDate.setMinutes(parseInt(minutes, 10));
-                              field.onChange(newDate);
-                            }}
-                            className="w-full"
-                          />
-                        </div>
-                      </PopoverContent>
-                    </Popover>
+                    <Label>Due Date</Label>
+                    <FormControl>
+                      <Input
+                        type="datetime-local"
+                        onChange={(e) => {
+                          const date = new Date(e.target.value);
+                          field.onChange(date);
+                        }}
+                        value={
+                          field.value
+                            ? new Date(field.value).toISOString().slice(0, 16)
+                            : ""
+                        }
+                        className={
+                          fieldState.invalid
+                            ? "border-destructive focus-visible:ring-destructive"
+                            : ""
+                        }
+                      />
+                    </FormControl>
                     {fieldState.error && (
                       <p className="text-sm text-destructive">
                         {fieldState.error.message}
@@ -600,10 +518,11 @@ export default function TaskForm({
                       value={field.value || ""}
                     >
                       <SelectTrigger
-                        className={cn(
-                          fieldState.error &&
-                            "border-red-500 focus-visible:ring-red-500",
-                        )}
+                        className={
+                          fieldState.invalid
+                            ? "border-destructive focus-visible:ring-destructive"
+                            : ""
+                        }
                       >
                         <SelectValue placeholder="Select recurrence" />
                       </SelectTrigger>
@@ -626,16 +545,17 @@ export default function TaskForm({
                     <FormControl>
                       <Input
                         type="date"
-                        className={cn(
-                          fieldState.error &&
-                            "border-red-500 focus-visible:ring-red-500",
-                        )}
                         onChange={(e) =>
                           field.onChange(new Date(e.target.value))
                         }
                         value={
                           field.value
                             ? new Date(field.value).toISOString().split("T")[0]
+                            : ""
+                        }
+                        className={
+                          fieldState.invalid
+                            ? "border-destructive focus-visible:ring-destructive"
                             : ""
                         }
                       />
@@ -658,12 +578,13 @@ export default function TaskForm({
                   <FormControl>
                     <Input
                       type="number"
-                      className={cn(
-                        fieldState.error &&
-                          "border-red-500 focus-visible:ring-red-500",
-                      )}
                       onChange={(e) => field.onChange(Number(e.target.value))}
                       value={field.value || ""}
+                      className={
+                        fieldState.invalid
+                          ? "border-destructive focus-visible:ring-destructive"
+                          : ""
+                      }
                     />
                   </FormControl>
                   {fieldState.error && (

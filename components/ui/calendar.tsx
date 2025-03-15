@@ -45,7 +45,7 @@ function Calendar({
         caption_label: "text-sm font-medium aria-hidden:hidden",
         day_button: cn(
           buttonVariants({ variant: "ghost" }),
-          "size-9 font-normal",
+          "size-9 font-normal focus:ring-0 focus:ring-offset-0",
         ),
         day: "rounded-md p-0 text-center text-sm aria-selected:bg-accent",
         disabled: "*:text-muted-foreground *:opacity-50",

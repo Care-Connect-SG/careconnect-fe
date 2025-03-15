@@ -7,7 +7,6 @@ import React, { useState, useEffect } from "react";
 
 interface ResidentDetailsNotesCardProps {
   additionalNotes?: string;
-  // Expect a full ISO datetime string from the backend.
   initialLastSaved?: string;
   onSaveNotes?: (notes: string) => void;
 }
@@ -23,7 +22,6 @@ const ResidentDetailsNotesCard: React.FC<ResidentDetailsNotesCardProps> = ({
     initialLastSaved ? new Date(initialLastSaved) : null,
   );
 
-  // Update local notes if the additionalNotes prop changes.
   useEffect(() => {
     setNotes(additionalNotes || "");
   }, [additionalNotes]);
@@ -43,7 +41,6 @@ const ResidentDetailsNotesCard: React.FC<ResidentDetailsNotesCardProps> = ({
 
   return (
     <div className="w-full max-w-2xl mx-auto mt-6 p-4 bg-white shadow-md rounded-md">
-      {/* Header with Add/Save button */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-xl font-semibold">Additional Notes</h3>
         {isEditing ? (

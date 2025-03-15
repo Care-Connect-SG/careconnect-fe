@@ -1,134 +1,195 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import React, { useState } from 'react';
+import { format, parseISO } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
-  ChevronDown,
-  Clock,
-  MapPin,
-  MoreHorizontal,
-  Users,
-} from "lucide-react";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { useActivity } from '@/context/activity-context';
+import { ActivityDialog } from './activity-dialog';
+import { Activity } from '@/types/activity';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { MoreVertical, Plus } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
-const ActivityList = () => {
-  const activities = [
-    {
-      activity: "Group Exercise",
-      type: "Event",
-      datetime: "2024-02-15 10:00 AM",
-      participants: 12,
-      status: "Upcoming",
-      location: "Activity Room",
-      facilitator: "Sarah Johnson",
-      description: "Morning exercise session focusing on mobility and strength",
-    },
-    {
-      activity: "Physical Therapy",
-      type: "Task",
-      datetime: "2024-02-15 2:30 PM",
-      participants: 1,
-      status: "In Progress",
-      location: "Room 203",
-      facilitator: "Mike Wilson",
-      description: "Individual therapy session for post-surgery recovery",
-    },
-    {
-      activity: "Art Class",
-      type: "Event",
-      datetime: "2024-02-15 3:00 PM",
-      participants: 8,
-      status: "Upcoming",
-      location: "Craft Room",
-      facilitator: "Emily Brown",
-      description: "Watercolor painting session for beginners",
-    },
-    {
-      activity: "Music Therapy",
-      type: "Event",
-      datetime: "2024-02-15 4:00 PM",
-      participants: 15,
-      status: "Scheduled",
-      location: "Common Room",
-      facilitator: "David Lee",
-      description: "Group music session with singing and instruments",
-    },
-  ];
+export default function ActivityList() {
+  const { activities, deleteActivity, setFilters } = useActivity();
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [sortBy, setSortBy] = useState<'start_time' | 'title' | 'category'>('start_time');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  const handleSort = (value: 'start_time' | 'title' | 'category') => {
+    setSortBy(value);
+    setFilters({ sort_by: value, sort_order: sortOrder });
+  };
+
+  const handleSortOrderChange = () => {
+    const newOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+    setSortOrder(newOrder);
+    setFilters({ sort_by: sortBy, sort_order: newOrder });
+  };
+
+  const handleEdit = (activity: Activity) => {
+    setSelectedActivity(activity);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleDelete = async (activity: Activity) => {
+    try {
+      await deleteActivity(activity.id);
+      setIsDeleteDialogOpen(false);
+      setSelectedActivity(null);
+    } catch (error) {
+      console.error('Failed to delete activity:', error);
+    }
+  };
+
   return (
-    <div className="bg-white border border-gray-200 rounded-lg">
-      <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button className="bg-transparent hover:bg-transparent flex items-center space-x-2 text-sm text-gray-600">
-            <span>Sort by Date</span>
-            <ChevronDown className="w-4 h-4" />
-          </Button>
-          <Button className="bg-transparent hover:bg-transparent flex items-center space-x-2 text-sm text-gray-600">
-            <span>Filter by Type</span>
-            <ChevronDown className="w-4 h-4" />
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center space-x-2">
+          <Select value={sortBy} onValueChange={handleSort}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="start_time">Date (Nearest First)</SelectItem>
+              <SelectItem value="title">Title (A-Z)</SelectItem>
+              <SelectItem value="category">Category (A-Z)</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleSortOrderChange}
+          >
+            {sortOrder === 'asc' ? '↑' : '↓'}
           </Button>
         </div>
-        <span className="text-sm text-gray-500">
-          {activities.length} activities
-        </span>
+        <Button onClick={() => setIsCreateDialogOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          New Activity
+        </Button>
       </div>
-      <div className="divide-y divide-gray-200">
-        {activities.map((item, i) => (
-          <div key={i} className="p-6 hover:bg-gray-50 transition-colors">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center space-x-3">
-                  <h3 className="text-lg font-medium text-gray-900">
-                    {item.activity}
-                  </h3>
-                  <span
-                    className={`px-2 py-1 text-xs rounded-full ${
-                      item.type === "Event"
-                        ? "bg-blue-100 text-blue-800"
-                        : "bg-green-100 text-green-800"
-                    }`}
-                  >
-                    {item.type}
-                  </span>
-                  <span
-                    className={`px-2 py-1 text-xs rounded-full ${
-                      item.status === "Upcoming"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : item.status === "In Progress"
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-gray-100 text-gray-800"
-                    }`}
-                  >
-                    {item.status}
-                  </span>
-                </div>
-                <p className="mt-1 text-sm text-gray-500">{item.description}</p>
-                <div className="mt-2 flex items-center space-x-4 text-sm text-gray-500">
-                  <div className="flex items-center">
-                    <Clock className="w-4 h-4 mr-1" />
-                    {item.datetime}
-                  </div>
-                  <div className="flex items-center">
-                    <MapPin className="w-4 h-4 mr-1" />
-                    {item.location}
-                  </div>
-                  <div className="flex items-center">
-                    <Users className="w-4 h-4 mr-1" />
-                    {item.participants} participants
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-4">
-                <Button className="bg-transparent hover:bg-transparent text-blue-600 hover:text-blue-700 text-sm font-medium">
-                  Edit
-                </Button>
-                <Button className="bg-transparent hover:bg-transparent text-gray-400 hover:text-gray-600">
-                  <MoreHorizontal className="w-5 h-5" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        ))}
+
+      <div className="border rounded-lg">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Title</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead>Time</TableHead>
+              <TableHead>Location</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead className="w-[50px]"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {activities.map((activity) => (
+              <TableRow key={activity.id}>
+                <TableCell className="font-medium">{activity.title}</TableCell>
+                <TableCell>
+                  {format(parseISO(activity.start_time), 'MMM d, yyyy')}
+                </TableCell>
+                <TableCell>
+                  {format(parseISO(activity.start_time), 'h:mm a')} - {format(parseISO(activity.end_time), 'h:mm a')}
+                </TableCell>
+                <TableCell>{activity.location}</TableCell>
+                <TableCell>{activity.category}</TableCell>
+                <TableCell>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="h-8 w-8 p-0"
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => handleEdit(activity)}
+                      >
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="text-red-600"
+                        onClick={() => {
+                          setSelectedActivity(activity);
+                          setIsDeleteDialogOpen(true);
+                        }}
+                      >
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
+
+      <ActivityDialog
+        isOpen={isCreateDialogOpen}
+        onClose={() => setIsCreateDialogOpen(false)}
+        defaultDate={new Date()}
+      />
+
+      <ActivityDialog
+        isOpen={isEditDialogOpen}
+        onClose={() => {
+          setIsEditDialogOpen(false);
+          setSelectedActivity(null);
+        }}
+        activity={selectedActivity}
+      />
+
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              activity.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => selectedActivity && handleDelete(selectedActivity)}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
-};
-
-export default ActivityList;
+}

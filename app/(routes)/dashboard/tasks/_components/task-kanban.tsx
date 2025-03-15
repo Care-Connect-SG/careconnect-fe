@@ -175,7 +175,7 @@ const ResidentColumn = ({
             }
           }}
           defaultResident={resident.id}
-          isOpen={showTaskForm}
+          open={showTaskForm}
         />
       )}
     </div>

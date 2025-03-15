@@ -53,7 +53,7 @@ export default function FormCardPublished({
         <Button
           variant="outline"
           onClick={() =>
-            router.replace(`/dashboard/incidents/fill?formId=${id}`)
+            router.push(`/dashboard/incidents/fill?formId=${id}`)
           }
           className="w-full"
         >

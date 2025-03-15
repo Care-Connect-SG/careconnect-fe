@@ -179,6 +179,7 @@ export default function CreateReportPage() {
           router.replace(`/dashboard/incidents`);
         } else {
           await updateReport(reportId, reportData);
+          router.replace(`/dashboard/incidents`);
         }
       }
     } catch (error) {
@@ -194,11 +195,9 @@ export default function CreateReportPage() {
   return (
     <div className="py-4 px-8">
       <div className="flex justify-between">
-        <Link href="/dashboard/incidents/form">
-          <Button className="border h-10 w-10 rounded-md hover:bg-gray-50">
+          <Button onClick={() => router.back()} className="border h-10 w-10 rounded-md hover:bg-gray-50">
             <ChevronLeft className="h-4 w-4 mx-auto" />
           </Button>
-        </Link>
         <div className="flex gap-2 justify-end">
           <Button
             disabled={state.isSubmitting}
@@ -217,7 +216,7 @@ export default function CreateReportPage() {
         </div>
       </div>
 
-      <div>
+      <div className="pt-2">
         <div className="flex justify-between gap-4">
           <FormHeaderView title={form!.title} description={form!.description} />
           <PersonSelector

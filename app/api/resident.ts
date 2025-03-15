@@ -1,23 +1,22 @@
 import { RegistrationCreate, ResidentRecord } from "@/types/resident";
 
-export const getResidents = async (): Promise<ResidentRecord[]> => {
+export const getResidentsByPage = async (page: number, nurse?: string): Promise<ResidentRecord[]> => {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      },
-    );
+    let url = `${process.env.NEXT_PUBLIC_BE_API_URL}/residents?page=${page}`;
+    if (nurse) {
+      url += `&nurse=${encodeURIComponent(nurse)}`;
+    }
+    const response = await fetch(url, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
     if (!response.ok) {
       throw new Error(`Error fetching residents: ${response.statusText}`);
     }
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("getResidents error:", error);
+    console.error("getResidentsByPage error:", error);
     throw error;
   }
 };

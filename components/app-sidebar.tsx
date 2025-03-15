@@ -31,7 +31,7 @@ const config = {
   },
   navMain: [
     { title: "Home", url: "/dashboard/home", icon: Home },
-    { title: "Residents", url: "/dashboard/residents", icon: BookUser },
+    { title: "Residents", url: "/dashboard/residents?page=1", icon: BookUser },
     // {
     //   title: "Announcements",
     //   url: "/dashboard/announcements",

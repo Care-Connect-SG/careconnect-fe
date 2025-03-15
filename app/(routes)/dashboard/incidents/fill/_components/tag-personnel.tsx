@@ -1,7 +1,6 @@
 "use client";
 
 import { getCaregiverTags, getResidentTags } from "@/app/api/report";
-import { getCurrentUserDetails } from "@/app/api/user";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import {

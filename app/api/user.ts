@@ -2,7 +2,7 @@ import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { User, UserEdit } from "@/types/user";
 import { UserForm } from "../(routes)/dashboard/nurses/_components/create-user-dialog";
 
-export const getCurrentUserDetails = async (): Promise<User> => {
+export const getCurrentUser = async (): Promise<User> => {
   try {
     const res = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/users/me`,

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 import { getFormById } from "@/app/api/form";
 import { createReport, getReportById, updateReport } from "@/app/api/report";
-import { getCurrentUserDetails } from "@/app/api/user";
+import { getCurrentUser } from "@/app/api/user";
 import { FormElementData } from "@/hooks/useFormReducer";
 import { ReportState, useReportReducer } from "@/hooks/useReportReducer";
 import { FormResponse } from "@/types/form";
@@ -37,7 +37,7 @@ export default function CreateReportPage() {
   useEffect(() => {
     async function fetchUser() {
       try {
-        const user = await getCurrentUserDetails();
+        const user = await getCurrentUser();
         setUser(user);
       } catch (error) {
         console.error("Error fetching user:", error);

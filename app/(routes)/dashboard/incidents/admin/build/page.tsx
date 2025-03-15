@@ -6,7 +6,7 @@ import {
   getFormById,
   updateForm,
 } from "@/app/api/form";
-import { getCurrentUserDetails } from "@/app/api/user";
+import { getCurrentUser } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import { useBreadcrumb } from "@/context/breadcrumb-context";
 import { FormState, useFormReducer } from "@/hooks/useFormReducer";
@@ -62,7 +62,7 @@ export default function CreateFormPage() {
       return;
     }
 
-    const user = await getCurrentUserDetails();
+    const user = await getCurrentUser();
 
     const formData: FormCreate = {
       title: state.title,

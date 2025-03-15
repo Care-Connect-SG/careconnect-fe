@@ -2,7 +2,7 @@
 
 import { getForms } from "@/app/api/form";
 import { deleteReport, getReports } from "@/app/api/report";
-import { getCurrentUserDetails } from "@/app/api/user";
+import { getCurrentUser } from "@/app/api/user";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FormResponse } from "@/types/form";
 import { ReportResponse, ReportStatus } from "@/types/report";
@@ -39,7 +39,7 @@ export default function IncidentReports() {
 
   const fetchUser = async () => {
     try {
-      const user = await getCurrentUserDetails();
+      const user = await getCurrentUser();
       setUser(user);
     } catch (error) {
       console.error("Error fetching user:", error);

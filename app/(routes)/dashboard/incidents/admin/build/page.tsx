@@ -27,7 +27,6 @@ export default function CreateFormPage() {
   const formId = searchParams.get("id");
   const isEditing = !!formId;
   const { setPageName } = useBreadcrumb();
-  const { data: session } = useSession();
 
   const [state, dispatch] = useFormReducer();
   const [loading, setLoading] = useState<boolean>(isEditing);
@@ -63,7 +62,7 @@ export default function CreateFormPage() {
       return;
     }
 
-    const user = await getCurrentUser(session!.user!.email!);
+    const user = await getCurrentUser();
 
     const formData: FormCreate = {
       title: state.title,

@@ -1,7 +1,7 @@
 "use client";
 
 import { addDays, format, subDays } from "date-fns";
-import { ChevronLeft, ChevronRight, Plus, Search, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { getTasks } from "@/app/api/task";
@@ -48,7 +48,7 @@ const TaskManagement = () => {
       const formattedDate = format(currentDate, "yyyy-MM-dd");
       const queryParams = {
         ...Object.fromEntries(
-          Object.entries(filters).filter(([_, v]) => v !== undefined)
+          Object.entries(filters).filter(([_, v]) => v !== undefined),
         ),
         date: formattedDate,
       };

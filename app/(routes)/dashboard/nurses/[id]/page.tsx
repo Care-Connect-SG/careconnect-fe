@@ -15,6 +15,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { UserEdit } from "@/types/user";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { getUser } from "@/app/api/user";
 
 const UserProfile = () => {
   const { id } = useParams();
@@ -23,6 +25,9 @@ const UserProfile = () => {
   const [activeTab, setActiveTab] = useState<string>("overview");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [editedUser, setEditedUser] = useState<UserEdit | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     const getUser = async () => {
@@ -41,6 +46,17 @@ const UserProfile = () => {
       getUser();
     }
   }, [id]);
+
+  useEffect(() => {
+    const getUserRole = async () => {
+      if (!session?.user?.email) return;
+
+      const user = await getUser(session.user.email);
+      setUserRole(user.role);
+    };
+
+    getUserRole();
+  }, [session?.user?.email]);
 
   if (loading) {
     return (
@@ -84,12 +100,14 @@ const UserProfile = () => {
           <h1 className="text-2xl font-bold">{user.name}</h1>
           <p className="text-gray-500">{user.role}</p>
         </div>
-        <Button
-          onClick={handleEditProfile}
-          className="bg-blue-600 hover:bg-blue-800 text-white"
-        >
-          Edit Profile
-        </Button>
+        {userRole === "Admin" && (
+          <Button
+            onClick={handleEditProfile}
+            className="bg-blue-600 hover:bg-blue-800 text-white"
+          >
+            Edit Profile
+          </Button>
+        )}
       </Card>
 
       <div className="mt-6 border-b border-gray-200">

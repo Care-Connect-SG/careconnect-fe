@@ -60,6 +60,7 @@ const taskSchema = z
     remind_prior: z.number().nullable().optional(),
     is_ai_generated: z.boolean().default(false),
     assigned_to: z.string().nonempty("Assignee is required"),
+    update_series: z.boolean().optional(),
   })
   .refine((data) => data.start_date < data.due_date, {
     message: "Start date must be before due date",

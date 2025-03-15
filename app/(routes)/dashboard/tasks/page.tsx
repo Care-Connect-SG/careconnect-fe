@@ -1,8 +1,7 @@
 "use client";
 
-import { useBreadcrumb } from "@/context/breadcrumb-context";
-import { format } from "date-fns";
-import { ChevronLeft, ChevronRight, Plus, Search, X } from "lucide-react";
+import { addDays, format, subDays } from "date-fns";
+import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { getTasks } from "@/app/api/task";
@@ -27,7 +26,7 @@ const TaskManagement = () => {
   const [currentView, setCurrentView] = useState<"list" | "kanban">("list");
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [date, setDate] = useState("");
+  const [currentDate, setCurrentDate] = useState(new Date());
 
   const [filters, setFilters] = useState({
     search: "",
@@ -36,24 +35,25 @@ const TaskManagement = () => {
   });
 
   useEffect(() => {
-    const todayFormatted = format(new Date(), "EEEE, dd MMMM yyyy");
-    setDate(todayFormatted);
     fetchTasks();
   }, []);
 
   useEffect(() => {
     fetchTasks();
-  }, [filters]);
+  }, [filters, currentDate]);
 
   const fetchTasks = async () => {
     setLoading(true);
     try {
-      const filteredTasks = await getTasks(
-        Object.fromEntries(
+      const formattedDate = format(currentDate, "yyyy-MM-dd");
+      const queryParams = {
+        ...Object.fromEntries(
           Object.entries(filters).filter(([_, v]) => v !== undefined),
         ),
-      );
+        date: formattedDate,
+      };
 
+      const filteredTasks = await getTasks(queryParams);
       setTasks(filteredTasks);
     } catch (err) {
       console.error("TaskManagement - Error fetching tasks:", err);
@@ -93,14 +93,24 @@ const TaskManagement = () => {
       <div className="flex justify-between items-center">
         <div className="flex flex-row space-x-5 items-center">
           <div className="flex items-center space-x-2">
-            <Button variant="outline" className="px-1.5 py-1">
+            <Button
+              variant="outline"
+              className="px-1.5 py-1"
+              onClick={() => setCurrentDate(subDays(currentDate, 1))}
+            >
               <ChevronLeft className="w-4 h-4" />
             </Button>
-            <Button variant="outline" className="px-1.5 py-1">
+            <Button
+              variant="outline"
+              className="px-1.5 py-1"
+              onClick={() => setCurrentDate(addDays(currentDate, 1))}
+            >
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
-          <p className="text-md text-gray-500">{date}</p>
+          <p className="text-md text-gray-500">
+            {format(currentDate, "EEEE, dd MMMM yyyy")}
+          </p>
         </div>
         <div className="flex flex-row gap-4 rounded-lg items-center">
           <div className="relative w-full md:w-1/3">

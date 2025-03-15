@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,8 +16,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import { useState } from "react";
 
 interface TaskReassignmentFormProps {
   taskId: string;
@@ -46,22 +46,28 @@ export function TaskReassignmentForm({
     queryKey: ["nurses"],
     queryFn: async () => {
       const response = await axios.get("/api/tags/caregivers");
-      return response.data.filter((nurse: Nurse) => nurse.id !== currentNurseId);
+      return response.data.filter(
+        (nurse: Nurse) => nurse.id !== currentNurseId,
+      );
     },
   });
 
   // Request reassignment mutation
   const requestReassignmentMutation = useMutation({
     mutationFn: async (targetNurseId: string) => {
-      const response = await axios.post(`/api/tasks/${taskId}/request-reassignment`, {
-        target_nurse_id: targetNurseId,
-      });
+      const response = await axios.post(
+        `/api/tasks/${taskId}/request-reassignment`,
+        {
+          target_nurse_id: targetNurseId,
+        },
+      );
       return response.data;
     },
     onSuccess: () => {
       toast({
         title: "Reassignment Requested",
-        description: "The task reassignment request has been sent successfully.",
+        description:
+          "The task reassignment request has been sent successfully.",
       });
       setOpen(false);
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
@@ -69,7 +75,8 @@ export function TaskReassignmentForm({
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.response?.data?.detail || "Failed to request reassignment",
+        description:
+          error.response?.data?.detail || "Failed to request reassignment",
         variant: "destructive",
       });
     },
@@ -99,14 +106,17 @@ export function TaskReassignmentForm({
         <DialogHeader>
           <DialogTitle>Request Task Reassignment</DialogTitle>
           <DialogDescription>
-            Select a nurse to reassign this task to. The selected nurse will be notified and can accept or reject the request.
+            Select a nurse to reassign this task to. The selected nurse will be
+            notified and can accept or reject the request.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <label className="text-sm font-medium">Current Nurse</label>
-              <div className="text-sm text-muted-foreground">{currentNurseName}</div>
+              <div className="text-sm text-muted-foreground">
+                {currentNurseName}
+              </div>
             </div>
             <div className="grid gap-2">
               <label className="text-sm font-medium">Select New Nurse</label>
@@ -138,13 +148,17 @@ export function TaskReassignmentForm({
             </Button>
             <Button
               type="submit"
-              disabled={!selectedNurseId || requestReassignmentMutation.isPending}
+              disabled={
+                !selectedNurseId || requestReassignmentMutation.isPending
+              }
             >
-              {requestReassignmentMutation.isPending ? "Requesting..." : "Request Reassignment"}
+              {requestReassignmentMutation.isPending
+                ? "Requesting..."
+                : "Request Reassignment"}
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
   );
-} 
+}

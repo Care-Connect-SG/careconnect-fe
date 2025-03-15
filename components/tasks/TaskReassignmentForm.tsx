@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,9 +16,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
 import { TaskStatus } from "@/types/task";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
+import { useState } from "react";
 
 interface TaskReassignmentFormProps {
   taskId: string;
@@ -46,7 +46,9 @@ export function TaskReassignmentForm({
   const { data: nurses = [], isLoading } = useQuery<Nurse[]>({
     queryKey: ["nurses"],
     queryFn: async () => {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_BE_API_URL}/users/nurses`);
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BE_API_URL}/users/nurses`,
+      );
       return response.data;
     },
   });
@@ -58,7 +60,7 @@ export function TaskReassignmentForm({
         `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/request-reassignment`,
         {
           requested_to: selectedNurseId,
-        }
+        },
       );
       return response.data;
     },
@@ -131,20 +133,19 @@ export function TaskReassignmentForm({
           </div>
         </div>
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => setIsOpen(false)}
-          >
+          <Button variant="outline" onClick={() => setIsOpen(false)}>
             Cancel
           </Button>
           <Button
             onClick={handleReassignmentRequest}
             disabled={!selectedNurseId || requestReassignment.isPending}
           >
-            {requestReassignment.isPending ? "Requesting..." : "Request Reassignment"}
+            {requestReassignment.isPending
+              ? "Requesting..."
+              : "Request Reassignment"}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-} 
+}

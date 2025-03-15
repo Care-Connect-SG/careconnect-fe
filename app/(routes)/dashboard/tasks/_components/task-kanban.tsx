@@ -1,5 +1,7 @@
 "use client";
 
+import { TaskReassignmentActions } from "@/app/(routes)/dashboard/tasks/_components/TaskReassignmentActions";
+import { TaskReassignmentForm } from "@/app/(routes)/dashboard/tasks/_components/TaskReassignmentForm";
 import { createResident, getResidents } from "@/app/api/resident";
 import { downloadTask, duplicateTask } from "@/app/api/task";
 import { Button } from "@/components/ui/button";
@@ -12,8 +14,6 @@ import { useSession } from "next-auth/react";
 import React, { useEffect, useState, Dispatch, SetStateAction } from "react";
 import AddResidentModal from "../../residents/_components/add-resident-modal";
 import TaskForm from "./task-form";
-import { TaskReassignmentForm } from "@/app/(routes)/dashboard/tasks/_components/TaskReassignmentForm";
-import { TaskReassignmentActions } from "@/app/(routes)/dashboard/tasks/_components/TaskReassignmentActions";
 
 const TaskCard = ({
   task,
@@ -86,23 +86,32 @@ const TaskCard = ({
           <p className="text-xs text-gray-500">{task.category}</p>
         </div>
         <div className="flex space-x-1">
-          {task.status === TaskStatus.ASSIGNED && task.assigned_to && session?.user?.id && task.assigned_to === session.user.id && task.assigned_to_name && (
-            <TaskReassignmentForm
-              taskId={task.id}
-              currentNurseId={task.assigned_to}
-              currentNurseName={task.assigned_to_name}
-            />
-          )}
-          {task.status === TaskStatus.REASSIGNMENT_REQUESTED && task.reassignment_requested_to && session?.user?.id && task.reassignment_requested_to === session.user.id && task.assigned_to_name && task.reassignment_requested_by_name && (
-            <TaskReassignmentActions
-              taskId={task.id}
-              taskTitle={task.task_title}
-              currentNurseId={task.assigned_to}
-              currentNurseName={task.assigned_to_name}
-              requestingNurseName={task.reassignment_requested_by_name}
-              status={task.status}
-            />
-          )}
+          {task.status === TaskStatus.ASSIGNED &&
+            task.assigned_to &&
+            session?.user?.id &&
+            task.assigned_to === session.user.id &&
+            task.assigned_to_name && (
+              <TaskReassignmentForm
+                taskId={task.id}
+                currentNurseId={task.assigned_to}
+                currentNurseName={task.assigned_to_name}
+              />
+            )}
+          {task.status === TaskStatus.REASSIGNMENT_REQUESTED &&
+            task.reassignment_requested_to &&
+            session?.user?.id &&
+            task.reassignment_requested_to === session.user.id &&
+            task.assigned_to_name &&
+            task.reassignment_requested_by_name && (
+              <TaskReassignmentActions
+                taskId={task.id}
+                taskTitle={task.task_title}
+                currentNurseId={task.assigned_to}
+                currentNurseName={task.assigned_to_name}
+                requestingNurseName={task.reassignment_requested_by_name}
+                status={task.status}
+              />
+            )}
           <Button
             variant="ghost"
             size="icon"

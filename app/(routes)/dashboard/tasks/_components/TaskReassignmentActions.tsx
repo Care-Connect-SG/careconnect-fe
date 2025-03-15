@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import { useState } from "react";
 
 interface TaskReassignmentActionsProps {
   taskId: string;
@@ -39,7 +39,9 @@ export function TaskReassignmentActions({
   // Accept reassignment mutation
   const acceptReassignmentMutation = useMutation({
     mutationFn: async () => {
-      const response = await axios.post(`/api/tasks/${taskId}/accept-reassignment`);
+      const response = await axios.post(
+        `/api/tasks/${taskId}/accept-reassignment`,
+      );
       return response.data;
     },
     onSuccess: () => {
@@ -53,7 +55,8 @@ export function TaskReassignmentActions({
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.response?.data?.detail || "Failed to accept reassignment",
+        description:
+          error.response?.data?.detail || "Failed to accept reassignment",
         variant: "destructive",
       });
     },
@@ -62,9 +65,12 @@ export function TaskReassignmentActions({
   // Reject reassignment mutation
   const rejectReassignmentMutation = useMutation({
     mutationFn: async (reason: string) => {
-      const response = await axios.post(`/api/tasks/${taskId}/reject-reassignment`, {
-        rejection_reason: reason,
-      });
+      const response = await axios.post(
+        `/api/tasks/${taskId}/reject-reassignment`,
+        {
+          rejection_reason: reason,
+        },
+      );
       return response.data;
     },
     onSuccess: () => {
@@ -78,7 +84,8 @@ export function TaskReassignmentActions({
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.response?.data?.detail || "Failed to reject reassignment",
+        description:
+          error.response?.data?.detail || "Failed to reject reassignment",
         variant: "destructive",
       });
     },
@@ -132,20 +139,27 @@ export function TaskReassignmentActions({
           <DialogHeader>
             <DialogTitle>Task Reassignment Request</DialogTitle>
             <DialogDescription>
-              {requestingNurseName} has requested to reassign the task "{taskTitle}" to you.
+              {requestingNurseName} has requested to reassign the task "
+              {taskTitle}" to you.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <label className="text-sm font-medium">Current Nurse</label>
-              <div className="text-sm text-muted-foreground">{currentNurseName}</div>
+              <div className="text-sm text-muted-foreground">
+                {currentNurseName}
+              </div>
             </div>
             <div className="grid gap-2">
               <label className="text-sm font-medium">Requesting Nurse</label>
-              <div className="text-sm text-muted-foreground">{requestingNurseName}</div>
+              <div className="text-sm text-muted-foreground">
+                {requestingNurseName}
+              </div>
             </div>
             <div className="grid gap-2">
-              <label className="text-sm font-medium">Rejection Reason (if rejecting)</label>
+              <label className="text-sm font-medium">
+                Rejection Reason (if rejecting)
+              </label>
               <Textarea
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
@@ -195,7 +209,8 @@ export function TaskReassignmentActions({
           <DialogHeader>
             <DialogTitle>Handle Task Yourself</DialogTitle>
             <DialogDescription>
-              The task reassignment was rejected. You can now handle this task yourself.
+              The task reassignment was rejected. You can now handle this task
+              yourself.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -217,7 +232,9 @@ export function TaskReassignmentActions({
               onClick={() => handleTaskSelfMutation.mutate()}
               disabled={handleTaskSelfMutation.isPending}
             >
-              {handleTaskSelfMutation.isPending ? "Updating..." : "Handle Task Myself"}
+              {handleTaskSelfMutation.isPending
+                ? "Updating..."
+                : "Handle Task Myself"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -226,4 +243,4 @@ export function TaskReassignmentActions({
   }
 
   return null;
-} 
+}

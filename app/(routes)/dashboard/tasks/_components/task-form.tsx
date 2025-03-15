@@ -198,7 +198,7 @@ export default function TaskForm({
         }
         toast({
           variant: "default",
-          title: "Success",
+          title: "Successully created task(s)",
           description: `${newTasks.length} task(s) created successfully`,
         });
       }
@@ -213,7 +213,7 @@ export default function TaskForm({
       }
       toast({
         variant: "destructive",
-        title: "Error",
+        title: "An error occured, please try again",
         description: errorMessage,
       });
     }
@@ -224,7 +224,6 @@ export default function TaskForm({
       onSubmit(data);
     },
     (errors) => {
-      // Show validation errors in toast
       const errorMessages = Object.values(errors).map((error) => error.message);
       toast({
         variant: "destructive",

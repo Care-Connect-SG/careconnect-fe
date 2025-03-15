@@ -28,7 +28,6 @@ const TaskManagement = () => {
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [date, setDate] = useState("");
-  const { setPageName } = useBreadcrumb();
 
   const [filters, setFilters] = useState({
     search: "",
@@ -39,10 +38,8 @@ const TaskManagement = () => {
   useEffect(() => {
     const todayFormatted = format(new Date(), "EEEE, dd MMMM yyyy");
     setDate(todayFormatted);
-    setPageName("Task Management");
-
     fetchTasks();
-  }, [setPageName]);
+  }, []);
 
   useEffect(() => {
     fetchTasks();

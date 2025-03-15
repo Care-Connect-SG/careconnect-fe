@@ -1,6 +1,6 @@
 "use client";
 
-import { format } from "date-fns";
+import { format, addDays, subDays } from "date-fns";
 import { ChevronLeft, ChevronRight, Plus, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -26,20 +26,14 @@ const TaskManagement = () => {
   const [currentView, setCurrentView] = useState<"list" | "kanban">("list");
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [date, setDate] = useState("");
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   const [filters, setFilters] = useState({
     search: "",
     status: "",
     priority: "",
+    date: format(new Date(), "yyyy-MM-dd"),
   });
-
-  useEffect(() => {
-    const todayFormatted = format(new Date(), "EEEE, dd MMMM yyyy");
-    setDate(todayFormatted);
-
-    fetchTasks();
-  }, []);
 
   useEffect(() => {
     fetchTasks();
@@ -71,7 +65,17 @@ const TaskManagement = () => {
       search: "",
       status: "",
       priority: "",
+      date: format(selectedDate, "yyyy-MM-dd"),
     });
+  };
+
+  const navigateDate = (direction: "prev" | "next") => {
+    const newDate = direction === "prev" 
+      ? subDays(selectedDate, 1)
+      : addDays(selectedDate, 1);
+    
+    setSelectedDate(newDate);
+    updateFilter("date", format(newDate, "yyyy-MM-dd"));
   };
 
   return (
@@ -93,14 +97,24 @@ const TaskManagement = () => {
       <div className="flex justify-between items-center">
         <div className="flex flex-row space-x-5 items-center">
           <div className="flex items-center space-x-2">
-            <Button variant="outline" className="px-1.5 py-1">
+            <Button 
+              variant="outline" 
+              className="px-1.5 py-1"
+              onClick={() => navigateDate("prev")}
+            >
               <ChevronLeft className="w-4 h-4" />
             </Button>
-            <Button variant="outline" className="px-1.5 py-1">
+            <Button 
+              variant="outline" 
+              className="px-1.5 py-1"
+              onClick={() => navigateDate("next")}
+            >
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
-          <p className="text-md text-gray-500">{date}</p>
+          <p className="text-md text-gray-500">
+            {format(selectedDate, "EEEE, dd MMMM yyyy")}
+          </p>
         </div>
         <div className="flex flex-row gap-4 rounded-lg items-center">
           <div className="relative w-full md:w-1/3">

@@ -9,6 +9,7 @@ import { ReportResponse, ReportStatus } from "@/types/report";
 import { User } from "@/types/user";
 import { useEffect, useMemo, useState } from "react";
 import ReportsTable from "./_components/reports-table";
+import IncidentReportFilters from "@/components/incident-reports-filter";
 
 interface FilterOptions {
   formId: string;
@@ -122,9 +123,7 @@ export default function IncidentReports() {
         <h1 className="scroll-m-20 text-2xl font-semibold tracking-tight py-2">
           Incident Reports
         </h1>
-        <p className="text-sm text-muted-foreground">
-          View all incident reports
-        </p>
+        <IncidentReportFilters />
       </div>
       <hr className="border-t-1 border-gray-300 mx-6 pt-2 pb-0"></hr>
       <div className="px-6">

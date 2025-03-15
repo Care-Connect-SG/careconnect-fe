@@ -88,6 +88,7 @@ export default function ResidentDashboard() {
       const updatedResident = await updateResident(resident.id, {
         ...resident,
         additional_notes: newNotes,
+        additional_notes_timestamp: new Date().toISOString(),
       });
       setResident(updatedResident);
     } catch (error) {
@@ -155,6 +156,7 @@ export default function ResidentDashboard() {
           />
           <ResidentDetailsNotesCard
             additionalNotes={resident.additional_notes || "None"}
+            initialLastSaved={resident.additional_notes_timestamp}
             onSaveNotes={handleSaveAdditionalNotes}
           />
         </div>

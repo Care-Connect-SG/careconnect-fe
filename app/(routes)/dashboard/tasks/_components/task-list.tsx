@@ -1,7 +1,7 @@
 "use client";
 
-import { TaskReassignmentActions } from "@/app/(routes)/dashboard/tasks/_components/TaskReassignmentActions";
-import { TaskReassignmentForm } from "@/app/(routes)/dashboard/tasks/_components/TaskReassignmentForm";
+import { TaskReassignmentActions } from "@/app/(routes)/dashboard/tasks/_components/task-reassignment-actions";
+import { TaskReassignmentForm } from "@/app/(routes)/dashboard/tasks/_components/task-reassignment-form";
 import {
   completeTask,
   downloadTask,
@@ -60,6 +60,7 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
   const [taskList, setTaskList] = useState<Task[]>(tasks);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
 
   const handleTaskUpdate = (
     updater: Task | ((prevTasks: Task[]) => Task[]),
@@ -139,6 +140,35 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
         title: "Error",
         description: "Failed to download the task.",
       });
+    }
+  };
+
+  const handleDeleteTask = async (
+    task: Task,
+    deleteSeries: boolean = false,
+  ) => {
+    try {
+      await deleteTask(task.id, deleteSeries);
+      setTaskList((prevTasks) =>
+        deleteSeries
+          ? prevTasks.filter((t) => !t.recurring || t.id !== task.id)
+          : prevTasks.filter((t) => t.id !== task.id),
+      );
+      toast({
+        title: "Task Deleted",
+        description: `The task has been successfully deleted${
+          deleteSeries ? " along with its series" : ""
+        }`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete task",
+      });
+    } finally {
+      setOpenDeleteDialog(false);
+      setTaskToDelete(null);
     }
   };
 
@@ -351,6 +381,7 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                         className="text-red-600"
                         onClick={(e) => {
                           e.stopPropagation();
+                          setTaskToDelete(task);
                           setOpenDeleteDialog(true);
                         }}
                       >
@@ -359,41 +390,6 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  <AlertDialog
-                    open={openDeleteDialog}
-                    onOpenChange={setOpenDeleteDialog}
-                  >
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Task</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to delete this task?
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={async () => {
-                            try {
-                              await deleteTask(task.id);
-                              setTaskList((prevTasks) =>
-                                prevTasks.filter((t) => t.id !== task.id),
-                              );
-                              toast({
-                                title: "Task Deleted",
-                                description:
-                                  "The task has been successfully deleted",
-                              });
-                            } catch (error) {
-                              alert("Failed to delete task");
-                            }
-                          }}
-                        >
-                          Confirm Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
                 </TableCell>
               </TableRow>
             ))}
@@ -408,6 +404,54 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
           setTasks={handleTaskUpdate}
         />
       )}
+
+      <AlertDialog
+        open={openDeleteDialog && taskToDelete !== null}
+        onOpenChange={(open) => {
+          setOpenDeleteDialog(open);
+          if (!open) setTaskToDelete(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Task</AlertDialogTitle>
+            <AlertDialogDescription>
+              {taskToDelete?.recurring
+                ? "This is a recurring task. Would you like to delete just this task or all tasks in the series?"
+                : "Are you sure you want to delete this task?"}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            {taskToDelete?.recurring ? (
+              <>
+                <Button
+                  variant="destructive"
+                  onClick={() =>
+                    taskToDelete && handleDeleteTask(taskToDelete, false)
+                  }
+                >
+                  Delete This Task
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() =>
+                    taskToDelete && handleDeleteTask(taskToDelete, true)
+                  }
+                >
+                  Delete Entire Series
+                </Button>
+              </>
+            ) : (
+              <AlertDialogAction
+                onClick={() => taskToDelete && handleDeleteTask(taskToDelete)}
+              >
+                Confirm Delete
+              </AlertDialogAction>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

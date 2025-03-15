@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -8,6 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -145,21 +148,21 @@ export function TaskReassignmentActions({
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <label className="text-sm font-medium">Current Nurse</label>
+              <Label className="text-sm font-medium">Current Nurse</Label>
               <div className="text-sm text-muted-foreground">
                 {currentNurseName}
               </div>
             </div>
             <div className="grid gap-2">
-              <label className="text-sm font-medium">Requesting Nurse</label>
+              <Label className="text-sm font-medium">Requesting Nurse</Label>
               <div className="text-sm text-muted-foreground">
                 {requestingNurseName}
               </div>
             </div>
             <div className="grid gap-2">
-              <label className="text-sm font-medium">
+              <Label className="text-sm font-medium">
                 Rejection Reason (if rejecting)
-              </label>
+              </Label>
               <Textarea
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
@@ -215,7 +218,7 @@ export function TaskReassignmentActions({
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <label className="text-sm font-medium">Task</label>
+              <Label className="text-sm font-medium">Task</Label>
               <div className="text-sm text-muted-foreground">{taskTitle}</div>
             </div>
           </div>

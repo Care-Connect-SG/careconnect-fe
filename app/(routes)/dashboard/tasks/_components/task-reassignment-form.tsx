@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -8,6 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -113,13 +116,13 @@ export function TaskReassignmentForm({
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <label className="text-sm font-medium">Current Nurse</label>
+              <Label className="text-sm font-medium">Current Nurse</Label>
               <div className="text-sm text-muted-foreground">
                 {currentNurseName}
               </div>
             </div>
             <div className="grid gap-2">
-              <label className="text-sm font-medium">Select New Nurse</label>
+              <Label className="text-sm font-medium">Select New Nurse</Label>
               <Select
                 value={selectedNurseId}
                 onValueChange={setSelectedNurseId}

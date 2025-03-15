@@ -43,6 +43,7 @@ export interface TaskUpdate {
   remind_prior?: number;
   is_ai_generated?: boolean;
   assigned_to?: string;
+  update_series?: boolean;
 }
 
 export interface Task {

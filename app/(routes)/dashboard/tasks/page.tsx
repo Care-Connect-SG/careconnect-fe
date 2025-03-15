@@ -1,6 +1,6 @@
 "use client";
 
-import { format, addDays, subDays } from "date-fns";
+import { addDays, format, subDays } from "date-fns";
 import { ChevronLeft, ChevronRight, Plus, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -70,10 +70,11 @@ const TaskManagement = () => {
   };
 
   const navigateDate = (direction: "prev" | "next") => {
-    const newDate = direction === "prev" 
-      ? subDays(selectedDate, 1)
-      : addDays(selectedDate, 1);
-    
+    const newDate =
+      direction === "prev"
+        ? subDays(selectedDate, 1)
+        : addDays(selectedDate, 1);
+
     setSelectedDate(newDate);
     updateFilter("date", format(newDate, "yyyy-MM-dd"));
   };
@@ -97,15 +98,15 @@ const TaskManagement = () => {
       <div className="flex justify-between items-center">
         <div className="flex flex-row space-x-5 items-center">
           <div className="flex items-center space-x-2">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="px-1.5 py-1"
               onClick={() => navigateDate("prev")}
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="px-1.5 py-1"
               onClick={() => navigateDate("next")}
             >

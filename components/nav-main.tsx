@@ -62,7 +62,7 @@ export function NavMain({
       return {
         ...item,
         submenu: item.submenu.filter(
-          (sub) => sub.title !== "Manage Report Forms"
+          (sub) => sub.title !== "Manage Report Forms",
         ),
       };
     }
@@ -106,7 +106,7 @@ export function NavMain({
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>
-          )
+          ),
         )}
       </SidebarMenu>
     </SidebarGroup>

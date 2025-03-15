@@ -1,6 +1,7 @@
 "use client";
 
 import { getUserById, updateUser } from "@/app/api/user";
+import { getUser } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -13,10 +14,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { UserEdit } from "@/types/user";
+import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
-import { getUser } from "@/app/api/user";
 
 const UserProfile = () => {
   const { id } = useParams();

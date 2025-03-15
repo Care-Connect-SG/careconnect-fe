@@ -1,7 +1,8 @@
 "use client";
 
-import { addDays, format, subDays } from "date-fns";
+import { addDays, format, parse, subDays } from "date-fns";
 import { ChevronLeft, ChevronRight, Plus, Search, X } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { getTasks } from "@/app/api/task";
@@ -23,21 +24,51 @@ import TaskListView from "./_components/task-list";
 import { TaskViewToggle } from "./_components/task-viewtoggle";
 
 const TaskManagement = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [currentView, setCurrentView] = useState<"list" | "kanban">("list");
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  // Initialize selectedDate from URL or default to today
+  const initDate = () => {
+    const dateParam = searchParams.get("date");
+    if (dateParam) {
+      try {
+        return parse(dateParam, "yyyy-MM-dd", new Date());
+      } catch (e) {
+        console.error("Invalid date in URL, defaulting to today");
+        return new Date();
+      }
+    }
+    return new Date();
+  };
+
+  const [selectedDate, setSelectedDate] = useState(initDate);
 
   const [filters, setFilters] = useState({
     search: "",
     status: "",
     priority: "",
-    date: format(new Date(), "yyyy-MM-dd"),
+    date: format(initDate(), "yyyy-MM-dd"),
   });
 
   useEffect(() => {
     fetchTasks();
   }, [filters]);
+
+  // Update URL when date changes
+  useEffect(() => {
+    const current = new URLSearchParams(Array.from(searchParams.entries()));
+    const newDate = format(selectedDate, "yyyy-MM-dd");
+
+    if (current.get("date") !== newDate) {
+      current.set("date", newDate);
+      const search = current.toString();
+      const query = search ? `?${search}` : "";
+      router.push(`/dashboard/tasks${query}`, { scroll: false });
+    }
+  }, [selectedDate, router, searchParams]);
 
   const fetchTasks = async () => {
     setLoading(true);

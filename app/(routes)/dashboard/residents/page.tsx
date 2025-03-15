@@ -1,23 +1,28 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import ResidentCard, { NurseOption } from "./_components/all-resident-card";
-import AddResidentModal from "./_components/add-resident-modal";
-import { useRouter, useSearchParams } from "next/navigation";
-import { getResidentsByPage, updateResidentNurse, deleteResident, createResident } from "../../../api/resident";
-import { getAllNurses } from "../../../api/user";
-import { ResidentRecord } from "@/types/resident";
-import { UserResponse } from "@/types/user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ResidentRecord } from "@/types/resident";
+import { UserResponse } from "@/types/user";
 import { Search } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import {
+  createResident,
+  deleteResident,
+  getResidentsByPage,
+  updateResidentNurse,
+} from "../../../api/resident";
+import { getAllNurses } from "../../../api/user";
+import AddResidentModal from "./_components/add-resident-modal";
+import ResidentCard, { NurseOption } from "./_components/all-resident-card";
 
 export default function AllResidentsPage() {
   const [residents, setResidents] = useState<ResidentRecord[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [nurseOptions, setNurseOptions] = useState<NurseOption[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const pageParam = searchParams.get("page");
@@ -52,7 +57,7 @@ export default function AllResidentsPage() {
   }, []);
 
   const filteredResidents = residents.filter((resident) =>
-    resident.full_name.toLowerCase().includes(searchTerm.toLowerCase())
+    resident.full_name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const computeAge = (dob: string) => {
@@ -81,7 +86,7 @@ export default function AllResidentsPage() {
     try {
       const updatedResident = await updateResidentNurse(id, updatePayload);
       setResidents((prev) =>
-        prev.map((res) => (res.id === id ? updatedResident : res))
+        prev.map((res) => (res.id === id ? updatedResident : res)),
       );
     } catch (error) {
       console.error("Error updating nurse:", error);

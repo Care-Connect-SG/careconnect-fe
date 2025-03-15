@@ -1,6 +1,9 @@
 import { RegistrationCreate, ResidentRecord } from "@/types/resident";
 
-export const getResidentsByPage = async (page: number, nurse?: string): Promise<ResidentRecord[]> => {
+export const getResidentsByPage = async (
+  page: number,
+  nurse?: string,
+): Promise<ResidentRecord[]> => {
   try {
     let url = `${process.env.NEXT_PUBLIC_BE_API_URL}/residents?page=${page}`;
     if (nurse) {

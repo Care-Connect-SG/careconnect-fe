@@ -26,7 +26,6 @@ const TaskManagement = () => {
   const [currentView, setCurrentView] = useState<"list" | "kanban">("list");
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
-  // Store the date as a Date object.
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const [filters, setFilters] = useState({
@@ -36,7 +35,6 @@ const TaskManagement = () => {
   });
 
   useEffect(() => {
-    // Fetch tasks on initial load
     fetchTasks();
   }, []);
 
@@ -50,7 +48,7 @@ const TaskManagement = () => {
       const formattedDate = format(currentDate, "yyyy-MM-dd");
       const queryParams = {
         ...Object.fromEntries(
-          Object.entries(filters).filter(([_, v]) => v !== undefined),
+          Object.entries(filters).filter(([_, v]) => v !== undefined)
         ),
         date: formattedDate,
       };

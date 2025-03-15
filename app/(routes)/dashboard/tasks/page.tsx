@@ -1,5 +1,6 @@
 "use client";
 
+import { useBreadcrumb } from "@/context/breadcrumb-context";
 import { format } from "date-fns";
 import { ChevronLeft, ChevronRight, Plus, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -37,7 +38,6 @@ const TaskManagement = () => {
   useEffect(() => {
     const todayFormatted = format(new Date(), "EEEE, dd MMMM yyyy");
     setDate(todayFormatted);
-
     fetchTasks();
   }, []);
 

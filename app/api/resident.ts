@@ -48,6 +48,15 @@ export const updateResident = async (
   updateData: any,
 ): Promise<ResidentRecord> => {
   try {
+    // Convert current local time to an ISO string that reflects your local time.
+    const localDate = new Date();
+    const localISOString = new Date(
+      localDate.getTime() - localDate.getTimezoneOffset() * 60000,
+    ).toISOString();
+
+    // Set the additional_notes_timestamp field in the payload.
+    updateData.additional_notes_timestamp = localISOString;
+
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}`,
       {

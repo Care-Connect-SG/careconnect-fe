@@ -4,7 +4,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { getFormById } from "@/app/api/form";
-import { createReport, deleteReport, getReportById, updateReport } from "@/app/api/report";
+import {
+  createReport,
+  deleteReport,
+  getReportById,
+  updateReport,
+} from "@/app/api/report";
 import { getCurrentUser } from "@/app/api/user";
 import { FormElementData } from "@/hooks/useFormReducer";
 import { ReportState, useReportReducer } from "@/hooks/useReportReducer";
@@ -20,7 +25,6 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { User } from "@/types/user";
 import { ChevronLeft, Trash2 } from "lucide-react";
-
 
 export default function CreateReportPage() {
   const router = useRouter();
@@ -204,19 +208,23 @@ export default function CreateReportPage() {
   return (
     <div className="py-4 px-8">
       <div className="flex justify-between">
-      <div className="flex justify-start gap-2">
-        <Button onClick={() => router.back()} variant="outline" className="border h-10 mb-2 rounded-md">
-          <ChevronLeft className="h-4 w-4 mx-auto" />
-          Return
-        </Button>
-        {reportId && (
+        <div className="flex justify-start gap-2">
           <Button
-            onClick={() => handleDeleteReport(reportId)}
-            className="bg-gray-100 text-black hover:bg-gray-200"
+            onClick={() => router.back()}
+            variant="outline"
+            className="border h-10 mb-2 rounded-md"
           >
-            <Trash2 />
+            <ChevronLeft className="h-4 w-4 mx-auto" />
+            Return
           </Button>
-        )}
+          {reportId && (
+            <Button
+              onClick={() => handleDeleteReport(reportId)}
+              className="bg-gray-100 text-black hover:bg-gray-200"
+            >
+              <Trash2 />
+            </Button>
+          )}
         </div>
         <div className="flex gap-2 justify-end">
           <Button

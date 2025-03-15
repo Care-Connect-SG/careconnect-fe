@@ -52,9 +52,7 @@ export default function FormCardPublished({
       <CardFooter className="absolute w-full bottom-0">
         <Button
           variant="outline"
-          onClick={() =>
-            router.push(`/dashboard/incidents/fill?formId=${id}`)
-          }
+          onClick={() => router.push(`/dashboard/incidents/fill?formId=${id}`)}
           className="w-full"
         >
           Fill Form

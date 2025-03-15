@@ -125,7 +125,6 @@ export default function CreateFormPage() {
   const handleDeleteDraft = async (formId: string) => {
     try {
       await deleteForm(formId);
-
       router.replace(`/dashboard/incidents/admin`);
     } catch (error) {
       console.error("Failed to delete form");
@@ -148,10 +147,11 @@ export default function CreateFormPage() {
       <hr className="border-t-1 border-gray-300 mx-8 py-2" />
 
       <div className="flex items-center justify-between pb-2">
-        <div className="flex justify-start gap-2 px-8 pb-2">
+        <div className="flex justify-start gap-2 px-8">
           <Link href="/dashboard/incidents/admin">
-            <Button variant="outline" className="hover:border-gray-50">
-              <ChevronLeft />
+            <Button variant="outline" className="border h-10 mb-2 rounded-md">
+              <ChevronLeft className="h-4 w-4 mx-auto" />
+              Return to Manage Forms
             </Button>
           </Link>
           {formId && (

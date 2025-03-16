@@ -10,6 +10,7 @@ export interface ResidentRecord {
   room_number: string;
   admission_date: string;
   additional_notes?: string;
+  additional_notes_timestamp?: string;
   primary_nurse?: string;
 }
 

@@ -1,13 +1,23 @@
 "use client";
 
 import { createResident, getResidents } from "@/app/api/resident";
-import { downloadTask, duplicateTask } from "@/app/api/task";
+import { deleteTask, downloadTask, duplicateTask } from "@/app/api/task";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
 import { ResidentRecord } from "@/types/resident";
 import { Task } from "@/types/task";
-import { Clock, Copy, Download, Plus, User } from "lucide-react";
+import { Clock, Copy, Download, Plus, Trash, User } from "lucide-react";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useState, Dispatch, SetStateAction } from "react";
 import AddResidentModal from "../../residents/_components/add-resident-modal";
@@ -21,6 +31,8 @@ const TaskCard = ({
   setTasks: Dispatch<SetStateAction<Task[]>>;
 }) => {
   const { toast } = useToast();
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "High":
@@ -73,6 +85,31 @@ const TaskCard = ({
     }
   };
 
+  const handleDeleteTask = async (deleteSeries: boolean = false) => {
+    try {
+      await deleteTask(task.id, deleteSeries);
+      setTasks((prevTasks) =>
+        deleteSeries
+          ? prevTasks.filter((t) => !t.recurring || t.id !== task.id)
+          : prevTasks.filter((t) => t.id !== task.id),
+      );
+      toast({
+        title: "Task Deleted",
+        description: `The task has been successfully deleted${
+          deleteSeries ? " along with its series" : ""
+        }`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete task",
+      });
+    } finally {
+      setOpenDeleteDialog(false);
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4 mb-3 hover:shadow-md transition-shadow">
       <div className="flex justify-between items-start mb-2">
@@ -99,6 +136,14 @@ const TaskCard = ({
           >
             <Download className="h-4 w-4" />
           </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-red-600 hover:text-red-700"
+            onClick={() => setOpenDeleteDialog(true)}
+          >
+            <Trash className="h-4 w-4" />
+          </Button>
         </div>
       </div>
       <div className="flex items-center justify-between mt-3">
@@ -118,6 +163,42 @@ const TaskCard = ({
           </span>
         )}
       </div>
+
+      <AlertDialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Task</AlertDialogTitle>
+            <AlertDialogDescription>
+              {task.recurring
+                ? "This is a recurring task. Would you like to delete just this task or all tasks in the series?"
+                : "Are you sure you want to delete this task?"}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            {task.recurring ? (
+              <>
+                <Button
+                  variant="destructive"
+                  onClick={() => handleDeleteTask(false)}
+                >
+                  Delete This Task
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => handleDeleteTask(true)}
+                >
+                  Delete Entire Series
+                </Button>
+              </>
+            ) : (
+              <AlertDialogAction onClick={() => handleDeleteTask()}>
+                Confirm Delete
+              </AlertDialogAction>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

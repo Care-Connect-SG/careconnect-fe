@@ -32,11 +32,6 @@ const config = {
   navMain: [
     { title: "Home", url: "/dashboard/home", icon: Home },
     { title: "Residents", url: "/dashboard/residents", icon: BookUser },
-    // {
-    //   title: "Announcements",
-    //   url: "/dashboard/announcements",
-    //   icon: Megaphone,
-    // },
     { title: "Tasks", url: "/dashboard/tasks", icon: ClipboardList },
     { title: "Calendar", url: "/dashboard/calendar", icon: Calendar },
     {

@@ -12,7 +12,6 @@ import { useBreadcrumb } from "@/context/breadcrumb-context";
 import { FormState, useFormReducer } from "@/hooks/useFormReducer";
 import { FormCreate, FormResponse } from "@/types/form";
 import { ChevronLeft, Trash2 } from "lucide-react";
-import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";

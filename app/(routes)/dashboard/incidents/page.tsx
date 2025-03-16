@@ -9,6 +9,7 @@ import { ReportResponse, ReportStatus } from "@/types/report";
 import { User } from "@/types/user";
 import { useEffect, useMemo, useState } from "react";
 import ReportsTable from "./_components/reports-table";
+import { toast } from "@/hooks/use-toast";
 
 interface FilterOptions {
   formId: string;
@@ -59,6 +60,10 @@ export default function IncidentReports() {
     try {
       await deleteReport(reportId);
       await fetchReports();
+      toast({
+        title: "Report deleted",
+        description: "Your report has been deleted successfully.",
+      })
     } catch (error) {
       console.error("Failed to delete report");
     }

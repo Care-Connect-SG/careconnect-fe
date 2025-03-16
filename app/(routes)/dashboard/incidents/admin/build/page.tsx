@@ -9,6 +9,7 @@ import {
 import { getCurrentUser } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import { useBreadcrumb } from "@/context/breadcrumb-context";
+import { toast } from "@/hooks/use-toast";
 import { FormState, useFormReducer } from "@/hooks/useFormReducer";
 import { FormCreate, FormResponse } from "@/types/form";
 import { ChevronLeft, Trash2 } from "lucide-react";
@@ -19,7 +20,6 @@ import { FormHeaderEdit } from "../../_components/form-header";
 import { LoadingSkeleton } from "../../_components/loading-skeleton";
 import FormElement from "./_components/form-element";
 import FormElementBar from "./_components/form-element-bar";
-import { toast } from "@/hooks/use-toast";
 
 export default function CreateFormPage() {
   const router = useRouter();
@@ -77,8 +77,8 @@ export default function CreateFormPage() {
         const formId = await createForm(formData);
         toast({
           title: "Draft form created",
-          description: "Your form is saved successfully as a draft."
-        })
+          description: "Your form is saved successfully as a draft.",
+        });
         router.replace(`/dashboard/incidents/admin/build?id=${formId}`);
       } catch (error) {
         console.error("Error saving form:", error);
@@ -88,8 +88,8 @@ export default function CreateFormPage() {
         await updateForm(formId, formData);
         toast({
           title: "Draft form updated",
-          description: "Your draft form is updated successfully."
-        })
+          description: "Your draft form is updated successfully.",
+        });
       } catch (error) {
         console.error("Error updating form:", error);
       }
@@ -100,9 +100,10 @@ export default function CreateFormPage() {
     if (!state.title || state.elements.length === 0) {
       toast({
         title: "Failed to save form.",
-        description: "Incomeplete form: A form should have at least a title and a form element.",
-        variant: "destructive"
-      })
+        description:
+          "Incomeplete form: A form should have at least a title and a form element.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -119,8 +120,8 @@ export default function CreateFormPage() {
         await createForm(formData);
         toast({
           title: "Form published.",
-          description: "Your form is saved and published successfully."
-        })
+          description: "Your form is saved and published successfully.",
+        });
         router.replace(`/dashboard/incidents/admin`);
       } catch (error) {
         console.error("Error saving form:", error);
@@ -130,8 +131,8 @@ export default function CreateFormPage() {
         await updateForm(formId, formData);
         toast({
           title: "Form published.",
-          description: "Your form is updated and published successfully."
-        })
+          description: "Your form is updated and published successfully.",
+        });
         router.replace(`/dashboard/incidents/admin`);
       } catch (error) {
         console.error("Error updating form:", error);
@@ -144,8 +145,8 @@ export default function CreateFormPage() {
       await deleteForm(formId);
       toast({
         title: "Form deleted.",
-        description: "Your form has been deleted successfully."
-      })
+        description: "Your form has been deleted successfully.",
+      });
       router.replace(`/dashboard/incidents/admin`);
     } catch (error) {
       console.error("Failed to delete form");

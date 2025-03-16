@@ -4,12 +4,12 @@ import { getForms } from "@/app/api/form";
 import { deleteReport, getReports } from "@/app/api/report";
 import { getCurrentUser } from "@/app/api/user";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "@/hooks/use-toast";
 import { FormResponse } from "@/types/form";
 import { ReportResponse, ReportStatus } from "@/types/report";
 import { User } from "@/types/user";
 import { useEffect, useMemo, useState } from "react";
 import ReportsTable from "./_components/reports-table";
-import { toast } from "@/hooks/use-toast";
 
 interface FilterOptions {
   formId: string;
@@ -63,7 +63,7 @@ export default function IncidentReports() {
       toast({
         title: "Report deleted",
         description: "Your report has been deleted successfully.",
-      })
+      });
     } catch (error) {
       console.error("Failed to delete report");
     }

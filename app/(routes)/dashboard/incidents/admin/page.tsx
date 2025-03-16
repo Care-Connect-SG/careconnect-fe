@@ -7,6 +7,7 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import FormCard from "../_components/form-card";
+import { toast } from "@/hooks/use-toast";
 
 export default function IncidentReportingFormsAdmin() {
   const [forms, setForms] = useState<FormResponse[]>([]);
@@ -18,7 +19,6 @@ export default function IncidentReportingFormsAdmin() {
   const fetchForms = async () => {
     try {
       const data = await getForms();
-
       setForms(data);
     } catch (error) {
       console.error("Failed to fetch forms");
@@ -28,7 +28,10 @@ export default function IncidentReportingFormsAdmin() {
   const handlePublish = async (formId: string) => {
     try {
       await publishForm(formId);
-
+      toast({
+        title: "Form published.",
+        description: "Your form is saved and published successfully."
+      })
       fetchForms();
     } catch (error) {
       console.error("Failed to publish form");
@@ -38,7 +41,10 @@ export default function IncidentReportingFormsAdmin() {
   const handleDelete = async (formId: string) => {
     try {
       await deleteForm(formId);
-
+      toast({
+        title: "Form deleted.",
+        description: "Your form has been deleted successfully."
+      })
       fetchForms();
     } catch (error) {
       console.error("Failed to delete form");
@@ -57,6 +63,10 @@ export default function IncidentReportingFormsAdmin() {
 
     try {
       await createForm(duplicatedForm);
+      toast({
+        title: "Form duplicated.",
+        description: "A duplicate form has been created and saved as a draft successfully."
+      })
       fetchForms();
     } catch (error) {
       console.error("Error duplicating form:", error);

@@ -37,6 +37,7 @@ export default function CreateReportPage() {
   const [form, setForm] = useState<FormResponse>();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User>();
+  
 
   useEffect(() => {
     async function fetchUser() {
@@ -169,20 +170,36 @@ export default function CreateReportPage() {
 
         if (!reportId) {
           const newReportId = await createReport(reportData);
+          toast({
+            title: "Draft report created",
+            description: "Your form response was saved successfully.",
+          })
           router.replace(
             `/dashboard/incidents/fill?formId=${formId}&reportId=${newReportId}`,
           );
         } else {
           await updateReport(reportId, reportData);
+          toast({
+            title: "Draft report updated",
+            description: "Your edits to the report are saved successfully.",
+          })
         }
       } else {
         const reportData = createReportData(ReportStatus.PUBLISHED);
 
         if (!reportId) {
           await createReport(reportData);
+          toast({
+            title: "Report published",
+            description: "Your report has been published successfully.",
+          })
           router.replace(`/dashboard/incidents`);
         } else {
           await updateReport(reportId, reportData);
+          toast({
+            title: "Report published",
+            description: "Your report has been published successfully.",
+          })
           router.replace(`/dashboard/incidents`);
         }
       }
@@ -197,6 +214,10 @@ export default function CreateReportPage() {
   const handleDeleteReport = async (reportId: string) => {
     try {
       await deleteReport(reportId);
+      toast({
+        title: "Report deleted",
+        description: "Your report has been deleted successfully.",
+      })
       router.back();
     } catch (error) {
       console.error("Failed to delete report");

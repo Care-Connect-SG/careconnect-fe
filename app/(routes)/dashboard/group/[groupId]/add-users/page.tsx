@@ -62,7 +62,6 @@ export default function AddUsersPage() {
         description: "User has been added to the group",
       });
       setSelectedUser(null);
-      // Optionally update groupMembers to reflect the new addition
       setGroupMembers((prev) => [...prev, selectedUser.id]);
     } catch (error: any) {
       toast({
@@ -75,7 +74,6 @@ export default function AddUsersPage() {
     }
   };
 
-  // Filter out users who are already members
   const availableUsers = users.filter(
     (user) => !groupMembers.includes(user.id),
   );

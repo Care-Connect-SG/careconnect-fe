@@ -82,7 +82,11 @@ export default function ReportsTable({
                 {activeTab == "all" && (
                   <TableCell>{report.reporter.name}</TableCell>
                 )}
-                <TableCell>{report.primary_resident?.name}</TableCell>
+                {report.primary_resident?.name ? (
+                  <TableCell>{report.primary_resident?.name}</TableCell>
+                ) : (
+                  <TableCell className="text-gray-400">NA</TableCell>
+                )}
                 {activeTab == "my" && (
                   <TableCell>
                     <Badge

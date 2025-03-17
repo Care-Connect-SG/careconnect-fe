@@ -1,13 +1,12 @@
 "use client";
 
 import { getForms } from "@/app/api/form";
-import { getReports } from "@/app/api/report";
+import { deleteReport, getReports } from "@/app/api/report";
 import { getCurrentUser } from "@/app/api/user";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FormResponse } from "@/types/form";
 import { ReportResponse, ReportStatus } from "@/types/report";
-import { UserResponse } from "@/types/user";
-import { useSession } from "next-auth/react";
+import { User } from "@/types/user";
 import { useEffect, useMemo, useState } from "react";
 import ReportsTable from "./_components/reports-table";
 
@@ -20,7 +19,6 @@ interface FilterOptions {
 }
 
 export default function IncidentReports() {
-  const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState("all");
   const [reports, setReports] = useState<ReportResponse[]>([]);
   const [forms, setForms] = useState<FormResponse[]>([]);
@@ -31,26 +29,22 @@ export default function IncidentReports() {
     startDate: null,
     endDate: null,
   });
-  const [user, setUser] = useState<UserResponse>();
+  const [user, setUser] = useState<User>();
 
   useEffect(() => {
-    async function fetchUserId() {
-      if (session?.user?.email) {
-        try {
-          const user = await getCurrentUser(session.user.email);
-          setUser(user);
-        } catch (error) {
-          console.error("Error fetching user:", error);
-        }
-      }
-    }
-    fetchUserId();
-  }, [session]);
-
-  useEffect(() => {
+    fetchUser();
     fetchReports();
     fetchForms();
   }, []);
+
+  const fetchUser = async () => {
+    try {
+      const user = await getCurrentUser();
+      setUser(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+    }
+  };
 
   const fetchReports = async () => {
     try {
@@ -58,6 +52,15 @@ export default function IncidentReports() {
       setReports(data);
     } catch (error) {
       console.error("Failed to fetch reports");
+    }
+  };
+
+  const handleDeleteReport = async (reportId: string) => {
+    try {
+      await deleteReport(reportId);
+      await fetchReports();
+    } catch (error) {
+      console.error("Failed to delete report");
     }
   };
 
@@ -131,10 +134,20 @@ export default function IncidentReports() {
             <TabsTrigger value="my">My Reports</TabsTrigger>
           </TabsList>
           <TabsContent value="all" className="mt-4">
-            <ReportsTable reports={filteredReports} activeTab="all" />
+            <ReportsTable
+              user={user!}
+              reports={filteredReports}
+              activeTab="all"
+              handleDelete={handleDeleteReport}
+            />
           </TabsContent>
           <TabsContent value="my" className="mt-4">
-            <ReportsTable reports={filteredReports} activeTab="my" />
+            <ReportsTable
+              user={user!}
+              reports={filteredReports}
+              activeTab="my"
+              handleDelete={handleDeleteReport}
+            />
           </TabsContent>
         </Tabs>
       </div>

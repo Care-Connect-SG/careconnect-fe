@@ -1,6 +1,31 @@
 import { RegistrationCreate, ResidentRecord } from "@/types/resident";
 
-export const getResidentsByPage = async (page: number, nurse?: string): Promise<ResidentRecord[]> => {
+export const getResidents = async (): Promise<ResidentRecord[]> => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+    if (!response.ok) {
+      throw new Error(`Error fetching residents: ${response.statusText}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("getResidents error:", error);
+    throw error;
+  }
+};
+
+export const getResidentsByPage = async (
+  page: number,
+  nurse?: string,
+): Promise<ResidentRecord[]> => {
   try {
     let url = `${process.env.NEXT_PUBLIC_BE_API_URL}/residents?page=${page}`;
     if (nurse) {
@@ -48,6 +73,15 @@ export const updateResident = async (
   updateData: any,
 ): Promise<ResidentRecord> => {
   try {
+    // Convert current local time to an ISO string that reflects your local time.
+    const localDate = new Date();
+    const localISOString = new Date(
+      localDate.getTime() - localDate.getTimezoneOffset() * 60000,
+    ).toISOString();
+
+    // Set the additional_notes_timestamp field in the payload.
+    updateData.additional_notes_timestamp = localISOString;
+
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}`,
       {

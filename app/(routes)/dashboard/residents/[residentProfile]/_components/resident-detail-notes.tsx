@@ -3,20 +3,28 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Check, PlusCircle } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 interface ResidentDetailsNotesCardProps {
   additionalNotes?: string;
+  initialLastSaved?: string;
   onSaveNotes?: (notes: string) => void;
 }
 
 const ResidentDetailsNotesCard: React.FC<ResidentDetailsNotesCardProps> = ({
   additionalNotes,
+  initialLastSaved,
   onSaveNotes,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [notes, setNotes] = useState(additionalNotes || "");
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [lastModified, setLastModified] = useState<Date | null>(
+    initialLastSaved ? new Date(initialLastSaved) : null,
+  );
+
+  useEffect(() => {
+    setNotes(additionalNotes || "");
+  }, [additionalNotes]);
 
   const handleAddNote = () => {
     setIsEditing(true);
@@ -25,7 +33,7 @@ const ResidentDetailsNotesCard: React.FC<ResidentDetailsNotesCardProps> = ({
   const handleSaveNote = () => {
     setIsEditing(false);
     const now = new Date();
-    setLastSaved(now);
+    setLastModified(now);
     if (onSaveNotes) {
       onSaveNotes(notes);
     }
@@ -33,7 +41,6 @@ const ResidentDetailsNotesCard: React.FC<ResidentDetailsNotesCardProps> = ({
 
   return (
     <div className="w-full max-w-2xl mx-auto mt-6 p-4 bg-white shadow-md rounded-md">
-      {/* Header with Add/Save button */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-xl font-semibold">Additional Notes</h3>
         {isEditing ? (
@@ -64,15 +71,14 @@ const ResidentDetailsNotesCard: React.FC<ResidentDetailsNotesCardProps> = ({
             onChange={(e) => setNotes(e.target.value)}
           />
         ) : (
-          <p className="text-sm text-gray-600">{notes}</p>
+          <p className="text-sm text-gray-600">{notes || "None"}</p>
         )}
       </div>
 
-      {lastSaved && (
-        <p className="text-xs text-gray-500 text-right mt-2">
-          Last saved: {lastSaved.toLocaleString()}
-        </p>
-      )}
+      <p className="text-xs text-gray-500 text-right mt-2">
+        Last Modified:{" "}
+        {lastModified ? lastModified.toLocaleString() : "Not modified yet"}
+      </p>
     </div>
   );
 };

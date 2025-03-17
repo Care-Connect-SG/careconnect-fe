@@ -17,18 +17,22 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ReportResponse } from "@/types/report";
-import { Edit, Eye, MoreHorizontal } from "lucide-react";
+import { Role, User } from "@/types/user";
+import { Edit, MoreHorizontal, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 
 interface ReportsTableProps {
+  user: User;
   reports: ReportResponse[];
   activeTab: string;
+  handleDelete: (reportId: string) => void;
 }
 
 export default function ReportsTable({
+  user,
   reports,
   activeTab,
+  handleDelete,
 }: ReportsTableProps) {
   const router = useRouter();
 
@@ -56,7 +60,9 @@ export default function ReportsTable({
             {activeTab === "my" && (
               <TableHead className="text-center">Status</TableHead>
             )}
-            <TableHead className="text-center">Actions</TableHead>
+            {(user?.role === Role.ADMIN || activeTab === "my") && (
+              <TableHead className="text-center">Actions</TableHead>
+            )}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -68,7 +74,7 @@ export default function ReportsTable({
             </TableRow>
           ) : (
             reports.map((report) => (
-              <TableRow key={report.id}>
+              <TableRow key={report.id} onClick={() => handleView(report)}>
                 <TableCell className="font-medium">
                   {new Date(report.created_at).toLocaleDateString()}
                 </TableCell>
@@ -76,7 +82,11 @@ export default function ReportsTable({
                 {activeTab == "all" && (
                   <TableCell>{report.reporter.name}</TableCell>
                 )}
-                <TableCell>{report.primary_resident?.name}</TableCell>
+                {report.primary_resident?.name ? (
+                  <TableCell>{report.primary_resident?.name}</TableCell>
+                ) : (
+                  <TableCell className="text-gray-400">NA</TableCell>
+                )}
                 {activeTab == "my" && (
                   <TableCell>
                     <Badge
@@ -90,28 +100,48 @@ export default function ReportsTable({
                     </Badge>
                   </TableCell>
                 )}
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Open menu</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleView(report)}>
-                        <Eye className="mr-2 h-4 w-4" />
-                        View
-                      </DropdownMenuItem>
-                      {report.status !== "Published" && (
-                        <DropdownMenuItem onClick={() => handleEdit(report)}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
+                {(report.status !== "Published" ||
+                  user?.role === Role.ADMIN) && (
+                  <TableCell className="text-center">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="focus:ring-0 focus:ring-offset-0"
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Open menu</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {report.status !== "Published" && (
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEdit(report);
+                            }}
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                        )}
+                        {(report.status !== "Published" ||
+                          user?.role === Role.ADMIN) && (
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(report.id);
+                            }}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                )}
               </TableRow>
             ))
           )}

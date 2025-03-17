@@ -11,7 +11,7 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import { Collapsible } from "@radix-ui/react-collapsible";
-import { LucideIcon } from "lucide-react";
+import { ChevronRight, LucideIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import router from "next/router";
@@ -74,20 +74,21 @@ export function NavMain({
       <SidebarMenu>
         {filteredItems.map((item) =>
           item.title === "Incident Reports" ? (
-            <Collapsible key={item.title}>
+            <Collapsible key={item.title} asChild className="group/collapsible">
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton tooltip={item.title}>
                     {item.icon && <item.icon />}
                     <span>{item.title}</span>
+                    <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <SidebarMenuSub>
                     {item.submenu?.map((subItem) => (
-                      <SidebarMenuSubItem key={subItem.title}>
+                      <SidebarMenuSubItem key={subItem.title} className="pb-2">
                         <SidebarMenuSubButton asChild>
-                          <Link href={subItem.url} passHref legacyBehavior>
+                          <Link href={subItem.url}>
                             <span>{subItem.title}</span>
                           </Link>
                         </SidebarMenuSubButton>

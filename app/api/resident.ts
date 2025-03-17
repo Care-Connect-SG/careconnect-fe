@@ -49,6 +49,13 @@ export const updateResident = async (
   updateData: any,
 ): Promise<ResidentRecord> => {
   try {
+    const localDate = new Date();
+    const localISOString = new Date(
+      localDate.getTime() - localDate.getTimezoneOffset() * 60000,
+    ).toISOString();
+
+    updateData.additional_notes_timestamp = localISOString;
+
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}`,
       {

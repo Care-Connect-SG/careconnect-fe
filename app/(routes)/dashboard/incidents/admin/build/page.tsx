@@ -9,10 +9,10 @@ import {
 import { getCurrentUser } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import { useBreadcrumb } from "@/context/breadcrumb-context";
+import { toast } from "@/hooks/use-toast";
 import { FormState, useFormReducer } from "@/hooks/useFormReducer";
 import { FormCreate, FormResponse } from "@/types/form";
 import { ChevronLeft, Trash2 } from "lucide-react";
-import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -27,7 +27,6 @@ export default function CreateFormPage() {
   const formId = searchParams.get("id");
   const isEditing = !!formId;
   const { setPageName } = useBreadcrumb();
-  const { data: session } = useSession();
 
   const [state, dispatch] = useFormReducer();
   const [loading, setLoading] = useState<boolean>(isEditing);
@@ -63,7 +62,7 @@ export default function CreateFormPage() {
       return;
     }
 
-    const user = await getCurrentUser(session!.user!.email!);
+    const user = await getCurrentUser();
 
     const formData: FormCreate = {
       title: state.title,
@@ -76,7 +75,10 @@ export default function CreateFormPage() {
     if (!formId) {
       try {
         const formId = await createForm(formData);
-
+        toast({
+          title: "Draft form created",
+          description: "Your form is saved successfully as a draft.",
+        });
         router.replace(`/dashboard/incidents/admin/build?id=${formId}`);
       } catch (error) {
         console.error("Error saving form:", error);
@@ -84,6 +86,10 @@ export default function CreateFormPage() {
     } else {
       try {
         await updateForm(formId, formData);
+        toast({
+          title: "Draft form updated",
+          description: "Your draft form is updated successfully.",
+        });
       } catch (error) {
         console.error("Error updating form:", error);
       }
@@ -92,9 +98,12 @@ export default function CreateFormPage() {
 
   const handlePublishDraft = async () => {
     if (!state.title || state.elements.length === 0) {
-      alert(
-        "Incomplete Form: A form should have at least a title and a form element",
-      );
+      toast({
+        title: "Failed to save form.",
+        description:
+          "Incomeplete form: A form should have at least a title and a form element.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -109,6 +118,10 @@ export default function CreateFormPage() {
     if (!formId) {
       try {
         await createForm(formData);
+        toast({
+          title: "Form published.",
+          description: "Your form is saved and published successfully.",
+        });
         router.replace(`/dashboard/incidents/admin`);
       } catch (error) {
         console.error("Error saving form:", error);
@@ -116,6 +129,10 @@ export default function CreateFormPage() {
     } else {
       try {
         await updateForm(formId, formData);
+        toast({
+          title: "Form published.",
+          description: "Your form is updated and published successfully.",
+        });
         router.replace(`/dashboard/incidents/admin`);
       } catch (error) {
         console.error("Error updating form:", error);
@@ -126,7 +143,10 @@ export default function CreateFormPage() {
   const handleDeleteDraft = async (formId: string) => {
     try {
       await deleteForm(formId);
-
+      toast({
+        title: "Form deleted.",
+        description: "Your form has been deleted successfully.",
+      });
       router.replace(`/dashboard/incidents/admin`);
     } catch (error) {
       console.error("Failed to delete form");
@@ -149,10 +169,11 @@ export default function CreateFormPage() {
       <hr className="border-t-1 border-gray-300 mx-8 py-2" />
 
       <div className="flex items-center justify-between pb-2">
-        <div className="flex justify-start gap-2 px-8 pb-2">
+        <div className="flex justify-start gap-2 px-8">
           <Link href="/dashboard/incidents/admin">
-            <Button variant="outline" className="hover:border-gray-50">
-              <ChevronLeft />
+            <Button variant="outline" className="border h-10 mb-2 rounded-md">
+              <ChevronLeft className="h-4 w-4 mx-auto" />
+              Return to Manage Forms
             </Button>
           </Link>
           {formId && (

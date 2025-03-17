@@ -33,7 +33,10 @@ import { z } from "zod";
 
 const taskSchema = z
   .object({
-    task_title: z.string().nonempty("Task title is required"),
+    task_title: z
+      .string()
+      .min(3, "Task title must be at least 3 characters")
+      .max(255, "Task title must be less than 255 characters"),
     task_details: z.string().optional(),
     media: z.array(z.string()).optional(),
     notes: z.string().optional(),
@@ -57,6 +60,7 @@ const taskSchema = z
     remind_prior: z.number().nullable().optional(),
     is_ai_generated: z.boolean().default(false),
     assigned_to: z.string().nonempty("Assignee is required"),
+    update_series: z.boolean().optional(),
   })
   .refine((data) => data.start_date < data.due_date, {
     message: "Start date must be before due date",
@@ -185,20 +189,19 @@ export default function TaskForm({
         }
         toast({
           variant: "default",
-          title: "Task Updated",
+          title: "Success",
           description: "Task has been updated successfully",
         });
       } else {
         const newTasks = await createTask(data);
         if (setTasks) {
           setTasks((prevTasks) => [...newTasks, ...prevTasks]);
-        } else {
-          toast({
-            variant: "default",
-            title: "Tasks Created",
-            description: `${newTasks.length} task(s) created successfully`,
-          });
         }
+        toast({
+          variant: "default",
+          title: "Successully created task(s)",
+          description: `${newTasks.length} task(s) created successfully`,
+        });
       }
       setIsOpen(false);
       if (onClose) onClose();
@@ -211,7 +214,7 @@ export default function TaskForm({
       }
       toast({
         variant: "destructive",
-        title: "Error",
+        title: "An error occured, please try again",
         description: errorMessage,
       });
     }
@@ -221,7 +224,14 @@ export default function TaskForm({
     (data) => {
       onSubmit(data);
     },
-    (errors) => {},
+    (errors) => {
+      const errorMessages = Object.values(errors).map((error) => error.message);
+      toast({
+        variant: "destructive",
+        title: "Validation Error",
+        description: errorMessages.join(", "),
+      });
+    },
   );
 
   return (
@@ -255,6 +265,11 @@ export default function TaskForm({
                       id="task_title"
                       placeholder="Task Title"
                       {...field}
+                      className={
+                        fieldState.invalid
+                          ? "border-destructive focus-visible:ring-destructive"
+                          : ""
+                      }
                     />
                   </FormControl>
                   {fieldState.error && (
@@ -276,6 +291,11 @@ export default function TaskForm({
                       id="task_details"
                       placeholder="Task Details"
                       {...field}
+                      className={
+                        fieldState.invalid
+                          ? "border-destructive focus-visible:ring-destructive"
+                          : ""
+                      }
                     />
                   </FormControl>
                   {fieldState.error && (
@@ -290,14 +310,20 @@ export default function TaskForm({
               <FormField
                 control={form.control}
                 name="priority"
-                render={({ field }) => (
+                render={({ field, fieldState }) => (
                   <FormItem>
                     <Label>Priority</Label>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value || ""}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger
+                        className={
+                          fieldState.invalid
+                            ? "border-destructive focus-visible:ring-destructive"
+                            : ""
+                        }
+                      >
                         <SelectValue placeholder="Select priority" />
                       </SelectTrigger>
                       <SelectContent>
@@ -312,14 +338,20 @@ export default function TaskForm({
               <FormField
                 control={form.control}
                 name="category"
-                render={({ field }) => (
+                render={({ field, fieldState }) => (
                   <FormItem>
                     <Label>Category</Label>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value || ""}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger
+                        className={
+                          fieldState.invalid
+                            ? "border-destructive focus-visible:ring-destructive"
+                            : ""
+                        }
+                      >
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
@@ -344,7 +376,13 @@ export default function TaskForm({
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger
+                        className={
+                          fieldState.invalid
+                            ? "border-destructive focus-visible:ring-destructive"
+                            : ""
+                        }
+                      >
                         <SelectValue placeholder="Select a nurse" />
                       </SelectTrigger>
                     </FormControl>
@@ -375,7 +413,13 @@ export default function TaskForm({
                     defaultValue={field.value?.[0]}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger
+                        className={
+                          fieldState.invalid
+                            ? "border-destructive focus-visible:ring-destructive"
+                            : ""
+                        }
+                      >
                         <SelectValue placeholder="Select a resident" />
                       </SelectTrigger>
                     </FormControl>
@@ -414,6 +458,11 @@ export default function TaskForm({
                             ? new Date(field.value).toISOString().slice(0, 16)
                             : ""
                         }
+                        className={
+                          fieldState.invalid
+                            ? "border-destructive focus-visible:ring-destructive"
+                            : ""
+                        }
                       />
                     </FormControl>
                     {fieldState.error && (
@@ -442,6 +491,11 @@ export default function TaskForm({
                             ? new Date(field.value).toISOString().slice(0, 16)
                             : ""
                         }
+                        className={
+                          fieldState.invalid
+                            ? "border-destructive focus-visible:ring-destructive"
+                            : ""
+                        }
                       />
                     </FormControl>
                     {fieldState.error && (
@@ -457,14 +511,20 @@ export default function TaskForm({
               <FormField
                 control={form.control}
                 name="recurring"
-                render={({ field }) => (
+                render={({ field, fieldState }) => (
                   <FormItem>
                     <Label>Recurring</Label>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value || ""}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger
+                        className={
+                          fieldState.invalid
+                            ? "border-destructive focus-visible:ring-destructive"
+                            : ""
+                        }
+                      >
                         <SelectValue placeholder="Select recurrence" />
                       </SelectTrigger>
                       <SelectContent>
@@ -494,6 +554,11 @@ export default function TaskForm({
                             ? new Date(field.value).toISOString().split("T")[0]
                             : ""
                         }
+                        className={
+                          fieldState.invalid
+                            ? "border-destructive focus-visible:ring-destructive"
+                            : ""
+                        }
                       />
                     </FormControl>
                     {fieldState.error && (
@@ -516,6 +581,11 @@ export default function TaskForm({
                       type="number"
                       onChange={(e) => field.onChange(Number(e.target.value))}
                       value={field.value || ""}
+                      className={
+                        fieldState.invalid
+                          ? "border-destructive focus-visible:ring-destructive"
+                          : ""
+                      }
                     />
                   </FormControl>
                   {fieldState.error && (

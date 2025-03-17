@@ -30,7 +30,6 @@ const TaskManagement = () => {
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
 
-  // Initialize selectedDate from URL or default to today
   const initDate = () => {
     const dateParam = searchParams.get("date");
     if (dateParam) {
@@ -55,9 +54,12 @@ const TaskManagement = () => {
 
   useEffect(() => {
     fetchTasks();
+  }, []);
+
+  useEffect(() => {
+    fetchTasks();
   }, [filters]);
 
-  // Update URL when date changes
   useEffect(() => {
     const current = new URLSearchParams(Array.from(searchParams.entries()));
     const newDate = format(selectedDate, "yyyy-MM-dd");
@@ -73,12 +75,15 @@ const TaskManagement = () => {
   const fetchTasks = async () => {
     setLoading(true);
     try {
-      const filteredTasks = await getTasks(
-        Object.fromEntries(
+      const formattedDate = format(selectedDate, "yyyy-MM-dd");
+      const queryParams = {
+        ...Object.fromEntries(
           Object.entries(filters).filter(([_, v]) => v !== undefined),
         ),
-      );
+        date: formattedDate,
+      };
 
+      const filteredTasks = await getTasks(queryParams);
       setTasks(filteredTasks);
     } catch (err) {
       console.error("TaskManagement - Error fetching tasks:", err);

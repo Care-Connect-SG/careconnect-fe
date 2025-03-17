@@ -22,7 +22,7 @@ export default function AllResidentsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [nurseOptions, setNurseOptions] = useState<NurseOption[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-const [hasNextPage, setHasNextPage] = useState(false);
+  const [hasNextPage, setHasNextPage] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const pageParam = searchParams.get("page");
@@ -132,7 +132,6 @@ const [hasNextPage, setHasNextPage] = useState(false);
 
   return (
     <div className="max-w-4xl mx-auto p-4">
-      {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-gray-800">All Residents</h1>
         <p className="text-sm text-gray-500">
@@ -140,7 +139,7 @@ const [hasNextPage, setHasNextPage] = useState(false);
         </p>
         <hr className="mt-3 border-gray-300" />
       </div>
-      {/* Search Bar with Add Buttons */}
+
       <div className="flex items-center justify-between mb-4">
         <div className="relative w-full max-w-xl">
           <Input
@@ -167,7 +166,6 @@ const [hasNextPage, setHasNextPage] = useState(false);
         onSave={handleAddResidentSave}
       />
 
-      {/* Residents List */}
       <div className="space-y-4">
         {filteredResidents.length > 0 ? (
           filteredResidents.map((resident) => (
@@ -192,7 +190,6 @@ const [hasNextPage, setHasNextPage] = useState(false);
         )}
       </div>
 
-      {/* Pagination Controls */}
       <div className="fixed bottom-0 left-[240px] right-0 bg-white shadow p-4 flex justify-between items-center z-50">
         <Button
           onClick={() => goToPage(currentPage - 1)}
@@ -213,10 +210,3 @@ const [hasNextPage, setHasNextPage] = useState(false);
     </div>
   );
 }
-// Helper: age calculator
-const computeAge = (dob: string) => {
-  const birthDate = new Date(dob);
-  const diffMs = Date.now() - birthDate.getTime();
-  const ageDt = new Date(diffMs);
-  return Math.abs(ageDt.getUTCFullYear() - 1970);
-};

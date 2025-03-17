@@ -1,5 +1,6 @@
 "use client";
 
+import { getUser } from "@/app/api/user";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -22,9 +23,17 @@ import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { use, useEffect, useState } from "react";
+
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  avatar: string;
+}
 
 export function NavUser() {
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const { isMobile } = useSidebar();
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -39,6 +48,17 @@ export function NavUser() {
       router.push("/auth/login");
     }
   }, [session, status, router]);
+
+  useEffect(() => {
+    if (session?.user?.email) {
+      const fetchUser = async () => {
+        const userData = await getUser(session.user.email);
+        console.log("Fetched user data:", userData);
+        setCurrentUser(userData); // Set the fetched user data in state
+      };
+      fetchUser();
+    }
+  }, [session?.user?.email]);
 
   return (
     <SidebarMenu>
@@ -93,12 +113,17 @@ export function NavUser() {
             <DropdownMenuSeparator />
 
             <DropdownMenuGroup>
-              <Link href="/dashboard/profile" passHref legacyBehavior>
+              <Link
+                href={`/dashboard/nurses/${currentUser?._id}`}
+                passHref
+                legacyBehavior
+              >
                 <DropdownMenuItem>
                   <User className="w-4 h-4" />
                   Profile
                 </DropdownMenuItem>
               </Link>
+
               <Link href="/dashboard/settings" passHref legacyBehavior>
                 <DropdownMenuItem>
                   <Settings className="w-4 h-4" />

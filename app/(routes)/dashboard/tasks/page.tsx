@@ -74,7 +74,7 @@ const TaskManagement = () => {
       const formattedDate = format(selectedDate, "yyyy-MM-dd");
       const queryParams = {
         ...Object.fromEntries(
-          Object.entries(filters).filter(([_, v]) => v !== undefined)
+          Object.entries(filters).filter(([_, v]) => v !== undefined),
         ),
         date: formattedDate,
       };

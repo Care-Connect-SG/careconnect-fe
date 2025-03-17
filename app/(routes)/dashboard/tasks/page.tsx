@@ -1,7 +1,8 @@
 "use client";
 
-import { addDays, format, subDays } from "date-fns";
-import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
+import { addDays, format, parse, subDays } from "date-fns";
+import { ChevronLeft, ChevronRight, Plus, Search, X } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { getTasks } from "@/app/api/task";
@@ -23,15 +24,32 @@ import TaskListView from "./_components/task-list";
 import { TaskViewToggle } from "./_components/task-viewtoggle";
 
 const TaskManagement = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [currentView, setCurrentView] = useState<"list" | "kanban">("list");
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [currentDate, setCurrentDate] = useState(new Date());
+
+  const initDate = () => {
+    const dateParam = searchParams.get("date");
+    if (dateParam) {
+      try {
+        return parse(dateParam, "yyyy-MM-dd", new Date());
+      } catch (e) {
+        console.error("Invalid date in URL, defaulting to today");
+        return new Date();
+      }
+    }
+    return new Date();
+  };
+
+  const [selectedDate, setSelectedDate] = useState(initDate);
 
   const [filters, setFilters] = useState({
     search: "",
     status: "",
     priority: "",
+    date: format(initDate(), "yyyy-MM-dd"),
   });
 
   useEffect(() => {
@@ -40,12 +58,24 @@ const TaskManagement = () => {
 
   useEffect(() => {
     fetchTasks();
-  }, [filters, currentDate]);
+  }, [filters]);
+
+  useEffect(() => {
+    const current = new URLSearchParams(Array.from(searchParams.entries()));
+    const newDate = format(selectedDate, "yyyy-MM-dd");
+
+    if (current.get("date") !== newDate) {
+      current.set("date", newDate);
+      const search = current.toString();
+      const query = search ? `?${search}` : "";
+      router.push(`/dashboard/tasks${query}`, { scroll: false });
+    }
+  }, [selectedDate, router, searchParams]);
 
   const fetchTasks = async () => {
     setLoading(true);
     try {
-      const formattedDate = format(currentDate, "yyyy-MM-dd");
+      const formattedDate = format(selectedDate, "yyyy-MM-dd");
       const queryParams = {
         ...Object.fromEntries(
           Object.entries(filters).filter(([_, v]) => v !== undefined),
@@ -71,7 +101,18 @@ const TaskManagement = () => {
       search: "",
       status: "",
       priority: "",
+      date: format(selectedDate, "yyyy-MM-dd"),
     });
+  };
+
+  const navigateDate = (direction: "prev" | "next") => {
+    const newDate =
+      direction === "prev"
+        ? subDays(selectedDate, 1)
+        : addDays(selectedDate, 1);
+
+    setSelectedDate(newDate);
+    updateFilter("date", format(newDate, "yyyy-MM-dd"));
   };
 
   return (
@@ -96,20 +137,20 @@ const TaskManagement = () => {
             <Button
               variant="outline"
               className="px-1.5 py-1"
-              onClick={() => setCurrentDate(subDays(currentDate, 1))}
+              onClick={() => navigateDate("prev")}
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
             <Button
               variant="outline"
               className="px-1.5 py-1"
-              onClick={() => setCurrentDate(addDays(currentDate, 1))}
+              onClick={() => navigateDate("next")}
             >
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
           <p className="text-md text-gray-500">
-            {format(currentDate, "EEEE, dd MMMM yyyy")}
+            {format(selectedDate, "EEEE, dd MMMM yyyy")}
           </p>
         </div>
         <div className="flex flex-row gap-4 rounded-lg items-center">

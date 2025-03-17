@@ -17,16 +17,18 @@ export default function AllResidentsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [nurseOptions, setNurseOptions] = useState<NurseOption[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  
+  const [hasNextPage, setHasNextPage] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const pageParam = searchParams.get("page");
   const currentPage = pageParam ? parseInt(pageParam, 10) : 1;
+  const LIMIT = 8; // Assuming your backend limit is 8
 
   const fetchResidents = () => {
     getResidentsByPage(currentPage)
       .then((data: ResidentRecord[]) => {
         setResidents(data);
+        setHasNextPage(data.length === LIMIT);
       })
       .catch((error) => {
         console.error("Error fetching residents:", error);
@@ -109,7 +111,6 @@ export default function AllResidentsPage() {
   const handleAddResidentSave = async (newResidentData: any) => {
     try {
       const createdResident = await createResident(newResidentData);
-      // If you're on page 1, append the new resident;
       if (currentPage === 1) {
         setResidents((prev) => [...prev, createdResident]);
       }
@@ -187,20 +188,26 @@ export default function AllResidentsPage() {
       </div>
 
       {/* Pagination Controls */}
-      <div className="flex justify-between mt-6">
+      <div className="fixed bottom-0 left-[240px] right-0 bg-white shadow p-4 flex justify-between items-center z-50">
         <Button
           onClick={() => goToPage(currentPage - 1)}
           disabled={currentPage === 1}
+          className="px-3 py-2 text-sm w-24"
         >
-          Previous
+          Prev
         </Button>
-        <span>Page {currentPage}</span>
-        <Button onClick={() => goToPage(currentPage + 1)}>Next</Button>
+        <span className="text-sm">Page {currentPage}</span>
+        <Button
+          onClick={() => goToPage(currentPage + 1)}
+          disabled={!hasNextPage}
+          className="px-3 py-2 text-sm w-24"
+        >
+          Next
+        </Button>
       </div>
     </div>
   );
 }
-
 // Helper: age calculator
 const computeAge = (dob: string) => {
   const birthDate = new Date(dob);

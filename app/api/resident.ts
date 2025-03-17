@@ -22,6 +22,30 @@ export const getResidents = async (): Promise<ResidentRecord[]> => {
   }
 };
 
+export const getResidentsByPage = async (
+  page: number,
+  nurse?: string,
+): Promise<ResidentRecord[]> => {
+  try {
+    let url = `${process.env.NEXT_PUBLIC_BE_API_URL}/residents?page=${page}`;
+    if (nurse) {
+      url += `&nurse=${encodeURIComponent(nurse)}`;
+    }
+    const response = await fetch(url, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!response.ok) {
+      throw new Error(`Error fetching residents: ${response.statusText}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("getResidentsByPage error:", error);
+    throw error;
+  }
+};
+
 export const getResidentById = async (
   residentId: string,
 ): Promise<ResidentRecord> => {

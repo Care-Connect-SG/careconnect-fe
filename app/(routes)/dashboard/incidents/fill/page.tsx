@@ -4,7 +4,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { getFormById } from "@/app/api/form";
-import { createReport, getReportById, updateReport } from "@/app/api/report";
+import {
+  createReport,
+  deleteReport,
+  getReportById,
+  updateReport,
+} from "@/app/api/report";
 import { getCurrentUser } from "@/app/api/user";
 import { FormElementData } from "@/hooks/useFormReducer";
 import { ReportState, useReportReducer } from "@/hooks/useReportReducer";
@@ -19,8 +24,7 @@ import PersonSelector from "./_components/tag-personnel";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { User } from "@/types/user";
-import { ChevronLeft } from "lucide-react";
-import Link from "next/link";
+import { ChevronLeft, Trash2 } from "lucide-react";
 
 export default function CreateReportPage() {
   const router = useRouter();
@@ -165,20 +169,37 @@ export default function CreateReportPage() {
 
         if (!reportId) {
           const newReportId = await createReport(reportData);
+          toast({
+            title: "Draft report created",
+            description: "Your form response was saved successfully.",
+          });
           router.replace(
             `/dashboard/incidents/fill?formId=${formId}&reportId=${newReportId}`,
           );
         } else {
           await updateReport(reportId, reportData);
+          toast({
+            title: "Draft report updated",
+            description: "Your edits to the report are saved successfully.",
+          });
         }
       } else {
         const reportData = createReportData(ReportStatus.PUBLISHED);
 
         if (!reportId) {
           await createReport(reportData);
+          toast({
+            title: "Report published",
+            description: "Your report has been published successfully.",
+          });
           router.replace(`/dashboard/incidents`);
         } else {
           await updateReport(reportId, reportData);
+          toast({
+            title: "Report published",
+            description: "Your report has been published successfully.",
+          });
+          router.replace(`/dashboard/incidents`);
         }
       }
     } catch (error) {
@@ -189,16 +210,42 @@ export default function CreateReportPage() {
     }
   };
 
+  const handleDeleteReport = async (reportId: string) => {
+    try {
+      await deleteReport(reportId);
+      toast({
+        title: "Report deleted",
+        description: "Your report has been deleted successfully.",
+      });
+      router.back();
+    } catch (error) {
+      console.error("Failed to delete report");
+    }
+  };
+
   if (loading) return <LoadingSkeleton />;
 
   return (
     <div className="py-4 px-8">
       <div className="flex justify-between">
-        <Link href="/dashboard/incidents/form">
-          <Button className="border h-10 w-10 rounded-md hover:bg-gray-50">
+        <div className="flex justify-start gap-2">
+          <Button
+            onClick={() => router.back()}
+            variant="outline"
+            className="border h-10 mb-2 rounded-md"
+          >
             <ChevronLeft className="h-4 w-4 mx-auto" />
+            Return
           </Button>
-        </Link>
+          {reportId && (
+            <Button
+              onClick={() => handleDeleteReport(reportId)}
+              className="bg-gray-100 text-black hover:bg-gray-200"
+            >
+              <Trash2 />
+            </Button>
+          )}
+        </div>
         <div className="flex gap-2 justify-end">
           <Button
             disabled={state.isSubmitting}
@@ -217,7 +264,7 @@ export default function CreateReportPage() {
         </div>
       </div>
 
-      <div>
+      <div className="pt-2">
         <div className="flex justify-between gap-4">
           <FormHeaderView title={form!.title} description={form!.description} />
           <PersonSelector

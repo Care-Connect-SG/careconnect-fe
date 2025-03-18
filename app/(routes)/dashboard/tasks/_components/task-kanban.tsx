@@ -2,7 +2,7 @@
 
 import { TaskReassignmentActions } from "@/app/(routes)/dashboard/tasks/_components/task-reassignment-actions";
 import { TaskReassignmentForm } from "@/app/(routes)/dashboard/tasks/_components/task-reassignment-form";
-import { createResident, getResidents } from "@/app/api/resident";
+import { getResidents } from "@/app/api/resident";
 import { deleteTask, downloadTask, duplicateTask } from "@/app/api/task";
 import {
   AlertDialog,
@@ -20,9 +20,9 @@ import { useToast } from "@/hooks/use-toast";
 import { ResidentRecord } from "@/types/resident";
 import { Task, TaskStatus } from "@/types/task";
 import { Clock, Copy, Download, Plus, Trash, User } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useState, Dispatch, SetStateAction } from "react";
-import AddResidentModal from "../../residents/_components/add-resident-modal";
 import TaskForm from "./task-form";
 
 const TaskCard = ({
@@ -34,6 +34,7 @@ const TaskCard = ({
 }) => {
   const { toast } = useToast();
   const { data: session } = useSession();
+  const router = useRouter();
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -113,7 +114,10 @@ const TaskCard = ({
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 mb-3 hover:shadow-md transition-shadow">
+    <div
+      className="bg-white rounded-lg border border-gray-200 p-4 mb-3 hover:shadow-md transition-shadow "
+      onClick={() => router.push(`/dashboard/tasks/${task.id}`)}
+    >
       <div className="flex justify-between items-start mb-2">
         <div>
           <h4 className="text-sm font-medium text-gray-900">
@@ -231,7 +235,7 @@ const TaskCard = ({
   );
 };
 
-const ResidentColumn = ({
+const ResidentRow = ({
   resident,
   tasks,
   setTasks,
@@ -244,7 +248,7 @@ const ResidentColumn = ({
   const [showTaskForm, setShowTaskForm] = useState(false);
 
   return (
-    <div className="flex-none w-96 bg-gray-50 rounded-lg p-4 mr-4">
+    <div className="flex-none w-96 bg-gray-50 rounded-lg p-4">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
           <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
@@ -291,12 +295,10 @@ const ResidentColumn = ({
 };
 
 export default function TaskKanbanView({ tasks }: { tasks: Task[] }) {
-  const { data: session } = useSession();
   const [residents, setResidents] = useState<ResidentRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [taskList, setTaskList] = useState<Task[]>(tasks);
-  const [showAddResidentModal, setShowAddResidentModal] = useState(false);
 
   useEffect(() => {
     const fetchResidents = async () => {
@@ -312,16 +314,6 @@ export default function TaskKanbanView({ tasks }: { tasks: Task[] }) {
     fetchResidents();
   }, []);
 
-  const handleAddResident = async (newResidentData: any) => {
-    try {
-      const createdResident = await createResident(newResidentData);
-      setResidents((prev) => [...prev, createdResident]);
-      setShowAddResidentModal(false);
-    } catch (error) {
-      console.error("Error creating resident:", error);
-    }
-  };
-
   if (loading)
     return (
       <div className="p-8">
@@ -336,47 +328,21 @@ export default function TaskKanbanView({ tasks }: { tasks: Task[] }) {
   }
 
   return (
-    <div className="flex-1 bg-white p-8 pt-0">
-      <div className="flex justify-end mb-8">
-        <div className="flex space-x-3">
-          <Button
-            variant="secondary"
-            onClick={() => setShowAddResidentModal(true)}
-          >
-            <User className="w-4 h-4 mr-2" /> Add Resident
-          </Button>
-        </div>
-      </div>
-      <div className="space-y-8">
+    <div className="flex-1 pt-0">
+      <div className="flex flex-col gap-4">
         {residentRows.map((row, rowIndex) => (
-          <div key={rowIndex} className="flex min-w-full">
+          <div key={rowIndex} className="flex gap-4">
             {row.map((resident) => (
-              <ResidentColumn
+              <ResidentRow
                 key={resident.id}
                 resident={resident}
                 tasks={taskList}
                 setTasks={setTaskList}
               />
             ))}
-            {rowIndex === residentRows.length - 1 &&
-              residents.length % 3 !== 0 && (
-                <div className="flex-none w-96 bg-gray-50 rounded-lg p-4 mr-4 border-2 border-dashed border-gray-200 flex items-center justify-center">
-                  <button
-                    className="text-gray-500 hover:text-gray-700 text-sm font-medium"
-                    onClick={() => setShowAddResidentModal(true)}
-                  >
-                    + Add New Resident
-                  </button>
-                </div>
-              )}
           </div>
         ))}
       </div>
-      <AddResidentModal
-        isOpen={showAddResidentModal}
-        onClose={() => setShowAddResidentModal(false)}
-        onSave={handleAddResident}
-      />
     </div>
   );
 }

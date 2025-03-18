@@ -57,7 +57,15 @@ export const getTasks = async (filters?: {
     }
 
     const data = await response.json();
-    return data;
+    // Convert UTC dates to local Date objects
+    return data.map((task: any) => ({
+      ...task,
+      start_date: new Date(task.start_date),
+      due_date: new Date(task.due_date),
+      end_recurring_date: task.end_recurring_date ? new Date(task.end_recurring_date) : undefined,
+      finished_at: task.finished_at ? new Date(task.finished_at) : undefined,
+      created_at: new Date(task.created_at),
+    }));
   } catch (error) {
     throw error;
   }
@@ -79,8 +87,16 @@ export const getTaskById = async (taskId: string): Promise<Task> => {
       throw new Error(`Error fetching task by ID: ${response.statusText}`);
     }
 
-    const data = await response.json();
-    return data;
+    const task = await response.json();
+    // Convert UTC dates to local Date objects
+    return {
+      ...task,
+      start_date: new Date(task.start_date),
+      due_date: new Date(task.due_date),
+      end_recurring_date: task.end_recurring_date ? new Date(task.end_recurring_date) : undefined,
+      finished_at: task.finished_at ? new Date(task.finished_at) : undefined,
+      created_at: new Date(task.created_at),
+    };
   } catch (error) {
     throw error;
   }

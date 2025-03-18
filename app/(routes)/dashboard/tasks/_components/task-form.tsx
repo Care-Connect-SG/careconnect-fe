@@ -30,6 +30,7 @@ import { Plus } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { DateTimePicker } from "@/components/ui/datetime-picker";
 
 const taskSchema = z
   .object({
@@ -181,8 +182,17 @@ export default function TaskForm({
 
   const onSubmit = async (data: TaskForm) => {
     try {
+      const formData = {
+        ...data,
+        start_date: data.start_date.toISOString(),
+        due_date: data.due_date.toISOString(),
+        end_recurring_date: data.end_recurring_date
+          ? data.end_recurring_date.toISOString()
+          : undefined,
+      };
+
       if (task) {
-        const updatedTask = await updateTask(task.id, data);
+        const updatedTask = await updateTask(task.id, formData);
         if (setTasks) {
           setTasks(updatedTask);
         }
@@ -192,7 +202,7 @@ export default function TaskForm({
           description: "Task has been updated successfully",
         });
       } else {
-        const newTasks = await createTask(data);
+        const newTasks = await createTask(formData);
         if (setTasks) {
           setTasks((prevTasks) => [...newTasks, ...prevTasks]);
         }
@@ -446,22 +456,9 @@ export default function TaskForm({
                   <FormItem>
                     <Label>Start Date</Label>
                     <FormControl>
-                      <Input
-                        type="datetime-local"
-                        onChange={(e) => {
-                          const date = new Date(e.target.value);
-                          field.onChange(date);
-                        }}
-                        value={
-                          field.value
-                            ? new Date(field.value).toISOString().slice(0, 16)
-                            : ""
-                        }
-                        className={
-                          fieldState.invalid
-                            ? "border-destructive focus-visible:ring-destructive"
-                            : ""
-                        }
+                      <DateTimePicker
+                        value={field.value}
+                        onChange={field.onChange}
                       />
                     </FormControl>
                     {fieldState.error && (
@@ -479,22 +476,9 @@ export default function TaskForm({
                   <FormItem>
                     <Label>Due Date</Label>
                     <FormControl>
-                      <Input
-                        type="datetime-local"
-                        onChange={(e) => {
-                          const date = new Date(e.target.value);
-                          field.onChange(date);
-                        }}
-                        value={
-                          field.value
-                            ? new Date(field.value).toISOString().slice(0, 16)
-                            : ""
-                        }
-                        className={
-                          fieldState.invalid
-                            ? "border-destructive focus-visible:ring-destructive"
-                            : ""
-                        }
+                      <DateTimePicker
+                        value={field.value}
+                        onChange={field.onChange}
                       />
                     </FormControl>
                     {fieldState.error && (

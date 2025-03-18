@@ -36,12 +36,14 @@ interface EditGroupInlineProps {
   group: Group;
   groupId: string;
   onUpdate: (updatedGroup: Group) => void;
+  isAdmin: boolean;
 }
 
 export function EditGroupForm({
   group,
   groupId,
   onUpdate,
+  isAdmin,
 }: EditGroupInlineProps) {
   const { toast } = useToast();
   const [updating, setUpdating] = useState(false);
@@ -83,14 +85,14 @@ export function EditGroupForm({
         description: values.newDescription,
       });
       toast({
-        title: "Group Updated",
-        description: "The group details have been updated.",
+        title: "Group Updated Successfully",
+        description: "The group details have been updated",
       });
-    } catch (error: any) {
+    } catch (err: any) {
       toast({
         variant: "destructive",
-        title: "Update Failed",
-        description: error.message || "Error updating group",
+        title: "An error occurred while updating group, please try again",
+        description: err.message,
       });
     } finally {
       setUpdating(false);
@@ -115,6 +117,7 @@ export function EditGroupForm({
                     placeholder="Group Name"
                     {...field}
                     className="bg-white rounded px-4 py-3 shadow-sm"
+                    disabled={!isAdmin}
                   />
                 </FormControl>
                 <FormMessage />
@@ -133,19 +136,22 @@ export function EditGroupForm({
                     {...field}
                     className="bg-white rounded px-4 py-3 shadow-sm"
                     rows={3}
+                    disabled={!isAdmin}
                   />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <Button
-            type="submit"
-            disabled={updating || !isDirty}
-            className="w-full"
-          >
-            {updating ? <Spinner /> : "Save"}
-          </Button>
+          {isAdmin && (
+            <Button
+              type="submit"
+              disabled={updating || !isDirty}
+              className="w-full"
+            >
+              {updating ? <Spinner /> : "Save"}
+            </Button>
+          )}
         </form>
       </Form>
     </div>

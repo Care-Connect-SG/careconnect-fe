@@ -24,12 +24,14 @@ import { useToast } from "@/hooks/use-toast";
 import { Group } from "@/types/group";
 import { User } from "@/types/user";
 import { Trash } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { EditGroupForm } from "./_components/edit-group-form";
 import { SelectAddUser } from "./_components/select-add-user";
 
 export default function ViewGroupPage() {
+  const { data: session } = useSession();
   const pathname = usePathname();
   const groupId = pathname.split("/")[3];
   const router = useRouter();
@@ -39,7 +41,11 @@ export default function ViewGroupPage() {
   const [group, setGroup] = useState<Group | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
+  const currentUser = session?.user?.email
+    ? users.find((u) => u.email === session.user.email)
+    : null;
+  const isAdmin = currentUser?.role === "Admin";
 
   useEffect(() => {
     const fetchGroup = async () => {
@@ -48,7 +54,12 @@ export default function ViewGroupPage() {
         setGroup(data);
         setPageName(data.name);
       } catch (err: any) {
-        setError(err.message || "An error occurred while fetching group");
+        console.error("Error fetching group:", err.message);
+        toast({
+          title: "An error occurred while fetching group",
+          description: err.message,
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }
@@ -62,8 +73,13 @@ export default function ViewGroupPage() {
       try {
         const data = await getAllNurses();
         setUsers(data);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching users:", error);
+        toast({
+          title: "An error occurred while fetching users",
+          description: error.message,
+          variant: "destructive",
+        });
       }
     };
 
@@ -80,15 +96,15 @@ export default function ViewGroupPage() {
     try {
       await deleteGroup(groupId);
       toast({
-        title: "Group Deleted",
-        description: "The group has been successfully deleted.",
+        title: "Group Deleted Successfully",
+        description: `Group ${group.name} has been successfully deleted`,
       });
-      router.push("/dashboard/group");
-    } catch (error: any) {
-      console.error("Error deleting group:", error.message || error);
+      router.push("/dashboard/groups");
+    } catch (err: any) {
+      console.error("Error deleting group:", err.message);
       toast({
-        title: "Failed to delete group",
-        description: "Failed to delete the group. Please try again.",
+        title: "An error occurred while deleting group, please try again",
+        description: err.message,
         variant: "destructive",
       });
     }
@@ -106,14 +122,15 @@ export default function ViewGroupPage() {
           : prev,
       );
       toast({
-        title: `Successfully removed ${user.name}`,
-        description: "User has been removed from the group",
+        title: "User removed successfully",
+        description: `Successfully removed ${user.name} from group`,
       });
     } catch (err: any) {
-      console.error("Error removing user:", err.message || err);
+      console.error("Error removing user:", err.message);
       toast({
-        title: "Unable to remove user",
-        description: err.message || "Failed to remove user. Please try again.",
+        title:
+          "An error occurred while removing user from group, please try again",
+        description: err.message,
         variant: "destructive",
       });
     }
@@ -129,11 +146,14 @@ export default function ViewGroupPage() {
   };
 
   if (loading) return <Spinner />;
-  if (error || !group)
+  if (!group)
     return (
-      <p className="text-red-500 text-center p-4">
-        {error || "Group not found"}
-      </p>
+      <div className="flex items-center justify-center h-full flex-col space-y-6">
+        <p className="text-2xl text-center">Group page not found</p>
+        <Button onClick={() => router.push("/dashboard/groups")}>
+          Return to groups
+        </Button>
+      </div>
     );
 
   const availableUsers = users.filter(
@@ -144,33 +164,35 @@ export default function ViewGroupPage() {
     <div className="p-8 gap-8 w-full flex flex-col">
       <div className="flex flex-row justify-between items-center w-full">
         <h1 className="text-2xl font-bold">{group.name} Group's Details</h1>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
-              variant={"outline"}
-              className="text-red-500 bg-transparent hover:text-red-500"
-            >
-              <Trash className="w-5 h-5" />
-              Delete Group
-            </Button>
-          </AlertDialogTrigger>
-
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the
-                group and remove all associated data.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <Button variant="destructive" onClick={handleDeleteGroup}>
-                Delete
+        {isAdmin && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant={"outline"}
+                className="text-red-500 bg-transparent hover:text-red-500"
+              >
+                <Trash className="w-5 h-5" />
+                Delete Group
               </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+            </AlertDialogTrigger>
+
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the
+                  group and remove all associated data.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <Button variant="destructive" onClick={handleDeleteGroup}>
+                  Delete
+                </Button>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
       </div>
 
       <div className="flex flex-col md:flex-row gap-8 w-full">
@@ -178,9 +200,10 @@ export default function ViewGroupPage() {
           group={group}
           groupId={groupId}
           onUpdate={(updatedGroup) => setGroup(updatedGroup)}
+          isAdmin={isAdmin}
         />
 
-        <div className="flex-1 space-y-4">
+        <div className="flex-1 space-y-5">
           <Label className="block text-sm font-medium text-gray-600">
             <span className="text-blue-500 rounded-lg bg-blue-100 font-semibold mr-1.5 w-full px-2 py-0.5">
               {group.members.length}
@@ -188,11 +211,13 @@ export default function ViewGroupPage() {
             members in this group
           </Label>
           <div>
-            <SelectAddUser
-              groupId={groupId}
-              availableUsers={availableUsers}
-              onUserAdded={handleUserAdded}
-            />
+            {isAdmin && (
+              <SelectAddUser
+                groupId={groupId}
+                availableUsers={availableUsers}
+                onUserAdded={handleUserAdded}
+              />
+            )}
 
             <div className="space-y-4 mt-4">
               {group.members.map((memberId) => {
@@ -213,12 +238,14 @@ export default function ViewGroupPage() {
                         {user.name}
                       </span>
                     </div>
-                    <Button
-                      onClick={() => handleRemoveUser(user.id)}
-                      className="text-red-500 text-sm hover:underline"
-                    >
-                      Remove
-                    </Button>
+                    {isAdmin && (
+                      <Button
+                        onClick={() => handleRemoveUser(user.id)}
+                        className="text-red-500 text-sm hover:underline"
+                      >
+                        Remove
+                      </Button>
+                    )}
                   </div>
                 );
               })}

@@ -36,16 +36,17 @@ export function SelectAddUser({
     try {
       await addUserToGroup({ group_id: groupId, user_id: user.id });
       toast({
-        title: `Successfully added ${user.name}`,
-        description: "User has been added to the group",
+        title: "User added to group successfully",
+        description: `Successfully added ${user.name} to the group`,
       });
       onUserAdded(user);
       setSelectedUser(null);
-    } catch (error: any) {
+    } catch (err: any) {
+      console.error("Error adding user to group:", err.message);
       toast({
         variant: "destructive",
-        title: "Failed to add user",
-        description: error.message || "Please try again",
+        title: "An error occurred while adding user to group, please try again",
+        description: err.message,
       });
     } finally {
       setAdding(false);

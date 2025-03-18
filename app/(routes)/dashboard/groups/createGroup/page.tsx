@@ -53,7 +53,7 @@ export default function CreateGroupPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
-  const [selectValue, setSelectValue] = useState<string>(""); // controlled select value
+  const [selectValue, setSelectValue] = useState<string>("");
   const [creating, setCreating] = useState(false);
 
   const form = useForm<CreateGroupFormValues>({
@@ -73,8 +73,13 @@ export default function CreateGroupPage() {
       try {
         const data = await getUsers();
         setUsers(data);
-      } catch (err) {
-        console.error("Error fetching users:", err);
+      } catch (err: any) {
+        console.error("Error fetching users:", err.message);
+        toast({
+          title: "An error occurred while fetching users",
+          description: err.message,
+          variant: "destructive",
+        });
       } finally {
         setLoadingUsers(false);
       }
@@ -106,18 +111,17 @@ export default function CreateGroupPage() {
       });
 
       toast({
-        title: "Group Created",
-        description: "Group created successfully!",
+        title: "Group Created Successfully",
+        description: `Group ${values.groupName} has been created successfully`,
         variant: "default",
       });
 
-      router.push("/dashboard/group");
+      router.push("/dashboard/groups");
     } catch (err: any) {
       console.error("Error creating group:", err);
       toast({
-        title: "Failed to create group",
-        description:
-          err.message || "An error occurred while creating the group.",
+        title: "An error occurred while creating the group, please try again",
+        description: err.message,
         variant: "destructive",
       });
     } finally {

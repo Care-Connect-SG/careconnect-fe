@@ -1,14 +1,18 @@
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { Group } from "@/types/group";
 
-export const getGroups = async (): Promise<any> => {
+export const getGroups = async (): Promise<Group[]> => {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BE_API_URL}/groups`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    });
+    const res = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/groups/`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      },
+    );
     if (!res.ok) {
-      throw new Error(`Error fetching groups: ${res.statusText}`);
+      const errData = await res.json();
+      throw Error(errData.detail || "Error fetching groups");
     }
     return await res.json();
   } catch (error) {
@@ -18,7 +22,7 @@ export const getGroups = async (): Promise<any> => {
 
 export const getGroupById = async (groupId: string): Promise<Group> => {
   try {
-    const res = await fetch(
+    const res = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/groups/${encodeURIComponent(
         groupId,
       )}`,
@@ -28,7 +32,8 @@ export const getGroupById = async (groupId: string): Promise<Group> => {
       },
     );
     if (!res.ok) {
-      throw new Error(`Error fetching group: ${res.statusText}`);
+      const errData = await res.json();
+      throw Error(errData.detail || "Error fetching group");
     }
     return await res.json();
   } catch (error) {
@@ -40,7 +45,7 @@ export const createGroup = async (group: {
   name: string;
   description: string;
   members: string[];
-}): Promise<any> => {
+}): Promise<Group> => {
   const payload = {
     group_id: "",
     name: group.name,
@@ -57,7 +62,8 @@ export const createGroup = async (group: {
       },
     );
     if (!res.ok) {
-      throw new Error(`Error creating group: ${await res.text()}`);
+      const errData = await res.json();
+      throw Error(errData.detail || "Error creating group");
     }
     return await res.json();
   } catch (error) {
@@ -69,7 +75,7 @@ export const updateGroup = async (params: {
   group_id: string;
   new_name: string;
   new_description: string;
-}): Promise<any> => {
+}): Promise<Group> => {
   const { group_id, new_name, new_description } = params;
   try {
     const res = await fetchWithAuth(
@@ -86,7 +92,8 @@ export const updateGroup = async (params: {
       },
     );
     if (!res.ok) {
-      throw new Error(`Error updating group: ${await res.text()}`);
+      const errData = await res.json();
+      throw Error(errData.detail || "Error updating group");
     }
     return await res.json();
   } catch (error) {
@@ -94,8 +101,8 @@ export const updateGroup = async (params: {
   }
 };
 
-export const deleteGroup = async (groupId: string): Promise<any> => {
-  if (!groupId) throw new Error("Group id is required");
+export async function deleteGroup(groupId: string) {
+  if (!groupId) throw Error("Group id is required");
   try {
     const res = await fetchWithAuth(
       `${
@@ -107,13 +114,14 @@ export const deleteGroup = async (groupId: string): Promise<any> => {
       },
     );
     if (!res.ok) {
-      throw new Error(`Error deleting group: ${await res.text()}`);
+      const errData = await res.json();
+      throw Error(errData.detail || "Error deleting group");
     }
     return await res.json();
   } catch (error) {
     throw error;
   }
-};
+}
 
 export async function addUserToGroup(payload: {
   group_id: string;
@@ -134,15 +142,12 @@ export async function addUserToGroup(payload: {
   );
   if (!res.ok) {
     const errData = await res.json();
-    throw new Error(errData.detail || "Failed to add user to group");
+    throw Error(errData.detail || "Failed to add user to group");
   }
   return await res.json();
 }
 
-export const removeUserFromGroup = async (
-  groupId: string,
-  userId: string,
-): Promise<any> => {
+export async function removeUserFromGroup(groupId: string, userId: string) {
   try {
     const res = await fetchWithAuth(
       `${
@@ -156,10 +161,11 @@ export const removeUserFromGroup = async (
       },
     );
     if (!res.ok) {
-      throw new Error(`Failed to remove user: ${await res.text()}`);
+      const errData = await res.json();
+      throw Error(errData.detail || "Failed to remove user from group");
     }
     return await res.json();
   } catch (error) {
     throw error;
   }
-};
+}

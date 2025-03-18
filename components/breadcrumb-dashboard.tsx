@@ -15,7 +15,7 @@ const items = [
   { key: "home", label: "Home" },
   { key: "tasks", label: "Tasks" },
   { key: "residents", label: "Residents" },
-  { key: "group", label: "Group" },
+  { key: "groups", label: "Groups" },
   { key: "calendar", label: "Calendar" },
   { key: "incidents", label: "Incident Reporting" },
   { key: "nurses", label: "Nurses" },

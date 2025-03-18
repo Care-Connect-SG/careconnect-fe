@@ -5,6 +5,7 @@ import { getAllNurses } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { useToast } from "@/hooks/use-toast";
 import { Group } from "@/types/group";
 import { User } from "@/types/user";
 import { Search } from "lucide-react";
@@ -15,11 +16,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function GroupDashboard() {
+  const { toast } = useToast();
   const router = useRouter();
   const [groups, setGroups] = useState<Group[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const { data: session } = useSession();
 
@@ -34,7 +35,12 @@ export default function GroupDashboard() {
         setUsers(usersData);
         setLoading(false);
       } catch (err: any) {
-        setError(err.message || "An error occurred while fetching data");
+        console.error("Error fetching groups:", err.message);
+        toast({
+          title: "An error occurred while fetching groups",
+          description: err.message,
+          variant: "destructive",
+        });
         setLoading(false);
       }
     };
@@ -63,9 +69,11 @@ export default function GroupDashboard() {
   });
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
+    <div className="p-8 w-full">
       <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Group</h1>
+        <h1 className="text-2xl font-bold">
+          {isAdmin ? "Groups" : "My groups"}
+        </h1>
         <div className="flex flex-row items-center gap-4 w-full sm:w-3/5">
           <div className="relative flex-grow">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -81,7 +89,7 @@ export default function GroupDashboard() {
           </div>
           {isAdmin && (
             <Button
-              onClick={() => router.push("/dashboard/group/createGroup")}
+              onClick={() => router.push("/dashboard/groups/createGroup")}
               className="flex items-center gap-2"
             >
               <Plus className="w-5 h-5" />
@@ -92,8 +100,15 @@ export default function GroupDashboard() {
       </div>
 
       {loading && <Spinner />}
-      {error && <p className="text-red-500">{error}</p>}
-      {!loading && !error && (
+      {!loading && filteredGroups.length === 0 && (
+        <div className="flex justify-center items-center h-64">
+          <p className="text-gray-500 text-center flex justify-center items-center">
+            No groups found at the moment
+          </p>
+        </div>
+      )}
+
+      {!loading && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredGroups.map((group) => {
             const memberNames =
@@ -105,7 +120,7 @@ export default function GroupDashboard() {
                 key={group.id}
                 className="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
               >
-                <Link href={`/dashboard/group/${group.id}`}>
+                <Link href={`/dashboard/groups/${group.id}`}>
                   <div className="cursor-pointer">
                     <h2 className="text-xl font-semibold mb-2">{group.name}</h2>
                     <p className="text-gray-700 mb-2">{group.description}</p>

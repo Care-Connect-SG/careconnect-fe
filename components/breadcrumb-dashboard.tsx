@@ -7,7 +7,7 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import React, { useEffect } from "react";
 import { useBreadcrumb } from "../context/breadcrumb-context";
 
@@ -25,6 +25,7 @@ const items = [
 function BreadCrumbDashboard() {
   const { pageName, setPageName } = useBreadcrumb();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   let segments = pathname?.split("/").filter(Boolean) || [];
   const dynamicSegments = segments.slice(1);
 
@@ -32,8 +33,13 @@ function BreadCrumbDashboard() {
     setPageName(null);
   }, [pathname, setPageName]);
 
-  const breadcrumbItems = dynamicSegments.map((segment, index) => {
-    const isLast = index === dynamicSegments.length - 1;
+  const filteredSegments =
+    dynamicSegments[2] === "view"
+      ? dynamicSegments.filter((segment, index) => index !== 3)
+      : dynamicSegments;
+
+  const breadcrumbItems = filteredSegments.map((segment, index) => {
+    const isLast = index === filteredSegments.length - 1;
     let url = `/dashboard/${dynamicSegments.slice(0, index + 1).join("/")}`;
     let label = segment;
 
@@ -58,8 +64,16 @@ function BreadCrumbDashboard() {
       label = "Create Report";
     }
 
-    if (isLast && pageName) {
-      label = pageName;
+    if (index === 2 && segment === "build") {
+      if (searchParams) {
+        label = "Edit Form";
+      } else {
+        label = "Create Form";
+      }
+    }
+
+    if (index === 2 && segment === "view") {
+      label = "Preview Form";
     }
 
     return { url, label, isLast };

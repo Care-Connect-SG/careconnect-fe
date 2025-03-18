@@ -14,7 +14,7 @@ export default function Home() {
   return (
     <div className="flex flex-col w-full gap-8 p-8">
       <p className="text-2xl font-semibold text-gray-800">
-        Hello, {session?.user?.email}!
+        Hello{session?.user?.email ? " " + session.user.email : ""}!
       </p>
       <Separator />
 

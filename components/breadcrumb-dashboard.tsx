@@ -22,11 +22,15 @@ const items = [
 ];
 
 function BreadCrumbDashboard() {
-  const { pageName } = useBreadcrumb();
+  const { pageName, setPageName } = useBreadcrumb();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const segments = pathname?.split("/").filter(Boolean) || [];
   const dynamicSegments = segments.slice(1);
+
+  useEffect(() => {
+    setPageName(null);
+  }, [pathname]);
 
   const filteredSegments =
     dynamicSegments[2] === "view"

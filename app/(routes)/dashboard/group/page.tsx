@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { Group } from "@/types/group";
 import { User } from "@/types/user";
+import { Search } from "lucide-react";
 import { Plus } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -64,18 +65,24 @@ export default function GroupDashboard() {
   return (
     <div className="p-8 max-w-7xl mx-auto">
       <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Groups</h1>
-        <div className="flex flex-row items-center gap-4 w-2/5">
-          <Input
-            type="text"
-            placeholder="Search by group or user's name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        <h1 className="text-2xl font-bold">Group</h1>
+        <div className="flex flex-row items-center gap-4 w-full sm:w-3/5">
+          <div className="relative flex-grow">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+              <Search className="w-4 h-4 text-gray-400" />
+            </div>
+            <Input
+              type="text"
+              placeholder="Search by group or user's name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
           {isAdmin && (
             <Button
               onClick={() => router.push("/dashboard/group/createGroup")}
-              className="items-center gap-2 bg-green-500 text-white  hover:duration-300 ease-in-out transition-all hover:bg-green-700"
+              className="flex items-center gap-2"
             >
               <Plus className="w-5 h-5" />
               <span className="font-medium">Create New Group</span>

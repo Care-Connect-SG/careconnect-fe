@@ -15,30 +15,66 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
+import { useBreadcrumb } from "@/context/breadcrumb-context";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "@/types/user";
 import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+
+const createGroupSchema = z.object({
+  groupName: z
+    .string()
+    .min(6, { message: "Group name must be at least 6 characters long" }),
+  groupDescription: z.string().min(12, {
+    message: "Group description must be at least 12 characters long",
+  }),
+});
+
+type CreateGroupFormValues = z.infer<typeof createGroupSchema>;
 
 export default function CreateGroupPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [groupName, setGroupName] = useState("");
-  const [groupDescription, setGroupDescription] = useState("");
-  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const { setPageName } = useBreadcrumb();
+
   const [users, setUsers] = useState<User[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
+  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const [selectValue, setSelectValue] = useState<string>(""); // controlled select value
   const [creating, setCreating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
+  const form = useForm<CreateGroupFormValues>({
+    resolver: zodResolver(createGroupSchema),
+    defaultValues: {
+      groupName: "",
+      groupDescription: "",
+    },
+  });
+
+  useEffect(() => {
+    setPageName("Create Group");
+  }, [setPageName]);
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const data = await getUsers();
         setUsers(data);
-      } catch (error) {
-        console.error("Error fetching users:", error);
+      } catch (err) {
+        console.error("Error fetching users:", err);
       } finally {
         setLoadingUsers(false);
       }
@@ -51,6 +87,7 @@ export default function CreateGroupPage() {
     if (!selectedMembers.includes(value)) {
       setSelectedMembers((prev) => [...prev, value]);
     }
+    setSelectValue("");
   };
 
   const handleRemoveMember = (userId: string) => {
@@ -59,14 +96,12 @@ export default function CreateGroupPage() {
     );
   };
 
-  const handleCreateGroup = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleCreateGroup = async (values: CreateGroupFormValues) => {
     setCreating(true);
-    setError(null);
     try {
       await createGroup({
-        name: groupName,
-        description: groupDescription,
+        name: values.groupName,
+        description: values.groupDescription,
         members: selectedMembers,
       });
 
@@ -77,9 +112,14 @@ export default function CreateGroupPage() {
       });
 
       router.push("/dashboard/group");
-    } catch (error: any) {
-      console.error("Error creating group:", error);
-      setError(error.message || "An error occurred while creating the group.");
+    } catch (err: any) {
+      console.error("Error creating group:", err);
+      toast({
+        title: "Failed to create group",
+        description:
+          err.message || "An error occurred while creating the group.",
+        variant: "destructive",
+      });
     } finally {
       setCreating(false);
     }
@@ -92,81 +132,103 @@ export default function CreateGroupPage() {
   );
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Create New Group</h1>
-      <form
-        onSubmit={handleCreateGroup}
-        className="space-y-4 bg-white p-6 border rounded-lg shadow-sm"
-      >
-        <div>
-          <Label htmlFor="groupName" className="block font-medium mb-1">
-            Group Name
-          </Label>
-          <Input
-            id="groupName"
-            type="text"
-            value={groupName}
-            onChange={(e) => setGroupName(e.target.value)}
-            className="mt-1 block w-full border rounded p-2"
-            required
+    <div className="p-8 max-w-3xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6">Create New Group</h1>
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(handleCreateGroup)}
+          className="space-y-6 bg-white p-6 border rounded-lg shadow-sm"
+        >
+          <FormField
+            control={form.control}
+            name="groupName"
+            render={({ field }) => (
+              <FormItem className="space-y-4">
+                <FormLabel>Group Name</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Group Name"
+                    {...field}
+                    className="mt-1 block w-full"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
-        <div>
-          <Label htmlFor="groupDescription" className="block font-medium mb-1">
-            Description
-          </Label>
-          <Textarea
-            id="groupDescription"
-            value={groupDescription}
-            onChange={(e) => setGroupDescription(e.target.value)}
-            className="mt-1 block w-full border rounded p-2"
-            rows={4}
-            required
+          <FormField
+            control={form.control}
+            name="groupDescription"
+            render={({ field }) => (
+              <FormItem className="space-y-4">
+                <FormLabel>Description</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Group Description"
+                    {...field}
+                    className="mt-1 block w-full"
+                    rows={4}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
-        <div>
-          <Label className="block font-medium mb-1">Add Members</Label>
-          {loadingUsers ? (
-            <Spinner />
-          ) : (
-            <Select onValueChange={handleSelectChange}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select a user to add" />
-              </SelectTrigger>
-              <SelectContent>
-                {availableUsers.map((user) => (
-                  <SelectItem key={user.id} value={user.id}>
-                    {user.name} ({user.email})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-          {selectedMembers.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {selectedMembers.map((userId) => {
-                const user = users.find((u) => u.id === userId);
-                return (
-                  <Badge key={userId} className="flex items-center gap-1">
-                    {user ? user.name : userId}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleRemoveMember(userId)}
+          <div className="space-y-4">
+            <Label className="block font-medium mb-1">Members</Label>
+            {loadingUsers ? (
+              <div className="py-2">
+                <Spinner />
+              </div>
+            ) : (
+              <Select
+                value={selectValue}
+                onValueChange={(value) => {
+                  setSelectValue(value);
+                  handleSelectChange(value);
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a user to add" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableUsers.map((user) => (
+                    <SelectItem key={user.id} value={user.id}>
+                      {user.name} ({user.email})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            {selectedMembers.length > 0 && (
+              <div className="flex flex-wrap !mt-2 gap-2">
+                {selectedMembers.map((userId) => {
+                  const user = users.find((u) => u.id === userId);
+                  return (
+                    <Badge
+                      key={userId}
+                      className="bg-blue-100 text-blue-800 flex items-center gap-1 hover:bg-blue-100 rounded-xl py-2"
                     >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </Badge>
-                );
-              })}
-            </div>
-          )}
-        </div>
-        {error && <p className="text-red-500">{error}</p>}
-        <Button type="submit" disabled={creating}>
-          {creating ? "Creating..." : "Create Group"}
-        </Button>
-      </form>
+                      {user ? user.name : userId}
+                      <Button
+                        variant="ghost"
+                        onClick={() => handleRemoveMember(userId)}
+                        className="p-0 hover:bg-transparent h-fit"
+                      >
+                        <X className="ml-1 w-4 h-4" />
+                      </Button>
+                    </Badge>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <Button type="submit" disabled={creating} className="w-full">
+            {creating ? <Spinner /> : "Create Group"}
+          </Button>
+        </form>
+      </Form>
     </div>
   );
 }

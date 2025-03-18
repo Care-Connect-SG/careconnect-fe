@@ -1,8 +1,21 @@
 "use client";
 
-import { getGroupById, getGroups } from "@/app/api/group";
-import { removeUserFromGroup } from "@/app/api/group";
+import {
+  deleteGroup,
+  getGroupById,
+  removeUserFromGroup,
+} from "@/app/api/group";
 import { getAllNurses } from "@/app/api/user";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
@@ -10,15 +23,16 @@ import { useBreadcrumb } from "@/context/breadcrumb-context";
 import { useToast } from "@/hooks/use-toast";
 import { Group } from "@/types/group";
 import { User } from "@/types/user";
-import { UserPlus } from "lucide-react";
-import Link from "next/link";
+import { Trash } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { EditGroupForm } from "./_components/edit-group-form";
+import { SelectAddUser } from "./_components/select-add-user";
 
 export default function ViewGroupPage() {
-  const router = useRouter();
   const pathname = usePathname();
   const groupId = pathname.split("/")[3];
+  const router = useRouter();
   const { toast } = useToast();
   const { setPageName } = useBreadcrumb();
 
@@ -41,7 +55,7 @@ export default function ViewGroupPage() {
     };
 
     fetchGroup();
-  }, [groupId]);
+  }, [groupId, setPageName]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -53,13 +67,31 @@ export default function ViewGroupPage() {
       }
     };
 
-    if (group && group.members.length > 0) {
-      fetchUsers();
-    }
-  }, [group]);
+    fetchUsers();
+  }, []);
 
   const getUserById = (userId: string) => {
     return users.find((u) => u.id === userId);
+  };
+
+  const handleDeleteGroup = async () => {
+    if (!group) return;
+
+    try {
+      await deleteGroup(groupId);
+      toast({
+        title: "Group Deleted",
+        description: "The group has been successfully deleted.",
+      });
+      router.push("/dashboard/group");
+    } catch (error: any) {
+      console.error("Error deleting group:", error.message || error);
+      toast({
+        title: "Failed to delete group",
+        description: "Failed to delete the group. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleRemoveUser = async (userId: string) => {
@@ -80,9 +112,18 @@ export default function ViewGroupPage() {
     } catch (err: any) {
       console.error("Error removing user:", err.message || err);
       toast({
-        title: "Error",
-        description: "Failed to remove user. Please try again.",
+        title: "Unable to remove user",
+        description: err.message || "Failed to remove user. Please try again.",
         variant: "destructive",
+      });
+    }
+  };
+
+  const handleUserAdded = (user: User) => {
+    if (group) {
+      setGroup({
+        ...group,
+        members: [...group.members, user.id],
       });
     }
   };
@@ -95,59 +136,72 @@ export default function ViewGroupPage() {
       </p>
     );
 
+  const availableUsers = users.filter(
+    (user) => !group.members.includes(user.id),
+  );
+
   return (
-    <>
-      <div className="max-w-3xl mx-auto p-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold flex-1 text-center">
-            Group Details
-          </h1>
-        </div>
+    <div className="p-8 gap-8 w-full flex flex-col">
+      <div className="flex flex-row justify-between items-center w-full">
+        <h1 className="text-2xl font-bold">{group.name} Group's Details</h1>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant={"outline"}
+              className="text-red-500 bg-transparent hover:text-red-500"
+            >
+              <Trash className="w-5 h-5" />
+              Delete Group
+            </Button>
+          </AlertDialogTrigger>
+
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the
+                group and remove all associated data.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <Button variant="destructive" onClick={handleDeleteGroup}>
+                Delete
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
 
-      <div className="max-w-lg mx-auto p-4 space-y-5">
-        <div className="space-y-3">
-          <div>
-            <Label className="block text-sm font-medium text-gray-600">
-              Group Name
-            </Label>
-            <div className="mt-1 bg-white rounded px-3 py-2 shadow-sm">
-              {group.name}
-            </div>
-          </div>
-          <div>
-            <Label className="block text-sm font-medium text-gray-600">
-              Group Description
-            </Label>
-            <div className="mt-1 bg-white rounded px-3 py-2 shadow-sm">
-              {group.description}
-            </div>
-          </div>
-        </div>
+      <div className="flex flex-col md:flex-row gap-8 w-full">
+        <EditGroupForm
+          group={group}
+          groupId={groupId}
+          onUpdate={(updatedGroup) => setGroup(updatedGroup)}
+        />
 
-        <Link
-          href={`/dashboard/group/${groupId}/add-users`}
-          className="inline-flex items-center gap-1 text-blue-600 hover:underline"
-        >
-          <UserPlus className="w-5 h-5" />
-          <span>Add Users</span>
-        </Link>
+        <div className="flex-1 space-y-4">
+          <Label className="block text-sm font-medium text-gray-600">
+            <span className="text-blue-500 rounded-lg bg-blue-100 font-semibold mr-1.5 w-full px-2 py-0.5">
+              {group.members.length}
+            </span>
+            members in this group
+          </Label>
+          <div>
+            <SelectAddUser
+              groupId={groupId}
+              availableUsers={availableUsers}
+              onUserAdded={handleUserAdded}
+            />
 
-        <div className="mt-20">
-          <h2 className="text-sm font-medium text-gray-600 mb-2">
-            Current Users
-          </h2>
-          <div className="space-y-2">
-            {group.members.length === 0 ? (
-              <p className="text-gray-500">No users yet.</p>
-            ) : (
-              group.members.map((memberId) => {
+            <div className="space-y-4 mt-4">
+              {group.members.map((memberId) => {
                 const user = getUserById(memberId);
                 if (!user) return null;
                 return (
                   <div
                     key={user.id}
-                    className="flex items-center justify-between bg-white rounded px-3 py-2 shadow-sm"
+                    className="flex items-center justify-between "
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
@@ -155,12 +209,10 @@ export default function ViewGroupPage() {
                           {user.name.charAt(0).toUpperCase()}
                         </span>
                       </div>
-
                       <span className="text-gray-800 font-medium">
                         {user.name}
                       </span>
                     </div>
-
                     <Button
                       onClick={() => handleRemoveUser(user.id)}
                       className="text-red-500 text-sm hover:underline"
@@ -169,11 +221,11 @@ export default function ViewGroupPage() {
                     </Button>
                   </div>
                 );
-              })
-            )}
+              })}
+            </div>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

@@ -63,7 +63,9 @@ export const getTasks = async (filters?: {
       ...task,
       start_date: new Date(task.start_date),
       due_date: new Date(task.due_date),
-      end_recurring_date: task.end_recurring_date ? new Date(task.end_recurring_date) : undefined,
+      end_recurring_date: task.end_recurring_date
+        ? new Date(task.end_recurring_date)
+        : undefined,
       finished_at: task.finished_at ? new Date(task.finished_at) : undefined,
       created_at: new Date(task.created_at),
     }));
@@ -94,7 +96,9 @@ export const getTaskById = async (taskId: string): Promise<Task> => {
       ...task,
       start_date: new Date(task.start_date),
       due_date: new Date(task.due_date),
-      end_recurring_date: task.end_recurring_date ? new Date(task.end_recurring_date) : undefined,
+      end_recurring_date: task.end_recurring_date
+        ? new Date(task.end_recurring_date)
+        : undefined,
       finished_at: task.finished_at ? new Date(task.finished_at) : undefined,
       created_at: new Date(task.created_at),
     };
@@ -164,7 +168,9 @@ export const updateTask = async (
       ...data,
       start_date: new Date(data.start_date),
       due_date: new Date(data.due_date),
-      end_recurring_date: data.end_recurring_date ? new Date(data.end_recurring_date) : undefined,
+      end_recurring_date: data.end_recurring_date
+        ? new Date(data.end_recurring_date)
+        : undefined,
       finished_at: data.finished_at ? new Date(data.finished_at) : undefined,
       created_at: new Date(data.created_at),
     };

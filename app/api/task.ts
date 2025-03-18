@@ -38,6 +38,7 @@ export const getTasks = async (filters?: {
   search?: string;
   status?: string;
   priority?: string;
+  date?: string; // Format: YYYY-MM-DD
 }): Promise<Task[]> => {
   try {
     const queryParams = filters
@@ -119,7 +120,10 @@ export const updateTask = async (
     if (updatedData.assigned_to)
       dataToSend.assigned_to = String(updatedData.assigned_to);
 
-    const response = await fetch(
+    if (updatedData.update_series !== undefined)
+      dataToSend.update_series = updatedData.update_series;
+
+    const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}`,
       {
         method: "PUT",
@@ -196,17 +200,21 @@ export const reopenTask = async (taskId: string): Promise<Task> => {
   }
 };
 
-export const deleteTask = async (taskId: string): Promise<void> => {
+export const deleteTask = async (
+  taskId: string,
+  delete_series?: boolean,
+): Promise<void> => {
   try {
-    const response = await fetch(
+    const url = new URL(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}`,
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      },
     );
+    if (delete_series) {
+      url.searchParams.append("delete_series", "true");
+    }
+
+    const response = await fetchWithAuth(url.toString(), {
+      method: "DELETE",
+    });
 
     if (!response.ok) {
       throw new Error(`Error deleting task: ${response.statusText}`);

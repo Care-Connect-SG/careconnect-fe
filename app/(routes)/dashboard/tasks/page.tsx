@@ -1,8 +1,8 @@
 "use client";
 
-import { useBreadcrumb } from "@/context/breadcrumb-context";
-import { format } from "date-fns";
-import { ChevronLeft, ChevronRight, Plus, Search, X } from "lucide-react";
+import { addDays, format, parse, subDays } from "date-fns";
+import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { getTasks } from "@/app/api/task";
@@ -24,36 +24,62 @@ import TaskListView from "./_components/task-list";
 import { TaskViewToggle } from "./_components/task-viewtoggle";
 
 const TaskManagement = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [currentView, setCurrentView] = useState<"list" | "kanban">("list");
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [date, setDate] = useState("");
+
+  const initDate = () => {
+    const dateParam = searchParams.get("date");
+    if (dateParam) {
+      try {
+        return parse(dateParam, "yyyy-MM-dd", new Date());
+      } catch (e) {
+        console.error("Invalid date in URL, defaulting to today");
+        return new Date();
+      }
+    }
+    return new Date();
+  };
+
+  const [selectedDate, setSelectedDate] = useState(initDate);
 
   const [filters, setFilters] = useState({
     search: "",
     status: "",
     priority: "",
+    date: format(initDate(), "yyyy-MM-dd"),
   });
-
-  useEffect(() => {
-    const todayFormatted = format(new Date(), "EEEE, dd MMMM yyyy");
-    setDate(todayFormatted);
-    fetchTasks();
-  }, []);
 
   useEffect(() => {
     fetchTasks();
   }, [filters]);
 
+  useEffect(() => {
+    const current = new URLSearchParams(Array.from(searchParams.entries()));
+    const newDate = format(selectedDate, "yyyy-MM-dd");
+
+    if (current.get("date") !== newDate) {
+      current.set("date", newDate);
+      const search = current.toString();
+      const query = search ? `?${search}` : "";
+      router.push(`/dashboard/tasks${query}`, { scroll: false });
+    }
+  }, [selectedDate, router, searchParams]);
+
   const fetchTasks = async () => {
     setLoading(true);
     try {
-      const filteredTasks = await getTasks(
-        Object.fromEntries(
+      const formattedDate = format(selectedDate, "yyyy-MM-dd");
+      const queryParams = {
+        ...Object.fromEntries(
           Object.entries(filters).filter(([_, v]) => v !== undefined),
         ),
-      );
+        date: formattedDate,
+      };
 
+      const filteredTasks = await getTasks(queryParams);
       setTasks(filteredTasks);
     } catch (err) {
       console.error("TaskManagement - Error fetching tasks:", err);
@@ -71,7 +97,18 @@ const TaskManagement = () => {
       search: "",
       status: "",
       priority: "",
+      date: format(selectedDate, "yyyy-MM-dd"),
     });
+  };
+
+  const navigateDate = (direction: "prev" | "next") => {
+    const newDate =
+      direction === "prev"
+        ? subDays(selectedDate, 1)
+        : addDays(selectedDate, 1);
+
+    setSelectedDate(newDate);
+    updateFilter("date", format(newDate, "yyyy-MM-dd"));
   };
 
   return (
@@ -93,14 +130,24 @@ const TaskManagement = () => {
       <div className="flex justify-between items-center">
         <div className="flex flex-row space-x-5 items-center">
           <div className="flex items-center space-x-2">
-            <Button variant="outline" className="px-1.5 py-1">
+            <Button
+              variant="outline"
+              className="px-1.5 py-1"
+              onClick={() => navigateDate("prev")}
+            >
               <ChevronLeft className="w-4 h-4" />
             </Button>
-            <Button variant="outline" className="px-1.5 py-1">
+            <Button
+              variant="outline"
+              className="px-1.5 py-1"
+              onClick={() => navigateDate("next")}
+            >
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
-          <p className="text-md text-gray-500">{date}</p>
+          <p className="text-md text-gray-500">
+            {format(selectedDate, "EEEE, dd MMMM yyyy")}
+          </p>
         </div>
         <div className="flex flex-row gap-4 rounded-lg items-center">
           <div className="relative w-full md:w-1/3">

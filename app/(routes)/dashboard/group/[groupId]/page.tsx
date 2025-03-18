@@ -1,11 +1,12 @@
 "use client";
 
-import { getGroups } from "@/app/api/group";
+import { getGroupById, getGroups } from "@/app/api/group";
 import { removeUserFromGroup } from "@/app/api/group";
 import { getAllNurses } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
+import { useBreadcrumb } from "@/context/breadcrumb-context";
 import { useToast } from "@/hooks/use-toast";
 import { Group } from "@/types/group";
 import { User } from "@/types/user";
@@ -19,6 +20,7 @@ export default function ViewGroupPage() {
   const pathname = usePathname();
   const groupId = pathname.split("/")[3];
   const { toast } = useToast();
+  const { setPageName } = useBreadcrumb();
 
   const [group, setGroup] = useState<Group | null>(null);
   const [users, setUsers] = useState<User[]>([]);
@@ -28,15 +30,11 @@ export default function ViewGroupPage() {
   useEffect(() => {
     const fetchGroup = async () => {
       try {
-        const data = await getGroups();
-        const found = data.find((g: any) => g.id === groupId);
-        if (!found) {
-          setError("Group not found");
-        } else {
-          setGroup(found);
-        }
+        const data = await getGroupById(groupId);
+        setGroup(data);
+        setPageName(data.name);
       } catch (err: any) {
-        setError(err.message || "An error occurred while fetching groups");
+        setError(err.message || "An error occurred while fetching group");
       } finally {
         setLoading(false);
       }
@@ -101,21 +99,9 @@ export default function ViewGroupPage() {
     <>
       <div className="max-w-3xl mx-auto p-6">
         <div className="flex items-center justify-between">
-          <Button
-            variant="secondary"
-            onClick={() => router.push("/dashboard/group")}
-          >
-            &lt; Back
-          </Button>
           <h1 className="text-3xl font-bold flex-1 text-center">
             Group Details
           </h1>
-          <Link
-            href={`/dashboard/group/${groupId}/edit`}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          >
-            Edit
-          </Link>
         </div>
       </div>
 

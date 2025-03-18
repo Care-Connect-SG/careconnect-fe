@@ -1,4 +1,5 @@
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
+import { Group } from "@/types/group";
 
 export const getGroups = async (): Promise<any> => {
   try {
@@ -15,7 +16,7 @@ export const getGroups = async (): Promise<any> => {
   }
 };
 
-export const getGroupById = async (groupId: string): Promise<any> => {
+export const getGroupById = async (groupId: string): Promise<Group> => {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/groups/${encodeURIComponent(

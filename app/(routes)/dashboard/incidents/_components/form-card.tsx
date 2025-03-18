@@ -82,7 +82,7 @@ export default function FormCard({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="p-0"
+                    className="p-0 focus:ring-0"
                     onClick={(e) => {
                       e.stopPropagation();
                       router.push(`/dashboard/incidents/admin/build?id=${id}`);
@@ -102,7 +102,7 @@ export default function FormCard({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="p-0"
+                    className="p-0 focus:ring-0"
                     onClick={(e) => {
                       e.stopPropagation();
                       onPublish(id);
@@ -126,7 +126,7 @@ export default function FormCard({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="p-0"
+                  className="p-0 focus:ring-0"
                   onClick={(e) => {
                     e.stopPropagation();
                     onDuplicate(id);
@@ -146,7 +146,7 @@ export default function FormCard({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="p-0"
+                  className="p-0 focus:ring-0"
                   onClick={(e) => {
                     e.stopPropagation();
                     onDelete(id);

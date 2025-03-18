@@ -1,5 +1,6 @@
 "use client";
 
+import { getUser } from "@/app/api/user";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -17,14 +18,15 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Spinner } from "@/components/ui/spinner";
-import { ChevronsUpDown, LogOut, Settings, User } from "lucide-react";
+import { User } from "@/types/user";
+import { ChevronsUpDown, LogOut, Settings, UserIcon } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
-export function NavUser() {
+export function NavUser({ currentUser }: { currentUser: User | null }) {
   const { isMobile } = useSidebar();
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -93,12 +95,17 @@ export function NavUser() {
             <DropdownMenuSeparator />
 
             <DropdownMenuGroup>
-              <Link href="/dashboard/profile" passHref legacyBehavior>
+              <Link
+                href={`/dashboard/nurses/${currentUser?.id}`}
+                passHref
+                legacyBehavior
+              >
                 <DropdownMenuItem>
-                  <User className="w-4 h-4" />
+                  <UserIcon className="w-4 h-4" />
                   Profile
                 </DropdownMenuItem>
               </Link>
+
               <Link href="/dashboard/settings" passHref legacyBehavior>
                 <DropdownMenuItem>
                   <Settings className="w-4 h-4" />

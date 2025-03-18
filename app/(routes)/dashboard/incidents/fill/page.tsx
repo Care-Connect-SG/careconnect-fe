@@ -11,9 +11,8 @@ import {
   updateReport,
 } from "@/app/api/report";
 import { getCurrentUser } from "@/app/api/user";
-import { FormElementData } from "@/hooks/useFormReducer";
 import { ReportState, useReportReducer } from "@/hooks/useReportReducer";
-import { FormResponse } from "@/types/form";
+import { FormElementData, FormResponse } from "@/types/form";
 import { CaregiverTag, ReportResponse, ReportStatus } from "@/types/report";
 
 import { FormHeaderView } from "../_components/form-header";

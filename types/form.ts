@@ -1,4 +1,19 @@
-import { FormElementData } from "@/hooks/useFormReducer";
+export type FormElementType =
+  | "text"
+  | "textarea"
+  | "date"
+  | "datetime"
+  | "radio"
+  | "checkbox";
+
+export interface FormElementData {
+  element_id: string;
+  type: FormElementType;
+  label: string;
+  helptext: string;
+  required: boolean;
+  options?: string[];
+}
 
 export interface FormCreate {
   title: string;

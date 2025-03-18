@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/datetime-picker";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { FormElementData } from "@/hooks/useFormReducer";
+import { FormElementData } from "@/types/form";
 
 interface FormElementFillProps {
   element: FormElementData;

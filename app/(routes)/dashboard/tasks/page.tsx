@@ -26,7 +26,9 @@ import { TaskViewToggle } from "./_components/task-viewtoggle";
 const TaskManagement = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [currentView, setCurrentView] = useState<"list" | "kanban">("list");
+  const [currentView, setCurrentView] = useState<"list" | "kanban">(
+    (localStorage.getItem("taskView") as "list" | "kanban") || "list",
+  );
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
 
@@ -121,7 +123,13 @@ const TaskManagement = () => {
             </h1>
           </div>
           <div className="flex items-center space-x-4">
-            <TaskViewToggle view={currentView} onChange={setCurrentView} />
+            <TaskViewToggle
+              view={currentView}
+              onChange={(view) => {
+                setCurrentView(view);
+                localStorage.setItem("taskView", view);
+              }}
+            />
             <TaskForm />
           </div>
         </div>

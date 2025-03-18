@@ -62,7 +62,7 @@ export default function GroupDashboard() {
   });
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-8 max-w-7xl mx-auto">
       <div className="mb-8 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Groups</h1>
         <div className="flex flex-row items-center gap-4 w-2/5">

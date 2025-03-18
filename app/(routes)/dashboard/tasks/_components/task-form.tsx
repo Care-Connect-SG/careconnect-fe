@@ -3,6 +3,16 @@
 import { getResidents } from "@/app/api/resident";
 import { createTask, updateTask } from "@/app/api/task";
 import { getAllNurses } from "@/app/api/user";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -30,16 +40,6 @@ import { Plus } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
 const taskSchema = z
   .object({
@@ -143,11 +143,11 @@ export default function TaskForm({
         priority: task.priority,
         category: task.category,
         residents: task.resident ? [task.resident] : [],
-        start_date: new Date(task.start_date + 'Z'),
-        due_date: new Date(task.due_date + 'Z'),
+        start_date: new Date(task.start_date + "Z"),
+        due_date: new Date(task.due_date + "Z"),
         recurring: task.recurring,
         end_recurring_date: task.end_recurring_date
-          ? new Date(task.end_recurring_date + 'Z')
+          ? new Date(task.end_recurring_date + "Z")
           : undefined,
         remind_prior: task.remind_prior,
         is_ai_generated: task.is_ai_generated,
@@ -239,7 +239,7 @@ export default function TaskForm({
 
   const handleRecurringUpdate = async (updateSeries: boolean) => {
     if (!formData || !task) return;
-    
+
     try {
       const updatedTask = await updateTask(task.id, {
         ...formData,
@@ -307,7 +307,10 @@ export default function TaskForm({
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={handleSubmit} className="flex flex-col h-[calc(90vh-8rem)]">
+            <form
+              onSubmit={handleSubmit}
+              className="flex flex-col h-[calc(90vh-8rem)]"
+            >
               <div className="flex-1 overflow-y-auto px-6 space-y-4">
                 <FormField
                   control={form.control}
@@ -411,7 +414,9 @@ export default function TaskForm({
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="Meals">Meals</SelectItem>
-                            <SelectItem value="Medication">Medication</SelectItem>
+                            <SelectItem value="Medication">
+                              Medication
+                            </SelectItem>
                             <SelectItem value="Therapy">Therapy</SelectItem>
                             <SelectItem value="Outing">Outing</SelectItem>
                           </SelectContent>
@@ -510,7 +515,9 @@ export default function TaskForm({
                             }}
                             value={
                               field.value
-                                ? new Date(field.value).toISOString().slice(0, 16)
+                                ? new Date(field.value)
+                                    .toISOString()
+                                    .slice(0, 16)
                                 : ""
                             }
                             className={
@@ -543,7 +550,9 @@ export default function TaskForm({
                             }}
                             value={
                               field.value
-                                ? new Date(field.value).toISOString().slice(0, 16)
+                                ? new Date(field.value)
+                                    .toISOString()
+                                    .slice(0, 16)
                                 : ""
                             }
                             className={
@@ -606,7 +615,9 @@ export default function TaskForm({
                             }
                             value={
                               field.value
-                                ? new Date(field.value).toISOString().split("T")[0]
+                                ? new Date(field.value)
+                                    .toISOString()
+                                    .split("T")[0]
                                 : ""
                             }
                             className={
@@ -634,7 +645,9 @@ export default function TaskForm({
                       <FormControl>
                         <Input
                           type="number"
-                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
                           value={field.value || ""}
                           className={
                             fieldState.invalid
@@ -662,12 +675,16 @@ export default function TaskForm({
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={showRecurringDialog} onOpenChange={setShowRecurringDialog}>
+      <AlertDialog
+        open={showRecurringDialog}
+        onOpenChange={setShowRecurringDialog}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Update Recurring Task</AlertDialogTitle>
             <AlertDialogDescription>
-              This is a recurring task. Would you like to update just this task or all tasks in the series?
+              This is a recurring task. Would you like to update just this task
+              or all tasks in the series?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

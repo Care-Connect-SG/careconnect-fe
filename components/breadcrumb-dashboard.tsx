@@ -65,7 +65,6 @@ function BreadCrumbDashboard() {
     }
 
     if (index === 2 && segment === "build") {
-      console.log(searchParams + "search");
       if (searchParams) {
         label = "Edit Form";
       } else {

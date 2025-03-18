@@ -18,22 +18,15 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Spinner } from "@/components/ui/spinner";
-import { ChevronsUpDown, LogOut, Settings, User } from "lucide-react";
+import { User } from "@/types/user";
+import { ChevronsUpDown, LogOut, Settings, UserIcon } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
-interface User {
-  _id: string;
-  name: string;
-  email: string;
-  avatar: string;
-}
-
-export function NavUser() {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+export function NavUser({ currentUser }: { currentUser: User | null }) {
   const { isMobile } = useSidebar();
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -48,17 +41,6 @@ export function NavUser() {
       router.push("/auth/login");
     }
   }, [session, status, router]);
-
-  useEffect(() => {
-    if (session?.user?.email) {
-      const fetchUser = async () => {
-        const userData = await getUser(session.user.email);
-        console.log("Fetched user data:", userData);
-        setCurrentUser(userData); // Set the fetched user data in state
-      };
-      fetchUser();
-    }
-  }, [session?.user?.email]);
 
   return (
     <SidebarMenu>
@@ -114,12 +96,12 @@ export function NavUser() {
 
             <DropdownMenuGroup>
               <Link
-                href={`/dashboard/nurses/${currentUser?._id}`}
+                href={`/dashboard/nurses/${currentUser?.id}`}
                 passHref
                 legacyBehavior
               >
                 <DropdownMenuItem>
-                  <User className="w-4 h-4" />
+                  <UserIcon className="w-4 h-4" />
                   Profile
                 </DropdownMenuItem>
               </Link>

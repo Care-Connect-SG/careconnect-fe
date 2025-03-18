@@ -3,6 +3,16 @@
 import { getResidents } from "@/app/api/resident";
 import { createTask, updateTask } from "@/app/api/task";
 import { getAllNurses } from "@/app/api/user";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -98,6 +108,8 @@ export default function TaskForm({
   const { toast } = useToast();
   const [nurses, setNurses] = useState<any[]>([]);
   const [residents, setResidents] = useState<any[]>([]);
+  const [showRecurringDialog, setShowRecurringDialog] = useState(false);
+  const [formData, setFormData] = useState<TaskForm | null>(null);
 
   const form = useForm<TaskForm>({
     resolver: zodResolver(taskSchema),
@@ -131,11 +143,11 @@ export default function TaskForm({
         priority: task.priority,
         category: task.category,
         residents: task.resident ? [task.resident] : [],
-        start_date: new Date(task.start_date),
-        due_date: new Date(task.due_date),
+        start_date: new Date(task.start_date + "Z"),
+        due_date: new Date(task.due_date + "Z"),
         recurring: task.recurring,
         end_recurring_date: task.end_recurring_date
-          ? new Date(task.end_recurring_date)
+          ? new Date(task.end_recurring_date + "Z")
           : undefined,
         remind_prior: task.remind_prior,
         is_ai_generated: task.is_ai_generated,
@@ -183,6 +195,11 @@ export default function TaskForm({
   const onSubmit = async (data: TaskForm) => {
     try {
       if (task) {
+        if (task.recurring) {
+          setFormData(data);
+          setShowRecurringDialog(true);
+          return;
+        }
         const updatedTask = await updateTask(task.id, data);
         if (setTasks) {
           setTasks(updatedTask);
@@ -220,6 +237,42 @@ export default function TaskForm({
     }
   };
 
+  const handleRecurringUpdate = async (updateSeries: boolean) => {
+    if (!formData || !task) return;
+
+    try {
+      const updatedTask = await updateTask(task.id, {
+        ...formData,
+        update_series: updateSeries,
+      });
+      if (setTasks) {
+        setTasks(updatedTask);
+      }
+      toast({
+        variant: "default",
+        title: "Success",
+        description: `Task has been updated successfully${
+          updateSeries ? " along with its series" : ""
+        }`,
+      });
+      setIsOpen(false);
+      if (onClose) onClose();
+    } catch (error) {
+      let errorMessage = "Failed to update task. Please try again.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      toast({
+        variant: "destructive",
+        title: "An error occured, please try again",
+        description: errorMessage,
+      });
+    } finally {
+      setShowRecurringDialog(false);
+      setFormData(null);
+    }
+  };
+
   const handleSubmit = form.handleSubmit(
     (data) => {
       onSubmit(data);
@@ -235,373 +288,422 @@ export default function TaskForm({
   );
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        {!task && !open && (
-          <Button>
-            <Plus className="w-4 h-4 mr-2" /> New Task
-          </Button>
-        )}
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{task ? "Edit Task" : "Create New Task"}</DialogTitle>
-          <DialogDescription>
-            {task
-              ? "Edit the details of your task below."
-              : "Fill in the details below to create a new task."}
-          </DialogDescription>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="task_title"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <Label>Task Title</Label>
-                  <FormControl>
-                    <Input
-                      id="task_title"
-                      placeholder="Task Title"
-                      {...field}
-                      className={
-                        fieldState.invalid
-                          ? "border-destructive focus-visible:ring-destructive"
-                          : ""
-                      }
-                    />
-                  </FormControl>
-                  {fieldState.error && (
-                    <p className="text-sm text-destructive">
-                      {fieldState.error.message}
-                    </p>
-                  )}
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="task_details"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <Label>Task Details</Label>
-                  <FormControl>
-                    <Textarea
-                      id="task_details"
-                      placeholder="Task Details"
-                      {...field}
-                      className={
-                        fieldState.invalid
-                          ? "border-destructive focus-visible:ring-destructive"
-                          : ""
-                      }
-                    />
-                  </FormControl>
-                  {fieldState.error && (
-                    <p className="text-sm text-destructive">
-                      {fieldState.error.message}
-                    </p>
-                  )}
-                </FormItem>
-              )}
-            />
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="priority"
-                render={({ field, fieldState }) => (
-                  <FormItem>
-                    <Label>Priority</Label>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value || ""}
-                    >
-                      <SelectTrigger
-                        className={
-                          fieldState.invalid
-                            ? "border-destructive focus-visible:ring-destructive"
-                            : ""
-                        }
-                      >
-                        <SelectValue placeholder="Select priority" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="High">High</SelectItem>
-                        <SelectItem value="Medium">Medium</SelectItem>
-                        <SelectItem value="Low">Low</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field, fieldState }) => (
-                  <FormItem>
-                    <Label>Category</Label>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value || ""}
-                    >
-                      <SelectTrigger
-                        className={
-                          fieldState.invalid
-                            ? "border-destructive focus-visible:ring-destructive"
-                            : ""
-                        }
-                      >
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Meals">Meals</SelectItem>
-                        <SelectItem value="Medication">Medication</SelectItem>
-                        <SelectItem value="Therapy">Therapy</SelectItem>
-                        <SelectItem value="Outing">Outing</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormItem>
-                )}
-              />
-            </div>
-            <FormField
-              control={form.control}
-              name="assigned_to"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <Label>Assigned To</Label>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger
-                        className={
-                          fieldState.invalid
-                            ? "border-destructive focus-visible:ring-destructive"
-                            : ""
-                        }
-                      >
-                        <SelectValue placeholder="Select a nurse" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {nurses.map((nurse) => (
-                        <SelectItem key={nurse.id} value={nurse.id}>
-                          {nurse.name} ({nurse.email})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {fieldState.error && (
-                    <p className="text-sm text-destructive">
-                      {fieldState.error.message}
-                    </p>
-                  )}
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="residents"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <Label>Residents</Label>
-                  <Select
-                    onValueChange={(value) => field.onChange([value])}
-                    defaultValue={field.value?.[0]}
-                  >
-                    <FormControl>
-                      <SelectTrigger
-                        className={
-                          fieldState.invalid
-                            ? "border-destructive focus-visible:ring-destructive"
-                            : ""
-                        }
-                      >
-                        <SelectValue placeholder="Select a resident" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {residents.map((resident) => (
-                        <SelectItem key={resident.id} value={resident.id}>
-                          {resident.full_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {fieldState.error && (
-                    <p className="text-sm text-destructive">
-                      {fieldState.error.message}
-                    </p>
-                  )}
-                </FormItem>
-              )}
-            />
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="start_date"
-                render={({ field, fieldState }) => (
-                  <FormItem>
-                    <Label>Start Date</Label>
-                    <FormControl>
-                      <Input
-                        type="datetime-local"
-                        onChange={(e) => {
-                          const date = new Date(e.target.value);
-                          field.onChange(date);
-                        }}
-                        value={
-                          field.value
-                            ? new Date(field.value).toISOString().slice(0, 16)
-                            : ""
-                        }
-                        className={
-                          fieldState.invalid
-                            ? "border-destructive focus-visible:ring-destructive"
-                            : ""
-                        }
-                      />
-                    </FormControl>
-                    {fieldState.error && (
-                      <p className="text-sm text-destructive">
-                        {fieldState.error.message}
-                      </p>
-                    )}
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="due_date"
-                render={({ field, fieldState }) => (
-                  <FormItem>
-                    <Label>Due Date</Label>
-                    <FormControl>
-                      <Input
-                        type="datetime-local"
-                        onChange={(e) => {
-                          const date = new Date(e.target.value);
-                          field.onChange(date);
-                        }}
-                        value={
-                          field.value
-                            ? new Date(field.value).toISOString().slice(0, 16)
-                            : ""
-                        }
-                        className={
-                          fieldState.invalid
-                            ? "border-destructive focus-visible:ring-destructive"
-                            : ""
-                        }
-                      />
-                    </FormControl>
-                    {fieldState.error && (
-                      <p className="text-sm text-destructive">
-                        {fieldState.error.message}
-                      </p>
-                    )}
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="recurring"
-                render={({ field, fieldState }) => (
-                  <FormItem>
-                    <Label>Recurring</Label>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value || ""}
-                    >
-                      <SelectTrigger
-                        className={
-                          fieldState.invalid
-                            ? "border-destructive focus-visible:ring-destructive"
-                            : ""
-                        }
-                      >
-                        <SelectValue placeholder="Select recurrence" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Daily">Daily</SelectItem>
-                        <SelectItem value="Weekly">Weekly</SelectItem>
-                        <SelectItem value="Monthly">Monthly</SelectItem>
-                        <SelectItem value="Annually">Annually</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="end_recurring_date"
-                render={({ field, fieldState }) => (
-                  <FormItem>
-                    <Label>End Recurring Date</Label>
-                    <FormControl>
-                      <Input
-                        type="date"
-                        onChange={(e) =>
-                          field.onChange(new Date(e.target.value))
-                        }
-                        value={
-                          field.value
-                            ? new Date(field.value).toISOString().split("T")[0]
-                            : ""
-                        }
-                        className={
-                          fieldState.invalid
-                            ? "border-destructive focus-visible:ring-destructive"
-                            : ""
-                        }
-                      />
-                    </FormControl>
-                    {fieldState.error && (
-                      <p className="text-sm text-destructive">
-                        {fieldState.error.message}
-                      </p>
-                    )}
-                  </FormItem>
-                )}
-              />
-            </div>
-            <FormField
-              control={form.control}
-              name="remind_prior"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <Label>Remind Prior (minutes)</Label>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                      value={field.value || ""}
-                      className={
-                        fieldState.invalid
-                          ? "border-destructive focus-visible:ring-destructive"
-                          : ""
-                      }
-                    />
-                  </FormControl>
-                  {fieldState.error && (
-                    <p className="text-sm text-destructive">
-                      {fieldState.error.message}
-                    </p>
-                  )}
-                </FormItem>
-              )}
-            />
-            <Button type="submit">
-              {task ? "Update Task" : "Create Task"}
+    <>
+      <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+        <DialogTrigger asChild>
+          {!task && !open && (
+            <Button>
+              <Plus className="w-4 h-4 mr-2" /> New Task
             </Button>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+          )}
+        </DialogTrigger>
+        <DialogContent className="max-h-[90vh] flex flex-col p-0">
+          <DialogHeader className="px-6 pt-6">
+            <DialogTitle>{task ? "Edit Task" : "Create New Task"}</DialogTitle>
+            <DialogDescription>
+              {task
+                ? "Edit the details of your task below."
+                : "Fill in the details below to create a new task."}
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+            <form
+              onSubmit={handleSubmit}
+              className="flex flex-col h-[calc(90vh-8rem)]"
+            >
+              <div className="flex-1 overflow-y-auto px-6 space-y-4">
+                <FormField
+                  control={form.control}
+                  name="task_title"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <Label>Task Title</Label>
+                      <FormControl>
+                        <Input
+                          id="task_title"
+                          placeholder="Task Title"
+                          {...field}
+                          className={
+                            fieldState.invalid
+                              ? "border-destructive focus-visible:ring-destructive"
+                              : ""
+                          }
+                        />
+                      </FormControl>
+                      {fieldState.error && (
+                        <p className="text-sm text-destructive">
+                          {fieldState.error.message}
+                        </p>
+                      )}
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="task_details"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <Label>Task Details</Label>
+                      <FormControl>
+                        <Textarea
+                          id="task_details"
+                          placeholder="Task Details"
+                          {...field}
+                          className={
+                            fieldState.invalid
+                              ? "border-destructive focus-visible:ring-destructive"
+                              : ""
+                          }
+                        />
+                      </FormControl>
+                      {fieldState.error && (
+                        <p className="text-sm text-destructive">
+                          {fieldState.error.message}
+                        </p>
+                      )}
+                    </FormItem>
+                  )}
+                />
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="priority"
+                    render={({ field, fieldState }) => (
+                      <FormItem>
+                        <Label>Priority</Label>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value || ""}
+                        >
+                          <SelectTrigger
+                            className={
+                              fieldState.invalid
+                                ? "border-destructive focus-visible:ring-destructive"
+                                : ""
+                            }
+                          >
+                            <SelectValue placeholder="Select priority" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="High">High</SelectItem>
+                            <SelectItem value="Medium">Medium</SelectItem>
+                            <SelectItem value="Low">Low</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field, fieldState }) => (
+                      <FormItem>
+                        <Label>Category</Label>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value || ""}
+                        >
+                          <SelectTrigger
+                            className={
+                              fieldState.invalid
+                                ? "border-destructive focus-visible:ring-destructive"
+                                : ""
+                            }
+                          >
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Meals">Meals</SelectItem>
+                            <SelectItem value="Medication">
+                              Medication
+                            </SelectItem>
+                            <SelectItem value="Therapy">Therapy</SelectItem>
+                            <SelectItem value="Outing">Outing</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <FormField
+                  control={form.control}
+                  name="assigned_to"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <Label>Assigned To</Label>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger
+                            className={
+                              fieldState.invalid
+                                ? "border-destructive focus-visible:ring-destructive"
+                                : ""
+                            }
+                          >
+                            <SelectValue placeholder="Select a nurse" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {nurses.map((nurse) => (
+                            <SelectItem key={nurse.id} value={nurse.id}>
+                              {nurse.name} ({nurse.email})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {fieldState.error && (
+                        <p className="text-sm text-destructive">
+                          {fieldState.error.message}
+                        </p>
+                      )}
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="residents"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <Label>Residents</Label>
+                      <Select
+                        onValueChange={(value) => field.onChange([value])}
+                        defaultValue={field.value?.[0]}
+                      >
+                        <FormControl>
+                          <SelectTrigger
+                            className={
+                              fieldState.invalid
+                                ? "border-destructive focus-visible:ring-destructive"
+                                : ""
+                            }
+                          >
+                            <SelectValue placeholder="Select a resident" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {residents.map((resident) => (
+                            <SelectItem key={resident.id} value={resident.id}>
+                              {resident.full_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {fieldState.error && (
+                        <p className="text-sm text-destructive">
+                          {fieldState.error.message}
+                        </p>
+                      )}
+                    </FormItem>
+                  )}
+                />
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="start_date"
+                    render={({ field, fieldState }) => (
+                      <FormItem>
+                        <Label>Start Date</Label>
+                        <FormControl>
+                          <Input
+                            type="datetime-local"
+                            onChange={(e) => {
+                              const date = new Date(e.target.value);
+                              field.onChange(date);
+                            }}
+                            value={
+                              field.value
+                                ? new Date(field.value)
+                                    .toISOString()
+                                    .slice(0, 16)
+                                : ""
+                            }
+                            className={
+                              fieldState.invalid
+                                ? "border-destructive focus-visible:ring-destructive"
+                                : ""
+                            }
+                          />
+                        </FormControl>
+                        {fieldState.error && (
+                          <p className="text-sm text-destructive">
+                            {fieldState.error.message}
+                          </p>
+                        )}
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="due_date"
+                    render={({ field, fieldState }) => (
+                      <FormItem>
+                        <Label>Due Date</Label>
+                        <FormControl>
+                          <Input
+                            type="datetime-local"
+                            onChange={(e) => {
+                              const date = new Date(e.target.value);
+                              field.onChange(date);
+                            }}
+                            value={
+                              field.value
+                                ? new Date(field.value)
+                                    .toISOString()
+                                    .slice(0, 16)
+                                : ""
+                            }
+                            className={
+                              fieldState.invalid
+                                ? "border-destructive focus-visible:ring-destructive"
+                                : ""
+                            }
+                          />
+                        </FormControl>
+                        {fieldState.error && (
+                          <p className="text-sm text-destructive">
+                            {fieldState.error.message}
+                          </p>
+                        )}
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="recurring"
+                    render={({ field, fieldState }) => (
+                      <FormItem>
+                        <Label>Recurring</Label>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value || ""}
+                        >
+                          <SelectTrigger
+                            className={
+                              fieldState.invalid
+                                ? "border-destructive focus-visible:ring-destructive"
+                                : ""
+                            }
+                          >
+                            <SelectValue placeholder="Select recurrence" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Daily">Daily</SelectItem>
+                            <SelectItem value="Weekly">Weekly</SelectItem>
+                            <SelectItem value="Monthly">Monthly</SelectItem>
+                            <SelectItem value="Annually">Annually</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="end_recurring_date"
+                    render={({ field, fieldState }) => (
+                      <FormItem>
+                        <Label>End Recurring Date</Label>
+                        <FormControl>
+                          <Input
+                            type="date"
+                            onChange={(e) =>
+                              field.onChange(new Date(e.target.value))
+                            }
+                            value={
+                              field.value
+                                ? new Date(field.value)
+                                    .toISOString()
+                                    .split("T")[0]
+                                : ""
+                            }
+                            className={
+                              fieldState.invalid
+                                ? "border-destructive focus-visible:ring-destructive"
+                                : ""
+                            }
+                          />
+                        </FormControl>
+                        {fieldState.error && (
+                          <p className="text-sm text-destructive">
+                            {fieldState.error.message}
+                          </p>
+                        )}
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <FormField
+                  control={form.control}
+                  name="remind_prior"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <Label>Remind Prior (minutes)</Label>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
+                          value={field.value || ""}
+                          className={
+                            fieldState.invalid
+                              ? "border-destructive focus-visible:ring-destructive"
+                              : ""
+                          }
+                        />
+                      </FormControl>
+                      {fieldState.error && (
+                        <p className="text-sm text-destructive">
+                          {fieldState.error.message}
+                        </p>
+                      )}
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="flex justify-end px-6 py-4 border-t bg-background">
+                <Button type="submit">
+                  {task ? "Update Task" : "Create Task"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog
+        open={showRecurringDialog}
+        onOpenChange={setShowRecurringDialog}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Update Recurring Task</AlertDialogTitle>
+            <AlertDialogDescription>
+              This is a recurring task. Would you like to update just this task
+              or all tasks in the series?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <Button
+              variant="default"
+              onClick={() => handleRecurringUpdate(false)}
+            >
+              Update This Task
+            </Button>
+            <Button
+              variant="default"
+              onClick={() => handleRecurringUpdate(true)}
+            >
+              Update Entire Series
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

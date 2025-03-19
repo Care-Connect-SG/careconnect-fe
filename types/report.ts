@@ -5,7 +5,7 @@ export const enum ReportStatus {
 
 export interface ReportSectionContent {
   form_element_id: string;
-  input: string | null;
+  input: string | string[];
 }
 
 export interface ReportCreate {

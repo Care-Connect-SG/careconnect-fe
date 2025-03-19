@@ -32,7 +32,7 @@ import { FormElementData } from "@/types/form";
 interface FormElementFillProps {
   element: FormElementData;
   value: string | string[];
-  onInputChange: (form_element_id: string, inputValue: any) => void;
+  onInputChange: (inputValue: any) => void;
 }
 
 export default function FormElementFill({
@@ -45,16 +45,16 @@ export default function FormElementFill({
   const handleTextChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
-    onInputChange(element_id, e.target.value);
+    onInputChange(e.target.value);
   };
 
   const handleDateSelect = (date: Date | undefined) => {
     const formatted = date ? format(date, "yyyy-MM-dd") : "";
-    onInputChange(element_id, formatted);
+    onInputChange(formatted);
   };
 
   const handleRadioChange = (option: string) => {
-    onInputChange(element_id, option);
+    onInputChange(option);
   };
 
   const handleCheckboxChange = (option: string) => {
@@ -62,12 +62,12 @@ export default function FormElementFill({
     const newValue = currentValue.includes(option)
       ? currentValue.filter((item) => item !== option)
       : [...currentValue, option];
-    onInputChange(element_id, newValue);
+    onInputChange(newValue);
   };
 
   const handleDateTimePickerChange = (datetime: Date) => {
     const datetimeString = convertDateTimeToString(datetime);
-    onInputChange(element_id, datetimeString);
+    onInputChange(datetimeString);
   };
 
   return (

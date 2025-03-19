@@ -45,11 +45,11 @@ export const TaskDetailHeader = ({ task }: TaskDetailHeaderProps) => {
 
   const localDueDate = useMemo(
     () => (task.due_date ? convertUTCToLocal(task.due_date) : null),
-    [task.due_date]
+    [task.due_date],
   );
   const localFinishedAt = useMemo(
     () => (task.finished_at ? convertUTCToLocal(task.finished_at) : null),
-    [task.finished_at]
+    [task.finished_at],
   );
 
   const [taskStatus, setTaskStatus] = useState<TaskStatus>(task.status);
@@ -57,11 +57,11 @@ export const TaskDetailHeader = ({ task }: TaskDetailHeaderProps) => {
 
   const isDelayed = useMemo(
     () => (finishedAt && localDueDate ? finishedAt > localDueDate : false),
-    [finishedAt, localDueDate]
+    [finishedAt, localDueDate],
   );
   const finishedAtFormatted = useMemo(
     () => (finishedAt ? formatDateWithoutSeconds(finishedAt) : ""),
-    [finishedAt]
+    [finishedAt],
   );
 
   const markTaskCompleted = useCallback(async () => {
@@ -114,7 +114,7 @@ export const TaskDetailHeader = ({ task }: TaskDetailHeaderProps) => {
 
             <span
               className={`ml-2 text-sm rounded-full px-2 py-1 ${getStatusClasses(
-                taskStatus
+                taskStatus,
               )}`}
             >
               {taskStatus}

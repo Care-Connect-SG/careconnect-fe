@@ -13,8 +13,8 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
 import { useState } from "react";
 
 interface TaskReassignmentActionsProps {
@@ -42,10 +42,20 @@ export function TaskReassignmentActions({
   // Accept reassignment mutation
   const acceptReassignmentMutation = useMutation({
     mutationFn: async () => {
-      const response = await axios.post(
-        `/api/tasks/${taskId}/accept-reassignment`,
+      const response = await fetchWithAuth(
+        `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/accept-reassignment`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
       );
-      return response.data;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Failed to accept reassignment");
+      }
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -58,8 +68,7 @@ export function TaskReassignmentActions({
     onError: (error: any) => {
       toast({
         title: "Error",
-        description:
-          error.response?.data?.detail || "Failed to accept reassignment",
+        description: error.message || "Failed to accept reassignment",
         variant: "destructive",
       });
     },
@@ -68,13 +77,20 @@ export function TaskReassignmentActions({
   // Reject reassignment mutation
   const rejectReassignmentMutation = useMutation({
     mutationFn: async (reason: string) => {
-      const response = await axios.post(
-        `/api/tasks/${taskId}/reject-reassignment`,
+      const response = await fetchWithAuth(
+        `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/reject-reassignment?rejection_reason=${encodeURIComponent(reason)}`,
         {
-          rejection_reason: reason,
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
         },
       );
-      return response.data;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Failed to reject reassignment");
+      }
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -87,8 +103,7 @@ export function TaskReassignmentActions({
     onError: (error: any) => {
       toast({
         title: "Error",
-        description:
-          error.response?.data?.detail || "Failed to reject reassignment",
+        description: error.message || "Failed to reject reassignment",
         variant: "destructive",
       });
     },
@@ -97,8 +112,20 @@ export function TaskReassignmentActions({
   // Handle task self mutation
   const handleTaskSelfMutation = useMutation({
     mutationFn: async () => {
-      const response = await axios.post(`/api/tasks/${taskId}/handle-self`);
-      return response.data;
+      const response = await fetchWithAuth(
+        `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/handle-self`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Failed to update task");
+      }
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -111,7 +138,7 @@ export function TaskReassignmentActions({
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.response?.data?.detail || "Failed to update task",
+        description: error.message || "Failed to update task",
         variant: "destructive",
       });
     },
@@ -133,69 +160,102 @@ export function TaskReassignmentActions({
   if (status === "Reassignment Requested") {
     return (
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <Button variant="outline" size="sm">
-            Respond to Reassignment Request
-          </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Task Reassignment Request</DialogTitle>
-            <DialogDescription>
-              {requestingNurseName} has requested to reassign the task "
-              {taskTitle}" to you.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label className="text-sm font-medium">Current Nurse</Label>
-              <div className="text-sm text-muted-foreground">
-                {currentNurseName}
-              </div>
-            </div>
-            <div className="grid gap-2">
-              <Label className="text-sm font-medium">Requesting Nurse</Label>
-              <div className="text-sm text-muted-foreground">
-                {requestingNurseName}
-              </div>
-            </div>
-            <div className="grid gap-2">
-              <Label className="text-sm font-medium">
-                Rejection Reason (if rejecting)
-              </Label>
-              <Textarea
-                value={rejectionReason}
-                onChange={(e) => setRejectionReason(e.target.value)}
-                placeholder="Enter reason for rejection..."
-                className="min-h-[100px]"
-              />
-            </div>
-          </div>
-          <DialogFooter className="flex gap-2">
+        <div onClick={(e) => e.stopPropagation()}>
+          <DialogTrigger asChild>
             <Button
-              type="button"
               variant="outline"
-              onClick={() => setOpen(false)}
+              size="sm"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setOpen(true);
+              }}
             >
-              Cancel
+              Respond to Reassignment Request
             </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={handleReject}
-              disabled={rejectReassignmentMutation.isPending}
-            >
-              {rejectReassignmentMutation.isPending ? "Rejecting..." : "Reject"}
-            </Button>
-            <Button
-              type="button"
-              onClick={() => acceptReassignmentMutation.mutate()}
-              disabled={acceptReassignmentMutation.isPending}
-            >
-              {acceptReassignmentMutation.isPending ? "Accepting..." : "Accept"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
+          </DialogTrigger>
+          <DialogContent
+            className="max-w-md"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          >
+            <DialogHeader>
+              <DialogTitle>Task Reassignment Request</DialogTitle>
+              <DialogDescription>
+                {requestingNurseName} has requested to reassign the task "
+                {taskTitle}" to you.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label className="text-sm font-medium">Current Nurse</Label>
+                <div className="text-sm text-muted-foreground">
+                  {currentNurseName}
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label className="text-sm font-medium">Requesting Nurse</Label>
+                <div className="text-sm text-muted-foreground">
+                  {requestingNurseName}
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label className="text-sm font-medium">
+                  Rejection Reason (if rejecting)
+                </Label>
+                <Textarea
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  placeholder="Enter reason for rejection..."
+                  className="min-h-[100px]"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+            </div>
+            <DialogFooter className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setOpen(false);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleReject(e);
+                }}
+                disabled={rejectReassignmentMutation.isPending}
+              >
+                {rejectReassignmentMutation.isPending
+                  ? "Rejecting..."
+                  : "Reject"}
+              </Button>
+              <Button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  acceptReassignmentMutation.mutate();
+                }}
+                disabled={acceptReassignmentMutation.isPending}
+              >
+                {acceptReassignmentMutation.isPending
+                  ? "Accepting..."
+                  : "Accept"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </div>
       </Dialog>
     );
   }

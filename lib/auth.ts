@@ -89,11 +89,12 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account }) {
       if (account && user) {
         return {
+          ...token,
           accessToken: user.access_token,
           refreshToken: user.refresh_token,
           accessTokenExpires: Date.now() + TOKENEXPIRY,
-          email: user.email,
           id: user.id,
+          email: user.email,
         };
       }
       if (Date.now() < (token.accessTokenExpires as number)) {

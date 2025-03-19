@@ -19,8 +19,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
 import { useState } from "react";
 
 interface TaskReassignmentFormProps {
@@ -48,23 +48,85 @@ export function TaskReassignmentForm({
   const { data: nurses, isLoading } = useQuery({
     queryKey: ["nurses"],
     queryFn: async () => {
-      const response = await axios.get("/api/tags/caregivers");
-      return response.data.filter(
-        (nurse: Nurse) => nurse.id !== currentNurseId,
+      console.log("Fetching nurses...");
+      const response = await fetchWithAuth(
+        `${process.env.NEXT_PUBLIC_BE_API_URL}/tags/caregivers`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
       );
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Failed to fetch nurses:", errorData);
+        throw new Error(errorData.detail || "Failed to fetch nurses");
+      }
+      const data = await response.json();
+      console.log("Fetched nurses:", data);
+      return data.filter((nurse: Nurse) => nurse.id !== currentNurseId);
     },
   });
 
   // Request reassignment mutation
   const requestReassignmentMutation = useMutation({
     mutationFn: async (targetNurseId: string) => {
-      const response = await axios.post(
-        `/api/tasks/${taskId}/request-reassignment`,
-        {
-          target_nurse_id: targetNurseId,
-        },
-      );
-      return response.data;
+      console.log("Sending reassignment request:", {
+        taskId,
+        targetNurseId,
+        currentNurseId,
+      });
+
+      try {
+        const response = await fetchWithAuth(
+          `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/request-reassignment?target_nurse_id=${targetNurseId}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+        );
+
+        const responseData = await response.json();
+        console.log("Full response:", {
+          status: response.status,
+          ok: response.ok,
+          data: responseData,
+          headers: Object.fromEntries(response.headers.entries()),
+        });
+
+        if (!response.ok) {
+          console.error("Error details:", {
+            status: response.status,
+            data: responseData,
+            detail: responseData.detail,
+          });
+
+          let errorMessage;
+          if (Array.isArray(responseData.detail)) {
+            errorMessage = responseData.detail.join(", ");
+          } else if (typeof responseData.detail === "object") {
+            errorMessage = JSON.stringify(responseData.detail);
+          } else {
+            errorMessage =
+              responseData.detail || "Failed to request reassignment";
+          }
+
+          throw new Error(errorMessage);
+        }
+
+        return responseData;
+      } catch (error: any) {
+        console.error("Request failed:", {
+          error,
+          message: error.message,
+          response: error.response,
+          stack: error.stack,
+        });
+        throw error;
+      }
     },
     onSuccess: () => {
       toast({
@@ -76,10 +138,15 @@ export function TaskReassignmentForm({
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },
     onError: (error: any) => {
+      console.error("Mutation error:", {
+        error,
+        message: error.message,
+        stack: error.stack,
+        cause: error.cause,
+      });
       toast({
         title: "Error",
-        description:
-          error.response?.data?.detail || "Failed to request reassignment",
+        description: error.message || "Failed to request reassignment",
         variant: "destructive",
       });
     },
@@ -87,6 +154,11 @@ export function TaskReassignmentForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Submitting form with nurse:", {
+      selectedNurseId,
+      taskId,
+      currentNurseId,
+    });
     if (!selectedNurseId) {
       toast({
         title: "Error",
@@ -100,68 +172,92 @@ export function TaskReassignmentForm({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          Request Reassignment
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Request Task Reassignment</DialogTitle>
-          <DialogDescription>
-            Select a nurse to reassign this task to. The selected nurse will be
-            notified and can accept or reject the request.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label className="text-sm font-medium">Current Nurse</Label>
-              <div className="text-sm text-muted-foreground">
-                {currentNurseName}
+      <div onClick={(e) => e.stopPropagation()}>
+        <DialogTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setOpen(true);
+            }}
+          >
+            Request Reassignment
+          </Button>
+        </DialogTrigger>
+        <DialogContent
+          className="max-w-md"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+        >
+          <DialogHeader>
+            <DialogTitle>Request Task Reassignment</DialogTitle>
+            <DialogDescription>
+              Select a nurse to reassign this task to. The selected nurse will
+              be notified and can accept or reject the request.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit}>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label className="text-sm font-medium">Current Nurse</Label>
+                <div className="text-sm text-muted-foreground">
+                  {currentNurseName}
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label className="text-sm font-medium">Select New Nurse</Label>
+                <Select
+                  value={selectedNurseId}
+                  onValueChange={(value) => {
+                    console.log("Selected nurse:", value);
+                    setSelectedNurseId(value);
+                  }}
+                  disabled={isLoading}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a nurse" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {nurses?.map((nurse: Nurse) => (
+                      <SelectItem key={nurse.id} value={nurse.id}>
+                        {nurse.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-            <div className="grid gap-2">
-              <Label className="text-sm font-medium">Select New Nurse</Label>
-              <Select
-                value={selectedNurseId}
-                onValueChange={setSelectedNurseId}
-                disabled={isLoading}
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setOpen(false);
+                }}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a nurse" />
-                </SelectTrigger>
-                <SelectContent>
-                  {nurses?.map((nurse: Nurse) => (
-                    <SelectItem key={nurse.id} value={nurse.id}>
-                      {nurse.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={
-                !selectedNurseId || requestReassignmentMutation.isPending
-              }
-            >
-              {requestReassignmentMutation.isPending
-                ? "Requesting..."
-                : "Request Reassignment"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={
+                  !selectedNurseId || requestReassignmentMutation.isPending
+                }
+                onClick={(e) => e.stopPropagation()}
+              >
+                {requestReassignmentMutation.isPending
+                  ? "Requesting..."
+                  : "Request Reassignment"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </div>
     </Dialog>
   );
 }

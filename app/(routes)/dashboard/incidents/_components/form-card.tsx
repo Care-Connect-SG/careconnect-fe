@@ -45,7 +45,7 @@ export default function FormCard({
 
   return (
     <Card
-      className={`relative w-md max-w-md h-[11rem] overflow-hidden ${
+      className={`relative h-[11rem] overflow-hidden ${
         status === "Published"
           ? "border-l-4 border-l-green-500"
           : "border-l-4 border-l-yellow-500"

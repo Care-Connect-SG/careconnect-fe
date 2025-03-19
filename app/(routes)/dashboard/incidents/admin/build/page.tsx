@@ -70,6 +70,11 @@ export default function CreateFormPage() {
         setUser(user);
       } catch (error) {
         console.error("Error fetching user:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load user data. Please refresh the page.",
+          variant: "destructive",
+        });
       }
     };
 
@@ -102,6 +107,11 @@ export default function CreateFormPage() {
       }
     } catch (error) {
       console.error("Failed to save draft", error);
+      toast({
+        title: "Error",
+        description: "Failed to save the form. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -127,6 +137,11 @@ export default function CreateFormPage() {
       router.replace(`/dashboard/incidents/admin`);
     } catch (error) {
       console.error("Failed to publish form", error);
+      toast({
+        title: "Error",
+        description: "Failed to publish the report. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -140,6 +155,11 @@ export default function CreateFormPage() {
       router.replace(`/dashboard/incidents/admin`);
     } catch (error) {
       console.error("Failed to delete form");
+      toast({
+        title: "Error",
+        description: "Failed to delete the report. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 

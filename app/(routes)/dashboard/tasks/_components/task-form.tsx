@@ -14,6 +14,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { DateTimePicker } from "@/components/ui/datetime-picker";
 import {
   Dialog,
   DialogContent,
@@ -194,13 +195,22 @@ export default function TaskForm({
 
   const onSubmit = async (data: TaskForm) => {
     try {
+      const formData = {
+        ...data,
+        start_date: new Date(data.start_date),
+        due_date: new Date(data.due_date),
+        end_recurring_date: data.end_recurring_date
+          ? new Date(data.end_recurring_date)
+          : undefined,
+      };
+
       if (task) {
         if (task.recurring) {
-          setFormData(data);
+          setFormData(formData);
           setShowRecurringDialog(true);
           return;
         }
-        const updatedTask = await updateTask(task.id, data);
+        const updatedTask = await updateTask(task.id, formData);
         if (setTasks) {
           setTasks(updatedTask);
         }
@@ -210,13 +220,13 @@ export default function TaskForm({
           description: "Task has been updated successfully",
         });
       } else {
-        const newTasks = await createTask(data);
+        const newTasks = await createTask(formData);
         if (setTasks) {
           setTasks((prevTasks) => [...newTasks, ...prevTasks]);
         }
         toast({
           variant: "default",
-          title: "Successully created task(s)",
+          title: "Successfully created task(s)",
           description: `${newTasks.length} task(s) created successfully`,
         });
       }
@@ -231,7 +241,7 @@ export default function TaskForm({
       }
       toast({
         variant: "destructive",
-        title: "An error occured, please try again",
+        title: "An error occurred, please try again",
         description: errorMessage,
       });
     }
@@ -507,24 +517,9 @@ export default function TaskForm({
                       <FormItem>
                         <Label>Start Date</Label>
                         <FormControl>
-                          <Input
-                            type="datetime-local"
-                            onChange={(e) => {
-                              const date = new Date(e.target.value);
-                              field.onChange(date);
-                            }}
-                            value={
-                              field.value
-                                ? new Date(field.value)
-                                    .toISOString()
-                                    .slice(0, 16)
-                                : ""
-                            }
-                            className={
-                              fieldState.invalid
-                                ? "border-destructive focus-visible:ring-destructive"
-                                : ""
-                            }
+                          <DateTimePicker
+                            value={field.value}
+                            onChange={field.onChange}
                           />
                         </FormControl>
                         {fieldState.error && (
@@ -542,24 +537,9 @@ export default function TaskForm({
                       <FormItem>
                         <Label>Due Date</Label>
                         <FormControl>
-                          <Input
-                            type="datetime-local"
-                            onChange={(e) => {
-                              const date = new Date(e.target.value);
-                              field.onChange(date);
-                            }}
-                            value={
-                              field.value
-                                ? new Date(field.value)
-                                    .toISOString()
-                                    .slice(0, 16)
-                                : ""
-                            }
-                            className={
-                              fieldState.invalid
-                                ? "border-destructive focus-visible:ring-destructive"
-                                : ""
-                            }
+                          <DateTimePicker
+                            value={field.value}
+                            onChange={field.onChange}
                           />
                         </FormControl>
                         {fieldState.error && (

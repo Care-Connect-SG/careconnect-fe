@@ -1,8 +1,6 @@
 "use client";
 
 import { completeTask } from "@/app/api/task";
-import { TaskReassignmentActions } from "@/components/tasks/TaskReassignmentActions";
-import { TaskReassignmentForm } from "@/components/tasks/TaskReassignmentForm";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,6 +19,8 @@ import { Task, TaskStatus } from "@/types/task";
 import { CheckCircle, Clock, User } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useCallback, useMemo, useState } from "react";
+import { TaskReassignmentActions } from "./task-reassignment-actions";
+import { TaskReassignmentForm } from "./task-reassignment-form";
 
 interface TaskDetailHeaderProps {
   task: Task;

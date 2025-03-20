@@ -17,27 +17,25 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { ReportState } from "@/hooks/useReportReducer";
 import { cn } from "@/lib/utils";
 import { CaregiverTag, ResidentTag } from "@/types/report";
 import { User } from "@/types/user";
 import debounce from "lodash.debounce";
 import { Check, CirclePlus, UserRound, UsersRound, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useFormContext } from "react-hook-form";
+import { ReportSchema } from "../schema";
 
 interface PersonSelectorProps {
   user: User;
-  dispatch: any;
-  selectedState: ReportState;
 }
 
-export default function PersonSelector({
-  user,
-  dispatch,
-  selectedState,
-}: PersonSelectorProps) {
-  const { primaryResident, involvedResidents, involvedCaregivers } =
-    selectedState;
+export default function PersonSelector({ user }: PersonSelectorProps) {
+  const { watch, setValue } = useFormContext<ReportSchema>();
+
+  const primaryResident = watch("primary_resident");
+  const involvedResidents = watch("involved_residents");
+  const involvedCaregivers = watch("involved_caregivers");
 
   const [primaryResidentOptions, setPrimaryResidentOptions] = useState<
     ResidentTag[]
@@ -112,10 +110,7 @@ export default function PersonSelector({
                         <CommandItem
                           key={resident.id}
                           onSelect={() =>
-                            dispatch({
-                              type: "SET_PRIMARY_RESIDENT",
-                              payload: resident,
-                            })
+                            setValue(`primary_resident`, resident)
                           }
                         >
                           {resident.name}
@@ -132,12 +127,7 @@ export default function PersonSelector({
               {primaryResident?.name}
               <X
                 className="h-3 w-3 cursor-pointer"
-                onClick={() =>
-                  dispatch({
-                    type: "UNSET_PRIMARY_RESIDENT",
-                    payload: primaryResident?.id,
-                  })
-                }
+                onClick={() => setValue(`primary_resident`, null)}
               />
             </Badge>
           ) : null}
@@ -171,16 +161,21 @@ export default function PersonSelector({
                         .map((resident) => (
                           <CommandItem
                             key={resident.id}
-                            onSelect={() =>
-                              dispatch({
-                                type: involvedResidents.some(
-                                  (r) => r.id === resident.id,
-                                )
-                                  ? "REMOVE_INVOLVED_RESIDENT"
-                                  : "ADD_INVOLVED_RESIDENT",
-                                payload: resident,
-                              })
-                            }
+                            onSelect={() => {
+                              involvedResidents.some(
+                                (r) => r.id === resident.id,
+                              )
+                                ? setValue(
+                                    "involved_residents",
+                                    involvedResidents.filter(
+                                      (r) => r.id !== resident.id,
+                                    ),
+                                  )
+                                : setValue("involved_residents", [
+                                    ...involvedResidents,
+                                    resident,
+                                  ]);
+                            }}
                           >
                             <Check
                               className={cn(
@@ -211,10 +206,10 @@ export default function PersonSelector({
                   <X
                     className="h-3 w-3 cursor-pointer"
                     onClick={() =>
-                      dispatch({
-                        type: "REMOVE_INVOLVED_RESIDENT",
-                        payload: resident.id,
-                      })
+                      setValue(
+                        "involved_residents",
+                        involvedResidents.filter((r) => r.id !== resident.id),
+                      )
                     }
                   />
                 </Badge>
@@ -248,16 +243,21 @@ export default function PersonSelector({
                         .map((caregiver) => (
                           <CommandItem
                             key={caregiver.id}
-                            onSelect={() =>
-                              dispatch({
-                                type: involvedCaregivers.some(
-                                  (c) => c.id === caregiver.id,
-                                )
-                                  ? "REMOVE_INVOLVED_CAREGIVER"
-                                  : "ADD_INVOLVED_CAREGIVER",
-                                payload: caregiver,
-                              })
-                            }
+                            onSelect={() => {
+                              involvedCaregivers.some(
+                                (c) => c.id === caregiver.id,
+                              )
+                                ? setValue(
+                                    "involved_caregivers",
+                                    involvedCaregivers.filter(
+                                      (c) => c.id !== caregiver.id,
+                                    ),
+                                  )
+                                : setValue("involved_caregivers", [
+                                    ...involvedCaregivers,
+                                    caregiver,
+                                  ]);
+                            }}
                           >
                             <Check
                               className={cn(
@@ -288,10 +288,10 @@ export default function PersonSelector({
                   <X
                     className="h-3 w-3 cursor-pointer"
                     onClick={() =>
-                      dispatch({
-                        type: "REMOVE_INVOLVED_CAREGIVER",
-                        payload: caregiver.id,
-                      })
+                      setValue(
+                        "involved_caregivers",
+                        involvedCaregivers.filter((c) => c.id !== caregiver.id),
+                      )
                     }
                   />
                 </Badge>

@@ -14,32 +14,27 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { FormElementData } from "@/hooks/useFormReducer";
 import { CalendarClockIcon, CalendarIcon, Trash2, X } from "lucide-react";
+import { useFormContext } from "react-hook-form";
+import { FormSchema } from "../schema";
 
 interface FormElementProps {
-  element: FormElementData;
-  onUpdate: (id: string, updatedData: Partial<FormElementData>) => void;
-  onRemove: (id: string) => void;
+  index: number;
+  removeElement: (index: number) => void;
 }
 
 export default function FormElement({
-  element,
-  onUpdate,
-  onRemove,
+  index,
+  removeElement,
 }: FormElementProps) {
-  const handleOptionChange = (index: number, newValue: string) => {
-    const updatedOptions = [...(element.options || [])];
-    updatedOptions[index] = newValue;
-    onUpdate(element.element_id, { options: updatedOptions });
-  };
-
-  const handleRemoveOption = (index: number) => {
-    if (element.options && element.options.length > 1) {
-      const updatedOptions = element.options.filter((_, i) => i !== index);
-      onUpdate(element.element_id, { options: updatedOptions });
-    }
-  };
+  const {
+    register,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useFormContext<FormSchema>();
+  const element = watch(`elements.${index}`);
+  const elementError = errors.elements?.[index];
 
   return (
     <>
@@ -47,10 +42,7 @@ export default function FormElement({
         <CardHeader className="pb-6 pt-2">
           <CardTitle className="p-0 mb-0 max-h-10 flex items-center justify-between">
             <Input
-              value={element.label}
-              onChange={(e) =>
-                onUpdate(element.element_id, { label: e.target.value })
-              }
+              {...register(`elements.${index}.label`)}
               className="md:text-base md:max-w-80 max-w-52 pb-0 font-semibold text-black rounded-none border-0 border-b-2 border-transparent
                             hover:border-gray-500 focus:border-gray-500 px-0 focus-visible:ring-0 focus-visible:ring-offset-0"
               placeholder="Label"
@@ -61,7 +53,7 @@ export default function FormElement({
                 <Switch
                   checked={element.required}
                   onCheckedChange={(checked) =>
-                    onUpdate(element.element_id, { required: checked })
+                    setValue(`elements.${index}.required`, checked)
                   }
                 />
               </div>
@@ -70,18 +62,18 @@ export default function FormElement({
                 variant="ghost"
                 size="icon"
                 className="text-gray-500"
-                onClick={() => onRemove(element.element_id)}
+                onClick={() => removeElement(index)}
               >
                 <Trash2 />
               </Button>
             </div>
           </CardTitle>
+          {elementError?.label && (
+            <p className="text-xs text-red-500">{elementError.label.message}</p>
+          )}
           <CardDescription className="max-h-6">
             <Input
-              value={element.helptext}
-              onChange={(e) =>
-                onUpdate(element.element_id, { helptext: e.target.value })
-              }
+              {...register(`elements.${index}.helptext`)}
               className="md:text-xs py-0 font-normal rounded-none border-0 border-b border-transparent text-gray-500 placeholder:text-muted-foreground
                             hover:border-gray-500 focus:border-gray-500 px-0 focus-visible:ring-0 focus-visible:ring-offset-0"
               placeholder="Add a description for the form field"
@@ -121,8 +113,8 @@ export default function FormElement({
           )}
           {element.type === "radio" && (
             <RadioGroup className="flex flex-col space-y-2">
-              {element.options?.map((option, index) => (
-                <div key={index} className="flex items-center space-x-2">
+              {element.options?.map((option, optionIndex) => (
+                <div key={optionIndex} className="flex items-center space-x-2">
                   <RadioGroupItem
                     disabled
                     value={option}
@@ -131,7 +123,12 @@ export default function FormElement({
                   />
                   <Input
                     value={option}
-                    onChange={(e) => handleOptionChange(index, e.target.value)}
+                    onChange={(e) =>
+                      setValue(
+                        `elements.${index}.options.${optionIndex}`,
+                        e.target.value,
+                      )
+                    }
                     className="w-52 focus:border-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0"
                     placeholder="New Option"
                   />
@@ -139,10 +136,15 @@ export default function FormElement({
                     variant="ghost"
                     size="icon"
                     className="text-red-500 hover:text-red-600"
-                    onClick={() => handleRemoveOption(index)}
-                    disabled={index === 0}
+                    onClick={() => {
+                      const opts = element.options?.filter(
+                        (_, i) => i !== optionIndex,
+                      );
+                      setValue(`elements.${index}.options`, opts);
+                    }}
+                    disabled={optionIndex === 0}
                   >
-                    <X className={index === 0 ? "hidden" : ""} />
+                    <X className={optionIndex === 0 ? "hidden" : ""} />
                   </Button>
                 </div>
               ))}
@@ -150,9 +152,10 @@ export default function FormElement({
                 variant="outline"
                 size="sm"
                 onClick={() =>
-                  onUpdate(element.element_id, {
-                    options: [...(element.options || []), ""],
-                  })
+                  setValue(`elements.${index}.options`, [
+                    ...(element.options || []),
+                    "",
+                  ])
                 }
               >
                 + Add Option
@@ -161,16 +164,17 @@ export default function FormElement({
           )}
           {element.type === "checkbox" && (
             <div className="flex flex-col space-y-2">
-              {element.options?.map((option, index) => (
-                <div key={index} className="flex items-center space-x-2">
+              {element.options?.map((option, optionIndex) => (
+                <div key={optionIndex} className="flex items-center space-x-2">
                   <Checkbox disabled className="mr-2" />
                   <Input
                     value={option}
-                    onChange={(e) => {
-                      const updatedOptions = [...(element.options || [])];
-                      updatedOptions[index] = e.target.value;
-                      onUpdate(element.element_id, { options: updatedOptions });
-                    }}
+                    onChange={(e) =>
+                      setValue(
+                        `elements.${index}.options.${optionIndex}`,
+                        e.target.value,
+                      )
+                    }
                     className="w-52 focus:border-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0"
                     placeholder="New Option"
                   />
@@ -178,10 +182,15 @@ export default function FormElement({
                     variant="ghost"
                     size="icon"
                     className="text-red-500 hover:text-red-600"
-                    onClick={() => handleRemoveOption(index)}
-                    disabled={index === 0}
+                    onClick={() => {
+                      const opts = element.options?.filter(
+                        (_, i) => i !== optionIndex,
+                      );
+                      setValue(`elements.${index}.options`, opts);
+                    }}
+                    disabled={optionIndex === 0}
                   >
-                    <X className={index === 0 ? "hidden" : ""} />
+                    <X className={optionIndex === 0 ? "hidden" : ""} />
                   </Button>
                 </div>
               ))}
@@ -189,9 +198,10 @@ export default function FormElement({
                 variant="outline"
                 size="sm"
                 onClick={() =>
-                  onUpdate(element.element_id, {
-                    options: [...(element.options || []), ""],
-                  })
+                  setValue(`elements.${index}.options`, [
+                    ...(element.options || []),
+                    "",
+                  ])
                 }
               >
                 + Add Option

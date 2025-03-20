@@ -1,7 +1,7 @@
 "use client";
 
-import { TaskReassignmentActions } from "@/app/(routes)/dashboard/tasks/_components/task-reassignment-actions";
-import { TaskReassignmentForm } from "@/app/(routes)/dashboard/tasks/_components/task-reassignment-form";
+import { TaskReassignmentActions } from "@/app/(routes)/dashboard/tasks/[taskDetails]/_components/task-reassignment-actions";
+import { TaskReassignmentForm } from "@/app/(routes)/dashboard/tasks/[taskDetails]/_components/task-reassignment-form";
 import { getResidents } from "@/app/api/resident";
 import { deleteTask, downloadTask, duplicateTask } from "@/app/api/task";
 import {

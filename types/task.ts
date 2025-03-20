@@ -2,7 +2,6 @@ export enum TaskStatus {
   ASSIGNED = "Assigned",
   COMPLETED = "Completed",
   DELAYED = "Delayed",
-  REQUEST_REASSIGNMENT = "Request Reassignment",
   REASSIGNMENT_REQUESTED = "Reassignment Requested",
   REASSIGNMENT_REJECTED = "Reassignment Rejected",
 }

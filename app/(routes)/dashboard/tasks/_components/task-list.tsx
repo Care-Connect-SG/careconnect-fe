@@ -23,9 +23,9 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
   Table,
@@ -39,6 +39,9 @@ import { useToast } from "@/hooks/use-toast";
 import { toTitleCase } from "@/lib/utils";
 import { Task, TaskStatus } from "@/types/task";
 import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   CheckCircle,
   Circle,
   Copy,
@@ -46,9 +49,6 @@ import {
   Edit,
   MoreHorizontal,
   Trash,
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
@@ -64,7 +64,7 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const [sortConfig, setSortConfig] = useState<{
     key: keyof Task | null;
-    direction: 'asc' | 'desc' | null;
+    direction: "asc" | "desc" | null;
   }>({ key: null, direction: null });
 
   const handleTaskUpdate = (
@@ -178,64 +178,73 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
   };
 
   const handleSort = (key: keyof Task) => {
-    let direction: 'asc' | 'desc' = 'asc';
-    
-    if (sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
+    let direction: "asc" | "desc" = "asc";
+
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
     }
-    
+
     setSortConfig({ key, direction });
-    
+
     const sortedTasks = [...taskList].sort((a, b) => {
-      if (key === 'due_date') {
-        return direction === 'asc' 
+      if (key === "due_date") {
+        return direction === "asc"
           ? new Date(a.due_date).getTime() - new Date(b.due_date).getTime()
           : new Date(b.due_date).getTime() - new Date(a.due_date).getTime();
       }
-      
-      if (key === 'priority') {
+
+      if (key === "priority") {
         const priorityOrder = { High: 3, Medium: 2, Low: 1 };
         const aPriority = a.priority as keyof typeof priorityOrder;
         const bPriority = b.priority as keyof typeof priorityOrder;
-        return direction === 'asc'
+        return direction === "asc"
           ? (priorityOrder[aPriority] || 0) - (priorityOrder[bPriority] || 0)
           : (priorityOrder[bPriority] || 0) - (priorityOrder[aPriority] || 0);
       }
-      
-      if (key === 'status') {
-        const statusOrder = { [TaskStatus.ASSIGNED]: 1, [TaskStatus.COMPLETED]: 2, [TaskStatus.DELAYED]: 3, [TaskStatus.REQUEST_REASSIGNMENT]: 4 };
-        return direction === 'asc'
+
+      if (key === "status") {
+        const statusOrder = {
+          [TaskStatus.ASSIGNED]: 1,
+          [TaskStatus.COMPLETED]: 2,
+          [TaskStatus.DELAYED]: 3,
+          [TaskStatus.REQUEST_REASSIGNMENT]: 4,
+        };
+        return direction === "asc"
           ? statusOrder[a.status] - statusOrder[b.status]
           : statusOrder[b.status] - statusOrder[a.status];
       }
-      
+
       const aValue = a[key];
       const bValue = b[key];
-      
+
       if (aValue === undefined || bValue === undefined) return 0;
-      
-      if (aValue < bValue) return direction === 'asc' ? -1 : 1;
-      if (aValue > bValue) return direction === 'asc' ? 1 : -1;
+
+      if (aValue < bValue) return direction === "asc" ? -1 : 1;
+      if (aValue > bValue) return direction === "asc" ? 1 : -1;
       return 0;
     });
-    
+
     setTaskList(sortedTasks);
   };
 
   const getSortIcon = (key: keyof Task | null) => {
     if (!key) return <ArrowUpDown className="h-4 w-4" />;
     if (sortConfig.key !== key) return <ArrowUpDown className="h-4 w-4" />;
-    return sortConfig.direction === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />;
+    return sortConfig.direction === "asc" ? (
+      <ArrowUp className="h-4 w-4" />
+    ) : (
+      <ArrowDown className="h-4 w-4" />
+    );
   };
 
   const getSortLabel = (key: keyof Task) => {
     switch (key) {
-      case 'due_date':
-        return 'Due Date';
-      case 'priority':
-        return 'Priority';
-      case 'status':
-        return 'Status';
+      case "due_date":
+        return "Due Date";
+      case "priority":
+        return "Priority";
+      case "status":
+        return "Status";
       default:
         return key;
     }
@@ -254,26 +263,33 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="h-8">
-                  {sortConfig.key ? getSortLabel(sortConfig.key) : "Select field"}
+                  {sortConfig.key
+                    ? getSortLabel(sortConfig.key)
+                    : "Select field"}
                   {getSortIcon(sortConfig.key)}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
                 <DropdownMenuLabel>Sort by</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => handleSort('due_date')}>
+                <DropdownMenuItem onClick={() => handleSort("due_date")}>
                   Due Date
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleSort('priority')}>
+                <DropdownMenuItem onClick={() => handleSort("priority")}>
                   Priority
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleSort('status')}>
+                <DropdownMenuItem onClick={() => handleSort("status")}>
                   Status
                 </DropdownMenuItem>
                 {sortConfig.key && (
                   <>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => setSortConfig({ key: null, direction: null })} className="text-red-600">
+                    <DropdownMenuItem
+                      onClick={() =>
+                        setSortConfig({ key: null, direction: null })
+                      }
+                      className="text-red-600"
+                    >
                       Clear sorting
                     </DropdownMenuItem>
                   </>

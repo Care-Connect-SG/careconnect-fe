@@ -47,7 +47,7 @@ const config = {
       ],
     },
   ],
-  navTeam: [{ title: "Group", url: "/dashboard/group", icon: Users }],
+  navTeam: [{ title: "Groups", url: "/dashboard/groups", icon: Users }],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {

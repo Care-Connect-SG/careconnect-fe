@@ -6,40 +6,57 @@ import { Card } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
 import { User, UserEdit } from "@/types/user";
-import { useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import EditProfileDialog from "./_components/edit-profile-dialog";
+import ProfilePictureDialog from "./_components/profile-picture-dialog";
 
 const MyProfile = () => {
   const { toast } = useToast();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<string>("overview");
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        const data = await getCurrentUser();
-        setUser(data);
-      } catch (error) {
-        console.error("Error fetching current user:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const {
+    data: user,
+    isLoading,
+    error,
+  } = useQuery<User>({
+    queryKey: ["user"],
+    queryFn: getCurrentUser,
+  });
 
-    fetchCurrentUser();
-  }, []);
+  const updateUserMutation = useMutation({
+    mutationFn: async (updatedData: UserEdit) => {
+      return await updateUser(user!.id, updatedData);
+    },
+    onSuccess: (updatedUser: User) => {
+      toast({
+        title: "Profile updated successfully",
+        description: "Your profile has been updated successfully",
+        variant: "default",
+      });
+      setIsDialogOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["user"] });
+    },
+    onError: (error: any) => {
+      console.error("Error updating user:", error);
+      toast({
+        title: "Failed to update profile, please try again",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Spinner />
       </div>
     );
   }
-
-  if (!user) {
+  if (error || !user) {
     return <p className="text-center mt-10 text-red-500">User not found</p>;
   }
 
@@ -49,36 +66,20 @@ const MyProfile = () => {
     { value: "permissions", label: "Permissions" },
   ];
 
-  const handleEditProfile = () => {
-    setIsDialogOpen(true);
-  };
-
-  const handleSave = async (updatedData: UserEdit) => {
-    try {
-      const updatedUser = await updateUser(user.id, updatedData);
-      setUser(updatedUser);
-      setIsDialogOpen(false);
-      toast({
-        title: "Profile updated successfully",
-        description: "Your profile has been updated successfully",
-        variant: "default",
-      });
-    } catch (error: any) {
-      console.error("Error updating user:", error);
-      toast({
-        title: "Failed to update profile, please try again",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
+  const handleEditProfile = () => setIsDialogOpen(true);
+  const handleSave = (updatedData: UserEdit) => {
+    updateUserMutation.mutate(updatedData);
   };
 
   return (
     <div className="w-full max-w-4xl mx-auto mt-10">
       <Card className="p-6 shadow-md bg-white rounded-lg flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">{user.name}</h1>
-          <p className="text-gray-500">{user.role}</p>
+        <div className="flex flex-row space-x-4 items-center">
+          <ProfilePictureDialog user={user} />
+          <div className="flex flex-col space-y-2 items-start justify-center">
+            <h1 className="text-2xl font-bold">{user.name}</h1>
+            <p className="text-gray-500">{user.role}</p>
+          </div>
         </div>
         <Button
           onClick={handleEditProfile}
@@ -87,12 +88,13 @@ const MyProfile = () => {
           Edit Profile
         </Button>
       </Card>
+
       <div className="mt-6 border-b border-gray-200">
         <div className="flex space-x-8">
           {TABS.map((tab) => (
             <Button
-              variant="transparentHover"
               key={tab.value}
+              variant="transparentHover"
               onClick={() => setActiveTab(tab.value)}
               className={`py-2 px-1 text-sm font-medium ${
                 activeTab === tab.value
@@ -105,6 +107,7 @@ const MyProfile = () => {
           ))}
         </div>
       </div>
+
       {activeTab === "overview" && (
         <Card className="p-6 shadow-md bg-white rounded-lg mt-6">
           <h2 className="text-xl font-semibold mb-4">User Details</h2>

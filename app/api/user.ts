@@ -143,6 +143,42 @@ export const updateUser = async (
   }
 };
 
+export async function editProfilePicture(
+  user: User | null,
+  formData: FormData,
+): Promise<User> {
+  if (!user?.id) {
+    throw new Error("User not found");
+  }
+
+  try {
+    const response = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/images/upload`,
+      {
+        method: "POST",
+        body: formData,
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Upload failed");
+    }
+
+    const result = await response.json();
+
+    const updatedUser = await updateUser(user.id, {
+      ...user,
+      profile_picture: result.data.url,
+    });
+
+    return updatedUser;
+  } catch (error) {
+    console.error("Error editing profile picture:", error);
+    throw error;
+  }
+}
+
 export const deleteUser = async (userId: string): Promise<void> => {
   try {
     const response = await fetchWithAuth(

@@ -20,7 +20,6 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { Spinner } from "@/components/ui/spinner";
 import { User } from "@/types/user";
 import { NavMain } from "./nav-main";
 import { NavTeam } from "./nav-team";

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import * as Popover from "@radix-ui/react-popover";
+import { CheckIcon, ChevronDownIcon } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -9,19 +11,46 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-export default function IncidentReportFilters() {
-  const [formId, setFormId] = useState("all");
-  const [reporterId, setReporterId] = useState("all");
-  const [residentId, setResidentId] = useState("all");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+interface ReporterOption {
+  id: string;
+  name: string;
+}
+
+interface IncidentReportFiltersProps {
+  uniqueReporters: ReporterOption[];
+  filterOptions: any;
+  setFilterOptions: (filters: any) => void;
+}
+
+export default function IncidentReportFilters({
+  uniqueReporters,
+  filterOptions,
+  setFilterOptions,
+}: IncidentReportFiltersProps) {
+  const [selectedReporters, setSelectedReporters] = useState<string[]>([]);
+
+  const handleApplyFilters = () => {
+    setFilterOptions({
+      ...filterOptions,
+      reporterId: selectedReporters.length === 0 ? [] : selectedReporters,
+    });
+  };
+
+  const handleToggleReporter = (id: string) => {
+    setSelectedReporters((prev) =>
+      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
+    );
+  };
 
   const handleReset = () => {
-    setFormId("all");
-    setReporterId("all");
-    setResidentId("all");
-    setStartDate("");
-    setEndDate("");
+    setSelectedReporters([]);
+    setFilterOptions({
+      formId: "all",
+      reporterId: [],
+      residentId: "all",
+      startDate: null,
+      endDate: null,
+    });
   };
 
   return (
@@ -29,7 +58,12 @@ export default function IncidentReportFilters() {
       {/* Form Filter */}
       <div>
         <label className="text-sm font-medium">Form</label>
-        <Select value={formId} onValueChange={setFormId}>
+        <Select
+          value={filterOptions.formId}
+          onValueChange={(value) =>
+            setFilterOptions({ ...filterOptions, formId: value })
+          }
+        >
           <SelectTrigger>
             <SelectValue placeholder="All Forms" />
           </SelectTrigger>
@@ -37,30 +71,58 @@ export default function IncidentReportFilters() {
             <SelectItem value="all">All Forms</SelectItem>
             <SelectItem value="form1">Form 1</SelectItem>
             <SelectItem value="form2">Form 2</SelectItem>
-            {/* Add dynamic form options here */}
           </SelectContent>
         </Select>
       </div>
 
-      {/* Reporter Filter */}
+      {/* Reporter Multi-Select Dropdown */}
       <div>
         <label className="text-sm font-medium">Reporter</label>
-        <Select value={reporterId} onValueChange={setReporterId}>
-          <SelectTrigger>
-            <SelectValue placeholder="All Reporters" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Reporters</SelectItem>
-            <SelectItem value="reporter1">Reporter 1</SelectItem>
-            <SelectItem value="reporter2">Reporter 2</SelectItem>
-          </SelectContent>
-        </Select>
+        <Popover.Root>
+          <Popover.Trigger asChild>
+            <button className="w-full flex items-center justify-between border rounded-md p-2">
+              {selectedReporters.length === 0
+                ? "All Reporters"
+                : `${selectedReporters.length} selected`}
+              <ChevronDownIcon className="w-4 h-4" />
+            </button>
+          </Popover.Trigger>
+          <Popover.Content className="bg-white border p-2 shadow-md rounded-md w-56">
+            <div className="max-h-60 overflow-auto">
+              {uniqueReporters.map((reporter) => (
+                <div
+                  key={reporter.id}
+                  className="flex items-center gap-2 cursor-pointer p-2 hover:bg-gray-100 rounded-md"
+                  onClick={() => handleToggleReporter(reporter.id)}
+                >
+                  <div
+                    className={`w-5 h-5 border rounded-md flex items-center justify-center ${
+                      selectedReporters.includes(reporter.id)
+                        ? "bg-blue-500"
+                        : "bg-white"
+                    }`}
+                  >
+                    {selectedReporters.includes(reporter.id) && (
+                      <CheckIcon className="w-4 h-4 text-white" />
+                    )}
+                  </div>
+                  <span>{reporter.name}</span>
+                </div>
+              ))}
+            </div>
+          </Popover.Content>
+        </Popover.Root>
       </div>
 
       {/* Resident Filter */}
       <div>
         <label className="text-sm font-medium">Primary Resident</label>
-        <Select value={residentId} onValueChange={setResidentId}>
+        <Select
+          value={filterOptions.residentId}
+          onValueChange={(value) =>
+            setFilterOptions({ ...filterOptions, residentId: value })
+          }
+        >
           <SelectTrigger>
             <SelectValue placeholder="All Residents" />
           </SelectTrigger>
@@ -77,8 +139,10 @@ export default function IncidentReportFilters() {
         <label className="text-sm font-medium">Start Date</label>
         <Input
           type="date"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
+          value={filterOptions.startDate || ""}
+          onChange={(e) =>
+            setFilterOptions({ ...filterOptions, startDate: e.target.value })
+          }
         />
       </div>
 
@@ -87,15 +151,20 @@ export default function IncidentReportFilters() {
         <label className="text-sm font-medium">End Date</label>
         <Input
           type="date"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
+          value={filterOptions.endDate || ""}
+          onChange={(e) =>
+            setFilterOptions({ ...filterOptions, endDate: e.target.value })
+          }
         />
       </div>
 
-      {/* Reset Filters Button */}
-      <div className="col-span-full flex justify-end">
+      {/* Apply & Reset Filters Buttons */}
+      <div className="col-span-full flex justify-between">
         <Button variant="outline" onClick={handleReset}>
           Reset Filters
+        </Button>
+        <Button variant="outline" onClick={handleApplyFilters}>
+          Apply Filters
         </Button>
       </div>
     </div>

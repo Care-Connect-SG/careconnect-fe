@@ -10,6 +10,7 @@
     "lint:fix": "biome check . --write"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.0",
     "@hookform/resolvers": "^4.1.0",
     "@radix-ui/primitive": "^1.1.1",
     "@radix-ui/react-alert-dialog": "^1.1.6",

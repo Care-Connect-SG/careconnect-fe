@@ -14,7 +14,7 @@ import IncidentReportFilters from "@/components/incident-reports-filter";
 
 interface FilterOptions {
   formId: string;
-  reporterId: string;
+  reporterId: string[]; // Now an array for multi-selection
   residentId: string;
   startDate: Date | null;
   endDate: Date | null;
@@ -26,7 +26,7 @@ export default function IncidentReports() {
   const [forms, setForms] = useState<FormResponse[]>([]);
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     formId: "",
-    reporterId: "",
+    reporterId: [], // Updated to be an array for multi-selection
     residentId: "",
     startDate: null,
     endDate: null,
@@ -79,10 +79,42 @@ export default function IncidentReports() {
     }
   };
 
+  // Extract unique reporters from reports
+  const uniqueReporters = useMemo(() => {
+    const reportersSet = new Set<string>();
+    reports.forEach((report) => {
+      if (report.reporter && report.reporter.id) {
+        reportersSet.add(
+          JSON.stringify({ id: report.reporter.id, name: report.reporter.name })
+        );
+      }
+    });
+
+    return Array.from(reportersSet).map((item) => JSON.parse(item));
+  }, [reports]);
+
+  // Extract unique residents from reports
+  const uniqueResidents = useMemo(() => {
+    const residentsSet = new Set<string>();
+    reports.forEach((report) => {
+      if (report.primary_resident && report.primary_resident.id) {
+        residentsSet.add(
+          JSON.stringify({
+            id: report.primary_resident.id,
+            name: report.primary_resident.name,
+          })
+        );
+      }
+    });
+
+    return Array.from(residentsSet).map((item) => JSON.parse(item));
+  }, [reports]);
+
+  // Filter reports based on selected filters
   const filteredReports = useMemo(() => {
     return reports.filter((report) => {
-      if (activeTab === "my" && report.reporter.id != user?.id) return false;
-      if (activeTab !== "my" && report.status != ReportStatus.PUBLISHED)
+      if (activeTab === "my" && report.reporter.id !== user?.id) return false;
+      if (activeTab !== "my" && report.status !== ReportStatus.PUBLISHED)
         return false;
 
       if (
@@ -92,10 +124,10 @@ export default function IncidentReports() {
       )
         return false;
 
+      // Multi-select reporter filter logic
       if (
-        filterOptions.reporterId &&
-        filterOptions.reporterId !== "all" &&
-        report.reporter.id !== filterOptions.reporterId
+        filterOptions.reporterId.length > 0 &&
+        !filterOptions.reporterId.includes(report.reporter.id)
       )
         return false;
 
@@ -128,7 +160,11 @@ export default function IncidentReports() {
         <h1 className="scroll-m-20 text-2xl font-semibold tracking-tight py-2">
           Incident Reports
         </h1>
-        <IncidentReportFilters />
+        <IncidentReportFilters
+          uniqueReporters={uniqueReporters}
+          filterOptions={filterOptions}
+          setFilterOptions={setFilterOptions}
+        />
       </div>
       <hr className="border-t-1 border-gray-300 mx-6 pt-2 pb-0"></hr>
       <div className="px-6">

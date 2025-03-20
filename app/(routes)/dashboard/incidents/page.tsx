@@ -110,7 +110,6 @@ export default function IncidentReports() {
     return Array.from(residentsSet).map((item) => JSON.parse(item));
   }, [reports]);
 
-  // Filter reports based on selected filters
   const filteredReports = useMemo(() => {
     return reports.filter((report) => {
       if (activeTab === "my" && report.reporter.id !== user?.id) return false;
@@ -124,19 +123,18 @@ export default function IncidentReports() {
       )
         return false;
 
-      // Multi-select reporter filter logic
-      if (
-        filterOptions.reporterId.length > 0 &&
-        !filterOptions.reporterId.includes(report.reporter.id)
-      )
-        return false;
+      // ✅ Ensure BOTH filters work independently & together
+      const matchesReporter =
+        filterOptions.reporterId.length === 0 || // If empty, allow all
+        filterOptions.reporterId.includes(report.reporter.id); // Otherwise, must match
 
-      if (
-        filterOptions.residentId &&
-        filterOptions.residentId !== "all" &&
-        report.primary_resident?.id !== filterOptions.residentId
-      )
-        return false;
+      const matchesResident =
+        filterOptions.residentId.length === 0 || // If empty, allow all
+        filterOptions.residentId === "all" || // Ensure "all" works correctly
+        (report.primary_resident?.id &&
+          filterOptions.residentId.includes(report.primary_resident.id)); // Otherwise, must match
+
+      if (!matchesReporter || !matchesResident) return false; // Ensure BOTH work independently
 
       if (
         filterOptions.startDate &&
@@ -162,6 +160,7 @@ export default function IncidentReports() {
         </h1>
         <IncidentReportFilters
           uniqueReporters={uniqueReporters}
+          uniqueResidents={uniqueResidents}
           filterOptions={filterOptions}
           setFilterOptions={setFilterOptions}
         />

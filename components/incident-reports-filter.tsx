@@ -11,30 +11,30 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-interface ReporterOption {
+interface OptionType {
   id: string;
   name: string;
 }
 
 interface IncidentReportFiltersProps {
-  uniqueReporters: ReporterOption[];
+  uniqueReporters: OptionType[];
+  uniqueResidents: OptionType[];
   filterOptions: any;
   setFilterOptions: (filters: any) => void;
 }
 
 export default function IncidentReportFilters({
   uniqueReporters,
+  uniqueResidents,
   filterOptions,
   setFilterOptions,
 }: IncidentReportFiltersProps) {
-  const [selectedReporters, setSelectedReporters] = useState<string[]>([]);
-
-  const handleApplyFilters = () => {
-    setFilterOptions({
-      ...filterOptions,
-      reporterId: selectedReporters.length === 0 ? [] : selectedReporters,
-    });
-  };
+  const [selectedReporters, setSelectedReporters] = useState<string[]>(
+    filterOptions.reporterId || []
+  );
+  const [selectedResidents, setSelectedResidents] = useState<string[]>(
+    filterOptions.residentId || []
+  );
 
   const handleToggleReporter = (id: string) => {
     setSelectedReporters((prev) =>
@@ -42,12 +42,27 @@ export default function IncidentReportFilters({
     );
   };
 
+  const handleToggleResident = (id: string) => {
+    setSelectedResidents((prev) =>
+      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
+    );
+  };
+
+  const handleApplyFilters = () => {
+    setFilterOptions({
+      ...filterOptions,
+      reporterId: selectedReporters.length === 0 ? [] : selectedReporters,
+      residentId: selectedResidents.length === 0 ? "all" : selectedResidents, // Keep consistency with "all" behavior
+    });
+  };
+
   const handleReset = () => {
     setSelectedReporters([]);
+    setSelectedResidents([]); // Clear resident selection
     setFilterOptions({
       formId: "all",
       reporterId: [],
-      residentId: "all",
+      residentId: "all", // Keep this behavior for consistency
       startDate: null,
       endDate: null,
     });
@@ -114,24 +129,43 @@ export default function IncidentReportFilters({
         </Popover.Root>
       </div>
 
-      {/* Resident Filter */}
+      {/* Resident Multi-Select Dropdown (Fixed & Matching Reporter Filter) */}
       <div>
         <label className="text-sm font-medium">Primary Resident</label>
-        <Select
-          value={filterOptions.residentId}
-          onValueChange={(value) =>
-            setFilterOptions({ ...filterOptions, residentId: value })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="All Residents" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Residents</SelectItem>
-            <SelectItem value="resident1">Resident 1</SelectItem>
-            <SelectItem value="resident2">Resident 2</SelectItem>
-          </SelectContent>
-        </Select>
+        <Popover.Root>
+          <Popover.Trigger asChild>
+            <button className="w-full flex items-center justify-between border rounded-md p-2">
+              {selectedResidents.length === 0
+                ? "All Residents"
+                : `${selectedResidents.length} selected`}
+              <ChevronDownIcon className="w-4 h-4" />
+            </button>
+          </Popover.Trigger>
+          <Popover.Content className="bg-white border p-2 shadow-md rounded-md w-56">
+            <div className="max-h-60 overflow-auto">
+              {uniqueResidents.map((resident) => (
+                <div
+                  key={resident.id}
+                  className="flex items-center gap-2 cursor-pointer p-2 hover:bg-gray-100 rounded-md"
+                  onClick={() => handleToggleResident(resident.id)}
+                >
+                  <div
+                    className={`w-5 h-5 border rounded-md flex items-center justify-center ${
+                      selectedResidents.includes(resident.id)
+                        ? "bg-blue-500"
+                        : "bg-white"
+                    }`}
+                  >
+                    {selectedResidents.includes(resident.id) && (
+                      <CheckIcon className="w-4 h-4 text-white" />
+                    )}
+                  </div>
+                  <span>{resident.name}</span>
+                </div>
+              ))}
+            </div>
+          </Popover.Content>
+        </Popover.Root>
       </div>
 
       {/* Start Date Filter */}
@@ -158,7 +192,7 @@ export default function IncidentReportFilters({
         />
       </div>
 
-      {/* Apply & Reset Filters Buttons */}
+      {/* Apply & Reset Filters Buttons (Fixed Reset) */}
       <div className="col-span-full flex justify-between">
         <Button variant="outline" onClick={handleReset}>
           Reset Filters

@@ -26,7 +26,7 @@ export const getCurrentUser = async (): Promise<User> => {
 
 export const createUser = async (user: UserForm): Promise<User> => {
   try {
-    const response = await fetch(
+    const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/users/register`,
       {
         method: "POST",
@@ -36,7 +36,8 @@ export const createUser = async (user: UserForm): Promise<User> => {
     );
 
     if (!response.ok) {
-      throw new Error("Failed to create user");
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Failed to create user");
     }
 
     const responseData = await response.json();
@@ -44,27 +45,6 @@ export const createUser = async (user: UserForm): Promise<User> => {
   } catch (error) {
     console.error("Error creating user:", error);
     throw error;
-  }
-};
-
-export const getUser = async (email: string | undefined) => {
-  if (!email) return null;
-
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BE_API_URL}/users/email/${email}`,
-    );
-
-    if (!response.ok) {
-      console.error("Failed to fetch user role");
-      return null;
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error fetching user role:", error);
-    return null;
   }
 };
 
@@ -79,7 +59,8 @@ export const getUserById = async (id: string): Promise<User | null> => {
     );
 
     if (!response.ok) {
-      console.error("Failed to fetch user by ID");
+      const errorData = await response.json();
+      console.error(errorData.detail || "Failed to fetch user by ID");
       return null;
     }
 
@@ -101,7 +82,8 @@ export const getUsers = async (): Promise<User[]> => {
       },
     );
     if (!response.ok) {
-      throw new Error(`Error fetching users: ${response.statusText}`);
+      const errorData = await response.json();
+      throw new Error(errorData.detail || `Error fetching users`);
     }
     const data = await response.json();
     return data;
@@ -121,7 +103,8 @@ export const getAllNurses = async (): Promise<User[]> => {
       },
     );
     if (!response.ok) {
-      throw new Error(`Error fetching nurses: ${response.statusText}`);
+      const errorData = await response.json();
+      throw new Error(errorData.detail || `Error fetching nurses`);
     }
     const data = await response.json();
     return data;
@@ -136,7 +119,7 @@ export const updateUser = async (
   data: UserEdit,
 ): Promise<User> => {
   try {
-    const response = await fetch(
+    const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/users/${userId}`,
       {
         method: "PUT",
@@ -148,7 +131,8 @@ export const updateUser = async (
     );
 
     if (!response.ok) {
-      throw new Error("Failed to update user");
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Failed to update user");
     }
 
     const updatedUser = await response.json();
@@ -161,7 +145,7 @@ export const updateUser = async (
 
 export const deleteUser = async (userId: string): Promise<void> => {
   try {
-    const response = await fetch(
+    const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/users/${userId}`,
       {
         method: "DELETE",
@@ -170,7 +154,8 @@ export const deleteUser = async (userId: string): Promise<void> => {
     );
 
     if (!response.ok) {
-      throw new Error(`Error deleting user: ${response.statusText}`);
+      const errorData = await response.json();
+      throw new Error(errorData.detail || `Error deleting user`);
     }
   } catch (error) {
     console.error("Error deleting user:", error);

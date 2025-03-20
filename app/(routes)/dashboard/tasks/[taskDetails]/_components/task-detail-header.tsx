@@ -20,7 +20,7 @@ import { convertUTCToLocal, formatDateWithoutSeconds } from "@/lib/utils";
 import { Task, TaskStatus } from "@/types/task";
 import { CheckCircle, Clock, User } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 interface TaskDetailHeaderProps {
   task: Task;
@@ -32,8 +32,10 @@ const getStatusClasses = (status: TaskStatus) => {
       return "bg-green-100 text-green-800";
     case TaskStatus.DELAYED:
       return "bg-red-100 text-red-800";
-    case TaskStatus.REQUEST_REASSIGNMENT:
+    case TaskStatus.REASSIGNMENT_REQUESTED:
       return "bg-yellow-100 text-yellow-800";
+    case TaskStatus.REASSIGNMENT_REJECTED:
+      return "bg-red-100 text-red-800";
     default:
       return "bg-gray-100 text-gray-800";
   }

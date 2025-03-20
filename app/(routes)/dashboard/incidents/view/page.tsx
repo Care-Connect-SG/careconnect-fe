@@ -13,11 +13,13 @@ import { FormResponse } from "@/types/form";
 import { ReportResponse } from "@/types/report";
 import { ResidentRecord } from "@/types/resident";
 import { User } from "@/types/user";
+import { pdf } from "@react-pdf/renderer";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { LoadingSkeleton } from "../_components/loading-skeleton";
+import ReportPDF from "../_components/report-pdf";
 
 export default function ViewReportPage() {
   const router = useRouter();
@@ -28,6 +30,28 @@ export default function ViewReportPage() {
   const [reporter, setReporter] = useState<User | null>();
   const [resident, setResident] = useState<ResidentRecord>();
   const [form, setForm] = useState<FormResponse>();
+
+  const handleDownload = async () => {
+    if (!report || !form || !reporter) return;
+
+    const blob = await pdf(
+      <ReportPDF
+        form={form}
+        report={report}
+        reporter={reporter}
+        resident={resident}
+      />,
+    ).toBlob();
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${form.title}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   const fetchReport = async () => {
     try {
@@ -69,12 +93,19 @@ export default function ViewReportPage() {
 
   return (
     <div className="py-4 px-8">
-      <Link href="/dashboard/incidents">
-        <Button variant="outline" className="border h-10 mb-2 rounded-md">
-          <ChevronLeft className="h-4 w-4 mx-auto" />
-          Return to Incident Reports
-        </Button>
-      </Link>
+      <div className="flex justify-between">
+        <Link href="/dashboard/incidents">
+          <Button variant="outline" className="border h-10 mb-2 rounded-md">
+            <ChevronLeft className="h-4 w-4 mx-auto" />
+            Return to Incident Reports
+          </Button>
+        </Link>
+        {report?.status === "Published" && (
+          <Button className="ml-2" onClick={handleDownload}>
+            Download Report
+          </Button>
+        )}
+      </div>
       <Card>
         <CardHeader className="pb-2">
           <div className="flex justify-between">

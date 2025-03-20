@@ -10,13 +10,10 @@ export enum Gender {
 }
 
 export interface UserEdit {
-  email: string;
   name: string;
   contact_number?: string;
-  role: string;
   organisation_rank?: string;
   gender: string;
-  created_at: string;
 }
 
 export interface User {

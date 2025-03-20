@@ -18,15 +18,14 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Spinner } from "@/components/ui/spinner";
-import { User } from "@/types/user";
 import { ChevronsUpDown, LogOut, Settings, UserIcon } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
-export function NavUser({ currentUser }: { currentUser: User | null }) {
+export function NavUser() {
   const { isMobile } = useSidebar();
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -95,21 +94,10 @@ export function NavUser({ currentUser }: { currentUser: User | null }) {
             <DropdownMenuSeparator />
 
             <DropdownMenuGroup>
-              <Link
-                href={`/dashboard/nurses/${currentUser?.id}`}
-                passHref
-                legacyBehavior
-              >
+              <Link href={"/dashboard/profile"} passHref>
                 <DropdownMenuItem>
                   <UserIcon className="w-4 h-4" />
                   Profile
-                </DropdownMenuItem>
-              </Link>
-
-              <Link href="/dashboard/settings" passHref legacyBehavior>
-                <DropdownMenuItem>
-                  <Settings className="w-4 h-4" />
-                  Settings
                 </DropdownMenuItem>
               </Link>
             </DropdownMenuGroup>

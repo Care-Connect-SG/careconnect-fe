@@ -75,7 +75,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
       <SidebarFooter>
         <NavTeam items={config.navTeam} currentUser={currentUser} />
-        <NavUser currentUser={currentUser} />
+        <NavUser />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

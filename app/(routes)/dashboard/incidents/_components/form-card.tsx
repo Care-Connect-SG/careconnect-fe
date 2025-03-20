@@ -45,7 +45,7 @@ export default function FormCard({
 
   return (
     <Card
-      className={`w-xs max-w-xs h-[11rem] overflow-hidden ${
+      className={`relative h-[11rem] overflow-hidden ${
         status === "Published"
           ? "border-l-4 border-l-green-500"
           : "border-l-4 border-l-yellow-500"
@@ -73,16 +73,16 @@ export default function FormCard({
           <p className="hidden h-4 md:block text-xs truncate">{description}</p>
         </CardContent>
       </Link>
-      <CardFooter className="flex justify-end gap-4 py-2 px-6 text-semibold text-gray-400">
+      <CardFooter className="w-full justify-end px-6 text-semibold text-gray-400 hidden md:flex">
         {status === "Draft" && (
-          <div className="flex gap-4 items-center">
+          <div className="flex items-center">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="p-0"
+                    className="p-0 focus:ring-0"
                     onClick={(e) => {
                       e.stopPropagation();
                       router.push(`/dashboard/incidents/admin/build?id=${id}`);
@@ -102,7 +102,7 @@ export default function FormCard({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="p-0"
+                    className="p-0 focus:ring-0"
                     onClick={(e) => {
                       e.stopPropagation();
                       onPublish(id);
@@ -119,14 +119,14 @@ export default function FormCard({
             <Separator orientation="vertical" className="h-5" />
           </div>
         )}
-        <div className="flex gap-4 items-center">
+        <div className="flex items-center">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="p-0"
+                  className="p-0 focus:ring-0"
                   onClick={(e) => {
                     e.stopPropagation();
                     onDuplicate(id);
@@ -146,7 +146,7 @@ export default function FormCard({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="p-0"
+                  className="p-0 focus:ring-0"
                   onClick={(e) => {
                     e.stopPropagation();
                     onDelete(id);

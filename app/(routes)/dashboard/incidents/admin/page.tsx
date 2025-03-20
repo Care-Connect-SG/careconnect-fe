@@ -2,6 +2,7 @@
 
 import { createForm, deleteForm, getForms, publishForm } from "@/app/api/form";
 import { Card } from "@/components/ui/card";
+import { toast } from "@/hooks/use-toast";
 import { FormCreate, FormResponse } from "@/types/form";
 import { Plus } from "lucide-react";
 import Link from "next/link";
@@ -18,7 +19,6 @@ export default function IncidentReportingFormsAdmin() {
   const fetchForms = async () => {
     try {
       const data = await getForms();
-
       setForms(data);
     } catch (error) {
       console.error("Failed to fetch forms");
@@ -28,7 +28,10 @@ export default function IncidentReportingFormsAdmin() {
   const handlePublish = async (formId: string) => {
     try {
       await publishForm(formId);
-
+      toast({
+        title: "Form published.",
+        description: "Your form is saved and published successfully.",
+      });
       fetchForms();
     } catch (error) {
       console.error("Failed to publish form");
@@ -38,7 +41,10 @@ export default function IncidentReportingFormsAdmin() {
   const handleDelete = async (formId: string) => {
     try {
       await deleteForm(formId);
-
+      toast({
+        title: "Form deleted.",
+        description: "Your form has been deleted successfully.",
+      });
       fetchForms();
     } catch (error) {
       console.error("Failed to delete form");
@@ -57,6 +63,11 @@ export default function IncidentReportingFormsAdmin() {
 
     try {
       await createForm(duplicatedForm);
+      toast({
+        title: "Form duplicated.",
+        description:
+          "A duplicate form has been created and saved as a draft successfully.",
+      });
       fetchForms();
     } catch (error) {
       console.error("Error duplicating form:", error);
@@ -74,7 +85,15 @@ export default function IncidentReportingFormsAdmin() {
         </p>
       </div>
       <hr className="border-t-1 border-gray-300 mx-8 py-2"></hr>
-      <div className="w-full grid grid-cols-3 gap-4 px-8 py-4">
+      <div className="w-full grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-4 px-8 py-4">
+        <Card className="border-dashed h-[11rem] hover:bg-gray-100">
+          <Link href="/dashboard/incidents/admin/build">
+            <div className="flex flex-col justify-center items-center h-full">
+              <Plus className="mb-0 h-6 w-6 text-gray-500" />
+              <p className="text-sm text-gray-400 mt-1">Create a new form</p>
+            </div>
+          </Link>
+        </Card>
         {forms.map((form) => (
           <div key={form.id} onClick={(e) => e.preventDefault()}>
             <FormCard
@@ -89,14 +108,6 @@ export default function IncidentReportingFormsAdmin() {
             />
           </div>
         ))}
-        <Card className="border-dashed w-xs max-w-xs h-[11rem] hover:bg-gray-100">
-          <Link href="/dashboard/incidents/admin/build">
-            <div className="flex flex-col justify-center items-center h-full">
-              <Plus className="mb-0 h-6 w-6 text-gray-500" />
-              <p className="text-sm text-gray-400 mt-1">Create a new form</p>
-            </div>
-          </Link>
-        </Card>
       </div>
     </>
   );

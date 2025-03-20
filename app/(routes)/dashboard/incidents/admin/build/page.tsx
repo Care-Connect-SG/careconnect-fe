@@ -9,17 +9,20 @@ import {
 import { getCurrentUser } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import { useBreadcrumb } from "@/context/breadcrumb-context";
-import { FormState, useFormReducer } from "@/hooks/useFormReducer";
-import { FormCreate, FormResponse } from "@/types/form";
+import { toast } from "@/hooks/use-toast";
+import { FormCreate } from "@/types/form";
+import { User } from "@/types/user";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronLeft, Trash2 } from "lucide-react";
-import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { FormProvider, useFieldArray, useForm } from "react-hook-form";
+import { v4 as uuidv4 } from "uuid";
 import { FormHeaderEdit } from "../../_components/form-header";
-import { LoadingSkeleton } from "../../_components/loading-skeleton";
 import FormElement from "./_components/form-element";
 import FormElementBar from "./_components/form-element-bar";
+import { FormElementType, FormSchema, formSchema } from "./schema";
 
 export default function CreateFormPage() {
   const router = useRouter();
@@ -27,109 +30,154 @@ export default function CreateFormPage() {
   const formId = searchParams.get("id");
   const isEditing = !!formId;
   const { setPageName } = useBreadcrumb();
+  const [user, setUser] = useState<User>();
 
-  const [state, dispatch] = useFormReducer();
-  const [loading, setLoading] = useState<boolean>(isEditing);
+  const methods = useForm<FormSchema>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      elements: [],
+    },
+  });
+
+  const { control, handleSubmit, reset } = methods;
+  const { fields, append } = useFieldArray({ control, name: "elements" });
 
   useEffect(() => {
     if (isEditing) {
       getFormById(formId)
-        .then((data: FormResponse) => {
-          const formState: FormState = {
+        .then((data) => {
+          reset({
             title: data.title,
             description: data.description,
             elements: data.json_content,
-          };
-          dispatch({ type: "SET_FORM", payload: formState });
+          });
         })
         .catch(() => {
           console.error("Form not found");
           router.replace("/404");
-        })
-        .finally(() => setLoading(false));
+        });
     } else {
       setPageName("Create Form");
     }
-  }, [formId, isEditing, dispatch, router, setPageName]);
+  }, [formId, isEditing]);
 
-  if (loading) return <LoadingSkeleton />;
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const user = await getCurrentUser();
+        setUser(user);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load user data. Please refresh the page.",
+          variant: "destructive",
+        });
+      }
+    };
 
-  const handleSaveDraft = async () => {
-    if (!state.title || state.elements.length === 0) {
-      alert(
-        "Incomplete Form: A form should have at least a title and a form element",
-      );
-      return;
-    }
+    fetchUser();
+  }, []);
 
-    const user = await getCurrentUser();
-
+  const handleSaveDraft = async (form: FormSchema) => {
     const formData: FormCreate = {
-      title: state.title,
-      description: state.description,
-      creator_id: user.id,
-      json_content: state.elements,
+      title: form.title,
+      description: form.description,
+      creator_id: user!.id,
+      json_content: form.elements,
       status: "Draft",
     };
 
-    if (!formId) {
-      try {
-        const formId = await createForm(formData);
-
-        router.replace(`/dashboard/incidents/admin/build?id=${formId}`);
-      } catch (error) {
-        console.error("Error saving form:", error);
-      }
-    } else {
-      try {
+    try {
+      if (isEditing && formId) {
         await updateForm(formId, formData);
-      } catch (error) {
-        console.error("Error updating form:", error);
+        toast({
+          title: "Draft form updated",
+          description: "Your draft form is saved updated.",
+        });
+      } else {
+        const newFormId = await createForm(formData);
+        router.replace(`/dashboard/incidents/admin/build?id=${newFormId}`);
+        toast({
+          title: "Draft form created",
+          description: "Your form is saved successfully as a draft.",
+        });
       }
+    } catch (error) {
+      console.error("Failed to save draft", error);
+      toast({
+        title: "Error",
+        description: "Failed to save the form. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
-  const handlePublishDraft = async () => {
-    if (!state.title || state.elements.length === 0) {
-      alert(
-        "Incomplete Form: A form should have at least a title and a form element",
-      );
-      return;
-    }
-
+  const handlePublishDraft = async (form: FormSchema) => {
     const formData: FormCreate = {
-      title: state.title,
-      description: state.description,
-      creator_id: "user123", // TODO: Replace with actual user ID
-      json_content: state.elements,
+      title: form.title,
+      description: form.description,
+      creator_id: user!.id,
+      json_content: form.elements,
       status: "Published",
     };
 
-    if (!formId) {
-      try {
+    try {
+      if (!formId) {
         await createForm(formData);
-        router.replace(`/dashboard/incidents/admin`);
-      } catch (error) {
-        console.error("Error saving form:", error);
-      }
-    } else {
-      try {
+      } else {
         await updateForm(formId, formData);
-        router.replace(`/dashboard/incidents/admin`);
-      } catch (error) {
-        console.error("Error updating form:", error);
       }
+      toast({
+        title: "Form published.",
+        description: "Your form is saved and published successfully.",
+      });
+      router.replace(`/dashboard/incidents/admin`);
+    } catch (error) {
+      console.error("Failed to publish form", error);
+      toast({
+        title: "Error",
+        description: "Failed to publish the report. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
   const handleDeleteDraft = async (formId: string) => {
     try {
       await deleteForm(formId);
-
+      toast({
+        title: "Form deleted.",
+        description: "Your form has been deleted successfully.",
+      });
       router.replace(`/dashboard/incidents/admin`);
     } catch (error) {
       console.error("Failed to delete form");
+      toast({
+        title: "Error",
+        description: "Failed to delete the report. Please try again.",
+        variant: "destructive",
+      });
     }
+  };
+
+  const handleAddElement = (type: FormElementType) => {
+    append({
+      element_id: uuidv4(),
+      type,
+      label: "",
+      helptext: "",
+      required: false,
+      options: ["radio", "checkbox"].includes(type) ? ["Option 1"] : undefined,
+    });
+  };
+
+  const removeElement = (index: number) => {
+    const elements = methods.getValues("elements");
+    elements.splice(index, 1);
+    methods.setValue("elements", elements);
   };
 
   return (
@@ -147,85 +195,59 @@ export default function CreateFormPage() {
 
       <hr className="border-t-1 border-gray-300 mx-8 py-2" />
 
-      <div className="flex items-center justify-between pb-2">
-        <div className="flex justify-start gap-2 px-8 pb-2">
-          <Link href="/dashboard/incidents/admin">
-            <Button variant="outline" className="hover:border-gray-50">
-              <ChevronLeft />
-            </Button>
-          </Link>
-          {formId && (
+      <FormProvider {...methods}>
+        <div className="flex items-center justify-between pb-2">
+          <div className="flex justify-start gap-2 px-8">
+            <Link href="/dashboard/incidents/admin">
+              <Button variant="outline" className="border h-10 mb-2 rounded-md">
+                <ChevronLeft className="h-4 w-4 mx-auto" />
+                Return to Manage Forms
+              </Button>
+            </Link>
+
+            {formId && (
+              <Button
+                onClick={() => handleDeleteDraft(formId)}
+                className="bg-gray-100 text-black hover:bg-gray-200"
+              >
+                <Trash2 />
+              </Button>
+            )}
+          </div>
+          <div className="flex justify-end gap-2 px-8 pb-2">
             <Button
-              onClick={() => handleDeleteDraft(formId)}
-              className="bg-gray-100 text-black hover:bg-gray-200"
+              onClick={handleSubmit(handleSaveDraft)}
+              className="bg-blue-500 hover:bg-blue-600 text-white"
             >
-              <Trash2 />
+              Save
             </Button>
-          )}
+            <Button
+              onClick={handleSubmit(handlePublishDraft)}
+              className="bg-green-500 hover:bg-green-600 text-white"
+            >
+              Publish
+            </Button>
+          </div>
         </div>
-        <div className="flex justify-end gap-2 px-8 pb-2">
-          <Button
-            onClick={handleSaveDraft}
-            className="bg-blue-500 hover:bg-blue-600 text-white"
-          >
-            Save
-          </Button>
-          <Button
-            onClick={handlePublishDraft}
-            className="bg-green-500 hover:bg-green-600 text-white"
-          >
-            Publish
-          </Button>
+
+        <div className="mx-8 pb-4">
+          <FormHeaderEdit />
+
+          <div className="py-4 space-y-4">
+            {fields.map((element, idx) => (
+              <FormElement
+                key={element.element_id}
+                index={idx}
+                removeElement={removeElement}
+              />
+            ))}
+          </div>
         </div>
-      </div>
 
-      <div className="mx-8 pb-4">
-        <FormHeaderEdit
-          title={state.title}
-          description={state.description}
-          onTitleChange={(e) =>
-            dispatch({
-              type: "UPDATE_TITLE",
-              payload: e.target.value,
-            })
-          }
-          onDescriptionChange={(e) =>
-            dispatch({
-              type: "UPDATE_DESCRIPTION",
-              payload: e.target.value,
-            })
-          }
-        />
-
-        <div className="py-4 space-y-4">
-          {state.elements.map((element) => (
-            <FormElement
-              key={element.element_id}
-              element={element}
-              onUpdate={(element_id, updatedData) =>
-                dispatch({
-                  type: "UPDATE_ELEMENT",
-                  payload: { element_id, updatedData },
-                })
-              }
-              onRemove={(element_id) =>
-                dispatch({
-                  type: "REMOVE_ELEMENT",
-                  payload: element_id,
-                })
-              }
-            />
-          ))}
+        <div className="flex justify-center items-center">
+          <FormElementBar onAddElement={handleAddElement} />
         </div>
-      </div>
-
-      <div className="flex justify-center items-center">
-        <FormElementBar
-          onAddElement={(type) =>
-            dispatch({ type: "ADD_ELEMENT", payload: type })
-          }
-        />
-      </div>
+      </FormProvider>
     </>
   );
 }

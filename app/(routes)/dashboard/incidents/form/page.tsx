@@ -32,7 +32,7 @@ export default function IncidentReportingForms() {
         </p>
       </div>
       <hr className="border-t-1 border-gray-300 mx-8 py-2"></hr>
-      <div className="w-full grid grid-cols-3 gap-4 px-8 py-4">
+      <div className="w-full grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-4 px-8 py-4">
         {forms.map((form) => (
           <div key={form.id} onClick={(e) => e.preventDefault()}>
             <FormCardPublished

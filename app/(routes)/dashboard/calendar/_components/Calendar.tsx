@@ -34,6 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 import {
   createActivity,
   deleteActivity,
@@ -44,7 +45,6 @@ import { cn } from "@/lib/utils";
 import { Activity, ActivityCreate } from "@/types/activity";
 import { ChevronLeft, ChevronRight, Filter, Plus, Search } from "lucide-react";
 import { Calendar as CalendarIcon } from "lucide-react";
-import { toast } from "sonner";
 import ActivityDialog from "./ActivityDialog";
 
 const locales = {
@@ -93,18 +93,20 @@ const customDayPropGetter = (date: Date) => ({
 });
 
 export default function Calendar() {
+  const { toast } = useToast();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(
     null,
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [view, setView] = useState<View>("month");
+  const [selectedEndDate, setSelectedEndDate] = useState<Date | null>(null);
   const [date, setDate] = useState(new Date());
   const [searchQuery, setSearchQuery] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
+  const [view, setView] = useState<View>("month");
 
   const loadActivities = useCallback(async () => {
     try {
@@ -112,22 +114,38 @@ export default function Calendar() {
       setActivities(data);
     } catch (error) {
       console.error("Failed to load activities:", error);
-      toast.error("Failed to load activities");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load activities",
+      });
     }
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     loadActivities();
   }, [loadActivities]);
 
-  const handleSelectSlot = useCallback(({ start }: { start: Date }) => {
-    setSelectedDate(start);
-    setSelectedActivity(null);
-    setIsDialogOpen(true);
-  }, []);
+  const handleSelectSlot = useCallback(
+    ({ start, end }: { start: Date; end: Date }) => {
+      // If no end time provided (month view), set end to start + 30min
+      const slotEnd = end || new Date(start.getTime() + 30 * 60000);
+      setSelectedDate(start);
+      setSelectedEndDate(slotEnd);
+      setSelectedActivity(null); // Set to null for new activity
+      setIsDialogOpen(true);
+    },
+    [],
+  );
 
   const handleSelectActivity = useCallback((activity: Activity) => {
-    setSelectedActivity(activity);
+    // Convert UTC times to local time for editing
+    const localActivity = {
+      ...activity,
+      start_time: new Date(activity.start_time + "Z").toISOString(),
+      end_time: new Date(activity.end_time + "Z").toISOString(),
+    };
+    setSelectedActivity(localActivity);
     setIsDialogOpen(true);
   }, []);
 
@@ -135,10 +153,21 @@ export default function Calendar() {
     try {
       console.log("Saving activity with data:", activityData);
 
-      if (selectedActivity) {
+      // Convert local times to UTC before sending to backend
+      const utcActivityData = {
+        ...activityData,
+        start_time: activityData.start_time
+          ? new Date(activityData.start_time).toISOString().replace("Z", "")
+          : undefined,
+        end_time: activityData.end_time
+          ? new Date(activityData.end_time).toISOString().replace("Z", "")
+          : undefined,
+      };
+
+      if (selectedActivity?._id) {
         const updatedActivity = await updateActivity(
           selectedActivity._id,
-          activityData,
+          utcActivityData,
         );
         console.log("Updated activity:", updatedActivity);
         setActivities(
@@ -146,17 +175,27 @@ export default function Calendar() {
             activity._id === selectedActivity._id ? updatedActivity : activity,
           ),
         );
-        toast.success("Activity updated successfully");
+        toast({
+          title: "Success",
+          description: "Activity updated successfully",
+        });
       } else {
-        const newActivity = await createActivity(activityData);
+        const newActivity = await createActivity(utcActivityData);
         console.log("Created activity:", newActivity);
         setActivities([...activities, newActivity]);
-        toast.success("Activity created successfully");
+        toast({
+          title: "Success",
+          description: "Activity created successfully",
+        });
       }
       setIsDialogOpen(false);
     } catch (error) {
       console.error("Failed to save activity:", error);
-      toast.error("Failed to save activity");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to save activity",
+      });
     }
   };
 
@@ -164,21 +203,28 @@ export default function Calendar() {
     try {
       await deleteActivity(id);
       setActivities(activities.filter((activity) => activity._id !== id));
-      toast.success("Activity deleted successfully");
+      toast({
+        title: "Success",
+        description: "Activity deleted successfully",
+      });
       setIsDialogOpen(false);
     } catch (error) {
       console.error("Failed to delete activity:", error);
-      toast.error("Failed to delete activity");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete activity",
+      });
     }
   };
 
   const handleNavigate = (action: "PREV" | "NEXT" | "TODAY") => {
     switch (action) {
       case "PREV":
-        setDate(view === "month" ? subMonths(date, 1) : addDays(date, -7));
+        setDate(subMonths(date, 1));
         break;
       case "NEXT":
-        setDate(view === "month" ? addMonths(date, 1) : addDays(date, 7));
+        setDate(addMonths(date, 1));
         break;
       case "TODAY":
         setDate(new Date());
@@ -230,10 +276,17 @@ export default function Calendar() {
 
       const newActivity = await createActivity(duplicateData);
       setActivities([...activities, newActivity]);
-      toast.success("Activity duplicated successfully");
+      toast({
+        title: "Success",
+        description: "Activity duplicated successfully",
+      });
     } catch (error) {
       console.error("Failed to duplicate activity:", error);
-      toast.error("Failed to duplicate activity");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to duplicate activity",
+      });
     }
   };
 
@@ -241,16 +294,13 @@ export default function Calendar() {
     event,
     start,
     end,
-  }: {
-    event: CalendarEvent;
-    start: Date;
-    end: Date;
-  }) => {
+  }: { event: CalendarEvent; start: string | Date; end: string | Date }) => {
     try {
+      // Convert local times to UTC before sending to backend
       const updatedEvent = {
         ...event,
-        start_time: format(start, "yyyy-MM-dd'T'HH:mm:ss"),
-        end_time: format(end || start, "yyyy-MM-dd'T'HH:mm:ss"),
+        start_time: new Date(start).toISOString().replace("Z", ""),
+        end_time: new Date(end).toISOString().replace("Z", ""),
       };
       await updateActivity(event._id, updatedEvent);
       await loadActivities();
@@ -260,7 +310,7 @@ export default function Calendar() {
   };
 
   // Filter activities based on search and filters
-  const filteredEvents: CalendarEvent[] = activities
+  const filteredActivities: CalendarEvent[] = activities
     .filter((activity) => {
       const matchesSearch = activity.title
         .toLowerCase()
@@ -273,16 +323,18 @@ export default function Calendar() {
         activity.category?.toLowerCase().includes(categoryFilter.toLowerCase());
       const matchesDate =
         !dateFilter ||
-        format(new Date(activity.start_time), "yyyy-MM-dd") ===
+        format(new Date(activity.start_time + "Z"), "yyyy-MM-dd") ===
           format(dateFilter, "yyyy-MM-dd");
 
       return matchesSearch && matchesLocation && matchesCategory && matchesDate;
     })
     .map((activity) => ({
       ...activity,
-      start: new Date(activity.start_time),
-      end: new Date(activity.end_time),
+      // Convert UTC times from backend to local time for display
+      start: new Date(activity.start_time + "Z"),
+      end: new Date(activity.end_time + "Z"),
       title: activity.title,
+      _id: activity._id, // Ensure _id is included for drag and drop
     }));
 
   // Get unique locations and categories for filters
@@ -303,21 +355,20 @@ export default function Calendar() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col space-y-4">
         <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center space-x-2">
             <Button
               onClick={() => handleNavigate("PREV")}
               variant="outline"
               size="icon"
-              className="h-8 w-8"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <Button
               onClick={() => handleNavigate("TODAY")}
               variant="outline"
-              className="h-8 text-sm"
+              size="sm"
             >
               Today
             </Button>
@@ -325,17 +376,16 @@ export default function Calendar() {
               onClick={() => handleNavigate("NEXT")}
               variant="outline"
               size="icon"
-              className="h-8 w-8"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
             <span className="ml-4 text-lg font-semibold">
-              {format(date, view === "month" ? "MMMM yyyy" : "MMM d, yyyy")}
+              {format(date, "MMMM yyyy")}
             </span>
           </div>
         </div>
 
-        <div className="flex gap-4 items-center">
+        <div className="flex items-center space-x-4">
           <div className="flex-1 relative">
             <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -348,13 +398,13 @@ export default function Calendar() {
 
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9">
+              <Button variant="outline" size="sm">
                 <Filter className="mr-2 h-4 w-4" />
                 Filters
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-80">
-              <div className="grid gap-4">
+              <div className="grid space-y-4">
                 <div className="space-y-2">
                   <Label>Location</Label>
                   <Select
@@ -400,7 +450,7 @@ export default function Calendar() {
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
-                        variant={"outline"}
+                        variant="outline"
                         className={cn(
                           "w-full justify-start text-left font-normal",
                           !dateFilter && "text-muted-foreground",
@@ -435,9 +485,9 @@ export default function Calendar() {
             </PopoverContent>
           </Popover>
 
-          <Select value={view} onValueChange={(v) => setView(v as View)}>
-            <SelectTrigger className="w-[120px] h-9">
-              <SelectValue placeholder="Select view" />
+          <Select value={view} onValueChange={(value: View) => setView(value)}>
+            <SelectTrigger className="w-[120px]">
+              <SelectValue placeholder="View" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="month">Month</SelectItem>
@@ -446,9 +496,10 @@ export default function Calendar() {
           </Select>
 
           <Button
-            onClick={() => handleSelectSlot({ start: new Date() })}
+            onClick={() =>
+              handleSelectSlot({ start: new Date(), end: new Date() })
+            }
             size="sm"
-            className="h-9"
           >
             <Plus className="mr-2 h-4 w-4" /> Create Activity
           </Button>
@@ -467,7 +518,7 @@ export default function Calendar() {
           background-color: #f8f9fa;
         }
         .rbc-month-view {
-          border-radius: 8px;
+          border-radius: 0.5rem;
           border: 1px solid #e5e7eb;
         }
         .rbc-day-bg {
@@ -481,7 +532,7 @@ export default function Calendar() {
           transform: translate(-50%, -50%);
           background-color: #f3f4f6;
           padding: 4px 8px;
-          border-radius: 4px;
+          border-radius: 0.375rem;
           font-size: 12px;
           color: #374151;
           white-space: nowrap;
@@ -507,7 +558,7 @@ export default function Calendar() {
           transform: translate(-50%, -50%);
           background-color: #f3f4f6;
           padding: 4px 8px;
-          border-radius: 4px;
+          border-radius: 0.375rem;
           font-size: 12px;
           color: #374151;
           white-space: nowrap;
@@ -516,7 +567,7 @@ export default function Calendar() {
           pointer-events: none;
         }
         .rbc-time-view {
-          border-radius: 8px;
+          border-radius: 0.5rem;
           border: 1px solid #e5e7eb;
         }
         .rbc-time-content {
@@ -536,6 +587,7 @@ export default function Calendar() {
         }
         .rbc-event {
           box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+          border-radius: 0.375rem;
         }
         .rbc-event:hover {
           transform: translateY(-1px);
@@ -544,6 +596,7 @@ export default function Calendar() {
         .rbc-toolbar button {
           color: #374151;
           border: 1px solid #e5e7eb;
+          border-radius: 0.375rem;
         }
         .rbc-toolbar button:hover {
           background-color: #f3f4f6;
@@ -556,44 +609,37 @@ export default function Calendar() {
       <div className="h-[700px] bg-background rounded-lg overflow-hidden">
         <DnDCalendar
           localizer={localizer}
-          events={filteredEvents}
+          events={filteredActivities}
           startAccessor="start"
           endAccessor="end"
-          onSelectEvent={handleSelectActivity}
-          onSelectSlot={handleSelectSlot}
-          onEventDrop={({ event, start, end }) => {
-            handleEventDrop({
-              event: event as CalendarEvent,
-              start: new Date(start),
-              end: new Date(end || start),
-            });
-          }}
-          draggableAccessor={() => true}
-          resizable={false}
+          style={{ height: "calc(100vh - 300px)" }}
           selectable
+          resizable
           popup
           views={views}
           view={view}
-          onView={setView as any}
           date={date}
           onNavigate={(newDate) => setDate(newDate)}
-          messages={messages}
+          onView={setView}
+          onSelectSlot={handleSelectSlot}
+          onSelectEvent={(event) => handleSelectActivity(event)}
+          onEventDrop={handleEventDrop}
+          onEventResize={handleEventDrop}
           eventPropGetter={eventPropGetter}
           dayPropGetter={customDayPropGetter}
-          step={60}
-          timeslots={1}
-          formats={{
-            monthHeaderFormat: (date: Date) => format(date, "MMMM yyyy"),
-          }}
-          className="h-full"
+          defaultView="month"
         />
       </div>
 
       <ActivityDialog
         isOpen={isDialogOpen}
-        onClose={() => setIsDialogOpen(false)}
+        onClose={() => {
+          setIsDialogOpen(false);
+          setSelectedEndDate(null);
+        }}
         activity={selectedActivity}
         selectedDate={selectedDate}
+        selectedEndDate={selectedEndDate}
         onSave={handleSaveActivity}
         onDelete={handleDeleteActivity}
         onDuplicate={handleDuplicateActivity}

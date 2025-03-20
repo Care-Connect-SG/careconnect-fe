@@ -9,6 +9,7 @@ export interface Activity {
   end_time: string;
   location?: string;
   category?: string;
+  created_by?: string;
 }
 
 export interface ActivityCreate {

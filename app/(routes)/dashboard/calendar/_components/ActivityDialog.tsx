@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
+import { DateTimePicker } from "@/components/ui/datetime-picker";
 import {
   Dialog,
   DialogContent,
@@ -17,44 +17,21 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { TimePickerInput } from "@/components/ui/time-picker-input";
+import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import {
-  Activity,
-  ActivityCreate,
-  PREDEFINED_CATEGORIES,
-  PREDEFINED_LOCATIONS,
-} from "@/types/activity";
+import { Activity, ActivityCreate } from "@/types/activity";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { format, parseISO } from "date-fns";
-import { CalendarIcon, Clock } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 import { z } from "zod";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
-  start_date: z.date(),
-  start_time: z.string(),
-  end_date: z.date(),
-  end_time: z.string(),
+  start_time: z.date(),
+  end_time: z.date(),
   location: z.string().min(1, "Location is required"),
   category: z.string().min(1, "Category is required"),
 });
@@ -66,6 +43,7 @@ interface ActivityDialogProps {
   onClose: () => void;
   activity: Activity | null;
   selectedDate: Date;
+  selectedEndDate: Date | null;
   onSave: (activity: Partial<ActivityCreate>) => void;
   onDelete: (id: string) => void;
   onDuplicate: (activity: Activity) => void;
@@ -76,19 +54,41 @@ export default function ActivityDialog({
   onClose,
   activity,
   selectedDate,
+  selectedEndDate,
   onSave,
   onDelete,
   onDuplicate,
 }: ActivityDialogProps) {
+  const { toast } = useToast();
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
+  const userRole = session?.user?.role;
+
+  console.log("Session data:", {
+    userId,
+    userRole,
+    activityCreatedBy: activity?.created_by,
+    sessionUser: session?.user,
+  });
+
+  const canEdit =
+    !activity ||
+    (activity && (activity.created_by === userId || userRole === "Admin"));
+
+  console.log("Can edit:", canEdit, {
+    condition1: !activity,
+    condition2: activity?.created_by === userId,
+    condition3: userRole === "Admin",
+  });
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
       description: "",
-      start_date: selectedDate,
-      start_time: format(selectedDate, "HH:mm"),
-      end_date: selectedDate,
-      end_time: format(selectedDate, "HH:mm"),
+      start_time: selectedDate,
+      end_time:
+        selectedEndDate || new Date(selectedDate.getTime() + 30 * 60000),
       location: "",
       category: "",
     },
@@ -96,17 +96,11 @@ export default function ActivityDialog({
 
   useEffect(() => {
     if (activity) {
-      // Use the dates directly since they're already in ISO format
-      const startDate = new Date(activity.start_time);
-      const endDate = new Date(activity.end_time);
-
       form.reset({
         title: activity.title,
         description: activity.description || "",
-        start_date: startDate,
-        start_time: format(startDate, "HH:mm"),
-        end_date: endDate,
-        end_time: format(endDate, "HH:mm"),
+        start_time: new Date(activity.start_time),
+        end_time: new Date(activity.end_time),
         location: activity.location || "",
         category: activity.category || "",
       });
@@ -114,37 +108,31 @@ export default function ActivityDialog({
       form.reset({
         title: "",
         description: "",
-        start_date: selectedDate,
-        start_time: format(selectedDate, "HH:mm"),
-        end_date: selectedDate,
-        end_time: format(selectedDate, "HH:mm"),
+        start_time: selectedDate,
+        end_time:
+          selectedEndDate || new Date(selectedDate.getTime() + 30 * 60000),
         location: "",
         category: "",
       });
     }
-  }, [activity, selectedDate, form]);
+  }, [activity, selectedDate, selectedEndDate, form]);
 
   const onSubmit = (data: FormValues) => {
     try {
-      // Create date-time objects
-      const startDateTime = new Date(data.start_date);
-      const [startHours, startMinutes] = data.start_time.split(":").map(Number);
-      startDateTime.setHours(startHours, startMinutes);
-
-      const endDateTime = new Date(data.end_date);
-      const [endHours, endMinutes] = data.end_time.split(":").map(Number);
-      endDateTime.setHours(endHours, endMinutes);
-
-      if (endDateTime <= startDateTime) {
-        toast.error("End time must be after start time");
+      if (data.end_time <= data.start_time) {
+        toast({
+          variant: "destructive",
+          title: "Invalid Time",
+          description: "End time must be after start time",
+        });
         return;
       }
 
       const activityData: Partial<ActivityCreate> = {
         title: data.title,
         description: data.description,
-        start_time: startDateTime.toISOString(),
-        end_time: endDateTime.toISOString(),
+        start_time: data.start_time.toISOString(),
+        end_time: data.end_time.toISOString(),
         location: data.location,
         category: data.category,
       };
@@ -152,16 +140,24 @@ export default function ActivityDialog({
       onSave(activityData);
     } catch (error) {
       console.error("Failed to save activity:", error);
-      toast.error("Failed to save activity");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to save activity",
+      });
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>
-            {activity ? "Edit Activity" : "Create Activity"}
+            {activity
+              ? canEdit
+                ? "Edit Activity"
+                : "View Activity"
+              : "Create Activity"}
           </DialogTitle>
         </DialogHeader>
         <Form {...form}>
@@ -173,7 +169,11 @@ export default function ActivityDialog({
                 <FormItem>
                   <FormLabel>Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="Activity title" {...field} />
+                    <Input
+                      placeholder="Activity title"
+                      {...field}
+                      disabled={!canEdit}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -191,6 +191,7 @@ export default function ActivityDialog({
                       placeholder="Activity description"
                       className="resize-none"
                       {...field}
+                      disabled={!canEdit}
                     />
                   </FormControl>
                   <FormMessage />
@@ -199,113 +200,39 @@ export default function ActivityDialog({
             />
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <FormField
-                  control={form.control}
-                  name="start_date"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Start Date</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground",
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "PPP")
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="start_time"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Start Time</FormLabel>
-                      <FormControl>
-                        <TimePickerInput {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="start_time"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>Start Time</FormLabel>
+                    <FormControl>
+                      <DateTimePicker
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-              <div className="space-y-2">
-                <FormField
-                  control={form.control}
-                  name="end_date"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>End Date</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground",
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "PPP")
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="end_time"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>End Time</FormLabel>
-                      <FormControl>
-                        <TimePickerInput {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="end_time"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>End Time</FormLabel>
+                    <FormControl>
+                      <DateTimePicker
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
             <FormField
@@ -315,7 +242,11 @@ export default function ActivityDialog({
                 <FormItem>
                   <FormLabel>Location</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter location" {...field} />
+                    <Input
+                      placeholder="Enter location"
+                      {...field}
+                      disabled={!canEdit}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -329,7 +260,11 @@ export default function ActivityDialog({
                 <FormItem>
                   <FormLabel>Category</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter category" {...field} />
+                    <Input
+                      placeholder="Enter category"
+                      {...field}
+                      disabled={!canEdit}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -337,7 +272,7 @@ export default function ActivityDialog({
             />
 
             <div className="flex justify-end gap-2">
-              {activity && (
+              {activity && canEdit && (
                 <>
                   <Button
                     type="button"
@@ -355,7 +290,9 @@ export default function ActivityDialog({
                   </Button>
                 </>
               )}
-              <Button type="submit">{activity ? "Update" : "Create"}</Button>
+              {canEdit && (
+                <Button type="submit">{activity ? "Update" : "Create"}</Button>
+              )}
             </div>
           </form>
         </Form>

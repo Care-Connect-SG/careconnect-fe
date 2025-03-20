@@ -125,28 +125,33 @@ export default function IncidentReports() {
 
       // ✅ Ensure BOTH filters work independently & together
       const matchesReporter =
-        filterOptions.reporterId.length === 0 || // If empty, allow all
-        filterOptions.reporterId.includes(report.reporter.id); // Otherwise, must match
+        filterOptions.reporterId.length === 0 ||
+        filterOptions.reporterId.includes(report.reporter.id);
 
       const matchesResident =
-        filterOptions.residentId.length === 0 || // If empty, allow all
-        filterOptions.residentId === "all" || // Ensure "all" works correctly
+        filterOptions.residentId.length === 0 ||
+        filterOptions.residentId === "all" ||
         (report.primary_resident?.id &&
-          filterOptions.residentId.includes(report.primary_resident.id)); // Otherwise, must match
+          filterOptions.residentId.includes(report.primary_resident.id));
 
-      if (!matchesReporter || !matchesResident) return false; // Ensure BOTH work independently
+      if (!matchesReporter || !matchesResident) return false;
+
+      // ✅ Apply Date Filters
+      const reportDate = new Date(report.created_at!);
 
       if (
         filterOptions.startDate &&
-        new Date(report.created_at!) < filterOptions.startDate
-      )
+        reportDate < new Date(filterOptions.startDate)
+      ) {
         return false;
+      }
 
       if (
         filterOptions.endDate &&
-        new Date(report.created_at!) > filterOptions.endDate
-      )
+        reportDate > new Date(filterOptions.endDate)
+      ) {
         return false;
+      }
 
       return true;
     });

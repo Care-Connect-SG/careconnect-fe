@@ -52,7 +52,9 @@ export default function IncidentReportFilters({
     setFilterOptions({
       ...filterOptions,
       reporterId: selectedReporters.length === 0 ? [] : selectedReporters,
-      residentId: selectedResidents.length === 0 ? "all" : selectedResidents, // Keep consistency with "all" behavior
+      residentId: selectedResidents.length === 0 ? "all" : selectedResidents,
+      startDate: filterOptions.startDate || null,
+      endDate: filterOptions.endDate || null,
     });
   };
 

@@ -14,7 +14,7 @@ import IncidentReportFilters from "@/components/incident-reports-filter";
 
 interface FilterOptions {
   formId: string;
-  reporterId: string[]; // Now an array for multi-selection
+  reporterId: string[];
   residentId: string;
   startDate: Date | null;
   endDate: Date | null;
@@ -26,7 +26,7 @@ export default function IncidentReports() {
   const [forms, setForms] = useState<FormResponse[]>([]);
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     formId: "",
-    reporterId: [], // Updated to be an array for multi-selection
+    reporterId: [],
     residentId: "",
     startDate: null,
     endDate: null,
@@ -93,7 +93,6 @@ export default function IncidentReports() {
     return Array.from(reportersSet).map((item) => JSON.parse(item));
   }, [reports]);
 
-  // Extract unique residents from reports
   const uniqueResidents = useMemo(() => {
     const residentsSet = new Set<string>();
     reports.forEach((report) => {
@@ -123,7 +122,6 @@ export default function IncidentReports() {
       )
         return false;
 
-      // ✅ Ensure BOTH filters work independently & together
       const matchesReporter =
         filterOptions.reporterId.length === 0 ||
         filterOptions.reporterId.includes(report.reporter.id);
@@ -136,7 +134,6 @@ export default function IncidentReports() {
 
       if (!matchesReporter || !matchesResident) return false;
 
-      // ✅ Apply Date Filters
       const reportDate = new Date(report.created_at!);
 
       if (

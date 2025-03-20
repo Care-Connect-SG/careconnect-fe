@@ -60,11 +60,11 @@ export default function IncidentReportFilters({
 
   const handleReset = () => {
     setSelectedReporters([]);
-    setSelectedResidents([]); // Clear resident selection
+    setSelectedResidents([]);
     setFilterOptions({
       formId: "all",
       reporterId: [],
-      residentId: "all", // Keep this behavior for consistency
+      residentId: "all",
       startDate: null,
       endDate: null,
     });

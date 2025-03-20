@@ -10,6 +10,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { User } from "@/types/user";
+import { Pencil } from "lucide-react";
 import { useState } from "react";
 import React from "react";
 import EditPicture from "./edit-profile-picture";
@@ -26,6 +27,7 @@ const ProfilePictureDialog: React.FC<ProfilePictureDialogProps> = ({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Avatar className="h-16 w-16 rounded-lg cursor-pointer">
+          <Pencil className="absolute transition-all ease-in-out hover:duration-300 bottom-0.5 right-0.5 w-6 h-6 text-blue-300  bg-white/20 p-1 rounded-full" />
           <AvatarImage src={user.profile_picture!} alt={user.name} />
           <AvatarFallback className="rounded-lg">
             {user.email.charAt(0)}

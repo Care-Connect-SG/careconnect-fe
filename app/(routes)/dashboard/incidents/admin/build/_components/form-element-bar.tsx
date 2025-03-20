@@ -2,18 +2,17 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { FormElementType } from "@/hooks/useFormReducer";
 import { Separator } from "@radix-ui/react-separator";
 import {
   AlignLeft,
   Calendar,
   CalendarClock,
   CheckSquare,
-  Clock,
   ListChecks,
   Type,
 } from "lucide-react";
 import React from "react";
+import { FormElementType } from "../schema";
 
 interface FormElementBarItem {
   type: FormElementType;

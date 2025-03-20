@@ -35,7 +35,7 @@ export default function FormCardPublished({
   };
 
   return (
-    <Card className="relative w-md max-w-md h-[14rem] overflow-hidden border-l-4 border-l-blue-500">
+    <Card className="relative h-[14rem] overflow-hidden border-l-4 border-l-blue-500">
       <CardHeader
         className={`flex flex-row items-start justify-between space-y-0`}
       >

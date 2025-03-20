@@ -26,7 +26,7 @@ const ProfilePictureDialog: React.FC<ProfilePictureDialogProps> = ({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Avatar className="h-16 w-16 rounded-lg cursor-pointer">
-          <AvatarImage src={user.profile_picture} alt={user.name} />
+          <AvatarImage src={user.profile_picture!} alt={user.name} />
           <AvatarFallback className="rounded-lg">
             {user.email.charAt(0)}
           </AvatarFallback>
@@ -34,9 +34,9 @@ const ProfilePictureDialog: React.FC<ProfilePictureDialogProps> = ({
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Set New Profile Picture</DialogTitle>
+          <DialogTitle>Edit Profile Picture</DialogTitle>
           <DialogDescription>
-            Set your profile picture by uploading a new image.
+            Edit your profile picture by uploading a new image.
           </DialogDescription>
         </DialogHeader>
         <EditPicture user={user} onClose={() => setOpen(false)} />

@@ -1,6 +1,6 @@
 "use client";
 
-import { editProfilePicture } from "@/app/api/user";
+import { editProfilePicture, removeProfilePicture } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
@@ -56,6 +56,23 @@ const EditPicture: React.FC<EditPictureProps> = ({ user, onClose }) => {
     return new Blob([ab], { type: "image/webp" });
   };
 
+  const handleSave = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (editorRef.current) {
+      const dataUrl = editorRef.current.getImageScaledToCanvas().toDataURL();
+      const blob = dataURLtoBlob(dataUrl);
+      setLoading(true);
+      setButtonDisabled(true);
+      handleUpload(blob);
+    } else {
+      toast({
+        title: "An error occurred, please try again",
+        description: "Failed to save the image",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleUpload = async (blob: Blob): Promise<void> => {
     const formData = new FormData();
     formData.append("image", blob, "edited-image.webp");
@@ -82,20 +99,26 @@ const EditPicture: React.FC<EditPictureProps> = ({ user, onClose }) => {
     }
   };
 
-  const handleSave = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    if (editorRef.current) {
-      const dataUrl = editorRef.current.getImageScaledToCanvas().toDataURL();
-      const blob = dataURLtoBlob(dataUrl);
-      setLoading(true);
-      setButtonDisabled(true);
-      handleUpload(blob);
-    } else {
+  const handleRemovePicture = async () => {
+    try {
+      await removeProfilePicture(user);
+      toast({
+        title: "Profile picture removed successfully",
+        description: "Your profile picture has been removed successfully",
+        variant: "default",
+      });
+      queryClient.invalidateQueries({ queryKey: ["user"] });
+      onClose();
+    } catch (error: any) {
+      console.error("Error removing the image:", error);
       toast({
         title: "An error occurred, please try again",
-        description: "Failed to save the image",
+        description: error.message,
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
+      setButtonDisabled(false);
     }
   };
 
@@ -128,9 +151,21 @@ const EditPicture: React.FC<EditPictureProps> = ({ user, onClose }) => {
       </div>
 
       <div className="cursor-pointer text-sm">
+        {!selectedImage && user.profile_picture && (
+          <Button
+            variant="destructive"
+            className="w-full"
+            onClick={handleRemovePicture}
+          >
+            Remove current picture
+          </Button>
+        )}
+
         <Input {...getInputProps()} />
         <div
-          className={`mt-6 flex items-center justify-center py-2 px-4 border-2 border-dotted rounded-md transition-all duration-300 ease-in-out ${
+          className={`${
+            !selectedImage && user.profile_picture ? "mt-3" : "mt-6"
+          } flex items-center justify-center py-2 px-4 border-2 border-dotted rounded-md transition-all duration-300 ease-in-out ${
             isDragActive
               ? "border-gray-400 bg-blue-100"
               : "border-gray-400 bg-transparent cursor-pointer hover:border-gray-500"
@@ -146,13 +181,15 @@ const EditPicture: React.FC<EditPictureProps> = ({ user, onClose }) => {
         </div>
       </div>
 
-      <Button
-        disabled={!selectedImage || buttonDisabled}
-        onClick={handleSave}
-        className="mt-4 w-full"
-      >
-        {loading ? <Spinner /> : "Done"}
-      </Button>
+      {selectedImage && (
+        <Button
+          disabled={!selectedImage || buttonDisabled}
+          onClick={handleSave}
+          className="mt-4 w-full"
+        >
+          {loading ? <Spinner /> : "Done"}
+        </Button>
+      )}
     </div>
   );
 };

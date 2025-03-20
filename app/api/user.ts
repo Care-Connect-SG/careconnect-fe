@@ -143,6 +143,24 @@ export const updateUser = async (
   }
 };
 
+export async function removeProfilePicture(user: User | null): Promise<User> {
+  if (!user?.id) {
+    throw new Error("User not found");
+  }
+
+  try {
+    const updatedUser = await updateUser(user.id, {
+      ...user,
+      profile_picture: null,
+    });
+
+    return updatedUser;
+  } catch (error) {
+    console.error("Error removing profile picture:", error);
+    throw error;
+  }
+}
+
 export async function editProfilePicture(
   user: User | null,
   formData: FormData,

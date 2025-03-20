@@ -1,7 +1,6 @@
 export enum Role {
   ADMIN = "Admin",
   NURSE = "Nurse",
-  FAMILY = "Family",
 }
 
 export enum Gender {

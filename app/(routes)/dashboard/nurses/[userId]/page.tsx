@@ -1,35 +1,42 @@
 "use client";
 
-import { getCurrentUser, updateUser } from "@/app/api/user";
+import { getUserById, updateUser } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { useBreadcrumb } from "@/context/breadcrumb-context";
 import { useToast } from "@/hooks/use-toast";
 import { User, UserEdit } from "@/types/user";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import EditProfileDialog from "./_components/edit-profile-dialog";
+import EditProfileDialog from "../../profile/_components/edit-profile-dialog";
 
-const MyProfile = () => {
+const UserProfile = () => {
   const { toast } = useToast();
+  const { setPageName } = useBreadcrumb();
+  const { userId } = useParams();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<string>("overview");
-  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
   useEffect(() => {
-    const fetchCurrentUser = async () => {
+    const getUser = async () => {
       try {
-        const data = await getCurrentUser();
+        const data = await getUserById(userId as string);
         setUser(data);
+        setPageName(data?.name || `${userId} User Profile`);
       } catch (error) {
-        console.error("Error fetching current user:", error);
+        console.error("Error fetching user:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCurrentUser();
-  }, []);
+    if (userId) {
+      getUser();
+    }
+  }, [userId]);
 
   if (loading) {
     return (
@@ -50,17 +57,17 @@ const MyProfile = () => {
   ];
 
   const handleEditProfile = () => {
-    setIsDialogOpen(true);
+    setIsModalOpen(true);
   };
 
-  const handleSave = async (updatedData: UserEdit) => {
+  const handleSaveChanges = async (editedUser: UserEdit) => {
     try {
-      const updatedUser = await updateUser(user.id, updatedData);
+      const updatedUser = await updateUser(userId as string, editedUser);
       setUser(updatedUser);
-      setIsDialogOpen(false);
+      setIsModalOpen(false);
       toast({
-        title: "Profile updated successfully",
-        description: "Your profile has been updated successfully",
+        title: "Profile updated successfully!",
+        description: `${user.name}'s profile has been updated successfull`,
         variant: "default",
       });
     } catch (error: any) {
@@ -80,6 +87,7 @@ const MyProfile = () => {
           <h1 className="text-2xl font-bold">{user.name}</h1>
           <p className="text-gray-500">{user.role}</p>
         </div>
+
         <Button
           onClick={handleEditProfile}
           className="bg-blue-600 hover:bg-blue-800 text-white"
@@ -87,6 +95,7 @@ const MyProfile = () => {
           Edit Profile
         </Button>
       </Card>
+
       <div className="mt-6 border-b border-gray-200">
         <div className="flex space-x-8">
           {TABS.map((tab) => (
@@ -94,7 +103,7 @@ const MyProfile = () => {
               variant="transparentHover"
               key={tab.value}
               onClick={() => setActiveTab(tab.value)}
-              className={`py-2 px-1 text-sm font-medium ${
+              className={`py-2 px-1 text-sm font-medium bg-transparent ${
                 activeTab === tab.value
                   ? "text-blue-600 border-b-2"
                   : "text-gray-500 border-transparent"
@@ -105,6 +114,7 @@ const MyProfile = () => {
           ))}
         </div>
       </div>
+
       {activeTab === "overview" && (
         <Card className="p-6 shadow-md bg-white rounded-lg mt-6">
           <h2 className="text-xl font-semibold mb-4">User Details</h2>
@@ -125,26 +135,29 @@ const MyProfile = () => {
           </div>
         </Card>
       )}
+
       {activeTab === "history" && (
         <div className="mt-6">
           <h2 className="text-lg font-semibold">User History</h2>
           {/* Insert user history content here */}
         </div>
       )}
+
       {activeTab === "permissions" && (
         <div className="mt-6">
           <h2 className="text-lg font-semibold">User Permissions</h2>
           {/* Insert permissions content here */}
         </div>
       )}
+
       <EditProfileDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
         initialData={user}
-        onSave={handleSave}
+        onSave={handleSaveChanges}
       />
     </div>
   );
 };
 
-export default MyProfile;
+export default UserProfile;

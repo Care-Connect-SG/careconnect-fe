@@ -26,7 +26,7 @@ export const getCurrentUser = async (): Promise<User> => {
 
 export const createUser = async (user: UserForm): Promise<User> => {
   try {
-    const response = await fetch(
+    const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/users/register`,
       {
         method: "POST",
@@ -45,28 +45,6 @@ export const createUser = async (user: UserForm): Promise<User> => {
   } catch (error) {
     console.error("Error creating user:", error);
     throw error;
-  }
-};
-
-export const getUser = async (email: string | undefined) => {
-  if (!email) return null;
-
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BE_API_URL}/users/email/${email}`,
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error(errorData.detail || "Failed to fetch user role");
-      return null;
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error fetching user role:", error);
-    return null;
   }
 };
 
@@ -167,7 +145,7 @@ export const updateUser = async (
 
 export const deleteUser = async (userId: string): Promise<void> => {
   try {
-    const response = await fetch(
+    const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/users/${userId}`,
       {
         method: "DELETE",

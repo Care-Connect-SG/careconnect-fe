@@ -1,6 +1,5 @@
 "use client";
 
-import { getUser } from "@/app/api/user";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,

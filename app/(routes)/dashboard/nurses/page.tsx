@@ -31,13 +31,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useToast } from "@/hooks/use-toast";
 import { User } from "@/types/user";
 import { AlertDialogTrigger } from "@radix-ui/react-alert-dialog";
 import { PlusIcon, TrashIcon } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const Nurses = () => {
+  const { toast } = useToast();
+  const { data: session } = useSession();
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -54,8 +58,13 @@ const Nurses = () => {
       const data = await getUsers();
       setUsers(data);
       setFilteredUsers(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching users:", error);
+      toast({
+        title: "Error fetching users",
+        description: error.message,
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -68,8 +77,17 @@ const Nurses = () => {
         fetchUsers();
         setIsConfirmationModalOpen(false);
         setUserToDelete(null);
-      } catch (error) {
+        toast({
+          title: "User deleted successfully",
+          description: `${userToDelete.name} has been deleted`,
+        });
+      } catch (error: any) {
         console.error("Error deleting user:", error);
+        toast({
+          title: "Error deleting user, please try again",
+          description: error.message,
+          variant: "destructive",
+        });
       }
     }
   };
@@ -113,7 +131,6 @@ const Nurses = () => {
             <SelectItem value="All Users">All Users</SelectItem>
             <SelectItem value="Admin">Admins</SelectItem>
             <SelectItem value="Nurse">Nurses</SelectItem>
-            <SelectItem value="Family">Family</SelectItem>
           </SelectContent>
         </Select>
 
@@ -146,7 +163,13 @@ const Nurses = () => {
                 className={`border-b ${
                   index % 2 === 0 ? "bg-gray-50" : "bg-white"
                 } hover:bg-gray-100 transition cursor-pointer`}
-                onClick={() => router.push(`/dashboard/nurses/${user.id}`)}
+                onClick={() =>
+                  router.push(
+                    session?.user.id === user.id
+                      ? "/dashboard/profile"
+                      : `/dashboard/nurses/${user.id}`,
+                  )
+                }
               >
                 <TableCell className="p-4">{user.email}</TableCell>
                 <TableCell className="p-4">{user.name}</TableCell>

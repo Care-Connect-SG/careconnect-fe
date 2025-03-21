@@ -14,10 +14,10 @@ import CreateMedication from "../_components/create-medication";
 import EditMedication from "../_components/edit-medication";
 import EditProfileModal from "../_components/edit-modal";
 import MedicationDisplay from "../_components/medication-display";
+import CreateMedicalRecordModal from "./_components/create-medicalHistory-modal";
 import ResidentDetailsCard from "./_components/resident-detail-card";
 import ResidentDetailsNotesCard from "./_components/resident-detail-notes";
 import ResidentProfileCard from "./_components/resident-profile-card";
-import CreateMedicalRecordModal from "./_components/create-medicalHistory-modal";
 
 const TABS = [
   { label: "Overview", value: "overview" },
@@ -39,7 +39,8 @@ export default function ResidentDashboard() {
   const [resident, setResident] = useState<ResidentRecord | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [carePlans, setCarePlans] = useState<CarePlanRecord[]>([]);
-  const [isCreateMedicalModalOpen, setIsCreateMedicalModalOpen] = useState(false);
+  const [isCreateMedicalModalOpen, setIsCreateMedicalModalOpen] =
+    useState(false);
 
   useEffect(() => {
     if (residentProfile) {
@@ -166,21 +167,21 @@ export default function ResidentDashboard() {
 
       {activeTab === "history" && (
         <div className="mt-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold">Medical History</h2>
-          <Button onClick={() => setIsCreateMedicalModalOpen(true)}>
-            Add Medical Record
-          </Button>
-        </div>
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold">Medical History</h2>
+            <Button onClick={() => setIsCreateMedicalModalOpen(true)}>
+              Add Medical Record
+            </Button>
+          </div>
 
-        <CreateMedicalRecordModal
-          isOpen={isCreateMedicalModalOpen}
-          onClose={() => setIsCreateMedicalModalOpen(false)}
-          onRecordCreated={() => {
-            // Optionally refresh the medical records list
-          }}
-        />
-      </div>
+          <CreateMedicalRecordModal
+            isOpen={isCreateMedicalModalOpen}
+            onClose={() => setIsCreateMedicalModalOpen(false)}
+            onRecordCreated={() => {
+              // Optionally refresh the medical records list
+            }}
+          />
+        </div>
       )}
 
       {activeTab === "medication" && (

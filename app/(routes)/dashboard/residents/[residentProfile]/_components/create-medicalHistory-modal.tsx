@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -11,23 +12,26 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useParams } from "next/navigation";
 import { createMedicalRecord } from "../../../../../api/medicalHistory";
+import { useToast } from "@/hooks/use-toast";
+
 
 const CreateMedicalRecordModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
   onRecordCreated?: () => void;
 }> = ({ isOpen, onClose, onRecordCreated }) => {
-  // Extract resident_id from URL (assumes route: /residents/{resident_id}/...)
+  // IMPORTANT: Make sure your dynamic route folder is named "[resident_id]"
   const { residentProfile } = useParams() as { residentProfile: string };
-console.log(residentProfile)
-  // Manage template type and dynamic form data.
+
   const [templateType, setTemplateType] = useState("condition");
   const [formData, setFormData] = useState<any>({});
-  const [message, setMessage] = useState("");
-
-  // When template type changes, reset formData with the appropriate fields.
+  
+ const { toast } = useToast();
+  
+  // Reset form data when template type changes.
   const handleTemplateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newType = e.target.value;
     setTemplateType(newType);
@@ -73,7 +77,7 @@ console.log(residentProfile)
     }
   };
 
-  // Handle input changes for all fields.
+  // Handle input changes.
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -84,18 +88,53 @@ console.log(residentProfile)
     }));
   };
 
+  // Basic form validation (checks required fields per template)
+  const isValid = () => {
+    if (templateType === "condition") {
+      const { condition_name, date_of_diagnosis, treating_physician, treatment_details, current_status } = formData;
+      return condition_name && date_of_diagnosis && treating_physician && treatment_details && current_status;
+    } else if (templateType === "allergy") {
+      const { allergen, reaction_description, date_first_noted, severity } = formData;
+      return allergen && reaction_description && date_first_noted && severity;
+    } else if (templateType === "chronic") {
+      const { illness_name, date_of_onset, managing_physician, current_treatment_plan, monitoring_parameters } = formData;
+      return illness_name && date_of_onset && managing_physician && current_treatment_plan && monitoring_parameters;
+    } else if (templateType === "surgical") {
+      const { procedure, date, surgeon, hospital } = formData;
+      return procedure && date && surgeon && hospital;
+    } else if (templateType === "immunization") {
+      const { vaccine, date_administered, administering_facility } = formData;
+      return vaccine && date_administered && administering_facility;
+    }
+    return false;
+  };
+
   // Handle form submission.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isValid()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please fill in all required fields.",
+      });
+      return;
+    }
     try {
-      // Call the API utility with the template type, resident_id, and form data.
       const createdRecord = await createMedicalRecord(templateType, residentProfile, formData);
-      setMessage("Medical record created successfully.");
-      console.log("Created record:", createdRecord);
+      toast({
+        variant: "default",
+        title: "Success",
+        description: "Medical record created successfully.",
+      });
       if (onRecordCreated) onRecordCreated();
-      onClose(); 
+      onClose();
     } catch (error: any) {
-      setMessage(`Error: ${error.message}`);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: `Error: ${error.message}`,
+      });
     }
   };
 
@@ -125,7 +164,7 @@ console.log(residentProfile)
             </select>
           </div>
 
-          {/* Render form fields based on selected template */}
+          {/* Render fields based on template type */}
           {templateType === "condition" && (
             <>
               <div>
@@ -161,12 +200,11 @@ console.log(residentProfile)
               </div>
               <div>
                 <Label htmlFor="treatment_details">Treatment Details</Label>
-                <textarea
+                <Textarea
                   id="treatment_details"
                   name="treatment_details"
                   value={formData.treatment_details || ""}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md p-2"
                   required
                 />
               </div>
@@ -228,12 +266,11 @@ console.log(residentProfile)
               </div>
               <div>
                 <Label htmlFor="management_notes">Management Notes</Label>
-                <textarea
+                <Textarea
                   id="management_notes"
                   name="management_notes"
                   value={formData.management_notes || ""}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md p-2"
                 />
               </div>
             </>
@@ -274,12 +311,11 @@ console.log(residentProfile)
               </div>
               <div>
                 <Label htmlFor="current_treatment_plan">Current Treatment Plan</Label>
-                <textarea
+                <Textarea
                   id="current_treatment_plan"
                   name="current_treatment_plan"
                   value={formData.current_treatment_plan || ""}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md p-2"
                   required
                 />
               </div>
@@ -341,12 +377,11 @@ console.log(residentProfile)
               </div>
               <div>
                 <Label htmlFor="complications">Complications</Label>
-                <textarea
+                <Textarea
                   id="complications"
                   name="complications"
                   value={formData.complications || ""}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md p-2"
                 />
               </div>
             </>
@@ -407,7 +442,6 @@ console.log(residentProfile)
             </div>
           </DialogFooter>
         </form>
-        {message && <p className="mt-4 text-sm text-gray-600">{message}</p>}
       </DialogContent>
     </Dialog>
   );

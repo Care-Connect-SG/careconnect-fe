@@ -19,6 +19,7 @@ const items = [
   { key: "calendar", label: "Calendar" },
   { key: "incidents", label: "Incident Reporting" },
   { key: "nurses", label: "Nurses" },
+  { key: "profile", label: "My Profile" },
 ];
 
 function BreadCrumbDashboard() {

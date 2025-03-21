@@ -1,5 +1,7 @@
 "use client";
 
+import { TaskReassignmentActions } from "@/app/(routes)/dashboard/tasks/[taskDetails]/_components/task-reassignment-actions";
+import { TaskReassignmentForm } from "@/app/(routes)/dashboard/tasks/[taskDetails]/_components/task-reassignment-form";
 import {
   completeTask,
   downloadTask,
@@ -50,6 +52,7 @@ import {
   MoreHorizontal,
   Trash,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import TaskForm from "./task-form";
@@ -57,6 +60,7 @@ import TaskForm from "./task-form";
 export default function TaskListView({ tasks }: { tasks: Task[] }) {
   const router = useRouter();
   const { toast } = useToast();
+  const { data: session } = useSession();
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [taskList, setTaskList] = useState<Task[]>(tasks);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -449,6 +453,46 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                         <Edit className="mr-2 h-4 w-4" />
                         Edit
                       </DropdownMenuItem>
+                      {task.status === TaskStatus.ASSIGNED &&
+                        task.assigned_to &&
+                        session?.user?.id &&
+                        task.assigned_to === session.user.id &&
+                        task.assigned_to_name && (
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                            }}
+                          >
+                            <TaskReassignmentForm
+                              taskId={task.id}
+                              currentNurseId={task.assigned_to}
+                              currentNurseName={task.assigned_to_name}
+                            />
+                          </DropdownMenuItem>
+                        )}
+                      {task.status === TaskStatus.REASSIGNMENT_REQUESTED &&
+                        task.reassignment_requested_to &&
+                        session?.user?.id &&
+                        task.reassignment_requested_to === session.user.id &&
+                        task.assigned_to_name &&
+                        task.reassignment_requested_by_name && (
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                            }}
+                          >
+                            <TaskReassignmentActions
+                              taskId={task.id}
+                              taskTitle={task.task_title}
+                              currentNurseId={task.assigned_to}
+                              currentNurseName={task.assigned_to_name}
+                              requestingNurseName={
+                                task.reassignment_requested_by_name
+                              }
+                              status={task.status}
+                            />
+                          </DropdownMenuItem>
+                        )}
                       <DropdownMenuItem
                         onClick={(e) => {
                           e.stopPropagation();

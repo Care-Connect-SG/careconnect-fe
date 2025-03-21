@@ -1,5 +1,7 @@
 "use client";
 
+import { TaskReassignmentActions } from "@/app/(routes)/dashboard/tasks/[taskDetails]/_components/task-reassignment-actions";
+import { TaskReassignmentForm } from "@/app/(routes)/dashboard/tasks/[taskDetails]/_components/task-reassignment-form";
 import { getResidents } from "@/app/api/resident";
 import { deleteTask, downloadTask, duplicateTask } from "@/app/api/task";
 import {
@@ -16,8 +18,9 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
 import { ResidentRecord } from "@/types/resident";
-import { Task } from "@/types/task";
+import { Task, TaskStatus } from "@/types/task";
 import { Clock, Copy, Download, Plus, Trash, User } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState, Dispatch, SetStateAction } from "react";
 import TaskForm from "./task-form";
@@ -30,9 +33,9 @@ const TaskCard = ({
   setTasks: Dispatch<SetStateAction<Task[]>>;
 }) => {
   const { toast } = useToast();
+  const { data: session } = useSession();
   const router = useRouter();
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "High":
@@ -112,8 +115,17 @@ const TaskCard = ({
 
   return (
     <div
-      className="bg-white rounded-lg border border-gray-200 p-4 mb-3 hover:shadow-md transition-shadow "
-      onClick={() => router.push(`/dashboard/tasks/${task.id}`)}
+      className="bg-white rounded-lg border border-gray-200 p-4 mb-3 hover:shadow-md transition-shadow"
+      onClick={(e) => {
+        if (
+          e.target === e.currentTarget ||
+          (e.target instanceof Element &&
+            e.currentTarget.contains(e.target) &&
+            !e.target.closest('button, [role="button"], a, select, input'))
+        ) {
+          router.push(`/dashboard/tasks/${task.id}`);
+        }
+      }}
     >
       <div className="flex justify-between items-start mb-2">
         <div>
@@ -123,11 +135,45 @@ const TaskCard = ({
           <p className="text-xs text-gray-500">{task.category}</p>
         </div>
         <div className="flex space-x-1">
+          {task.status === TaskStatus.REASSIGNMENT_REQUESTED &&
+            task.reassignment_requested_to &&
+            session?.user?.id &&
+            task.reassignment_requested_to === session.user.id &&
+            task.assigned_to_name &&
+            task.reassignment_requested_by_name && (
+              <div onClick={(e) => e.stopPropagation()}>
+                <TaskReassignmentActions
+                  taskId={task.id}
+                  taskTitle={task.task_title}
+                  currentNurseId={task.assigned_to}
+                  currentNurseName={task.assigned_to_name}
+                  requestingNurseName={task.reassignment_requested_by_name}
+                  status={task.status}
+                />
+              </div>
+            )}
+          {(task.status === TaskStatus.ASSIGNED ||
+            task.status === TaskStatus.DELAYED ||
+            task.status === TaskStatus.REASSIGNMENT_REJECTED) &&
+            task.assigned_to &&
+            session?.user?.id &&
+            task.assigned_to === session.user.id && (
+              <div onClick={(e) => e.stopPropagation()}>
+                <TaskReassignmentForm
+                  taskId={task.id}
+                  currentNurseId={task.assigned_to}
+                  currentNurseName={task.assigned_to_name || ""}
+                />
+              </div>
+            )}
           <Button
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            onClick={handleDuplicate}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDuplicate();
+            }}
           >
             <Copy className="h-4 w-4" />
           </Button>
@@ -135,7 +181,10 @@ const TaskCard = ({
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            onClick={handleDownload}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDownload();
+            }}
           >
             <Download className="h-4 w-4" />
           </Button>
@@ -143,7 +192,10 @@ const TaskCard = ({
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-red-600 hover:text-red-700"
-            onClick={() => setOpenDeleteDialog(true)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpenDeleteDialog(true);
+            }}
           >
             <Trash className="h-4 w-4" />
           </Button>

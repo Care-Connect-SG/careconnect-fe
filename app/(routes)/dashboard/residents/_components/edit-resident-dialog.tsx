@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import React, { useState } from "react";
 
-interface EditProfileModalProps {
+interface EditResidentDialogProps {
   isOpen: boolean;
   onClose: () => void;
   initialData?: {
@@ -45,7 +45,7 @@ interface EditProfileModalProps {
   }) => void;
 }
 
-const EditProfileModal: React.FC<EditProfileModalProps> = ({
+const EditResidentDialog: React.FC<EditResidentDialogProps> = ({
   isOpen,
   onClose,
   initialData = {},
@@ -206,4 +206,4 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   );
 };
 
-export default EditProfileModal;
+export default EditResidentDialog;

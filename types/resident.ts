@@ -1,5 +1,6 @@
 export interface ResidentRecord {
   id: string;
+  photograph?: string | null;
   full_name: string;
   gender: string;
   date_of_birth: string;
@@ -15,6 +16,7 @@ export interface ResidentRecord {
 }
 
 export interface RegistrationCreate {
+  photograph?: string | null;
   full_name: string;
   gender: string;
   date_of_birth: string;

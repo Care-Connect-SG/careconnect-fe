@@ -1,25 +1,29 @@
 "use client";
 
-import { editProfilePicture, removeProfilePicture } from "@/app/api/user";
+import {
+  editResidentProfilePicture,
+  removeResidentProfilePicture,
+} from "@/app/api/resident";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
-import { User } from "@/types/user";
+import { toTitleCase } from "@/lib/utils";
+import { ResidentRecord } from "@/types/resident";
 import { useQueryClient } from "@tanstack/react-query";
 import { Paperclip } from "lucide-react";
 import React, { useRef, useState, useCallback } from "react";
 import AvatarEditor from "react-avatar-editor";
 import { FileRejection, useDropzone } from "react-dropzone";
 
-interface EditProfilePictureProps {
-  user: User;
+interface EditResidentPictureProps {
+  resident: ResidentRecord;
   onClose: () => void;
 }
 
-const EditProfilePicture: React.FC<EditProfilePictureProps> = ({
-  user,
+const EditResidentPicture: React.FC<EditResidentPictureProps> = ({
+  resident,
   onClose,
 }) => {
   const { toast } = useToast();
@@ -81,13 +85,15 @@ const EditProfilePicture: React.FC<EditProfilePictureProps> = ({
     formData.append("image", blob, "edited-image.webp");
 
     try {
-      await editProfilePicture(user, formData);
+      await editResidentProfilePicture(resident, formData);
       toast({
-        title: "Profile updated successfully",
-        description: "Your profile picture has been updated successfully",
+        title: "Resident's profile picture updated successfully",
+        description: `${toTitleCase(
+          resident.full_name,
+        )}'s profile picture has been updated successfully`,
         variant: "default",
       });
-      queryClient.invalidateQueries({ queryKey: ["user"] });
+      queryClient.invalidateQueries({ queryKey: ["resident"] });
       onClose();
     } catch (error: any) {
       console.error("Error uploading the image:", error);
@@ -104,13 +110,15 @@ const EditProfilePicture: React.FC<EditProfilePictureProps> = ({
 
   const handleRemovePicture = async () => {
     try {
-      await removeProfilePicture(user);
+      await removeResidentProfilePicture(resident);
       toast({
-        title: "Profile picture removed successfully",
-        description: "Your profile picture has been removed successfully",
+        title: "Resident's profile picture removed successfully",
+        description: `${toTitleCase(
+          resident.full_name,
+        )}'s profile picture has been removed successfully`,
         variant: "default",
       });
-      queryClient.invalidateQueries({ queryKey: ["user"] });
+      queryClient.invalidateQueries({ queryKey: ["resident"] });
       onClose();
     } catch (error: any) {
       console.error("Error removing the image:", error);
@@ -154,7 +162,7 @@ const EditProfilePicture: React.FC<EditProfilePictureProps> = ({
       </div>
 
       <div className="cursor-pointer text-sm">
-        {!selectedImage && user.profile_picture && (
+        {!selectedImage && resident.photograph && (
           <Button
             variant="destructive"
             className="w-full"
@@ -167,7 +175,7 @@ const EditProfilePicture: React.FC<EditProfilePictureProps> = ({
         <Input {...getInputProps()} />
         <div
           className={`${
-            !selectedImage && user.profile_picture ? "mt-3" : "mt-6"
+            !selectedImage && resident.photograph ? "mt-3" : "mt-6"
           } flex items-center justify-center py-2 px-4 border-2 border-dotted rounded-md transition-all duration-300 ease-in-out ${
             isDragActive
               ? "border-gray-400 bg-blue-100"
@@ -197,4 +205,4 @@ const EditProfilePicture: React.FC<EditProfilePictureProps> = ({
   );
 };
 
-export default EditProfilePicture;
+export default EditResidentPicture;

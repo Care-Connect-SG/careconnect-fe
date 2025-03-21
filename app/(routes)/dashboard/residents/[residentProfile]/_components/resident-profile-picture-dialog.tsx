@@ -9,42 +9,45 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { User } from "@/types/user";
+import { ResidentRecord } from "@/types/resident";
 import { Pencil } from "lucide-react";
 import { useState } from "react";
 import React from "react";
-import EditProfilePicture from "./edit-profile-picture";
+import EditResidentPicture from "./edit-resident-picture";
 
-interface ProfilePictureDialogProps {
-  user: User;
+interface ResidentProfilePictureDialogProps {
+  resident: ResidentRecord;
 }
 
-const ProfilePictureDialog: React.FC<ProfilePictureDialogProps> = ({
-  user,
-}) => {
+const ResidentProfilePictureDialog: React.FC<
+  ResidentProfilePictureDialogProps
+> = ({ resident }) => {
   const [open, setOpen] = useState(false);
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Avatar className="h-16 w-16 rounded-lg cursor-pointer">
           <Pencil className="absolute transition-all ease-in-out hover:duration-300 bottom-0.5 right-0.5 w-6 h-6 text-blue-300  bg-white/20 p-1 rounded-full" />
-          <AvatarImage src={user.profile_picture!} alt={user.name} />
+          <AvatarImage src={resident.photograph!} alt={resident.full_name} />
           <AvatarFallback className="rounded-lg">
-            {user.email.charAt(0)}
+            {resident.full_name.charAt(0)}
           </AvatarFallback>
         </Avatar>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Edit Profile Picture</DialogTitle>
+          <DialogTitle>Edit Resident Profile Picture</DialogTitle>
           <DialogDescription>
-            Edit your profile picture by uploading a new image.
+            Edit resident profile by uploading a new image.
           </DialogDescription>
         </DialogHeader>
-        <EditProfilePicture user={user} onClose={() => setOpen(false)} />
+        <EditResidentPicture
+          resident={resident}
+          onClose={() => setOpen(false)}
+        />
       </DialogContent>
     </Dialog>
   );
 };
 
-export default ProfilePictureDialog;
+export default ResidentProfilePictureDialog;

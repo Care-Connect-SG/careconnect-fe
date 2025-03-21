@@ -1,17 +1,17 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useParams } from "next/navigation";
+import React, { useState, useEffect } from "react";
 import { createMedicalRecord } from "../../../../../api/medicalHistory";
 
 const CreateMedicalRecordModal: React.FC<{
@@ -21,7 +21,7 @@ const CreateMedicalRecordModal: React.FC<{
 }> = ({ isOpen, onClose, onRecordCreated }) => {
   // Extract resident_id from URL (assumes route: /residents/{resident_id}/...)
   const { residentProfile } = useParams() as { residentProfile: string };
-console.log(residentProfile)
+  console.log(residentProfile);
   // Manage template type and dynamic form data.
   const [templateType, setTemplateType] = useState("condition");
   const [formData, setFormData] = useState<any>({});
@@ -75,7 +75,7 @@ console.log(residentProfile)
 
   // Handle input changes for all fields.
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev: any) => ({
@@ -89,11 +89,15 @@ console.log(residentProfile)
     e.preventDefault();
     try {
       // Call the API utility with the template type, resident_id, and form data.
-      const createdRecord = await createMedicalRecord(templateType, residentProfile, formData);
+      const createdRecord = await createMedicalRecord(
+        templateType,
+        residentProfile,
+        formData,
+      );
       setMessage("Medical record created successfully.");
       console.log("Created record:", createdRecord);
       if (onRecordCreated) onRecordCreated();
-      onClose(); 
+      onClose();
     } catch (error: any) {
       setMessage(`Error: ${error.message}`);
     }
@@ -196,7 +200,9 @@ console.log(residentProfile)
                 />
               </div>
               <div>
-                <Label htmlFor="reaction_description">Reaction Description</Label>
+                <Label htmlFor="reaction_description">
+                  Reaction Description
+                </Label>
                 <Input
                   id="reaction_description"
                   name="reaction_description"
@@ -273,7 +279,9 @@ console.log(residentProfile)
                 />
               </div>
               <div>
-                <Label htmlFor="current_treatment_plan">Current Treatment Plan</Label>
+                <Label htmlFor="current_treatment_plan">
+                  Current Treatment Plan
+                </Label>
                 <textarea
                   id="current_treatment_plan"
                   name="current_treatment_plan"
@@ -284,7 +292,9 @@ console.log(residentProfile)
                 />
               </div>
               <div>
-                <Label htmlFor="monitoring_parameters">Monitoring Parameters</Label>
+                <Label htmlFor="monitoring_parameters">
+                  Monitoring Parameters
+                </Label>
                 <Input
                   id="monitoring_parameters"
                   name="monitoring_parameters"
@@ -376,7 +386,9 @@ console.log(residentProfile)
                 />
               </div>
               <div>
-                <Label htmlFor="administering_facility">Administering Facility</Label>
+                <Label htmlFor="administering_facility">
+                  Administering Facility
+                </Label>
                 <Input
                   id="administering_facility"
                   name="administering_facility"

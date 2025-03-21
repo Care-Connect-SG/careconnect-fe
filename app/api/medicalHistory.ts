@@ -1,10 +1,9 @@
-
 import { ResidentRecord } from "@/types/resident"; // Adjust the import as necessary
 
 export const createMedicalRecord = async (
   templateType: string,
   residentId: string,
-  record: Record<string, any>
+  record: Record<string, any>,
 ): Promise<ResidentRecord> => {
   try {
     const url = `${process.env.NEXT_PUBLIC_BE_API_URL}/medical/records/${templateType}?resident_id=${encodeURIComponent(residentId)}`;
@@ -22,4 +21,4 @@ export const createMedicalRecord = async (
     console.error("createMedicalRecord error:", error);
     throw error;
   }
-}
+};

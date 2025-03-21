@@ -1,6 +1,5 @@
-import { useState } from "react";
-import * as Popover from "@radix-ui/react-popover";
-import { CheckIcon, ChevronDownIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -8,8 +7,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import * as Popover from "@radix-ui/react-popover";
+import { CheckIcon, ChevronDownIcon } from "lucide-react";
+import { useState } from "react";
 
 interface OptionType {
   id: string;
@@ -30,21 +30,21 @@ export default function IncidentReportFilters({
   setFilterOptions,
 }: IncidentReportFiltersProps) {
   const [selectedReporters, setSelectedReporters] = useState<string[]>(
-    filterOptions.reporterId || []
+    filterOptions.reporterId || [],
   );
   const [selectedResidents, setSelectedResidents] = useState<string[]>(
-    filterOptions.residentId || []
+    filterOptions.residentId || [],
   );
 
   const handleToggleReporter = (id: string) => {
     setSelectedReporters((prev) =>
-      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id],
     );
   };
 
   const handleToggleResident = (id: string) => {
     setSelectedResidents((prev) =>
-      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id],
     );
   };
 

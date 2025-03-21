@@ -3,6 +3,7 @@
 import { getForms } from "@/app/api/form";
 import { deleteReport, getReports } from "@/app/api/report";
 import { getCurrentUser } from "@/app/api/user";
+import IncidentReportFilters from "@/components/incident-reports-filter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import { FormResponse } from "@/types/form";
@@ -10,7 +11,6 @@ import { ReportResponse, ReportStatus } from "@/types/report";
 import { User } from "@/types/user";
 import { useEffect, useMemo, useState } from "react";
 import ReportsTable from "./_components/reports-table";
-import IncidentReportFilters from "@/components/incident-reports-filter";
 
 interface FilterOptions {
   formId: string;
@@ -85,7 +85,10 @@ export default function IncidentReports() {
     reports.forEach((report) => {
       if (report.reporter && report.reporter.id) {
         reportersSet.add(
-          JSON.stringify({ id: report.reporter.id, name: report.reporter.name })
+          JSON.stringify({
+            id: report.reporter.id,
+            name: report.reporter.name,
+          }),
         );
       }
     });
@@ -101,7 +104,7 @@ export default function IncidentReports() {
           JSON.stringify({
             id: report.primary_resident.id,
             name: report.primary_resident.name,
-          })
+          }),
         );
       }
     });

@@ -1,6 +1,6 @@
 "use client";
 
-import { getUser } from "@/app/api/user";
+import { getCurrentUser } from "@/app/api/user";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -19,28 +19,25 @@ import {
 } from "@/components/ui/sidebar";
 import { Spinner } from "@/components/ui/spinner";
 import { User } from "@/types/user";
-import { ChevronsUpDown, LogOut, Settings, UserIcon } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { ChevronsUpDown, LogOut, UserIcon } from "lucide-react";
 import { signOut } from "next-auth/react";
-import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 
-export function NavUser({ currentUser }: { currentUser: User | null }) {
+export function NavUser() {
   const { isMobile } = useSidebar();
-  const router = useRouter();
-  const { data: session, status } = useSession();
-  const user = {
-    name: session?.user?.name ?? "",
-    email: session?.user?.email ?? "",
-    avatar: session?.user?.image ?? "",
-  };
+  const {
+    data: user,
+    isLoading,
+    error,
+  } = useQuery<User>({
+    queryKey: ["user"],
+    queryFn: getCurrentUser,
+  });
 
-  useEffect(() => {
-    if (status !== "loading" && !session) {
-      router.push("/auth/login");
-    }
-  }, [session, status, router]);
+  if (error || !user) {
+    return null;
+  }
 
   return (
     <SidebarMenu>
@@ -51,21 +48,24 @@ export function NavUser({ currentUser }: { currentUser: User | null }) {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              {status === "loading" ? (
+              {isLoading ? (
                 <div className="flex w-full h-full items-center justify-center">
                   <Spinner />
                 </div>
               ) : (
                 <>
                   <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage src={user.avatar} alt={user.name} />
+                    <AvatarImage
+                      src={user?.profile_picture!}
+                      alt={user?.name}
+                    />
                     <AvatarFallback className="rounded-lg">
-                      {user.email.charAt(0)}
+                      {user?.email.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">{user.name}</span>
-                    <span className="truncate text-xs">{user.email}</span>
+                    <span className="truncate font-semibold">{user?.name}</span>
+                    <span className="truncate text-xs">{user?.email}</span>
                   </div>
                   <ChevronsUpDown className="ml-auto size-4" />
                 </>
@@ -81,35 +81,24 @@ export function NavUser({ currentUser }: { currentUser: User | null }) {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
+                  <AvatarImage src={user?.profile_picture!} alt={user?.name} />
                   <AvatarFallback className="rounded-lg">
-                    {user.email.charAt(0)}
+                    {user?.email.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">{user.name}</span>
-                  <span className="truncate text-xs">{user.email}</span>
+                  <span className="truncate font-semibold">{user?.name}</span>
+                  <span className="truncate text-xs">{user?.email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
 
             <DropdownMenuGroup>
-              <Link
-                href={`/dashboard/nurses/${currentUser?.id}`}
-                passHref
-                legacyBehavior
-              >
+              <Link href={"/dashboard/profile"} passHref>
                 <DropdownMenuItem>
                   <UserIcon className="w-4 h-4" />
                   Profile
-                </DropdownMenuItem>
-              </Link>
-
-              <Link href="/dashboard/settings" passHref legacyBehavior>
-                <DropdownMenuItem>
-                  <Settings className="w-4 h-4" />
-                  Settings
                 </DropdownMenuItem>
               </Link>
             </DropdownMenuGroup>

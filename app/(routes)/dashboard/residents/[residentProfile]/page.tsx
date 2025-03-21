@@ -12,7 +12,7 @@ import { getResidentById, updateResident } from "../../../../api/resident";
 import CarePlanDisplay from "../_components/careplan-display";
 import CreateMedication from "../_components/create-medication";
 import EditMedication from "../_components/edit-medication";
-import EditProfileModal from "../_components/edit-modal";
+import EditResidentDialog from "../_components/edit-resident-dialog";
 import MedicationDisplay from "../_components/medication-display";
 import ResidentDetailsCard from "./_components/resident-detail-card";
 import ResidentDetailsNotesCard from "./_components/resident-detail-notes";
@@ -66,7 +66,7 @@ export default function ResidentDashboard() {
     }
   }, [activeTab, residentProfile]);
 
-  const handleEditProfile = () => {
+  const handleEditResident = () => {
     setIsModalOpen(true);
   };
 
@@ -115,10 +115,10 @@ export default function ResidentDashboard() {
         }
         room={resident.room_number}
         imageUrl="/images/no-image.png"
-        onEdit={handleEditProfile}
+        onEdit={handleEditResident}
       />
 
-      <EditProfileModal
+      <EditResidentDialog
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         initialData={resident}

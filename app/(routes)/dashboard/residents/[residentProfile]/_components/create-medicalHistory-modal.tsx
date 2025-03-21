@@ -93,7 +93,7 @@ console.log(residentProfile)
       setMessage("Medical record created successfully.");
       console.log("Created record:", createdRecord);
       if (onRecordCreated) onRecordCreated();
-      onClose();
+      onClose(); 
     } catch (error: any) {
       setMessage(`Error: ${error.message}`);
     }

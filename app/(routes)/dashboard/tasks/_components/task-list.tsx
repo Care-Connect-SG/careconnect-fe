@@ -72,14 +72,14 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
   }>({ key: null, direction: null });
 
   const handleTaskUpdate = (
-    updater: Task | ((prevTasks: Task[]) => Task[])
+    updater: Task | ((prevTasks: Task[]) => Task[]),
   ) => {
     if (typeof updater === "function") {
       setTaskList(updater);
     } else {
       setTaskList((prevTasks) => {
         const newTasks = prevTasks.map((task) =>
-          task.id === updater.id ? updater : task
+          task.id === updater.id ? updater : task,
         );
 
         return newTasks;
@@ -102,8 +102,8 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
         prevTasks.map((task) =>
           task.id === selectedTask.id
             ? { ...task, status: updatedTask.status }
-            : task
-        )
+            : task,
+        ),
       );
     } catch (error) {
       console.error("Error toggling task status:", error);
@@ -154,14 +154,14 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
 
   const handleDeleteTask = async (
     task: Task,
-    deleteSeries: boolean = false
+    deleteSeries: boolean = false,
   ) => {
     try {
       await deleteTask(task.id, deleteSeries);
       setTaskList((prevTasks) =>
         deleteSeries
           ? prevTasks.filter((t) => !t.recurring || t.id !== task.id)
-          : prevTasks.filter((t) => t.id !== task.id)
+          : prevTasks.filter((t) => t.id !== task.id),
       );
       toast({
         title: "Task Deleted",
@@ -408,8 +408,8 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                       task.priority === "High"
                         ? "bg-red-100 text-red-800"
                         : task.priority === "Medium"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-green-100 text-green-800"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-green-100 text-green-800"
                     }`}
                   >
                     {task.priority || "Low"}
@@ -421,10 +421,10 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                       task.status === "Assigned"
                         ? "bg-blue-100 text-blue-800"
                         : task.status === "Completed"
-                        ? "bg-green-100 text-green-800"
-                        : task.status === "Delayed"
-                        ? "bg-red-100 text-red-800"
-                        : "bg-orange-100 text-orange-800"
+                          ? "bg-green-100 text-green-800"
+                          : task.status === "Delayed"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-orange-100 text-orange-800"
                     }`}
                   >
                     {task.status}

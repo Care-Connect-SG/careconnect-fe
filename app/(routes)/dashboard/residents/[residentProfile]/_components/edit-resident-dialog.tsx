@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -18,10 +19,11 @@ import {
 } from "@/components/ui/select";
 import React, { useState } from "react";
 
-interface EditProfileModalProps {
+interface EditResidentDialogProps {
   isOpen: boolean;
   onClose: () => void;
   initialData?: {
+    photograph?: string | null;
     full_name?: string;
     room_number?: string;
     gender?: string;
@@ -33,6 +35,7 @@ interface EditProfileModalProps {
     primary_nurse?: string;
   };
   onSave: (data: {
+    photograph?: string | null;
     full_name: string;
     room_number: string;
     gender: string;
@@ -45,7 +48,7 @@ interface EditProfileModalProps {
   }) => void;
 }
 
-const EditProfileModal: React.FC<EditProfileModalProps> = ({
+const EditResidentDialog: React.FC<EditResidentDialogProps> = ({
   isOpen,
   onClose,
   initialData = {},
@@ -74,6 +77,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({
+      photograph: initialData.photograph,
       full_name: fullName,
       room_number: roomNumber,
       gender,
@@ -93,7 +97,10 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-lg w-full p-6 max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Profile</DialogTitle>
+          <DialogTitle>Edit Resident Profile</DialogTitle>
+          <DialogDescription>
+            Modify Resident Profile Information
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Name */}
@@ -122,7 +129,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
             <Select value={gender} onValueChange={(value) => setGender(value)}>
               <SelectTrigger
                 id="gender"
-                className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                className="mt-1  w-full border border-gray-300 rounded-md p-2"
               >
                 <SelectValue placeholder="Select a gender" />
               </SelectTrigger>
@@ -206,4 +213,4 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   );
 };
 
-export default EditProfileModal;
+export default EditResidentDialog;

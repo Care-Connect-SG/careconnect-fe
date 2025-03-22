@@ -19,6 +19,7 @@ interface OptionType {
 interface IncidentReportFiltersProps {
   uniqueReporters: OptionType[];
   uniqueResidents: OptionType[];
+  uniqueForms: OptionType[];
   filterOptions: any;
   setFilterOptions: (filters: any) => void;
 }
@@ -26,25 +27,26 @@ interface IncidentReportFiltersProps {
 export default function IncidentReportFilters({
   uniqueReporters,
   uniqueResidents,
+  uniqueForms,
   filterOptions,
   setFilterOptions,
 }: IncidentReportFiltersProps) {
   const [selectedReporters, setSelectedReporters] = useState<string[]>(
-    filterOptions.reporterId || [],
+    filterOptions.reporterId || []
   );
   const [selectedResidents, setSelectedResidents] = useState<string[]>(
-    filterOptions.residentId || [],
+    filterOptions.residentId || []
   );
 
   const handleToggleReporter = (id: string) => {
     setSelectedReporters((prev) =>
-      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
     );
   };
 
   const handleToggleResident = (id: string) => {
     setSelectedResidents((prev) =>
-      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
     );
   };
 
@@ -53,6 +55,7 @@ export default function IncidentReportFilters({
       ...filterOptions,
       reporterId: selectedReporters.length === 0 ? [] : selectedReporters,
       residentId: selectedResidents.length === 0 ? "all" : selectedResidents,
+      formId: filterOptions.formId,
       startDate: filterOptions.startDate || null,
       endDate: filterOptions.endDate || null,
     });
@@ -86,8 +89,11 @@ export default function IncidentReportFilters({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Forms</SelectItem>
-            <SelectItem value="form1">Form 1</SelectItem>
-            <SelectItem value="form2">Form 2</SelectItem>
+            {uniqueForms.map((form) => (
+              <SelectItem key={form.id} value={form.id}>
+                {form.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>

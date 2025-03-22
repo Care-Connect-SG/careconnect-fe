@@ -25,9 +25,9 @@ export default function IncidentReports() {
   const [reports, setReports] = useState<ReportResponse[]>([]);
   const [forms, setForms] = useState<FormResponse[]>([]);
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
-    formId: "",
+    formId: "all",
     reporterId: [],
-    residentId: "",
+    residentId: "all",
     startDate: null,
     endDate: null,
   });
@@ -79,37 +79,39 @@ export default function IncidentReports() {
     }
   };
 
-  // Extract unique reporters from reports
   const uniqueReporters = useMemo(() => {
-    const reportersSet = new Set<string>();
-    reports.forEach((report) => {
-      if (report.reporter && report.reporter.id) {
-        reportersSet.add(
-          JSON.stringify({
-            id: report.reporter.id,
-            name: report.reporter.name,
-          }),
-        );
+    const set = new Set<string>();
+    reports.forEach((r) => {
+      if (r.reporter?.id) {
+        set.add(JSON.stringify({ id: r.reporter.id, name: r.reporter.name }));
       }
     });
-
-    return Array.from(reportersSet).map((item) => JSON.parse(item));
+    return Array.from(set).map((item) => JSON.parse(item));
   }, [reports]);
 
   const uniqueResidents = useMemo(() => {
-    const residentsSet = new Set<string>();
-    reports.forEach((report) => {
-      if (report.primary_resident && report.primary_resident.id) {
-        residentsSet.add(
+    const set = new Set<string>();
+    reports.forEach((r) => {
+      if (r.primary_resident?.id) {
+        set.add(
           JSON.stringify({
-            id: report.primary_resident.id,
-            name: report.primary_resident.name,
-          }),
+            id: r.primary_resident.id,
+            name: r.primary_resident.name,
+          })
         );
       }
     });
+    return Array.from(set).map((item) => JSON.parse(item));
+  }, [reports]);
 
-    return Array.from(residentsSet).map((item) => JSON.parse(item));
+  const uniqueForms = useMemo(() => {
+    const set = new Set<string>();
+    reports.forEach((r) => {
+      if (r.form_id && r.form_name) {
+        set.add(JSON.stringify({ id: r.form_id, name: r.form_name }));
+      }
+    });
+    return Array.from(set).map((item) => JSON.parse(item));
   }, [reports]);
 
   const filteredReports = useMemo(() => {
@@ -118,12 +120,9 @@ export default function IncidentReports() {
       if (activeTab !== "my" && report.status !== ReportStatus.PUBLISHED)
         return false;
 
-      if (
-        filterOptions.formId &&
-        filterOptions.formId !== "all" &&
-        report.form_id !== filterOptions.formId
-      )
-        return false;
+      const matchesForm =
+        filterOptions.formId === "all" ||
+        report.form_id === filterOptions.formId;
 
       const matchesReporter =
         filterOptions.reporterId.length === 0 ||
@@ -135,25 +134,22 @@ export default function IncidentReports() {
         (report.primary_resident?.id &&
           filterOptions.residentId.includes(report.primary_resident.id));
 
-      if (!matchesReporter || !matchesResident) return false;
-
       const reportDate = new Date(report.created_at!);
 
-      if (
-        filterOptions.startDate &&
-        reportDate < new Date(filterOptions.startDate)
-      ) {
-        return false;
-      }
+      const matchesStartDate =
+        !filterOptions.startDate ||
+        reportDate >= new Date(filterOptions.startDate);
 
-      if (
-        filterOptions.endDate &&
-        reportDate > new Date(filterOptions.endDate)
-      ) {
-        return false;
-      }
+      const matchesEndDate =
+        !filterOptions.endDate || reportDate <= new Date(filterOptions.endDate);
 
-      return true;
+      return (
+        matchesForm &&
+        matchesReporter &&
+        matchesResident &&
+        matchesStartDate &&
+        matchesEndDate
+      );
     });
   }, [activeTab, filterOptions, reports, user]);
 
@@ -166,11 +162,12 @@ export default function IncidentReports() {
         <IncidentReportFilters
           uniqueReporters={uniqueReporters}
           uniqueResidents={uniqueResidents}
+          uniqueForms={uniqueForms} // ✅ NEW
           filterOptions={filterOptions}
           setFilterOptions={setFilterOptions}
         />
       </div>
-      <hr className="border-t-1 border-gray-300 mx-6 pt-2 pb-0"></hr>
+      <hr className="border-t-1 border-gray-300 mx-6 pt-2 pb-0" />
       <div className="px-6">
         <Tabs defaultValue="all" onValueChange={setActiveTab}>
           <TabsList className="grid grid-cols-2">

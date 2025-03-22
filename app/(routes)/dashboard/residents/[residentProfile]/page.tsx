@@ -1,22 +1,25 @@
 "use client";
 
 import { getCarePlansForResident } from "@/app/api/careplan";
+import { getMedicalRecordsByResident } from "@/app/api/medical-record";
 import { getMedicationsForResident } from "@/app/api/medication";
+import { getResidentById, updateResident } from "@/app/api/resident";
 import { Button } from "@/components/ui/button";
 import { CarePlanRecord } from "@/types/careplan";
 import { MedicationRecord } from "@/types/medication";
 import { ResidentRecord } from "@/types/resident";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
-import { getResidentById, updateResident } from "../../../../api/resident";
+import { useState } from "react";
 import CarePlanDisplay from "../_components/careplan-display";
 import CreateMedication from "../_components/create-medication";
 import EditMedication from "../_components/edit-medication";
-import EditProfileModal from "../_components/edit-modal";
 import MedicationDisplay from "../_components/medication-display";
+import EditResidentDialog from "./_components/edit-resident-dialog";
+import MedicalRecordCard from "./_components/medical-record-card";
 import ResidentDetailsCard from "./_components/resident-detail-card";
 import ResidentDetailsNotesCard from "./_components/resident-detail-notes";
-import ResidentProfileCard from "./_components/resident-profile-card";
+import ResidentProfileCard from "./_components/resident-profile-header";
 
 const TABS = [
   { label: "Overview", value: "overview" },
@@ -28,72 +31,65 @@ const TABS = [
 
 export default function ResidentDashboard() {
   const { residentProfile } = useParams() as { residentProfile: string };
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("overview");
-  const [primaryNurse, setPrimaryNurse] = useState("");
-  const [medications, setMedications] = useState<MedicationRecord[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedMedication, setSelectedMedication] =
     useState<MedicationRecord | null>(null);
-  const [resident, setResident] = useState<ResidentRecord | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [carePlans, setCarePlans] = useState<CarePlanRecord[]>([]);
 
-  useEffect(() => {
-    if (residentProfile) {
-      getResidentById(residentProfile)
-        .then((data: ResidentRecord) => {
-          setResident(data);
-          setPrimaryNurse(data.primary_nurse || "");
-        })
-        .catch((error) => console.error("Error fetching resident:", error));
-    }
-  }, [residentProfile]);
+  const { data: resident, isLoading: isResidentLoading } =
+    useQuery<ResidentRecord>({
+      queryKey: ["resident"],
+      queryFn: () => getResidentById(residentProfile),
+    });
 
-  useEffect(() => {
-    if (activeTab === "medication" && residentProfile) {
-      getMedicationsForResident(residentProfile)
-        .then(setMedications)
-        .catch(console.error);
-    }
-  }, [activeTab, residentProfile]);
+  const { data: medicalRecords = [], isLoading: areMedicalRecordsLoading } =
+    useQuery({
+      queryKey: ["medicalRecords"],
+      queryFn: () => getMedicalRecordsByResident(residentProfile),
+      enabled: !!residentProfile,
+    });
 
-  useEffect(() => {
-    if (activeTab === "careplan" && residentProfile) {
-      getCarePlansForResident(residentProfile)
-        .then(setCarePlans)
-        .catch(console.error);
-    }
-  }, [activeTab, residentProfile]);
+  const { data: medications = [], refetch: refetchMedications } = useQuery<
+    MedicationRecord[]
+  >({
+    queryKey: ["medications"],
+    queryFn: () => getMedicationsForResident(residentProfile),
+    enabled: activeTab === "medication",
+  });
 
-  const handleEditProfile = () => {
-    setIsModalOpen(true);
+  const { data: carePlans = [], refetch: refetchCarePlans } = useQuery<
+    CarePlanRecord[]
+  >({
+    queryKey: ["carePlans"],
+    queryFn: () => getCarePlansForResident(residentProfile),
+    enabled: activeTab === "careplan",
+  });
+
+  const updateResidentMutation = useMutation({
+    mutationFn: (updatedData: Partial<ResidentRecord>) =>
+      updateResident(residentProfile, updatedData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["resident"] });
+      setIsModalOpen(false);
+    },
+  });
+
+  const handleEditResident = () => setIsModalOpen(true);
+
+  const handleModalSave = (updatedData: Partial<ResidentRecord>) => {
+    updateResidentMutation.mutate(updatedData);
   };
 
-  const handleModalSave = async (updatedData: any) => {
+  const handleSaveAdditionalNotes = (newNotes: string) => {
     if (!resident) return;
-    try {
-      const updatedResident = await updateResident(resident.id, updatedData);
-      setResident(updatedResident);
-      setPrimaryNurse(updatedResident.primary_nurse || "");
-    } catch (error) {
-      console.error("Error updating resident profile:", error);
-    }
-    setIsModalOpen(false);
-  };
-
-  const handleSaveAdditionalNotes = async (newNotes: string) => {
-    if (!resident) return;
-    try {
-      const updatedResident = await updateResident(resident.id, {
-        ...resident,
-        additional_notes: newNotes,
-        additional_notes_timestamp: new Date().toISOString(),
-      });
-      setResident(updatedResident);
-    } catch (error) {
-      console.error("Error updating additional notes:", error);
-    }
+    updateResidentMutation.mutate({
+      ...resident,
+      additional_notes: newNotes,
+      additional_notes_timestamp: new Date().toISOString(),
+    });
   };
 
   const handleEditMedication = (medication: MedicationRecord) => {
@@ -101,24 +97,21 @@ export default function ResidentDashboard() {
     setIsEditModalOpen(true);
   };
 
-  if (!resident) {
+  if (isResidentLoading) {
     return <div className="text-center mt-10">Loading resident details...</div>;
+  }
+
+  if (!resident) {
+    return (
+      <div className="text-center mt-10 text-red-500">Resident not found</div>
+    );
   }
 
   return (
     <div className="w-full max-w-4xl mx-auto mt-10">
-      <ResidentProfileCard
-        name={resident.full_name}
-        age={
-          new Date().getFullYear() -
-          new Date(resident.date_of_birth).getFullYear()
-        }
-        room={resident.room_number}
-        imageUrl="/images/no-image.png"
-        onEdit={handleEditProfile}
-      />
+      <ResidentProfileCard resident={resident} onEdit={handleEditResident} />
 
-      <EditProfileModal
+      <EditResidentDialog
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         initialData={resident}
@@ -162,6 +155,26 @@ export default function ResidentDashboard() {
         </div>
       )}
 
+      {activeTab === "history" && (
+        <div className="mt-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold">Medical History</h2>
+            <Button onClick={() => setIsCreateModalOpen(true)}>
+              Add Medical Record
+            </Button>
+          </div>
+          <div className="mt-4 space-y-4">
+            {medicalRecords.length > 0 ? (
+              medicalRecords.map((record) => (
+                <MedicalRecordCard key={record.id} record={record} />
+              ))
+            ) : (
+              <p className="text-gray-500">No medical records found.</p>
+            )}
+          </div>
+        </div>
+      )}
+
       {activeTab === "medication" && (
         <div className="mt-6">
           <div className="flex justify-between items-center">
@@ -191,10 +204,7 @@ export default function ResidentDashboard() {
         residentId={residentProfile}
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        onMedicationAdded={() => {
-          setIsCreateModalOpen(false);
-          getMedicationsForResident(residentProfile).then(setMedications);
-        }}
+        onMedicationAdded={refetchMedications}
       />
 
       {selectedMedication && (
@@ -203,10 +213,7 @@ export default function ResidentDashboard() {
           medication={selectedMedication}
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
-          onMedicationUpdated={() => {
-            setIsEditModalOpen(false);
-            getMedicationsForResident(residentProfile).then(setMedications);
-          }}
+          onMedicationUpdated={refetchMedications}
         />
       )}
 

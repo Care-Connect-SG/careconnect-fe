@@ -1,3 +1,4 @@
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { RegistrationCreate, ResidentRecord } from "@/types/resident";
 
 export const getResidents = async (): Promise<ResidentRecord[]> => {
@@ -80,7 +81,7 @@ export const updateResident = async (
 
     updateData.additional_notes_timestamp = localISOString;
 
-    const response = await fetch(
+    const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}`,
       {
         method: "PUT",
@@ -89,7 +90,8 @@ export const updateResident = async (
       },
     );
     if (!response.ok) {
-      throw new Error(`Error updating resident: ${response.statusText}`);
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Unable to update resident details");
     }
     const data = await response.json();
     return data;
@@ -98,6 +100,54 @@ export const updateResident = async (
     throw error;
   }
 };
+
+export async function removeResidentProfilePicture(
+  resident: ResidentRecord,
+): Promise<ResidentRecord> {
+  try {
+    const updatedResident = await updateResident(resident.id, {
+      ...resident,
+      photograph: null,
+    });
+
+    return updatedResident;
+  } catch (error) {
+    console.error("Error removing profile picture:", error);
+    throw error;
+  }
+}
+
+export async function editResidentProfilePicture(
+  resident: ResidentRecord,
+  formData: FormData,
+): Promise<ResidentRecord> {
+  try {
+    const response = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/images/upload`,
+      {
+        method: "POST",
+        body: formData,
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Upload failed");
+    }
+
+    const result = await response.json();
+
+    const updatedResident = await updateResident(resident.id, {
+      ...resident,
+      photograph: result.data.url,
+    });
+
+    return updatedResident;
+  } catch (error) {
+    console.error("Error editing profile picture:", error);
+    throw error;
+  }
+}
 
 export const updateResidentNurse = async (
   residentId: string,
@@ -116,7 +166,7 @@ export const updateResidentNurse = async (
   },
 ): Promise<ResidentRecord> => {
   try {
-    const response = await fetch(
+    const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}`,
       {
         method: "PUT",

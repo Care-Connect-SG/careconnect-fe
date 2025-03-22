@@ -64,22 +64,9 @@ export default function ActivityDialog({
   const userId = session?.user?.id;
   const userRole = session?.user?.role;
 
-  console.log("Session data:", {
-    userId,
-    userRole,
-    activityCreatedBy: activity?.created_by,
-    sessionUser: session?.user,
-  });
-
   const canEdit =
     !activity ||
     (activity && (activity.created_by === userId || userRole === "Admin"));
-
-  console.log("Can edit:", canEdit, {
-    condition1: !activity,
-    condition2: activity?.created_by === userId,
-    condition3: userRole === "Admin",
-  });
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -139,7 +126,6 @@ export default function ActivityDialog({
 
       onSave(activityData);
     } catch (error) {
-      console.error("Failed to save activity:", error);
       toast({
         variant: "destructive",
         title: "Error",

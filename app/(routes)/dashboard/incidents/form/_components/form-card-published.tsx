@@ -26,7 +26,7 @@ export default function FormCardPublished({
   const router = useRouter();
 
   const formatDate = (isoDate?: string): string => {
-    if (!isoDate) return "Unknown Date"; 
+    if (!isoDate) return "Unknown Date";
 
     const date = new Date(isoDate);
     if (isNaN(date.getTime())) return "Invalid Date";

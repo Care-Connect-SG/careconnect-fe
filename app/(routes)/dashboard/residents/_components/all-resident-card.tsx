@@ -58,9 +58,7 @@ function ResidentCard({
       className="flex items-center justify-between p-4 bg-gray-50 shadow-sm rounded-lg border border-gray-200 hover:shadow-md transition-all cursor-pointer"
       onClick={() => onClick && onClick(resident.id)}
     >
-      {/* Left Section: Profile Image & Details */}
       <div className="flex items-center gap-4">
-        {/* Profile Image */}
         <div className="relative w-14 h-14">
           <Image
             src={resident.imageUrl}
@@ -70,7 +68,6 @@ function ResidentCard({
           />
         </div>
 
-        {/* Resident Details */}
         <div>
           <Label className="text-base font-semibold text-gray-800">
             {resident.name}
@@ -86,9 +83,7 @@ function ResidentCard({
         </div>
       </div>
 
-      {/* Right Section: Nurse Selection & Delete Button */}
       <div className="flex items-center gap-4">
-        {/* Nurse Selection */}
         <div className="flex flex-col">
           <Label className="text-xs font-medium text-gray-600">
             Nurse In Charge
@@ -111,7 +106,6 @@ function ResidentCard({
           </Select>
         </div>
 
-        {/* Delete Button */}
         <Button
           onClick={handleDelete}
           className="p-2 rounded-md bg-gray-200 hover:bg-gray-300 transition"

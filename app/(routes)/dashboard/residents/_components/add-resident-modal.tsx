@@ -95,7 +95,6 @@ const AddResidentModal: React.FC<AddResidentModalProps> = ({
           ></DialogClose>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Row 1: Full Name & Gender */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="fullName">Full Name</Label>
@@ -126,7 +125,6 @@ const AddResidentModal: React.FC<AddResidentModalProps> = ({
             </div>
           </div>
 
-          {/* Row 2: Date of Birth & NRIC Number */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="dateOfBirth">Date of Birth</Label>
@@ -152,7 +150,6 @@ const AddResidentModal: React.FC<AddResidentModalProps> = ({
             </div>
           </div>
 
-          {/* Row 3: Emergency Contact Name & Number */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="emergencyContactName">
@@ -182,7 +179,6 @@ const AddResidentModal: React.FC<AddResidentModalProps> = ({
             </div>
           </div>
 
-          {/* Row 4: Relationship & Room Number */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="relationship">Relationship</Label>
@@ -207,7 +203,6 @@ const AddResidentModal: React.FC<AddResidentModalProps> = ({
             </div>
           </div>
 
-          {/* Row 5: Additional Notes (full width) */}
           <div>
             <Label htmlFor="additionalNotes">Additional Notes</Label>
             <Textarea
@@ -219,7 +214,6 @@ const AddResidentModal: React.FC<AddResidentModalProps> = ({
             />
           </div>
 
-          {/* Row 6: Primary Nurse (full width) */}
           <div>
             <Label htmlFor="primaryNurse">Primary Nurse</Label>
             <Select
@@ -239,7 +233,6 @@ const AddResidentModal: React.FC<AddResidentModalProps> = ({
             </Select>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex justify-end space-x-4">
             <Button variant="outline" type="button" onClick={onClose}>
               Cancel

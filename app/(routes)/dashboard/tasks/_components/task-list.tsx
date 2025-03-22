@@ -70,7 +70,6 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
   }>({ key: "due_date", direction: "asc" });
 
   useEffect(() => {
-    // Initial sort by due date
     const sortedTasks = [...tasks].sort((a, b) => {
       return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
     });
@@ -186,17 +185,15 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
   const handleSort = (key: keyof Task) => {
     let direction: "asc" | "desc" = "asc";
 
-    // If clicking the same column, toggle direction
     if (sortConfig.key === key) {
       direction = sortConfig.direction === "asc" ? "desc" : "asc";
     } else {
-      // Set default sort directions for specific columns
       if (key === "due_date") {
-        direction = "asc"; // Always sort due dates ascending by default
+        direction = "asc";
       } else if (key === "priority") {
-        direction = "desc"; // Always sort priority descending by default (High to Low)
+        direction = "desc";
       } else if (key === "status") {
-        direction = "asc"; // Always sort status ascending by default
+        direction = "asc";
       }
     }
 

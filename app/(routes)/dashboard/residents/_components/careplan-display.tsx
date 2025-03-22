@@ -60,7 +60,6 @@ const CarePlanDisplay: React.FC<CarePlanProps> = ({ careplan }) => {
       </CardHeader>
 
       <CardContent className="px-6 py-4 space-y-4">
-        {/* Medical Appointments Section */}
         <div>
           <h3 className="bg-blue-50 text-gray-800 font-semibold py-2 px-4 rounded-md text-base">
             Medical Appointment Care Plan
@@ -77,7 +76,6 @@ const CarePlanDisplay: React.FC<CarePlanProps> = ({ careplan }) => {
           </div>
         </div>
 
-        {/* Dietary Plan Section */}
         <div>
           <h3 className="bg-blue-50 text-gray-800 font-semibold py-2 px-4 rounded-md text-base">
             Dietary Plan
@@ -103,7 +101,6 @@ const CarePlanDisplay: React.FC<CarePlanProps> = ({ careplan }) => {
           </div>
         </div>
 
-        {/* Daily Care Routine Section */}
         <div>
           <h3 className="bg-blue-50 text-gray-800 font-semibold py-2 px-4 rounded-md text-base">
             Daily Care Routine
@@ -124,7 +121,6 @@ const CarePlanDisplay: React.FC<CarePlanProps> = ({ careplan }) => {
           </div>
         </div>
 
-        {/* Social & Recreational Activities */}
         <div>
           <h3 className="bg-blue-50 text-gray-800 font-semibold py-2 px-4 rounded-md text-base">
             Social & Recreational Activities

@@ -39,7 +39,6 @@ export function TaskReassignmentActions({
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Accept reassignment mutation
   const acceptReassignmentMutation = useMutation({
     mutationFn: async () => {
       const response = await fetchWithAuth(
@@ -74,11 +73,14 @@ export function TaskReassignmentActions({
     },
   });
 
-  // Reject reassignment mutation
   const rejectReassignmentMutation = useMutation({
     mutationFn: async (reason: string) => {
       const response = await fetchWithAuth(
-        `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/reject-reassignment?rejection_reason=${encodeURIComponent(reason)}`,
+        `${
+          process.env.NEXT_PUBLIC_BE_API_URL
+        }/tasks/${taskId}/reject-reassignment?rejection_reason=${encodeURIComponent(
+          reason,
+        )}`,
         {
           method: "POST",
           headers: {
@@ -109,7 +111,6 @@ export function TaskReassignmentActions({
     },
   });
 
-  // Handle task self mutation
   const handleTaskSelfMutation = useMutation({
     mutationFn: async () => {
       const response = await fetchWithAuth(

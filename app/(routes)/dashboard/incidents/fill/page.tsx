@@ -12,12 +12,7 @@ import {
 } from "@/app/api/report";
 import { getCurrentUser } from "@/app/api/user";
 import { FormElementData, FormResponse } from "@/types/form";
-import {
-  CaregiverTag,
-  ReportCreate,
-  ReportResponse,
-  ReportStatus,
-} from "@/types/report";
+import { CaregiverTag, ReportCreate, ReportStatus } from "@/types/report";
 
 import { FormHeaderView } from "../_components/form-header";
 import FormElementFill from "./_components/form-element-fill";

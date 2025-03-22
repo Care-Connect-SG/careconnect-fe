@@ -1,8 +1,16 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
 import {
   Select,
   SelectContent,
@@ -10,7 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import * as Popover from "@radix-ui/react-popover";
 import { CheckIcon, ChevronDownIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -98,18 +105,19 @@ export default function IncidentReportFilters({
           </SelectContent>
         </Select>
       </div>
-
       {/* Reporter Multi-Select Dropdown */}
       <div>
         <Label className="text-sm font-medium">Reporter</Label>
-        <Popover.Root>
-          <Popover.Trigger asChild>
+        <Popover>
+          <PopoverTrigger asChild>
             <Button variant="fullBorder">
-              All Reporters
-              <ChevronDownIcon className="w-4 h-4" />
+              {selectedReporters.length === 0
+                ? "All Reporters"
+                : `${selectedReporters.length} selected`}
+              <ChevronDownIcon className="w-4 h-4 ml-2" />
             </Button>
-          </Popover.Trigger>
-          <Popover.Content className="bg-white border p-2 shadow-md rounded-md w-56">
+          </PopoverTrigger>
+          <PopoverContent className="bg-white border p-2 shadow-md rounded-md w-56">
             <div className="max-h-60 overflow-auto">
               {uniqueReporters.map((reporter) => (
                 <div
@@ -132,21 +140,22 @@ export default function IncidentReportFilters({
                 </div>
               ))}
             </div>
-          </Popover.Content>
-        </Popover.Root>
+          </PopoverContent>
+        </Popover>
       </div>
-
       {/* Resident Multi-Select Dropdown */}
       <div>
         <Label className="text-sm font-medium">Primary Resident</Label>
-        <Popover.Root>
-          <Popover.Trigger asChild>
+        <Popover>
+          <PopoverTrigger asChild>
             <Button variant="fullBorder">
-              All Residents
-              <ChevronDownIcon className="w-4 h-4" />
+              {selectedResidents.length === 0
+                ? "All Residents"
+                : `${selectedResidents.length} selected`}
+              <ChevronDownIcon className="w-4 h-4 ml-2" />
             </Button>
-          </Popover.Trigger>
-          <Popover.Content className="bg-white border p-2 shadow-md rounded-md w-56">
+          </PopoverTrigger>
+          <PopoverContent className="bg-white border p-2 shadow-md rounded-md w-56">
             <div className="max-h-60 overflow-auto">
               {uniqueResidents.map((resident) => (
                 <div
@@ -169,34 +178,76 @@ export default function IncidentReportFilters({
                 </div>
               ))}
             </div>
-          </Popover.Content>
-        </Popover.Root>
+          </PopoverContent>
+        </Popover>
       </div>
-
-      {/* Start Date Filter */}
       <div>
         <Label className="text-sm font-medium">Start Date</Label>
-        <Input
-          type="date"
-          value={filterOptions.startDate || ""}
-          onChange={(e) =>
-            setFilterOptions({ ...filterOptions, startDate: e.target.value })
-          }
-        />
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className="w-full justify-start text-left font-normal"
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {filterOptions.startDate
+                ? format(new Date(filterOptions.startDate), "PPP")
+                : "Select date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={
+                filterOptions.startDate
+                  ? new Date(filterOptions.startDate)
+                  : undefined
+              }
+              onSelect={(date) =>
+                setFilterOptions({
+                  ...filterOptions,
+                  startDate: date?.toISOString().split("T")[0] || null,
+                })
+              }
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
       </div>
-
-      {/* End Date Filter */}
+      {/* End Date Picker */}
       <div>
         <Label className="text-sm font-medium">End Date</Label>
-        <Input
-          type="date"
-          value={filterOptions.endDate || ""}
-          onChange={(e) =>
-            setFilterOptions({ ...filterOptions, endDate: e.target.value })
-          }
-        />
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className="w-full justify-start text-left font-normal"
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {filterOptions.endDate
+                ? format(new Date(filterOptions.endDate), "PPP")
+                : "Select date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={
+                filterOptions.endDate
+                  ? new Date(filterOptions.endDate)
+                  : undefined
+              }
+              onSelect={(date) =>
+                setFilterOptions({
+                  ...filterOptions,
+                  endDate: date?.toISOString().split("T")[0] || null,
+                })
+              }
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
       </div>
-
       {/* Reset Filters Button */}
       <div className="col-span-full flex justify-end">
         <Button variant="outline" onClick={handleReset}>

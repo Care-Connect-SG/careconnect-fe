@@ -3,17 +3,17 @@
 import { getForms } from "@/app/api/form";
 import { deleteReport, getReports } from "@/app/api/report";
 import { getCurrentUser } from "@/app/api/user";
-import IncidentReportFilters from "./_components/incident-reports-filter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import { FormResponse } from "@/types/form";
 import { ReportResponse, ReportStatus } from "@/types/report";
 import { User } from "@/types/user";
 import { useEffect, useMemo, useState } from "react";
+import IncidentReportFilters from "./_components/incident-reports-filter";
 import ReportsTable from "./_components/reports-table";
 
 interface FilterOptions {
-  formId: string;
+  search: string;
   reporterId: string[];
   residentId: string;
   startDate: Date | null;
@@ -25,7 +25,7 @@ export default function IncidentReports() {
   const [reports, setReports] = useState<ReportResponse[]>([]);
   const [forms, setForms] = useState<FormResponse[]>([]);
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
-    formId: "all",
+    search: "",
     reporterId: [],
     residentId: "all",
     startDate: null,
@@ -97,18 +97,8 @@ export default function IncidentReports() {
           JSON.stringify({
             id: r.primary_resident.id,
             name: r.primary_resident.name,
-          })
+          }),
         );
-      }
-    });
-    return Array.from(set).map((item) => JSON.parse(item));
-  }, [reports]);
-
-  const uniqueForms = useMemo(() => {
-    const set = new Set<string>();
-    reports.forEach((r) => {
-      if (r.form_id && r.form_name) {
-        set.add(JSON.stringify({ id: r.form_id, name: r.form_name }));
       }
     });
     return Array.from(set).map((item) => JSON.parse(item));
@@ -120,16 +110,16 @@ export default function IncidentReports() {
       if (activeTab !== "my" && report.status !== ReportStatus.PUBLISHED)
         return false;
 
-      const matchesForm =
-        filterOptions.formId === "all" ||
-        report.form_id === filterOptions.formId;
+      const searchTerm = filterOptions.search.toLowerCase().trim();
+      const matchesSearch =
+        searchTerm === "" ||
+        report.form_name?.toLowerCase().includes(searchTerm);
 
       const matchesReporter =
         filterOptions.reporterId.length === 0 ||
         filterOptions.reporterId.includes(report.reporter.id);
 
       const matchesResident =
-        filterOptions.residentId.length === 0 ||
         filterOptions.residentId === "all" ||
         (report.primary_resident?.id &&
           filterOptions.residentId.includes(report.primary_resident.id));
@@ -144,7 +134,7 @@ export default function IncidentReports() {
         !filterOptions.endDate || reportDate <= new Date(filterOptions.endDate);
 
       return (
-        matchesForm &&
+        matchesSearch &&
         matchesReporter &&
         matchesResident &&
         matchesStartDate &&
@@ -162,7 +152,6 @@ export default function IncidentReports() {
         <IncidentReportFilters
           uniqueReporters={uniqueReporters}
           uniqueResidents={uniqueResidents}
-          uniqueForms={uniqueForms} // ✅ NEW
           filterOptions={filterOptions}
           setFilterOptions={setFilterOptions}
         />

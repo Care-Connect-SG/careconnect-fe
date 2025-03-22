@@ -1,23 +1,18 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { Search, X } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { ReportResponse } from "@/types/report";
 import { CheckIcon, ChevronDownIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -29,7 +24,6 @@ interface OptionType {
 interface IncidentReportFiltersProps {
   uniqueReporters: OptionType[];
   uniqueResidents: OptionType[];
-  uniqueForms: OptionType[];
   filterOptions: any;
   setFilterOptions: (filters: any) => void;
 }
@@ -37,18 +31,16 @@ interface IncidentReportFiltersProps {
 export default function IncidentReportFilters({
   uniqueReporters,
   uniqueResidents,
-  uniqueForms,
   filterOptions,
   setFilterOptions,
 }: IncidentReportFiltersProps) {
   const [selectedReporters, setSelectedReporters] = useState<string[]>(
-    filterOptions.reporterId || []
+    filterOptions.reporterId || [],
   );
   const [selectedResidents, setSelectedResidents] = useState<string[]>(
-    filterOptions.residentId === "all" ? [] : filterOptions.residentId || []
+    filterOptions.residentId === "all" ? [] : filterOptions.residentId || [],
   );
 
-  // Sync selected values with filters on change
   useEffect(() => {
     setFilterOptions({
       ...filterOptions,
@@ -59,13 +51,23 @@ export default function IncidentReportFilters({
 
   const handleToggleReporter = (id: string) => {
     setSelectedReporters((prev) =>
-      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id],
     );
   };
 
   const handleToggleResident = (id: string) => {
     setSelectedResidents((prev) =>
-      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id],
+    );
+  };
+
+  const hasActiveFilters = () => {
+    return (
+      selectedReporters.length > 0 ||
+      selectedResidents.length > 0 ||
+      filterOptions.search?.trim() !== "" ||
+      filterOptions.startDate !== null ||
+      filterOptions.endDate !== null
     );
   };
 
@@ -73,7 +75,7 @@ export default function IncidentReportFilters({
     setSelectedReporters([]);
     setSelectedResidents([]);
     setFilterOptions({
-      formId: "all",
+      search: "",
       reporterId: [],
       residentId: "all",
       startDate: null,
@@ -82,32 +84,23 @@ export default function IncidentReportFilters({
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 p-4">
-      {/* Form Filter */}
-      <div>
-        <Label className="text-sm font-medium">Form</Label>
-        <Select
-          value={filterOptions.formId}
-          onValueChange={(value) =>
-            setFilterOptions({ ...filterOptions, formId: value })
+    <div className="flex flex-row items-center gap-4 py-4">
+      <div className="relative w-full md:w-1/3">
+        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+          <Search className="w-4 h-4 text-gray-400" />
+        </div>
+        <Input
+          type="text"
+          placeholder="Search forms..."
+          className="pl-10"
+          value={filterOptions.search || ""}
+          onChange={(e) =>
+            setFilterOptions({ ...filterOptions, search: e.target.value })
           }
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="All Forms" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Forms</SelectItem>
-            {uniqueForms.map((form) => (
-              <SelectItem key={form.id} value={form.id}>
-                {form.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        />
       </div>
-      {/* Reporter Multi-Select Dropdown */}
+
       <div>
-        <Label className="text-sm font-medium">Reporter</Label>
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="fullBorder">
@@ -136,16 +129,15 @@ export default function IncidentReportFilters({
                       <CheckIcon className="w-4 h-4 text-white" />
                     )}
                   </div>
-                  <span>{reporter.name}</span>
+                  <span className="text-sm">{reporter.name}</span>
                 </div>
               ))}
             </div>
           </PopoverContent>
         </Popover>
       </div>
-      {/* Resident Multi-Select Dropdown */}
+
       <div>
-        <Label className="text-sm font-medium">Primary Resident</Label>
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="fullBorder">
@@ -174,15 +166,15 @@ export default function IncidentReportFilters({
                       <CheckIcon className="w-4 h-4 text-white" />
                     )}
                   </div>
-                  <span>{resident.name}</span>
+                  <span className="text-sm">{resident.name}</span>
                 </div>
               ))}
             </div>
           </PopoverContent>
         </Popover>
       </div>
+
       <div>
-        <Label className="text-sm font-medium">Start Date</Label>
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -192,7 +184,7 @@ export default function IncidentReportFilters({
               <CalendarIcon className="mr-2 h-4 w-4" />
               {filterOptions.startDate
                 ? format(new Date(filterOptions.startDate), "PPP")
-                : "Select date"}
+                : "Select start date"}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
@@ -214,9 +206,8 @@ export default function IncidentReportFilters({
           </PopoverContent>
         </Popover>
       </div>
-      {/* End Date Picker */}
+
       <div>
-        <Label className="text-sm font-medium">End Date</Label>
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -226,7 +217,7 @@ export default function IncidentReportFilters({
               <CalendarIcon className="mr-2 h-4 w-4" />
               {filterOptions.endDate
                 ? format(new Date(filterOptions.endDate), "PPP")
-                : "Select date"}
+                : "Select end date"}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
@@ -248,12 +239,15 @@ export default function IncidentReportFilters({
           </PopoverContent>
         </Popover>
       </div>
-      {/* Reset Filters Button */}
-      <div className="col-span-full flex justify-end">
-        <Button variant="outline" onClick={handleReset}>
-          Reset Filters
-        </Button>
-      </div>
+
+      <Button
+        variant="outline"
+        onClick={handleReset}
+        disabled={!hasActiveFilters()}
+      >
+        <X className="w-4 h-4 mr-2" />
+        Clear
+      </Button>
     </div>
   );
 }

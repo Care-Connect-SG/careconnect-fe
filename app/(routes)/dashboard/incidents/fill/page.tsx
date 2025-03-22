@@ -8,6 +8,7 @@ import {
   createReport,
   deleteReport,
   getReportById,
+  getReports,
   updateReport,
 } from "@/app/api/report";
 import { getCurrentUser } from "@/app/api/user";
@@ -22,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { User } from "@/types/user";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronLeft, Trash2 } from "lucide-react";
+import { ChevronLeft, Trash2, X } from "lucide-react";
 import { FormProvider, useForm } from "react-hook-form";
 import { LoadingSkeleton } from "../_components/loading-skeleton";
 import { ReportSchema, reportSchema } from "./schema";
@@ -37,6 +38,13 @@ export default function CreateReportPage() {
   const [form, setForm] = useState<FormResponse | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [availableReports, setAvailableReports] = useState<ReportResponse[]>(
+    []
+  );
+  const [showReference, setShowReference] = useState(false);
+  const [referenceReportId, setReferenceReportId] = useState<string | null>(
+    null
+  );
 
   const methods = useForm<ReportSchema>({
     resolver: zodResolver(reportSchema),
@@ -63,7 +71,24 @@ export default function CreateReportPage() {
         });
       }
     }
+
     fetchUser();
+  }, []);
+
+  useEffect(() => {
+    async function fetchAllReports() {
+      try {
+        const allReports = await getReports();
+        const publishedReports = allReports.filter(
+          (report: ReportResponse) => report.status === ReportStatus.PUBLISHED
+        );
+        setAvailableReports(publishedReports);
+      } catch (error) {
+        console.error("Failed to fetch reports for reference dropdown");
+      }
+    }
+
+    fetchAllReports();
   }, []);
 
   useEffect(() => {
@@ -78,7 +103,7 @@ export default function CreateReportPage() {
           (element: FormElementData) => ({
             form_element_id: element.element_id,
             input: element.type === "checkbox" ? [] : "",
-          }),
+          })
         );
 
         if (isEditing && reportId) {
@@ -87,7 +112,7 @@ export default function CreateReportPage() {
 
             const mergedReportContent = initialReportContent.map((item) => {
               const existingContent = reportData.report_content.find(
-                (content) => content.form_element_id === item.form_element_id,
+                (content) => content.form_element_id === item.form_element_id
               );
               return existingContent ? existingContent : item;
             });
@@ -98,6 +123,11 @@ export default function CreateReportPage() {
               involved_residents: reportData.involved_residents || [],
               involved_caregivers: reportData.involved_caregivers || [],
             });
+
+            if (reportData.reference_report_id) {
+              setReferenceReportId(reportData.reference_report_id);
+              setShowReference(true);
+            }
           } catch (error) {
             console.error("Error loading report:", error);
             router.replace("/404");
@@ -155,6 +185,10 @@ export default function CreateReportPage() {
       status: ReportStatus.DRAFT,
     };
 
+    if (referenceReportId) {
+      reportData.reference_report_id = referenceReportId;
+    }
+
     if (mode === "publish") {
       reportData.status = ReportStatus.PUBLISHED;
     }
@@ -184,7 +218,7 @@ export default function CreateReportPage() {
           description: "Your form response was saved successfully.",
         });
         router.replace(
-          `/dashboard/incidents/fill?formId=${formId}&reportId=${newReportId}`,
+          `/dashboard/incidents/fill?formId=${formId}&reportId=${newReportId}`
         );
       } else {
         await updateReport(reportId, reportData);
@@ -313,6 +347,50 @@ export default function CreateReportPage() {
           <div className="flex justify-between gap-4">
             <FormHeaderView title={form.title} description={form.description} />
             <PersonSelector user={user} />
+          </div>
+
+          <div className="flex items-center gap-4 mt-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Reference Report (optional)
+              </label>
+              {!showReference ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-1"
+                  onClick={() => setShowReference(true)}
+                >
+                  + Add Reference Report
+                </Button>
+              ) : (
+                <div className="flex items-center gap-2 mt-1">
+                  <select
+                    className="border p-2 rounded-md"
+                    value={referenceReportId || ""}
+                    onChange={(e) => setReferenceReportId(e.target.value)}
+                  >
+                    <option value="">Select a report</option>
+                    {availableReports.map((report) => (
+                      <option key={report.id} value={report.id}>
+                        {report.form_name} —{" "}
+                        {new Date(report.created_at).toLocaleDateString()}
+                      </option>
+                    ))}
+                  </select>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setReferenceReportId(null);
+                      setShowReference(false);
+                    }}
+                  >
+                    <X className="w-4 h-4" />{" "}
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="py-4 space-y-4">

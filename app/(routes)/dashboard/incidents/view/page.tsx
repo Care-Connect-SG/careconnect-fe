@@ -40,7 +40,7 @@ export default function ViewReportPage() {
         report={report}
         reporter={reporter}
         resident={resident}
-      />,
+      />
     ).toBlob();
 
     const url = URL.createObjectURL(blob);
@@ -59,7 +59,7 @@ export default function ViewReportPage() {
       const reporter = await getUserById(data.reporter.id);
       if (data.primary_resident?.id) {
         const resident: ResidentRecord = await getResidentById(
-          data.primary_resident.id,
+          data.primary_resident.id
         );
         setResident(resident);
       }
@@ -229,6 +229,19 @@ export default function ViewReportPage() {
                     </div>
                   )}
               </div>
+              {report?.reference_report_id && (
+                <div className="mt-4">
+                  <h2 className="text-gray-500 font-semibold mb-2">
+                    Reference Report
+                  </h2>
+                  <Link
+                    href={`/dashboard/incidents/view?reportId=${report.reference_report_id}`}
+                    className="border-b border-dotted border-muted-foreground hover:border-primary text-blue-600"
+                  >
+                    View Reference Report
+                  </Link>
+                </div>
+              )}
             </div>
 
             <hr className="border-t-1 border-gray-300 mt-8 mb-6"></hr>
@@ -242,7 +255,7 @@ export default function ViewReportPage() {
                       {
                         form?.json_content.find(
                           (element) =>
-                            element.element_id === section.form_element_id,
+                            element.element_id === section.form_element_id
                         )?.label
                       }
                     </div>

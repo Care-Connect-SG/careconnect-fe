@@ -97,7 +97,7 @@ export default function IncidentReports() {
           JSON.stringify({
             id: r.primary_resident.id,
             name: r.primary_resident.name,
-          })
+          }),
         );
       }
     });

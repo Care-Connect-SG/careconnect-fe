@@ -32,21 +32,21 @@ export default function IncidentReportFilters({
   setFilterOptions,
 }: IncidentReportFiltersProps) {
   const [selectedReporters, setSelectedReporters] = useState<string[]>(
-    filterOptions.reporterId || []
+    filterOptions.reporterId || [],
   );
   const [selectedResidents, setSelectedResidents] = useState<string[]>(
-    filterOptions.residentId || []
+    filterOptions.residentId || [],
   );
 
   const handleToggleReporter = (id: string) => {
     setSelectedReporters((prev) =>
-      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id],
     );
   };
 
   const handleToggleResident = (id: string) => {
     setSelectedResidents((prev) =>
-      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id],
     );
   };
 

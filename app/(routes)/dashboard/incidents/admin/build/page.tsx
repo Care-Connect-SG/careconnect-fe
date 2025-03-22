@@ -9,8 +9,8 @@ import {
 import { getCurrentUser } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import { useBreadcrumb } from "@/context/breadcrumb-context";
+import { FormState, useFormReducer } from "@/hooks/use-form-reducer";
 import { toast } from "@/hooks/use-toast";
-import { FormState, useFormReducer } from "@/hooks/useFormReducer";
 import { FormCreate, FormResponse } from "@/types/form";
 import { ChevronLeft, Trash2 } from "lucide-react";
 import Link from "next/link";
@@ -110,7 +110,8 @@ export default function CreateFormPage() {
     const formData: FormCreate = {
       title: state.title,
       description: state.description,
-      creator_id: "user123", // TODO: Replace with actual user ID
+      // TODO: Replace with actual user ID
+      creator_id: "user123",
       json_content: state.elements,
       status: "Published",
     };

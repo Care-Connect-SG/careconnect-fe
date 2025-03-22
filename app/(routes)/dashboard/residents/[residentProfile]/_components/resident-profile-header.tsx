@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import React from "react";
 
-interface ResidentProfileCardProps {
+interface ResidentProfileHeaderProps {
   name: string;
   age: number;
   room: string;
@@ -12,7 +12,7 @@ interface ResidentProfileCardProps {
   onEdit: () => void;
 }
 
-const ResidentProfileCard: React.FC<ResidentProfileCardProps> = ({
+const ResidentProfileHeader: React.FC<ResidentProfileHeaderProps> = ({
   name,
   age,
   room,
@@ -21,9 +21,7 @@ const ResidentProfileCard: React.FC<ResidentProfileCardProps> = ({
 }) => {
   return (
     <div className="w-90% max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between p-4 bg-white shadow-md rounded-md">
-      {/* Left section: Avatar + Info */}
       <div className="flex flex-col sm:flex-row items-center gap-4">
-        {/* Avatar (using next/image) */}
         <div className="relative w-20 h-20 sm:w-14 sm:h-14">
           <Image
             src={imageUrl}
@@ -33,7 +31,6 @@ const ResidentProfileCard: React.FC<ResidentProfileCardProps> = ({
           />
         </div>
 
-        {/* Name, Age, Room */}
         <div className="text-center sm:text-left">
           <h2 className="text-xl font-semibold">{name}</h2>
           <div className="flex flex-col sm:flex-row items-center gap-2">
@@ -43,7 +40,6 @@ const ResidentProfileCard: React.FC<ResidentProfileCardProps> = ({
         </div>
       </div>
 
-      {/* Right section: Edit Button */}
       <Button
         onClick={onEdit}
         className="mt-4 sm:mt-0 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -54,4 +50,4 @@ const ResidentProfileCard: React.FC<ResidentProfileCardProps> = ({
   );
 };
 
-export default ResidentProfileCard;
+export default ResidentProfileHeader;

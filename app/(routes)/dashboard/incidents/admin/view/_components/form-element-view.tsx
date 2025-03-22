@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import { FormElementData } from "@/hooks/useFormReducer";
+import { FormElementData } from "@/hooks/use-form-reducer";
 import { CalendarIcon } from "lucide-react";
 
 interface FormElementViewProps {

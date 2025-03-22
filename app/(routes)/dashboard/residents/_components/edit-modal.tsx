@@ -96,7 +96,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
           <DialogTitle>Edit Profile</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Name */}
           <div>
             <Label htmlFor="fullName">Name</Label>
             <Input
@@ -106,7 +105,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
               required
             />
           </div>
-          {/* Room Number */}
           <div>
             <Label htmlFor="roomNumber">Room</Label>
             <Input
@@ -116,7 +114,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
               required
             />
           </div>
-          {/* Gender */}
           <div>
             <Label htmlFor="gender">Gender</Label>
             <Select value={gender} onValueChange={(value) => setGender(value)}>
@@ -133,7 +130,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
               </SelectContent>
             </Select>
           </div>
-          {/* Date of Birth */}
           <div>
             <Label htmlFor="dateOfBirth">Date of Birth</Label>
             <Input
@@ -144,7 +140,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
               required
             />
           </div>
-          {/* NRIC Number */}
           <div>
             <Label htmlFor="nricNumber">NRIC Number</Label>
             <Input
@@ -154,7 +149,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
               required
             />
           </div>
-          {/* Relationship */}
           <div>
             <Label htmlFor="relationship">Relationship</Label>
             <Input
@@ -164,7 +158,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
               required
             />
           </div>
-          {/* Emergency Contact Name */}
           <div>
             <Label htmlFor="emergencyContactName">Emergency Contact</Label>
             <Input
@@ -174,7 +167,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
               required
             />
           </div>
-          {/* Emergency Contact Number */}
           <div>
             <Label htmlFor="emergencyContactNumber">Contact Number</Label>
             <Input
@@ -184,7 +176,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
               required
             />
           </div>
-          {/* Primary Nurse */}
           <div>
             <Label htmlFor="primaryNurse">Primary Nurse</Label>
             <Input

@@ -1,8 +1,8 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-// 30 minutes
-const TOKENEXPIRY = 30 * 60 * 1000;
+const MINUTES = 30;
+const TOKENEXPIRYINMINUTES = MINUTES * 60 * 1000;
 
 async function refreshAccessToken(token: any) {
   if (!token.refreshToken) {
@@ -33,7 +33,7 @@ async function refreshAccessToken(token: any) {
     return {
       ...token,
       accessToken: refreshedTokens.access_token,
-      accessTokenExpires: Date.now() + TOKENEXPIRY,
+      accessTokenExpires: Date.now() + TOKENEXPIRYINMINUTES,
       refreshToken: refreshedTokens.refresh_token ?? token.refreshToken,
     };
   } catch (error) {
@@ -88,7 +88,7 @@ export const authOptions: NextAuthOptions = {
         return {
           accessToken: user.access_token,
           refreshToken: user.refresh_token,
-          accessTokenExpires: Date.now() + TOKENEXPIRY,
+          accessTokenExpires: Date.now() + TOKENEXPIRYINMINUTES,
           email: user.email,
         };
       }

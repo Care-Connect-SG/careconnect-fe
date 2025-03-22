@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { FormElementType } from "@/hooks/useFormReducer";
+import { FormElementType } from "@/hooks/use-form-reducer";
 import { Separator } from "@radix-ui/react-separator";
 import {
   AlignLeft,

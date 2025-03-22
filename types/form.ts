@@ -1,4 +1,4 @@
-import { FormElementData } from "@/hooks/useFormReducer";
+import { FormElementData } from "@/hooks/use-form-reducer";
 
 export interface FormCreate {
   title: string;

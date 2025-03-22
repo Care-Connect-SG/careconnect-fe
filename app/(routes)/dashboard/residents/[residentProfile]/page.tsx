@@ -1,6 +1,7 @@
 "use client";
 
 import { getCarePlansForResident } from "@/app/api/careplan";
+import { getMedicalRecordsByResident } from "@/app/api/medical-record";
 import { getMedicationsForResident } from "@/app/api/medication";
 import { Button } from "@/components/ui/button";
 import { CarePlanRecord } from "@/types/careplan";
@@ -9,17 +10,15 @@ import { ResidentRecord } from "@/types/resident";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { getResidentById, updateResident } from "../../../../api/resident";
-import { getMedicalRecordsByResident } from "@/app/api/medicalHistory";
 import CarePlanDisplay from "../_components/careplan-display";
 import CreateMedication from "../_components/create-medication";
 import EditMedication from "../_components/edit-medication";
 import EditProfileModal from "../_components/edit-modal";
 import MedicationDisplay from "../_components/medication-display";
-import CreateMedicalRecordModal from "./_components/create-medicalHistory-modal";
+import MedicalRecordCard from "./_components/medical-record-card";
 import ResidentDetailsCard from "./_components/resident-detail-card";
 import ResidentDetailsNotesCard from "./_components/resident-detail-notes";
-import ResidentProfileCard from "./_components/resident-profile-card";
-import MedicalRecordCard from "./_components/medical-history-card";
+import ResidentProfileCard from "./_components/resident-profile-header";
 
 const TABS = [
   { label: "Overview", value: "overview" },
@@ -30,7 +29,6 @@ const TABS = [
 ];
 
 export default function ResidentDashboard() {
-  // Removed duplicate declaration of residentProfile
   const [activeTab, setActiveTab] = useState("overview");
   const [primaryNurse, setPrimaryNurse] = useState("");
   const [medications, setMedications] = useState<MedicationRecord[]>([]);
@@ -41,7 +39,6 @@ export default function ResidentDashboard() {
   const [resident, setResident] = useState<ResidentRecord | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [carePlans, setCarePlans] = useState<CarePlanRecord[]>([]);
-  const [isCreateMedicalModalOpen, setIsCreateMedicalModalOpen] = useState(false);
   const [medicalRecords, setMedicalRecords] = useState<any[]>([]);
   const { residentProfile } = useParams() as { residentProfile: string };
   useEffect(() => {
@@ -55,10 +52,8 @@ export default function ResidentDashboard() {
     }
 
     if (residentProfile) {
-      console.log("Fetching medical records for resident:", residentProfile);
       getMedicalRecordsByResident(residentProfile)
         .then((records) => {
-          console.log("Fetched medical records:", records);
           setMedicalRecords(records);
         })
         .catch((error) => {
@@ -179,7 +174,6 @@ export default function ResidentDashboard() {
         </div>
       )}
 
-      {/* Medical History Tab */}
       {activeTab === "history" && (
         <div className="mt-6">
           <div className="flex justify-between items-center">

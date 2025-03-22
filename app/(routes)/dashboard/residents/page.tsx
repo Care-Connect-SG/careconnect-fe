@@ -27,7 +27,7 @@ export default function AllResidentsPage() {
   const searchParams = useSearchParams();
   const pageParam = searchParams.get("page");
   const currentPage = pageParam ? parseInt(pageParam, 10) : 1;
-  const LIMIT = 8; // Assuming your backend limit is 8
+  const LIMIT = 8;
 
   const fetchResidents = () => {
     getResidentsByPage(currentPage)
@@ -125,7 +125,6 @@ export default function AllResidentsPage() {
     setIsAddModalOpen(false);
   };
 
-  // Update the URL query parameter for pagination.
   const goToPage = (page: number) => {
     router.push(`/dashboard/residents?page=${page}`);
   };

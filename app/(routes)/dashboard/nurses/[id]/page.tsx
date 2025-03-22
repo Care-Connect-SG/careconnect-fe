@@ -153,14 +153,12 @@ const UserProfile = () => {
       {activeTab === "history" && (
         <div className="mt-6">
           <h2 className="text-lg font-semibold">User History</h2>
-          {/* Insert user history content here */}
         </div>
       )}
 
       {activeTab === "permissions" && (
         <div className="mt-6">
           <h2 className="text-lg font-semibold">User Permissions</h2>
-          {/* Insert permissions content here */}
         </div>
       )}
 

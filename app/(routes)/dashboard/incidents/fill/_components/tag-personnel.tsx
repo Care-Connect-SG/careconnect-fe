@@ -17,7 +17,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { ReportState } from "@/hooks/useReportReducer";
+import { ReportState } from "@/hooks/use-report-reducer";
 import { cn } from "@/lib/utils";
 import { CaregiverTag, ResidentTag } from "@/types/report";
 import { User } from "@/types/user";
@@ -85,7 +85,6 @@ export default function PersonSelector({
   return (
     <Card className="w-1/2 p-4">
       <div className="space-y-6">
-        {/* Primary Resident Selection (Single Select) */}
         <div>
           <div className="flex gap-2 justify-start items-center">
             <div className="flex items-center gap-1">
@@ -143,8 +142,7 @@ export default function PersonSelector({
           ) : null}
         </div>
 
-        {/* Involved Residents Selection (Multi-Select) */}
-        <div className="">
+        <div>
           <div className="flex items-center gap-2 pb-2">
             <UsersRound strokeWidth={1} className="mb-2" />
             <Label className="block md:text-sm font-medium">
@@ -223,7 +221,6 @@ export default function PersonSelector({
           </div>
         </div>
 
-        {/* Involved Caregivers Selection (Multi-Select) */}
         <div>
           <div className="flex items-center gap-2 pb-2">
             <UsersRound strokeWidth={1} className="mb-2" />

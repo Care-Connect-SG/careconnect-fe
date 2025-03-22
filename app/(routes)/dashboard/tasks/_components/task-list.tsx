@@ -1,5 +1,7 @@
 "use client";
 
+import { TaskReassignmentActions } from "@/app/(routes)/dashboard/tasks/[taskDetails]/_components/task-reassignment-actions";
+import { TaskReassignmentForm } from "@/app/(routes)/dashboard/tasks/[taskDetails]/_components/task-reassignment-form";
 import {
   completeTask,
   downloadTask,
@@ -37,6 +39,9 @@ import { useToast } from "@/hooks/use-toast";
 import { toTitleCase } from "@/lib/utils";
 import { Task, TaskStatus } from "@/types/task";
 import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   CheckCircle,
   Circle,
   Copy,
@@ -45,18 +50,31 @@ import {
   MoreHorizontal,
   Trash,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import TaskForm from "./task-form";
 
 export default function TaskListView({ tasks }: { tasks: Task[] }) {
   const router = useRouter();
   const { toast } = useToast();
+  const { data: session } = useSession();
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [taskList, setTaskList] = useState<Task[]>(tasks);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof Task | null;
+    direction: "asc" | "desc";
+  }>({ key: "due_date", direction: "asc" });
+
+  useEffect(() => {
+    const sortedTasks = [...tasks].sort((a, b) => {
+      return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+    });
+    setTaskList(sortedTasks);
+  }, [tasks]);
 
   const handleTaskUpdate = (
     updater: Task | ((prevTasks: Task[]) => Task[]),
@@ -64,13 +82,9 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
     if (typeof updater === "function") {
       setTaskList(updater);
     } else {
-      setTaskList((prevTasks) => {
-        const newTasks = prevTasks.map((task) =>
-          task.id === updater.id ? updater : task,
-        );
-
-        return newTasks;
-      });
+      setTaskList((prevTasks) =>
+        prevTasks.map((task) => (task.id === updater.id ? updater : task)),
+      );
     }
 
     setEditingTask(null);
@@ -168,6 +182,87 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
     }
   };
 
+  const handleSort = (key: keyof Task) => {
+    let direction: "asc" | "desc" = "asc";
+
+    if (sortConfig.key === key) {
+      direction = sortConfig.direction === "asc" ? "desc" : "asc";
+    } else {
+      if (key === "due_date") {
+        direction = "asc";
+      } else if (key === "priority") {
+        direction = "desc";
+      } else if (key === "status") {
+        direction = "asc";
+      }
+    }
+
+    setSortConfig({ key, direction });
+
+    const sortedTasks = [...tasks].sort((a, b) => {
+      if (key === "due_date") {
+        const dateA = new Date(a.due_date).getTime();
+        const dateB = new Date(b.due_date).getTime();
+        return direction === "asc" ? dateA - dateB : dateB - dateA;
+      }
+
+      if (key === "priority") {
+        const priorityOrder = { High: 3, Medium: 2, Low: 1 };
+        const aPriority = a.priority as keyof typeof priorityOrder;
+        const bPriority = b.priority as keyof typeof priorityOrder;
+        const diff =
+          (priorityOrder[bPriority] || 0) - (priorityOrder[aPriority] || 0);
+        return direction === "asc" ? -diff : diff;
+      }
+
+      if (key === "status") {
+        const statusOrder = {
+          [TaskStatus.ASSIGNED]: 1,
+          [TaskStatus.COMPLETED]: 2,
+          [TaskStatus.DELAYED]: 3,
+          [TaskStatus.REASSIGNMENT_REQUESTED]: 4,
+          [TaskStatus.REASSIGNMENT_REJECTED]: 5,
+        };
+        const diff = statusOrder[a.status] - statusOrder[b.status];
+        return direction === "asc" ? diff : -diff;
+      }
+
+      const aValue = a[key];
+      const bValue = b[key];
+
+      if (aValue === undefined || bValue === undefined) return 0;
+
+      if (aValue < bValue) return direction === "asc" ? -1 : 1;
+      if (aValue > bValue) return direction === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    setTaskList(sortedTasks);
+  };
+
+  const getSortIcon = (key: keyof Task | null) => {
+    if (!key) return <ArrowUpDown className="h-4 w-4" />;
+    if (sortConfig.key !== key) return <ArrowUpDown className="h-4 w-4" />;
+    return sortConfig.direction === "asc" ? (
+      <ArrowUp className="h-4 w-4" />
+    ) : (
+      <ArrowDown className="h-4 w-4" />
+    );
+  };
+
+  const getSortLabel = (key: keyof Task) => {
+    switch (key) {
+      case "due_date":
+        return "Due Date";
+      case "priority":
+        return "Priority";
+      case "status":
+        return "Status";
+      default:
+        return key;
+    }
+  };
+
   if (!taskList.length) {
     return <p className="text-center text-gray-500 p-8">No available tasks</p>;
   }
@@ -190,11 +285,56 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
               <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Assigned To
               </TableHead>
-              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Priority
+              <TableHead
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:text-blue-600"
+                onClick={() => handleSort("priority")}
+              >
+                <div className="flex items-center gap-1">
+                  Priority{" "}
+                  {sortConfig.key === "priority" ? (
+                    sortConfig.direction === "asc" ? (
+                      <ArrowUp className="h-4 w-4" />
+                    ) : (
+                      <ArrowDown className="h-4 w-4" />
+                    )
+                  ) : (
+                    <ArrowUpDown className="h-4 w-4" />
+                  )}
+                </div>
               </TableHead>
-              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Status
+              <TableHead
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:text-blue-600"
+                onClick={() => handleSort("status")}
+              >
+                <div className="flex items-center gap-1">
+                  Status{" "}
+                  {sortConfig.key === "status" ? (
+                    sortConfig.direction === "asc" ? (
+                      <ArrowUp className="h-4 w-4" />
+                    ) : (
+                      <ArrowDown className="h-4 w-4" />
+                    )
+                  ) : (
+                    <ArrowUpDown className="h-4 w-4" />
+                  )}
+                </div>
+              </TableHead>
+              <TableHead
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:text-blue-600"
+                onClick={() => handleSort("due_date")}
+              >
+                <div className="flex items-center gap-1">
+                  Due Date{" "}
+                  {sortConfig.key === "due_date" ? (
+                    sortConfig.direction === "asc" ? (
+                      <ArrowUp className="h-4 w-4" />
+                    ) : (
+                      <ArrowDown className="h-4 w-4" />
+                    )
+                  ) : (
+                    <ArrowUpDown className="h-4 w-4" />
+                  )}
+                </div>
               </TableHead>
               <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Actions
@@ -213,7 +353,7 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="mr-2 hover:bg-transparent z-1 hover:text--600"
+                        className="mr-2 hover:bg-transparent"
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedTask(task);
@@ -250,7 +390,6 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                     </AlertDialogContent>
                   </AlertDialog>
                 </TableCell>
-
                 <TableCell
                   className="px-6 py-4 font-medium text-gray-900"
                   onClick={() => router.push(`/dashboard/tasks/${task.id}`)}
@@ -297,7 +436,13 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                     {task.status}
                   </span>
                 </TableCell>
-                <TableCell className="px-6 py-4 flex space-x-2">
+                <TableCell
+                  className="px-6 py-4 text-gray-900"
+                  onClick={() => router.push(`/dashboard/tasks/${task.id}`)}
+                >
+                  {new Date(task.due_date).toLocaleDateString()}
+                </TableCell>
+                <TableCell className="px-6 py-4">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon">
@@ -315,6 +460,45 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                         <Edit className="mr-2 h-4 w-4" />
                         Edit
                       </DropdownMenuItem>
+                      {task.assigned_to &&
+                        session?.user?.id &&
+                        task.assigned_to === session.user.id &&
+                        task.assigned_to_name && (
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                            }}
+                          >
+                            <TaskReassignmentForm
+                              taskId={task.id}
+                              currentNurseId={task.assigned_to}
+                              currentNurseName={task.assigned_to_name}
+                            />
+                          </DropdownMenuItem>
+                        )}
+                      {task.status === TaskStatus.REASSIGNMENT_REQUESTED &&
+                        task.reassignment_requested_to &&
+                        session?.user?.id &&
+                        task.reassignment_requested_to === session.user.id &&
+                        task.assigned_to_name &&
+                        task.reassignment_requested_by_name && (
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                            }}
+                          >
+                            <TaskReassignmentActions
+                              taskId={task.id}
+                              taskTitle={task.task_title}
+                              currentNurseId={task.assigned_to}
+                              currentNurseName={task.assigned_to_name}
+                              requestingNurseName={
+                                task.reassignment_requested_by_name
+                              }
+                              status={task.status}
+                            />
+                          </DropdownMenuItem>
+                        )}
                       <DropdownMenuItem
                         onClick={(e) => {
                           e.stopPropagation();

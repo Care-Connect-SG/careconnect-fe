@@ -26,9 +26,8 @@ import { TaskViewToggle } from "./_components/task-viewtoggle";
 const TaskManagement = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [currentView, setCurrentView] = useState<"list" | "kanban">(
-    (localStorage.getItem("taskView") as "list" | "kanban") || "list",
-  );
+  const [currentView, setCurrentView] = useState<"list" | "kanban">("list");
+
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
 
@@ -113,6 +112,17 @@ const TaskManagement = () => {
     updateFilter("date", format(newDate, "yyyy-MM-dd"));
   };
 
+  useEffect(() => {
+    const savedView = localStorage.getItem("taskView") as "list" | "kanban";
+    if (savedView) {
+      setCurrentView(savedView);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("taskView", currentView);
+  }, [currentView]);
+
   return (
     <div className="flex flex-col w-full gap-8 p-8">
       <div className="flex flex-col">
@@ -125,10 +135,7 @@ const TaskManagement = () => {
           <div className="flex items-center space-x-4">
             <TaskViewToggle
               view={currentView}
-              onChange={(view) => {
-                setCurrentView(view);
-                localStorage.setItem("taskView", view);
-              }}
+              onChange={(view) => setCurrentView(view)}
             />
             <TaskForm />
           </div>

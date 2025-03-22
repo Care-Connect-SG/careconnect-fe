@@ -17,11 +17,6 @@ export const createTask = async (taskData: TaskForm): Promise<Task[]> => {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
-      console.error("Server response:", {
-        status: response.status,
-        statusText: response.statusText,
-        error: errorData,
-      });
       throw new Error(
         `Error creating task: ${response.status} ${response.statusText}${
           errorData ? ` - ${JSON.stringify(errorData)}` : ""
@@ -30,10 +25,8 @@ export const createTask = async (taskData: TaskForm): Promise<Task[]> => {
     }
 
     const data = await response.json();
-
     return data;
   } catch (error) {
-    console.error("createTask error:", error);
     if (error instanceof Error) {
       throw new Error(`Failed to create task: ${error.message}`);
     }
@@ -59,31 +52,31 @@ export const getTasks = async (filters?: {
 
     const response = await fetchWithAuth(url, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
     });
 
     if (!response.ok) {
-      console.error("getTasks - Response not OK:", {
-        status: response.status,
-        statusText: response.statusText,
-      });
       throw new Error(`Error fetching tasks: ${response.statusText}`);
     }
 
     const data = await response.json();
-
-    return data;
+    return data.map((task: any) => ({
+      ...task,
+      start_date: new Date(task.start_date),
+      due_date: new Date(task.due_date),
+      end_recurring_date: task.end_recurring_date
+        ? new Date(task.end_recurring_date)
+        : undefined,
+      finished_at: task.finished_at ? new Date(task.finished_at) : undefined,
+      created_at: new Date(task.created_at),
+    }));
   } catch (error) {
-    console.error("getTasks error:", error);
     throw error;
   }
 };
 
 export const getTaskById = async (taskId: string): Promise<Task> => {
   try {
-    const response = await fetchWithAuth(
+    const response = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}`,
       {
         method: "GET",
@@ -97,10 +90,18 @@ export const getTaskById = async (taskId: string): Promise<Task> => {
       throw new Error(`Error fetching task by ID: ${response.statusText}`);
     }
 
-    const data = await response.json();
-    return data;
+    const task = await response.json();
+    return {
+      ...task,
+      start_date: new Date(task.start_date),
+      due_date: new Date(task.due_date),
+      end_recurring_date: task.end_recurring_date
+        ? new Date(task.end_recurring_date)
+        : undefined,
+      finished_at: task.finished_at ? new Date(task.finished_at) : undefined,
+      created_at: new Date(task.created_at),
+    };
   } catch (error) {
-    console.error("getTaskById error:", error);
     throw error;
   }
 };
@@ -137,7 +138,6 @@ export const updateTask = async (
       dataToSend.is_ai_generated = updatedData.is_ai_generated;
     if (updatedData.assigned_to)
       dataToSend.assigned_to = String(updatedData.assigned_to);
-
     if (updatedData.update_series !== undefined)
       dataToSend.update_series = updatedData.update_series;
 
@@ -154,11 +154,6 @@ export const updateTask = async (
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
-      console.error("Update task error response:", {
-        status: response.status,
-        statusText: response.statusText,
-        error: errorData,
-      });
       throw new Error(
         `Error updating task: ${response.status} ${response.statusText}${
           errorData ? ` - ${JSON.stringify(errorData)}` : ""
@@ -167,19 +162,30 @@ export const updateTask = async (
     }
 
     const data = await response.json();
-    return data;
+    return {
+      ...data,
+      start_date: new Date(data.start_date),
+      due_date: new Date(data.due_date),
+      end_recurring_date: data.end_recurring_date
+        ? new Date(data.end_recurring_date)
+        : undefined,
+      finished_at: data.finished_at ? new Date(data.finished_at) : undefined,
+      created_at: new Date(data.created_at),
+    };
   } catch (error) {
-    console.error("updateTask error:", error);
     throw error;
   }
 };
 
 export const completeTask = async (taskId: string): Promise<Task> => {
   try {
-    const response = await fetchWithAuth(
+    const response = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/complete`,
       {
         method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
       },
     );
 
@@ -192,17 +198,19 @@ export const completeTask = async (taskId: string): Promise<Task> => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("completeTask error:", error);
     throw error;
   }
 };
 
 export const reopenTask = async (taskId: string): Promise<Task> => {
   try {
-    const response = await fetchWithAuth(
+    const response = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/reopen`,
       {
         method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
       },
     );
 
@@ -215,7 +223,6 @@ export const reopenTask = async (taskId: string): Promise<Task> => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("uncompleteTask error:", error);
     throw error;
   }
 };
@@ -240,14 +247,13 @@ export const deleteTask = async (
       throw new Error(`Error deleting task: ${response.statusText}`);
     }
   } catch (error) {
-    console.error("deleteTask error:", error);
     throw error;
   }
 };
 
 export const duplicateTask = async (taskId: string): Promise<Task> => {
   try {
-    const response = await fetchWithAuth(
+    const response = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/duplicate`,
       {
         method: "POST",
@@ -264,14 +270,13 @@ export const duplicateTask = async (taskId: string): Promise<Task> => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("duplicateTask error:", error);
     throw error;
   }
 };
 
 export const downloadTask = async (taskId: string): Promise<Blob> => {
   try {
-    const response = await fetchWithAuth(
+    const response = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/download`,
       {
         method: "GET",
@@ -285,10 +290,8 @@ export const downloadTask = async (taskId: string): Promise<Blob> => {
       throw new Error(`Error downloading task: ${response.statusText}`);
     }
 
-    const blob = await response.blob();
-    return blob;
+    return await response.blob();
   } catch (error) {
-    console.error("downloadTask error:", error);
     throw error;
   }
 };

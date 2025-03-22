@@ -16,7 +16,8 @@ export const getForms = async (status?: string): Promise<FormResponse[]> => {
     });
 
     if (!response.ok) {
-      throw new Error(`Error fetching forms: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error fetching forms");
     }
 
     const data = await response.json();
@@ -41,7 +42,8 @@ export const createForm = async (formData: FormCreate): Promise<string> => {
     );
 
     if (!response.ok) {
-      throw new Error(`Error creating form: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error creating form");
     }
 
     const data = await response.json();
@@ -69,7 +71,8 @@ export const updateForm = async (
     );
 
     if (!response.ok) {
-      throw new Error(`Error updating form: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error updating form");
     }
 
     const data = await response.json();
@@ -93,7 +96,8 @@ export const publishForm = async (formId: string): Promise<string> => {
     );
 
     if (!response.ok) {
-      throw new Error(`Error publishing form: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error publishing form");
     }
 
     const data = await response.json();
@@ -117,16 +121,15 @@ export const getFormById = async (formId: string): Promise<FormResponse> => {
     );
 
     if (!response.ok) {
-      throw new Error(`Error fetching form: ${response.statusText}`);
-      //TODO: Find a better way to handle errors
+      const errData = await response.json();
+      throw Error(errData.detail || "Error fetching form by ID");
     }
 
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error fetching form: ", error);
+    console.error("Error fetching form by ID: ", error);
     throw error;
-    //TODO: Find a better way to handle errors
   }
 };
 
@@ -143,7 +146,8 @@ export const deleteForm = async (formId: string): Promise<void> => {
     );
 
     if (!response.ok) {
-      throw new Error(`Error deleting form: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error deleting form");
     }
   } catch (error) {
     console.error("Error deleting form:", error);

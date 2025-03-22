@@ -144,26 +144,24 @@ export default function IncidentReports() {
   }, [activeTab, filterOptions, reports, user]);
 
   return (
-    <>
-      <div className="px-6 py-4">
-        <h1 className="scroll-m-20 text-2xl font-semibold tracking-tight py-2">
-          Incident Reports
-        </h1>
-        <IncidentReportFilters
-          uniqueReporters={uniqueReporters}
-          uniqueResidents={uniqueResidents}
-          filterOptions={filterOptions}
-          setFilterOptions={setFilterOptions}
-        />
-      </div>
-      <hr className="border-t-1 border-gray-300 mx-6 pt-2 pb-0" />
-      <div className="px-6">
+    <div className="flex flex-col gap-8 p-8 ">
+      <h1 className="scroll-m-20 text-2xl font-semibold tracking-tight">
+        Incident Reports
+      </h1>
+      <IncidentReportFilters
+        uniqueReporters={uniqueReporters}
+        uniqueResidents={uniqueResidents}
+        filterOptions={filterOptions}
+        setFilterOptions={setFilterOptions}
+      />
+
+      <div>
         <Tabs defaultValue="all" onValueChange={setActiveTab}>
           <TabsList className="grid grid-cols-2">
             <TabsTrigger value="all">All Reports</TabsTrigger>
             <TabsTrigger value="my">My Reports</TabsTrigger>
           </TabsList>
-          <TabsContent value="all" className="mt-4">
+          <TabsContent value="all" className="mt-2">
             <ReportsTable
               user={user!}
               reports={filteredReports}
@@ -171,7 +169,7 @@ export default function IncidentReports() {
               handleDelete={handleDeleteReport}
             />
           </TabsContent>
-          <TabsContent value="my" className="mt-4">
+          <TabsContent value="my" className="mt-2">
             <ReportsTable
               user={user!}
               reports={filteredReports}
@@ -181,6 +179,6 @@ export default function IncidentReports() {
           </TabsContent>
         </Tabs>
       </div>
-    </>
+    </div>
   );
 }

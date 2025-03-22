@@ -1,5 +1,10 @@
 "use client";
 
+import {
+  acceptReassignment,
+  mutateTask,
+  rejectReassignment,
+} from "@/app/api/task";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -40,22 +45,7 @@ export function TaskReassignmentActions({
   const queryClient = useQueryClient();
 
   const acceptReassignmentMutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetchWithAuth(
-        `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/accept-reassignment`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-      );
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Failed to accept reassignment");
-      }
-      return response.json();
-    },
+    mutationFn: () => acceptReassignment(taskId),
     onSuccess: () => {
       toast({
         title: "Task Accepted",
@@ -74,26 +64,7 @@ export function TaskReassignmentActions({
   });
 
   const rejectReassignmentMutation = useMutation({
-    mutationFn: async (reason: string) => {
-      const response = await fetchWithAuth(
-        `${
-          process.env.NEXT_PUBLIC_BE_API_URL
-        }/tasks/${taskId}/reject-reassignment?rejection_reason=${encodeURIComponent(
-          reason,
-        )}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-      );
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Failed to reject reassignment");
-      }
-      return response.json();
-    },
+    mutationFn: (reason: string) => rejectReassignment(taskId, reason),
     onSuccess: () => {
       toast({
         title: "Task Rejected",
@@ -112,22 +83,7 @@ export function TaskReassignmentActions({
   });
 
   const handleTaskSelfMutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetchWithAuth(
-        `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/handle-self`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-      );
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Failed to update task");
-      }
-      return response.json();
-    },
+    mutationFn: () => mutateTask(taskId),
     onSuccess: () => {
       toast({
         title: "Task Updated",

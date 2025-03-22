@@ -20,7 +20,9 @@ import FormElementFill from "./_components/form-element-fill";
 import PersonSelector from "./_components/tag-personnel";
 
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
+import { ReportResponse } from "@/types/report";
 import { User } from "@/types/user";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronLeft, Trash2, X } from "lucide-react";
@@ -39,11 +41,11 @@ export default function CreateReportPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [availableReports, setAvailableReports] = useState<ReportResponse[]>(
-    []
+    [],
   );
   const [showReference, setShowReference] = useState(false);
   const [referenceReportId, setReferenceReportId] = useState<string | null>(
-    null
+    null,
   );
 
   const methods = useForm<ReportSchema>({
@@ -80,7 +82,7 @@ export default function CreateReportPage() {
       try {
         const allReports = await getReports();
         const publishedReports = allReports.filter(
-          (report: ReportResponse) => report.status === ReportStatus.PUBLISHED
+          (report: ReportResponse) => report.status === ReportStatus.PUBLISHED,
         );
         setAvailableReports(publishedReports);
       } catch (error) {
@@ -103,7 +105,7 @@ export default function CreateReportPage() {
           (element: FormElementData) => ({
             form_element_id: element.element_id,
             input: element.type === "checkbox" ? [] : "",
-          })
+          }),
         );
 
         if (isEditing && reportId) {
@@ -112,7 +114,7 @@ export default function CreateReportPage() {
 
             const mergedReportContent = initialReportContent.map((item) => {
               const existingContent = reportData.report_content.find(
-                (content) => content.form_element_id === item.form_element_id
+                (content) => content.form_element_id === item.form_element_id,
               );
               return existingContent ? existingContent : item;
             });
@@ -218,7 +220,7 @@ export default function CreateReportPage() {
           description: "Your form response was saved successfully.",
         });
         router.replace(
-          `/dashboard/incidents/fill?formId=${formId}&reportId=${newReportId}`
+          `/dashboard/incidents/fill?formId=${formId}&reportId=${newReportId}`,
         );
       } else {
         await updateReport(reportId, reportData);
@@ -351,9 +353,9 @@ export default function CreateReportPage() {
 
           <div className="flex items-center gap-4 mt-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <Label className="block text-sm font-medium text-gray-700">
                 Reference Report (optional)
-              </label>
+              </Label>
               {!showReference ? (
                 <Button
                   variant="outline"

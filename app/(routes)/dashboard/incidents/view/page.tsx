@@ -40,7 +40,7 @@ export default function ViewReportPage() {
         report={report}
         reporter={reporter}
         resident={resident}
-      />
+      />,
     ).toBlob();
 
     const url = URL.createObjectURL(blob);
@@ -59,7 +59,7 @@ export default function ViewReportPage() {
       const reporter = await getUserById(data.reporter.id);
       if (data.primary_resident?.id) {
         const resident: ResidentRecord = await getResidentById(
-          data.primary_resident.id
+          data.primary_resident.id,
         );
         setResident(resident);
       }
@@ -255,7 +255,7 @@ export default function ViewReportPage() {
                       {
                         form?.json_content.find(
                           (element) =>
-                            element.element_id === section.form_element_id
+                            element.element_id === section.form_element_id,
                         )?.label
                       }
                     </div>

@@ -13,32 +13,60 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { convertUTCToLocal, formatDateWithoutSeconds } from "@/lib/utils";
 import { Task, TaskStatus } from "@/types/task";
 import { CheckCircle, Clock, User } from "lucide-react";
-import { useState } from "react";
+import { useSession } from "next-auth/react";
+import { useCallback, useMemo, useState } from "react";
+import { TaskReassignmentActions } from "./task-reassignment-actions";
+import { TaskReassignmentForm } from "./task-reassignment-form";
 
 interface TaskDetailHeaderProps {
   task: Task;
 }
 
+const getStatusClasses = (status: TaskStatus) => {
+  switch (status) {
+    case TaskStatus.COMPLETED:
+      return "bg-green-100 text-green-800";
+    case TaskStatus.DELAYED:
+      return "bg-red-100 text-red-800";
+    case TaskStatus.REASSIGNMENT_REQUESTED:
+      return "bg-yellow-100 text-yellow-800";
+    case TaskStatus.REASSIGNMENT_REJECTED:
+      return "bg-red-100 text-red-800";
+    default:
+      return "bg-gray-100 text-gray-800";
+  }
+};
+
 export const TaskDetailHeader = ({ task }: TaskDetailHeaderProps) => {
-  const localDueDate = task.due_date ? convertUTCToLocal(task.due_date) : null;
-  const localFinishedAt = task.finished_at
-    ? convertUTCToLocal(task.finished_at)
-    : null;
+  const { data: session, status: sessionStatus } = useSession();
+  const userId = session?.user?.id;
+
+  const localDueDate = useMemo(
+    () => (task.due_date ? convertUTCToLocal(task.due_date) : null),
+    [task.due_date],
+  );
+  const localFinishedAt = useMemo(
+    () => (task.finished_at ? convertUTCToLocal(task.finished_at) : null),
+    [task.finished_at],
+  );
 
   const [taskStatus, setTaskStatus] = useState<TaskStatus>(task.status);
   const [finishedAt, setFinishedAt] = useState<Date | null>(localFinishedAt);
 
-  const isDelayed =
-    finishedAt && localDueDate ? finishedAt > localDueDate : false;
+  const isDelayed = useMemo(
+    () => (finishedAt && localDueDate ? finishedAt > localDueDate : false),
+    [finishedAt, localDueDate],
+  );
+  const finishedAtFormatted = useMemo(
+    () => (finishedAt ? formatDateWithoutSeconds(finishedAt) : ""),
+    [finishedAt],
+  );
 
-  const finishedAtFormatted = finishedAt
-    ? formatDateWithoutSeconds(finishedAt)
-    : "";
-
-  const markTaskCompleted = async () => {
+  const markTaskCompleted = useCallback(async () => {
     try {
       await completeTask(task.id);
       const now = new Date();
@@ -47,7 +75,35 @@ export const TaskDetailHeader = ({ task }: TaskDetailHeaderProps) => {
     } catch (error) {
       console.error("Error marking task as completed", error);
     }
-  };
+  }, [task.id]);
+
+  const showReassignmentForm = useMemo(() => {
+    return (
+      sessionStatus === "authenticated" &&
+      taskStatus === TaskStatus.ASSIGNED &&
+      task.assigned_to &&
+      userId &&
+      task.assigned_to === userId
+    );
+  }, [sessionStatus, taskStatus, task.assigned_to, userId]);
+
+  const showReassignmentActions = useMemo(() => {
+    return (
+      sessionStatus === "authenticated" &&
+      taskStatus === TaskStatus.REASSIGNMENT_REQUESTED &&
+      task.reassignment_requested_to &&
+      userId &&
+      task.reassignment_requested_to === userId
+    );
+  }, [sessionStatus, taskStatus, task.reassignment_requested_to, userId]);
+
+  if (sessionStatus === "loading") {
+    return (
+      <div className="flex justify-center items-center p-6">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -59,15 +115,9 @@ export const TaskDetailHeader = ({ task }: TaskDetailHeaderProps) => {
             </h1>
 
             <span
-              className={`ml-2 text-sm rounded-full px-2 py-1 ${
-                taskStatus === TaskStatus.COMPLETED
-                  ? "bg-green-100 text-green-800"
-                  : taskStatus === TaskStatus.DELAYED
-                    ? "bg-red-100 text-red-800"
-                    : taskStatus === TaskStatus.REQUEST_REASSIGNMENT
-                      ? "bg-yellow-100 text-yellow-800"
-                      : "bg-gray-100 text-gray-800"
-              }`}
+              className={`ml-2 text-sm rounded-full px-2 py-1 ${getStatusClasses(
+                taskStatus,
+              )}`}
             >
               {taskStatus}
             </span>
@@ -115,7 +165,25 @@ export const TaskDetailHeader = ({ task }: TaskDetailHeaderProps) => {
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
-            <Button variant="secondary">Request Reassignment</Button>
+
+            {showReassignmentForm && (
+              <TaskReassignmentForm
+                taskId={task.id}
+                currentNurseId={task.assigned_to}
+                currentNurseName={task.assigned_to_name}
+              />
+            )}
+
+            {showReassignmentActions && task.reassignment_requested_by_name && (
+              <TaskReassignmentActions
+                taskId={task.id}
+                taskTitle={task.task_title}
+                currentNurseId={task.assigned_to}
+                currentNurseName={task.assigned_to_name}
+                requestingNurseName={task.reassignment_requested_by_name}
+                status={task.status}
+              />
+            )}
           </div>
         ) : (
           <div className="flex items-center space-x-2 mt-4 md:mt-0">

@@ -1,3 +1,4 @@
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { FormCreate, FormResponse } from "@/types/form";
 
 export const getForms = async (status?: string): Promise<FormResponse[]> => {
@@ -30,7 +31,7 @@ export const getForms = async (status?: string): Promise<FormResponse[]> => {
 
 export const createForm = async (formData: FormCreate): Promise<string> => {
   try {
-    const response = await fetch(
+    const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/incident/forms`,
       {
         method: "POST",
@@ -38,7 +39,7 @@ export const createForm = async (formData: FormCreate): Promise<string> => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
-      },
+      }
     );
 
     if (!response.ok) {
@@ -56,7 +57,7 @@ export const createForm = async (formData: FormCreate): Promise<string> => {
 
 export const updateForm = async (
   formId: string,
-  formData: FormCreate,
+  formData: FormCreate
 ): Promise<string> => {
   try {
     const response = await fetch(
@@ -67,7 +68,7 @@ export const updateForm = async (
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
-      },
+      }
     );
 
     if (!response.ok) {
@@ -92,7 +93,7 @@ export const publishForm = async (formId: string): Promise<string> => {
         headers: {
           "Content-Type": "application/json",
         },
-      },
+      }
     );
 
     if (!response.ok) {
@@ -117,7 +118,7 @@ export const getFormById = async (formId: string): Promise<FormResponse> => {
         headers: {
           "Content-Type": "application/json",
         },
-      },
+      }
     );
 
     if (!response.ok) {
@@ -142,7 +143,7 @@ export const deleteForm = async (formId: string): Promise<void> => {
         headers: {
           "Content-Type": "application/json",
         },
-      },
+      }
     );
 
     if (!response.ok) {

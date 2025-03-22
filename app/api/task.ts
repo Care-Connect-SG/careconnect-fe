@@ -16,20 +16,14 @@ export const createTask = async (taskData: TaskForm): Promise<Task[]> => {
     );
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(
-        `Error creating task: ${response.status} ${response.statusText}${
-          errorData ? ` - ${JSON.stringify(errorData)}` : ""
-        }`,
-      );
+      const errData = await response.json();
+      throw Error(errData.detail || "Failed to create task");
     }
 
     const data = await response.json();
     return data;
   } catch (error) {
-    if (error instanceof Error) {
-      throw new Error(`Failed to create task: ${error.message}`);
-    }
+    console.error("Failed to create task:", error);
     throw error;
   }
 };
@@ -55,7 +49,8 @@ export const getTasks = async (filters?: {
     });
 
     if (!response.ok) {
-      throw new Error(`Error fetching tasks: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Failed to fetch tasks");
     }
 
     const data = await response.json();
@@ -70,6 +65,7 @@ export const getTasks = async (filters?: {
       created_at: new Date(task.created_at),
     }));
   } catch (error) {
+    console.error("Error fetching tasks", error);
     throw error;
   }
 };
@@ -87,7 +83,8 @@ export const getTaskById = async (taskId: string): Promise<Task> => {
     );
 
     if (!response.ok) {
-      throw new Error(`Error fetching task by ID: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Failed to fetch task by ID");
     }
 
     const task = await response.json();
@@ -102,6 +99,7 @@ export const getTaskById = async (taskId: string): Promise<Task> => {
       created_at: new Date(task.created_at),
     };
   } catch (error) {
+    console.error("Error fetching task by ID", error);
     throw error;
   }
 };
@@ -119,11 +117,12 @@ export const mutateTask = async (taskId: string) => {
     );
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.detail || "Failed to update task");
+      throw new Error(errorData.detail || "Failed to mutate task");
     }
     const data = await response.json();
     return data;
   } catch (error) {
+    console.error("Error mutating task:", error);
     throw error;
   }
 };
@@ -175,12 +174,8 @@ export const updateTask = async (
     );
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(
-        `Error updating task: ${response.status} ${response.statusText}${
-          errorData ? ` - ${JSON.stringify(errorData)}` : ""
-        }`,
-      );
+      const errData = await response.json();
+      throw Error(errData.detail || "Failed to update task");
     }
 
     const data = await response.json();
@@ -195,6 +190,7 @@ export const updateTask = async (
       created_at: new Date(data.created_at),
     };
   } catch (error) {
+    console.error("Error updating task:", error);
     throw error;
   }
 };
@@ -212,14 +208,14 @@ export const completeTask = async (taskId: string): Promise<Task> => {
     );
 
     if (!response.ok) {
-      throw new Error(
-        `Error marking task as completed: ${response.statusText}`,
-      );
+      const errData = await response.json();
+      throw Error(errData.detail || "Failed to complete task");
     }
 
     const data = await response.json();
     return data;
   } catch (error) {
+    console.error("Error completing task:", error);
     throw error;
   }
 };
@@ -237,14 +233,14 @@ export const reopenTask = async (taskId: string): Promise<Task> => {
     );
 
     if (!response.ok) {
-      throw new Error(
-        `Error marking task as incomplete: ${response.statusText}`,
-      );
+      const errData = await response.json();
+      throw Error(errData.detail || "Failed to reopen task");
     }
 
     const data = await response.json();
     return data;
   } catch (error) {
+    console.error("Error reopening task:", error);
     throw error;
   }
 };
@@ -266,9 +262,11 @@ export const deleteTask = async (
     });
 
     if (!response.ok) {
-      throw new Error(`Error deleting task: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Failed to delete task");
     }
   } catch (error) {
+    console.error("Error deleting task:", error);
     throw error;
   }
 };
@@ -286,12 +284,14 @@ export const duplicateTask = async (taskId: string): Promise<Task> => {
     );
 
     if (!response.ok) {
-      throw new Error(`Error duplicating task: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Failed to duplicate task");
     }
 
     const data = await response.json();
     return data;
   } catch (error) {
+    console.error("Error duplicating task:", error);
     throw error;
   }
 };
@@ -309,11 +309,13 @@ export const downloadTask = async (taskId: string): Promise<Blob> => {
     );
 
     if (!response.ok) {
-      throw new Error(`Error downloading task: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Failed to download task");
     }
 
     return await response.blob();
   } catch (error) {
+    console.error("Error downloading task:", error);
     throw error;
   }
 };
@@ -340,6 +342,7 @@ export const requestReassignment = async (
     const data = await response.json();
     return data;
   } catch (error) {
+    console.error("Error requesting reassignment:", error);
     throw error;
   }
 };
@@ -363,6 +366,7 @@ export const acceptReassignment = async (taskId: string): Promise<void> => {
     const data = await response.json();
     return data;
   } catch (error) {
+    console.error("Error accepting reassignment:", error);
     throw error;
   }
 };
@@ -393,6 +397,7 @@ export const rejectReassignment = async (
     const data = await response.json();
     return data;
   } catch (error) {
+    console.error("Error rejecting reassignment:", error);
     throw error;
   }
 };

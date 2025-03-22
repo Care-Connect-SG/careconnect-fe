@@ -4,20 +4,18 @@ import { UserForm } from "../(routes)/dashboard/nurses/_components/create-user-d
 
 export const getCurrentUser = async (): Promise<User> => {
   try {
-    const res = await fetchWithAuth(
+    const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/users/me`,
       {
         method: "GET",
         headers: { "Content-Type": "application/json" },
       },
     );
-    if (!res.ok) {
-      const errorData = await res.json();
-      throw new Error(
-        errorData.detail || "Failed to fetch current user details",
-      );
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw Error(errorData.detail || "Failed to fetch current user details");
     }
-    return await res.json();
+    return await response.json();
   } catch (error) {
     console.error("Error fetching current user details:", error);
     throw error;
@@ -37,7 +35,7 @@ export const createUser = async (user: UserForm): Promise<User> => {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.detail || "Failed to create user");
+      throw Error(errorData.detail || "Failed to create user");
     }
 
     const responseData = await response.json();
@@ -83,7 +81,7 @@ export const getUsers = async (): Promise<User[]> => {
     );
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.detail || `Error fetching users`);
+      throw Error(errorData.detail || `Error fetching users`);
     }
     const data = await response.json();
     return data;
@@ -104,7 +102,7 @@ export const getAllNurses = async (): Promise<User[]> => {
     );
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.detail || `Error fetching nurses`);
+      throw Error(errorData.detail || `Error fetching nurses`);
     }
     const data = await response.json();
     return data;
@@ -130,7 +128,7 @@ export const getAllTagNurses = async (
     if (!response.ok) {
       const errorData = await response.json();
       console.error("Failed to fetch nurses:", errorData);
-      throw new Error(errorData.detail || "Failed to fetch nurses");
+      throw Error(errorData.detail || "Failed to fetch nurses");
     }
     const data = await response.json();
     return data.filter(
@@ -160,7 +158,7 @@ export const updateUser = async (
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.detail || "Failed to update user");
+      throw Error(errorData.detail || "Failed to update user");
     }
 
     const updatedUser = await response.json();
@@ -173,7 +171,7 @@ export const updateUser = async (
 
 export async function removeProfilePicture(user: User | null): Promise<User> {
   if (!user?.id) {
-    throw new Error("User not found");
+    throw Error("User not found");
   }
 
   try {
@@ -194,7 +192,7 @@ export async function editProfilePicture(
   formData: FormData,
 ): Promise<User> {
   if (!user?.id) {
-    throw new Error("User not found");
+    throw Error("User not found");
   }
 
   try {
@@ -208,7 +206,7 @@ export async function editProfilePicture(
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.detail || "Upload failed");
+      throw Error(errorData.detail || "Upload failed");
     }
 
     const result = await response.json();
@@ -237,9 +235,10 @@ export const deleteUser = async (userId: string): Promise<void> => {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.detail || `Error deleting user`);
+      throw Error(errorData.detail || `Error deleting user`);
     }
   } catch (error) {
     console.error("Error deleting user:", error);
+    throw error;
   }
 };

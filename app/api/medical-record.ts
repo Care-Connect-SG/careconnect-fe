@@ -46,3 +46,27 @@ export const getMedicalRecordsByResident = async (
     throw error;
   }
 };
+
+export const updateMedicalRecord = async (
+  templateType: string,
+  recordId: string,
+  residentId: string,
+  updateData: any
+): Promise<any> => {
+  try {
+    const url = `${process.env.NEXT_PUBLIC_BE_API_URL}/medical/records/${templateType}/${recordId}?resident_id=${encodeURIComponent(residentId)}`;
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updateData),
+    });
+    if (!response.ok) {
+      throw new Error(`Error updating medical record: ${response.statusText}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("updateMedicalRecord error:", error);
+    throw error;
+  }
+};

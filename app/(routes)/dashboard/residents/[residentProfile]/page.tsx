@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { CarePlanRecord } from "@/types/careplan";
 import { MedicationRecord } from "@/types/medication";
 import { ResidentRecord } from "@/types/resident";
+import { MedicalRecord } from "@/types/medicalHistory"; // Import union type here
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { useState } from "react";
@@ -20,7 +21,11 @@ import MedicalRecordCard from "./_components/medical-record-card";
 import ResidentDetailsCard from "./_components/resident-detail-card";
 import ResidentDetailsNotesCard from "./_components/resident-detail-notes";
 import ResidentProfileCard from "./_components/resident-profile-header";
-
+import EditMedicalRecordModal from "./_components/edit-medicalHistory-modal";
+import CreateMedicalHistoryDialog from "./_components/medical-record-form";
+import { updateMedicalRecord } from "@/app/api/medical-record";
+import { inferTemplateType } from "@/types/medicalHistory";
+  
 const TABS = [
   { label: "Overview", value: "overview" },
   { label: "Record History", value: "history" },
@@ -35,9 +40,12 @@ export default function ResidentDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isCreateMedicalModalOpen, setIsCreateMedicalModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedMedication, setSelectedMedication] =
     useState<MedicationRecord | null>(null);
+  const [isEditMedicalModalOpen, setIsEditMedicalModalOpen] = useState(false);
+  const [selectedMedicalRecord, setSelectedMedicalRecord] = useState<MedicalRecord | null>(null);
 
   const { data: resident, isLoading: isResidentLoading } =
     useQuery<ResidentRecord>({
@@ -45,24 +53,19 @@ export default function ResidentDashboard() {
       queryFn: () => getResidentById(residentProfile),
     });
 
-  const { data: medicalRecords = [], isLoading: areMedicalRecordsLoading } =
-    useQuery({
-      queryKey: ["medicalRecords"],
-      queryFn: () => getMedicalRecordsByResident(residentProfile),
-      enabled: !!residentProfile,
-    });
+  const { data: medicalRecords = [] } = useQuery({
+    queryKey: ["medicalRecords"],
+    queryFn: () => getMedicalRecordsByResident(residentProfile),
+    enabled: !!residentProfile,
+  });
 
-  const { data: medications = [], refetch: refetchMedications } = useQuery<
-    MedicationRecord[]
-  >({
+  const { data: medications = [], refetch: refetchMedications } = useQuery<MedicationRecord[]>({
     queryKey: ["medications"],
     queryFn: () => getMedicationsForResident(residentProfile),
     enabled: activeTab === "medication",
   });
 
-  const { data: carePlans = [], refetch: refetchCarePlans } = useQuery<
-    CarePlanRecord[]
-  >({
+  const { data: carePlans = [], refetch: refetchCarePlans } = useQuery<CarePlanRecord[]>({
     queryKey: ["carePlans"],
     queryFn: () => getCarePlansForResident(residentProfile),
     enabled: activeTab === "careplan",
@@ -97,14 +100,36 @@ export default function ResidentDashboard() {
     setIsEditModalOpen(true);
   };
 
+  // For editing a medical record (using our union type)
+  const handleEditMedicalRecord = (record: MedicalRecord) => {
+    setSelectedMedicalRecord(record);
+    setIsEditMedicalModalOpen(true);
+  };
+
+  const handleSaveMedicalRecord = async (updatedData: any) => {
+    if (!selectedMedicalRecord || !resident) return;
+    try {
+      // Use the helper to determine the template type.
+      const templateType = inferTemplateType(selectedMedicalRecord);
+      const updatedRecord = await updateMedicalRecord(
+        templateType,
+        selectedMedicalRecord.id,
+        resident.id,
+        updatedData
+      );
+      // Optionally update local state or refetch medical records here.
+      setIsEditMedicalModalOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["medicalRecords"] });
+    } catch (error) {
+      console.error("Error updating medical record:", error);
+    }
+  };
   if (isResidentLoading) {
     return <div className="text-center mt-10">Loading resident details...</div>;
   }
 
   if (!resident) {
-    return (
-      <div className="text-center mt-10 text-red-500">Resident not found</div>
-    );
+    return <div className="text-center mt-10 text-red-500">Resident not found</div>;
   }
 
   return (
@@ -159,62 +184,41 @@ export default function ResidentDashboard() {
         <div className="mt-6">
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-semibold">Medical History</h2>
-            <Button onClick={() => setIsCreateModalOpen(true)}>
+            <Button onClick={() => setIsCreateMedicalModalOpen(true)}>
               Add Medical Record
             </Button>
           </div>
           <div className="mt-4 space-y-4">
             {medicalRecords.length > 0 ? (
               medicalRecords.map((record) => (
-                <MedicalRecordCard key={record.id} record={record} />
+                <MedicalRecordCard key={record.id} record={record}  />
               ))
             ) : (
               <p className="text-gray-500">No medical records found.</p>
             )}
           </div>
+
+          {/* Edit Medical Record Modal */}
+          {selectedMedicalRecord && (
+            <EditMedicalRecordModal
+              isOpen={isEditMedicalModalOpen}
+              onClose={() => setIsEditMedicalModalOpen(false)}
+              templateType={inferTemplateType(selectedMedicalRecord)}
+              residentId={resident.id}
+              initialData={selectedMedicalRecord}
+              onSave={handleSaveMedicalRecord}
+            />
+          )}
+
+          {/* Create Medical Record Modal */}
+          <CreateMedicalHistoryDialog
+             isOpen={isCreateMedicalModalOpen}
+             onClose={() => setIsCreateMedicalModalOpen(false)}
+             onRecordCreated={() => {
+               // Optionally refresh the medical records list
+             }}
+           />
         </div>
-      )}
-
-      {activeTab === "medication" && (
-        <div className="mt-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold">Medication List</h2>
-            <Button onClick={() => setIsCreateModalOpen(true)}>
-              Add Medication
-            </Button>
-          </div>
-
-          <div className="space-y-4 mt-4">
-            {medications.length > 0 ? (
-              medications.map((medication) => (
-                <MedicationDisplay
-                  key={medication.id}
-                  medication={medication}
-                  onEdit={handleEditMedication}
-                />
-              ))
-            ) : (
-              <p className="text-gray-500">No medications found.</p>
-            )}
-          </div>
-        </div>
-      )}
-
-      <CreateMedication
-        residentId={residentProfile}
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onMedicationAdded={refetchMedications}
-      />
-
-      {selectedMedication && (
-        <EditMedication
-          residentId={residentProfile}
-          medication={selectedMedication}
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          onMedicationUpdated={refetchMedications}
-        />
       )}
 
       {activeTab === "careplan" && (

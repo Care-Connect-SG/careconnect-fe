@@ -39,7 +39,7 @@ export const createForm = async (formData: FormCreate): Promise<string> => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -57,7 +57,7 @@ export const createForm = async (formData: FormCreate): Promise<string> => {
 
 export const updateForm = async (
   formId: string,
-  formData: FormCreate
+  formData: FormCreate,
 ): Promise<string> => {
   try {
     const response = await fetch(
@@ -68,7 +68,7 @@ export const updateForm = async (
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -93,7 +93,7 @@ export const publishForm = async (formId: string): Promise<string> => {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -118,7 +118,7 @@ export const getFormById = async (formId: string): Promise<FormResponse> => {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -143,7 +143,7 @@ export const deleteForm = async (formId: string): Promise<void> => {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {

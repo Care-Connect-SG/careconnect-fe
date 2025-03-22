@@ -103,12 +103,10 @@ export default function IncidentReportFilters({
         <label className="text-sm font-medium">Reporter</label>
         <Popover.Root>
           <Popover.Trigger asChild>
-            <button className="w-full flex items-center justify-between border rounded-md p-2">
-              {selectedReporters.length === 0
-                ? "All Reporters"
-                : `${selectedReporters.length} selected`}
+            <Button variant="fullBorder">
+              All Reporters
               <ChevronDownIcon className="w-4 h-4" />
-            </button>
+            </Button>
           </Popover.Trigger>
           <Popover.Content className="bg-white border p-2 shadow-md rounded-md w-56">
             <div className="max-h-60 overflow-auto">
@@ -142,12 +140,10 @@ export default function IncidentReportFilters({
         <label className="text-sm font-medium">Primary Resident</label>
         <Popover.Root>
           <Popover.Trigger asChild>
-            <button className="w-full flex items-center justify-between border rounded-md p-2">
-              {selectedResidents.length === 0
-                ? "All Residents"
-                : `${selectedResidents.length} selected`}
+            <Button variant="fullBorder">
+              All Residents
               <ChevronDownIcon className="w-4 h-4" />
-            </button>
+            </Button>
           </Popover.Trigger>
           <Popover.Content className="bg-white border p-2 shadow-md rounded-md w-56">
             <div className="max-h-60 overflow-auto">

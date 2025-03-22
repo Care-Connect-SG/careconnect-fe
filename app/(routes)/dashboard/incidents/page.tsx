@@ -3,7 +3,7 @@
 import { getForms } from "@/app/api/form";
 import { deleteReport, getReports } from "@/app/api/report";
 import { getCurrentUser } from "@/app/api/user";
-import IncidentReportFilters from "@/components/incident-reports-filter";
+import IncidentReportFilters from "./_components/incident-reports-filter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import { FormResponse } from "@/types/form";
@@ -97,7 +97,7 @@ export default function IncidentReports() {
           JSON.stringify({
             id: r.primary_resident.id,
             name: r.primary_resident.name,
-          }),
+          })
         );
       }
     });

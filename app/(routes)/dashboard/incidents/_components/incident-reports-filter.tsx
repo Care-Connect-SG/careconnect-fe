@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -9,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import * as Popover from "@radix-ui/react-popover";
 import { CheckIcon, ChevronDownIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface OptionType {
   id: string;
@@ -32,33 +34,31 @@ export default function IncidentReportFilters({
   setFilterOptions,
 }: IncidentReportFiltersProps) {
   const [selectedReporters, setSelectedReporters] = useState<string[]>(
-    filterOptions.reporterId || [],
+    filterOptions.reporterId || []
   );
   const [selectedResidents, setSelectedResidents] = useState<string[]>(
-    filterOptions.residentId || [],
+    filterOptions.residentId === "all" ? [] : filterOptions.residentId || []
   );
+
+  // Sync selected values with filters on change
+  useEffect(() => {
+    setFilterOptions({
+      ...filterOptions,
+      reporterId: selectedReporters,
+      residentId: selectedResidents.length === 0 ? "all" : selectedResidents,
+    });
+  }, [selectedReporters, selectedResidents]);
 
   const handleToggleReporter = (id: string) => {
     setSelectedReporters((prev) =>
-      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
     );
   };
 
   const handleToggleResident = (id: string) => {
     setSelectedResidents((prev) =>
-      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
     );
-  };
-
-  const handleApplyFilters = () => {
-    setFilterOptions({
-      ...filterOptions,
-      reporterId: selectedReporters.length === 0 ? [] : selectedReporters,
-      residentId: selectedResidents.length === 0 ? "all" : selectedResidents,
-      formId: filterOptions.formId,
-      startDate: filterOptions.startDate || null,
-      endDate: filterOptions.endDate || null,
-    });
   };
 
   const handleReset = () => {
@@ -137,7 +137,7 @@ export default function IncidentReportFilters({
         </Popover.Root>
       </div>
 
-      {/* Resident Multi-Select Dropdown (Fixed & Matching Reporter Filter) */}
+      {/* Resident Multi-Select Dropdown */}
       <div>
         <label className="text-sm font-medium">Primary Resident</label>
         <Popover.Root>
@@ -200,13 +200,10 @@ export default function IncidentReportFilters({
         />
       </div>
 
-      {/* Apply & Reset Filters Buttons (Fixed Reset) */}
-      <div className="col-span-full flex justify-between">
+      {/* Reset Filters Button */}
+      <div className="col-span-full flex justify-end">
         <Button variant="outline" onClick={handleReset}>
           Reset Filters
-        </Button>
-        <Button variant="outline" onClick={handleApplyFilters}>
-          Apply Filters
         </Button>
       </div>
     </div>

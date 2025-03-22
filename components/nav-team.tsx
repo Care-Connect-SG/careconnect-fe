@@ -1,53 +1,36 @@
 "use client";
 
-import { getUser } from "@/app/api/user";
 import {
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { User } from "lucide-react";
+import { User } from "@/types/user";
+import { UserIcon } from "lucide-react";
 import { LucideIcon } from "lucide-react";
-import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 
-export function NavTeam({
-  items,
-}: {
-  items: {
-    title: string;
-    url: string;
-    icon?: LucideIcon;
-  }[];
-}) {
-  const router = useRouter();
-  const { data: session, status } = useSession();
-  const [userRole, setUserRole] = useState();
+interface NavTeamItem {
+  title: string;
+  url: string;
+  icon?: LucideIcon;
+}
 
-  useEffect(() => {
-    if (status !== "loading" && !session) {
-      router.push("/auth/login");
-    }
-  }, [session, status, router]);
+interface NavTeamProps {
+  items: NavTeamItem[];
+  currentUser: User | null;
+}
 
-  useEffect(() => {
-    const getUserRole = async () => {
-      if (!session?.user?.email) return;
-
-      const user = await getUser(session.user.email);
-      setUserRole(user.role);
-    };
-
-    getUserRole();
-  }, [session?.user?.email]);
+export function NavTeam({ items, currentUser }: NavTeamProps) {
   const updatedItems =
-    userRole === "Admin"
-      ? [...items, { title: "Nurses", url: "/dashboard/nurses", icon: User }]
+    currentUser?.role === "Admin"
+      ? [
+          ...items,
+          { title: "Nurses", url: "/dashboard/nurses", icon: UserIcon },
+        ]
       : items;
+
   return (
     <SidebarGroup className="p-0">
       <SidebarMenu>

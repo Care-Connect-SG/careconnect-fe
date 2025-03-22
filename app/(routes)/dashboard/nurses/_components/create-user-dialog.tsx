@@ -41,7 +41,7 @@ const schema = z
     password: z.string().min(6, "Password must be at least 6 characters"),
     confirmPassword: z.string().min(6, "Confirm Password is required"),
     contact_number: z.string().optional(),
-    role: z.enum(["Admin", "Nurse", "Family"], {
+    role: z.enum(["Admin", "Nurse"], {
       message: "Select a valid role",
     }),
     organisation_rank: z.string().optional(),
@@ -179,7 +179,7 @@ export default function CreateUserDialog({
                   <FormControl>
                     <Input
                       type="text"
-                      placeholder="Your contact number"
+                      placeholder="User contact number"
                       {...field}
                     />
                   </FormControl>
@@ -197,12 +197,11 @@ export default function CreateUserDialog({
                   <FormControl>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger className="w-full p-3 border rounded-lg shadow-sm bg-white text-gray-700">
-                        <SelectValue placeholder="Select Role" />
+                        <SelectValue placeholder="Select User Role" />
                       </SelectTrigger>
                       <SelectContent className="bg-white shadow-lg rounded-lg">
                         <SelectItem value="Admin">Admin</SelectItem>
                         <SelectItem value="Nurse">Nurse</SelectItem>
-                        <SelectItem value="Family">Family</SelectItem>
                       </SelectContent>
                     </Select>
                   </FormControl>
@@ -220,7 +219,7 @@ export default function CreateUserDialog({
                   <FormControl>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger className="w-full p-3 border rounded-lg shadow-sm bg-white text-gray-700">
-                        <SelectValue placeholder="Select Gender" />
+                        <SelectValue placeholder="Select User Gender" />
                       </SelectTrigger>
                       <SelectContent className="bg-white shadow-lg rounded-lg">
                         <SelectItem value="Male">Male</SelectItem>
@@ -240,7 +239,7 @@ export default function CreateUserDialog({
                 <FormItem>
                   <FormLabel>Organisation Rank</FormLabel>
                   <FormControl>
-                    <Input type="text" placeholder="Your rank" {...field} />
+                    <Input type="text" placeholder="" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

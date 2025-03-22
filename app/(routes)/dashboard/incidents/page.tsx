@@ -4,6 +4,7 @@ import { getForms } from "@/app/api/form";
 import { deleteReport, getReports } from "@/app/api/report";
 import { getCurrentUser } from "@/app/api/user";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "@/hooks/use-toast";
 import { FormResponse } from "@/types/form";
 import { ReportResponse, ReportStatus } from "@/types/report";
 import { User } from "@/types/user";
@@ -59,6 +60,10 @@ export default function IncidentReports() {
     try {
       await deleteReport(reportId);
       await fetchReports();
+      toast({
+        title: "Report deleted",
+        description: "Your report has been deleted successfully.",
+      });
     } catch (error) {
       console.error("Failed to delete report");
     }

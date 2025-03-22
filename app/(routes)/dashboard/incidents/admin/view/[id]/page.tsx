@@ -51,11 +51,12 @@ export default function FormView({
 
   return (
     <div className="py-4 px-8">
-      <div className="flex justify-between pb-2">
+      <div className="flex justify-between items-center pb-2">
         <div className="flex justify-start gap-2">
           <Link href="/dashboard/incidents/admin">
-            <Button className="border h-6 w-10 rounded-md hover:bg-gray-50">
+            <Button variant="outline" className="border h-10 mb-2 rounded-md">
               <ChevronLeft className="h-4 w-4 mx-auto" />
+              Return to Manage Forms
             </Button>
           </Link>
         </div>
@@ -85,7 +86,7 @@ export default function FormView({
         </div>
       </div>
 
-      <Button disabled className="disabled:opacity-100 bg-black">
+      <Button disabled className="bg-gray-300 text-gray-700">
         Submit Form
       </Button>
     </div>

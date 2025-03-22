@@ -1,6 +1,5 @@
 "use client";
 
-import { getUser } from "@/app/api/user";
 import {
   SidebarGroup,
   SidebarMenu,
@@ -10,48 +9,29 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
+import { User } from "@/types/user";
 import { Collapsible } from "@radix-ui/react-collapsible";
-import { LucideIcon } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { ChevronRight, LucideIcon } from "lucide-react";
 import Link from "next/link";
-import router from "next/router";
-import { useEffect, useState } from "react";
 import { CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
 
-interface submenuItem {
+interface SubmenuItem {
   title: string;
   url: string;
 }
 
-export function NavMain({
-  items,
-}: {
+interface NavMainProps {
   items: {
     title: string;
     url?: string;
     icon?: LucideIcon;
-    submenu?: submenuItem[];
+    submenu?: SubmenuItem[];
   }[];
-}) {
-  const { data: session, status } = useSession();
-  const [userRole, setUserRole] = useState<string>("");
+  currentUser: User | null;
+}
 
-  useEffect(() => {
-    if (status !== "loading" && !session) {
-      router.push("/auth/login");
-    }
-  }, [session, status, router]);
-
-  useEffect(() => {
-    const getUserRole = async () => {
-      if (!session?.user?.email) return;
-
-      const user = await getUser(session.user.email);
-      setUserRole(user.role);
-    };
-
-    getUserRole();
-  }, [session?.user?.email]);
+export function NavMain({ items, currentUser }: NavMainProps) {
+  const userRole = currentUser?.role ?? "";
 
   const filteredItems = items.map((item) => {
     if (
@@ -74,20 +54,21 @@ export function NavMain({
       <SidebarMenu>
         {filteredItems.map((item) =>
           item.title === "Incident Reports" ? (
-            <Collapsible key={item.title}>
+            <Collapsible key={item.title} asChild className="group/collapsible">
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton tooltip={item.title}>
                     {item.icon && <item.icon />}
                     <span>{item.title}</span>
+                    <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <SidebarMenuSub>
                     {item.submenu?.map((subItem) => (
-                      <SidebarMenuSubItem key={subItem.title}>
+                      <SidebarMenuSubItem key={subItem.title} className="pb-2">
                         <SidebarMenuSubButton asChild>
-                          <Link href={subItem.url} passHref legacyBehavior>
+                          <Link href={subItem.url}>
                             <span>{subItem.title}</span>
                           </Link>
                         </SidebarMenuSubButton>

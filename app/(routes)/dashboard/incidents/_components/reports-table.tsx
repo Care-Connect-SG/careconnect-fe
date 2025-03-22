@@ -1,5 +1,8 @@
 "use client";
 
+import { getFormById } from "@/app/api/form";
+import { getResidentById } from "@/app/api/resident";
+import { getUserById } from "@/app/api/user";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,8 +21,10 @@ import {
 } from "@/components/ui/table";
 import { ReportResponse } from "@/types/report";
 import { Role, User } from "@/types/user";
-import { Edit, MoreHorizontal, Trash2 } from "lucide-react";
+import { pdf } from "@react-pdf/renderer";
+import { Download, Edit, MoreHorizontal, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import ReportPDF from "./report-pdf";
 
 interface ReportsTableProps {
   user: User;
@@ -44,6 +49,34 @@ export default function ReportsTable({
     router.push(
       `/dashboard/incidents/fill?formId=${report.form_id}&reportId=${report.id}`,
     );
+  };
+
+  const handleDownload = async (report: ReportResponse) => {
+    const form = await getFormById(report.form_id);
+    const reporter = await getUserById(report.reporter.id);
+    const resident = report.primary_resident?.id
+      ? await getResidentById(report.primary_resident.id)
+      : undefined;
+
+    if (!report || !form || !reporter) return;
+
+    const blob = await pdf(
+      <ReportPDF
+        form={form}
+        report={report}
+        reporter={reporter}
+        resident={resident}
+      />,
+    ).toBlob();
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${form.title}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -82,7 +115,11 @@ export default function ReportsTable({
                 {activeTab == "all" && (
                   <TableCell>{report.reporter.name}</TableCell>
                 )}
-                <TableCell>{report.primary_resident?.name}</TableCell>
+                {report.primary_resident?.name ? (
+                  <TableCell>{report.primary_resident?.name}</TableCell>
+                ) : (
+                  <TableCell className="text-gray-400">NA</TableCell>
+                )}
                 {activeTab == "my" && (
                   <TableCell>
                     <Badge
@@ -132,6 +169,17 @@ export default function ReportsTable({
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
                             Delete
+                          </DropdownMenuItem>
+                        )}
+                        {report.status === "Published" && (
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDownload(report);
+                            }}
+                          >
+                            <Download className="mr-2 h-4 w-4" />
+                            Download
                           </DropdownMenuItem>
                         )}
                       </DropdownMenuContent>

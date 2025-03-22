@@ -7,11 +7,12 @@ import {
   ClipboardList,
   HandHeart,
   Home,
-  Megaphone,
   Users,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import * as React from "react";
 
+import { getCurrentUser } from "@/app/api/user";
 import {
   Sidebar,
   SidebarContent,
@@ -19,6 +20,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { User } from "@/types/user";
 import { NavMain } from "./nav-main";
 import { NavTeam } from "./nav-team";
 import { NavUser } from "./nav-user";
@@ -32,11 +34,6 @@ const config = {
   navMain: [
     { title: "Home", url: "/dashboard/home", icon: Home },
     { title: "Residents", url: "/dashboard/residents", icon: BookUser },
-    // {
-    //   title: "Announcements",
-    //   url: "/dashboard/announcements",
-    //   icon: Megaphone,
-    // },
     { title: "Tasks", url: "/dashboard/tasks", icon: ClipboardList },
     { title: "Calendar", url: "/dashboard/calendar", icon: Calendar },
     {
@@ -49,20 +46,34 @@ const config = {
       ],
     },
   ],
-  navTeam: [{ title: "Group", url: "/dashboard/group", icon: Users }],
+  navTeam: [{ title: "Groups", url: "/dashboard/groups", icon: Users }],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    async function fetchUser() {
+      try {
+        const user = await getCurrentUser();
+        setCurrentUser(user);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    }
+    fetchUser();
+  }, []);
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarLogo brand={config.brand} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={config.navMain} />
+        <NavMain items={config.navMain} currentUser={currentUser} />
       </SidebarContent>
       <SidebarFooter>
-        <NavTeam items={config.navTeam} />
+        <NavTeam items={config.navTeam} currentUser={currentUser} />
         <NavUser />
       </SidebarFooter>
       <SidebarRail />

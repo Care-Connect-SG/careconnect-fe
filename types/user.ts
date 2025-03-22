@@ -1,7 +1,6 @@
 export enum Role {
   ADMIN = "Admin",
   NURSE = "Nurse",
-  FAMILY = "Family",
 }
 
 export enum Gender {
@@ -10,13 +9,11 @@ export enum Gender {
 }
 
 export interface UserEdit {
-  email: string;
   name: string;
   contact_number?: string;
-  role: string;
   organisation_rank?: string;
+  profile_picture?: string | null;
   gender: string;
-  created_at: string;
 }
 
 export interface User {
@@ -27,5 +24,6 @@ export interface User {
   role: Role;
   organisation_rank?: string;
   gender: Gender;
+  profile_picture?: string | null;
   created_at: string;
 }

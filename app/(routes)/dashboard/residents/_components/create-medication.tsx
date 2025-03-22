@@ -1,5 +1,23 @@
 "use client";
 
+declare global {
+  interface Window {
+    BarcodeDetector?: any;
+  }
+}
+
+// Simple polyfill for browsers without BarcodeDetector
+if (typeof window !== 'undefined' && !window.BarcodeDetector) {
+  window.BarcodeDetector = class {
+    async detect() {
+      return [];
+    }
+    static getSupportedFormats() {
+      return ['code_128'];
+    }
+  };
+}
+
 import { createMedication } from "@/app/api/medication";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +32,9 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
+import { BarcodeScanner } from "react-barcode-scanner";
+import { fetchMedicationByBarcode } from "@/app/api/fixedmedication";
+// import { medications } from "@/app/api/standardmedications";
 
 interface CreateMedicationProps {
   residentId: string;
@@ -37,6 +58,44 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
     instructions: "",
   });
 
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
+  const [scanSupported, setScanSupported] = useState(true);
+
+  const handleScan = async (result: { data: string } | null) => {
+    if (result?.data) {
+      const barcode = result.data;
+      console.log("Scanned Barcode:", barcode);
+
+      try {
+        const medicationData = await fetchMedicationByBarcode(barcode);
+
+        if (medicationData) {
+          setForm(prev => ({
+            ...prev,
+            medication_name: medicationData.medication_name || "",
+            dosage: medicationData.dosage || "",
+            frequency: medicationData.frequency || "",
+            instructions: medicationData.instructions || "",
+            // Keep existing dates or reset as needed
+          }));
+          setScanError(null);
+          setIsScanning(false);
+        } else {
+          setScanError("❌ Medication not found. Please enter manually.");
+        }
+      } catch (error) {
+        console.error("Fetch error:", error);
+        setScanError("❌ Error fetching medication data. Please try again.");
+      }
+    }
+  };
+
+  const handleError = (err: any) => {
+    console.error("Barcode Scan Error:", err);
+    setScanError("❌ Unable to read barcode. Please try again.");
+  };
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
@@ -59,6 +118,42 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
 
         {/* Scrollable area to prevent cut-off */}
         <ScrollArea className="max-h-[70vh] overflow-y-auto px-1">
+
+
+
+          {/* Scan Button
+          <Button onClick={() => setIsScanning(!isScanning)} variant="outline" className="w-full">
+            {isScanning ? "Cancel Scan" : "Scan Medication Barcode"}
+          </Button>
+
+          {/* Barcode Scanner */}
+          {/* {isScanning && (
+            <div className="mt-4">
+              {isScanning && (
+                <div className="mt-4">
+                  {scanSupported ? (
+                    <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                      <BarcodeScanner
+                        options={{ formats: ['code_128'] }}
+                        onCapture={handleScan}
+                        onError={handleError}
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+                      <p className="text-red-600">
+                        ⚠️ Barcode scanning not supported in your browser.<br />
+                        Supported browsers: Chrome 83+, Edge 83+, Android WebView
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          {scanError && <p className="text-red-500">{scanError}</p>} */}
+
           <div className="space-y-5">
             <div>
               <Label className="text-sm font-medium text-gray-700">

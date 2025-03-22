@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button";
 import { CarePlanRecord } from "@/types/careplan";
 import { MedicationRecord } from "@/types/medication";
 import { ResidentRecord } from "@/types/resident";
+import { WellnessReportRecord } from "@/types/wellnessReport";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { getResidentById, updateResident } from "../../../../api/resident";
 import CarePlanDisplay from "../_components/careplan-display";
+import EditableCarePlan from "../_components/editable-care-plan";
 import CreateMedication from "../_components/create-medication";
 import EditMedication from "../_components/edit-medication";
 import EditProfileModal from "../_components/edit-modal";
@@ -17,6 +19,9 @@ import MedicationDisplay from "../_components/medication-display";
 import ResidentDetailsCard from "./_components/resident-detail-card";
 import ResidentDetailsNotesCard from "./_components/resident-detail-notes";
 import ResidentProfileCard from "./_components/resident-profile-card";
+import { createCarePlanWithEmptyValues } from "@/app/api/careplan";
+import { getWellnessReportsForResident } from "@/app/api/wellnessReport";
+import WellnessReportList from "../_components/wellness-report-list";
 
 const TABS = [
   { label: "Overview", value: "overview" },
@@ -38,6 +43,8 @@ export default function ResidentDashboard() {
   const [resident, setResident] = useState<ResidentRecord | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [carePlans, setCarePlans] = useState<CarePlanRecord[]>([]);
+  const [isCreatingCarePlan, setIsCreatingCarePlan] = useState(false); // State to track if creating care plan
+  const [wellnessReports, setWellnessReports] = useState<WellnessReportRecord[]>([]);
 
   useEffect(() => {
     if (residentProfile) {
@@ -62,6 +69,14 @@ export default function ResidentDashboard() {
     if (activeTab === "careplan" && residentProfile) {
       getCarePlansForResident(residentProfile)
         .then(setCarePlans)
+        .catch(console.error);
+    }
+  }, [activeTab, residentProfile]);
+
+  useEffect(() => {
+    if (activeTab === "wellness" && residentProfile) {
+      getWellnessReportsForResident(residentProfile)
+        .then(setWellnessReports)
         .catch(console.error);
     }
   }, [activeTab, residentProfile]);
@@ -95,6 +110,16 @@ export default function ResidentDashboard() {
       console.error("Error updating additional notes:", error);
     }
   };
+
+  const handleCreateCarePlan = async () => {
+    setIsCreatingCarePlan(true);
+    const newCarePlan = await createCarePlanWithEmptyValues(residentProfile);
+    if (newCarePlan) {
+      setCarePlans([newCarePlan]); // Refresh care plan state
+    }
+    setIsCreatingCarePlan(false);
+  };
+
 
   const handleEditMedication = (medication: MedicationRecord) => {
     setSelectedMedication(medication);
@@ -131,11 +156,10 @@ export default function ResidentDashboard() {
             <Button
               key={tab.value}
               onClick={() => setActiveTab(tab.value)}
-              className={`py-2 px-1 text-sm font-medium ${
-                activeTab === tab.value
-                  ? "text-blue-600 border-b-2 border-blue-600"
-                  : "text-gray-500"
-              }`}
+              className={`py-2 px-1 text-sm font-medium ${activeTab === tab.value
+                ? "text-blue-600 border-b-2 border-blue-600"
+                : "text-gray-500"
+                }`}
             >
               {tab.label}
             </Button>
@@ -212,24 +236,36 @@ export default function ResidentDashboard() {
 
       {activeTab === "careplan" && (
         <div className="mt-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold">Resident Care Plan</h2>
-            <Button onClick={() => setIsCreateModalOpen(true)}>
-              Add CarePlan
-            </Button>
-          </div>
-
-          <div className="space-y-4 mt-4">
-            {carePlans.length > 0 ? (
-              carePlans.map((careplan) => (
-                <CarePlanDisplay key={careplan.id} careplan={careplan} />
-              ))
-            ) : (
-              <p className="text-gray-500">No care plans found.</p>
-            )}
-          </div>
+          <h2 className="text-lg font-semibold">Resident Care Plan</h2>
+          {carePlans.length > 0 ? (
+            <EditableCarePlan
+              careplan={carePlans[0]} // Since only one care plan exists per resident
+              residentId={residentProfile}
+              onCarePlanUpdated={(updatedCarePlan) => setCarePlans([updatedCarePlan])}
+            />
+          ) : (
+            <div className="flex flex-col items-center mt-4">
+              <p className="text-gray-500">No care plan found.</p>
+              <Button
+                onClick={handleCreateCarePlan}
+                variant="default"
+                className="mt-2"
+                disabled={isCreatingCarePlan}
+              >
+                {isCreatingCarePlan ? "Creating..." : "Create Care Plan"}
+              </Button>
+            </div>
+          )}
         </div>
       )}
+
+      {activeTab === "wellness" && (
+        <div className="mt-6">
+          <h2 className="text-lg font-semibold">Wellness Reports</h2>
+          <WellnessReportList reports={wellnessReports} />
+        </div>
+      )}
+
     </div>
   );
 }

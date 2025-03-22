@@ -25,17 +25,8 @@ export default function FormCardPublished({
 }: FormCardPublishedProps) {
   const router = useRouter();
 
-  const formatDate = (rawDate?: string): string => {
-    if (!rawDate) return "Unknown Date";
-
-    // Check for DD/MM/YYYY pattern and convert to YYYY-MM-DD
-    const match = rawDate.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-    let isoDate = rawDate;
-
-    if (match) {
-      const [, day, month, year] = match;
-      isoDate = `${year}-${month}-${day}`; // ISO format
-    }
+  const formatDate = (isoDate?: string): string => {
+    if (!isoDate) return "Unknown Date";
 
     const date = new Date(isoDate);
     if (isNaN(date.getTime())) return "Invalid Date";

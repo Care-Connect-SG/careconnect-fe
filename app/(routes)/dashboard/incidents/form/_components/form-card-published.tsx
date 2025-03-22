@@ -26,10 +26,10 @@ export default function FormCardPublished({
   const router = useRouter();
 
   const formatDate = (isoDate?: string): string => {
-    if (!isoDate) return "Unknown Date"; // Handle null/undefined values
+    if (!isoDate) return "Unknown Date"; 
 
     const date = new Date(isoDate);
-    if (isNaN(date.getTime())) return "Invalid Date"; // Handle invalid date formats
+    if (isNaN(date.getTime())) return "Invalid Date";
 
     return new Intl.DateTimeFormat("en-GB", {
       day: "2-digit",

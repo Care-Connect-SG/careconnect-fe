@@ -114,6 +114,34 @@ export const getAllNurses = async (): Promise<User[]> => {
   }
 };
 
+export const getAllTagNurses = async (
+  currentNurseId: string,
+): Promise<{ id: string; name: string }[]> => {
+  try {
+    const response = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/tags/caregivers`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Failed to fetch nurses:", errorData);
+      throw new Error(errorData.detail || "Failed to fetch nurses");
+    }
+    const data = await response.json();
+    return data.filter(
+      (nurse: { id: string; name: string }) => nurse.id !== currentNurseId,
+    );
+  } catch (error) {
+    console.error("Error fetching nurses:", error);
+    throw error;
+  }
+};
+
 export const updateUser = async (
   userId: string,
   data: UserEdit,

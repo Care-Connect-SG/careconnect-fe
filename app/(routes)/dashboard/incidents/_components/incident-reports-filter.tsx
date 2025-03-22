@@ -84,7 +84,7 @@ export default function IncidentReportFilters({
   };
 
   return (
-    <div className="flex flex-row items-center gap-4 py-4">
+    <div className="flex flex-row items-center gap-4">
       <div className="relative w-full md:w-1/3">
         <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
           <Search className="w-4 h-4 text-gray-400" />

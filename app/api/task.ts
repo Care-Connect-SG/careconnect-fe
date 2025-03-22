@@ -106,6 +106,28 @@ export const getTaskById = async (taskId: string): Promise<Task> => {
   }
 };
 
+export const mutateTask = async (taskId: string) => {
+  try {
+    const response = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/handle-self`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Failed to update task");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const updateTask = async (
   taskId: string,
   updatedData: Partial<TaskForm>,
@@ -291,6 +313,85 @@ export const downloadTask = async (taskId: string): Promise<Blob> => {
     }
 
     return await response.blob();
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const requestReassignment = async (
+  taskId: string,
+  targetNurseId: string,
+): Promise<void> => {
+  try {
+    const response = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/request-reassignment?target_nurse_id=${targetNurseId}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Failed to request reassignment");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const acceptReassignment = async (taskId: string): Promise<void> => {
+  try {
+    const response = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/accept-reassignment`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Failed to accept reassignment");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const rejectReassignment = async (
+  reason: string,
+  taskId: string,
+): Promise<void> => {
+  try {
+    const response = await fetchWithAuth(
+      `${
+        process.env.NEXT_PUBLIC_BE_API_URL
+      }/tasks/${taskId}/reject-reassignment?rejection_reason=${encodeURIComponent(
+        reason,
+      )}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Failed to reject reassignment");
+    }
+    const data = await response.json();
+    return data;
   } catch (error) {
     throw error;
   }

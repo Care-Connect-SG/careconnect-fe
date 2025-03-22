@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -77,7 +78,7 @@ export default function IncidentReportFilters({
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 p-4">
       {/* Form Filter */}
       <div>
-        <label className="text-sm font-medium">Form</label>
+        <Label className="text-sm font-medium">Form</Label>
         <Select
           value={filterOptions.formId}
           onValueChange={(value) =>
@@ -100,7 +101,7 @@ export default function IncidentReportFilters({
 
       {/* Reporter Multi-Select Dropdown */}
       <div>
-        <label className="text-sm font-medium">Reporter</label>
+        <Label className="text-sm font-medium">Reporter</Label>
         <Popover.Root>
           <Popover.Trigger asChild>
             <Button variant="fullBorder">
@@ -137,7 +138,7 @@ export default function IncidentReportFilters({
 
       {/* Resident Multi-Select Dropdown */}
       <div>
-        <label className="text-sm font-medium">Primary Resident</label>
+        <Label className="text-sm font-medium">Primary Resident</Label>
         <Popover.Root>
           <Popover.Trigger asChild>
             <Button variant="fullBorder">
@@ -174,7 +175,7 @@ export default function IncidentReportFilters({
 
       {/* Start Date Filter */}
       <div>
-        <label className="text-sm font-medium">Start Date</label>
+        <Label className="text-sm font-medium">Start Date</Label>
         <Input
           type="date"
           value={filterOptions.startDate || ""}
@@ -186,7 +187,7 @@ export default function IncidentReportFilters({
 
       {/* End Date Filter */}
       <div>
-        <label className="text-sm font-medium">End Date</label>
+        <Label className="text-sm font-medium">End Date</Label>
         <Input
           type="date"
           value={filterOptions.endDate || ""}

@@ -9,6 +9,7 @@ import { ResidentRecord } from "@/types/resident";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { getResidentById, updateResident } from "../../../../api/resident";
+import { getMedicalRecordsByResident } from "@/app/api/medicalHistory";
 import CarePlanDisplay from "../_components/careplan-display";
 import CreateMedication from "../_components/create-medication";
 import EditMedication from "../_components/edit-medication";
@@ -18,6 +19,7 @@ import CreateMedicalRecordModal from "./_components/create-medicalHistory-modal"
 import ResidentDetailsCard from "./_components/resident-detail-card";
 import ResidentDetailsNotesCard from "./_components/resident-detail-notes";
 import ResidentProfileCard from "./_components/resident-profile-card";
+import MedicalRecordCard from "./_components/medical-history-card";
 
 const TABS = [
   { label: "Overview", value: "overview" },
@@ -28,7 +30,7 @@ const TABS = [
 ];
 
 export default function ResidentDashboard() {
-  const { residentProfile } = useParams() as { residentProfile: string };
+  // Removed duplicate declaration of residentProfile
   const [activeTab, setActiveTab] = useState("overview");
   const [primaryNurse, setPrimaryNurse] = useState("");
   const [medications, setMedications] = useState<MedicationRecord[]>([]);
@@ -39,9 +41,9 @@ export default function ResidentDashboard() {
   const [resident, setResident] = useState<ResidentRecord | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [carePlans, setCarePlans] = useState<CarePlanRecord[]>([]);
-  const [isCreateMedicalModalOpen, setIsCreateMedicalModalOpen] =
-    useState(false);
-
+  const [isCreateMedicalModalOpen, setIsCreateMedicalModalOpen] = useState(false);
+  const [medicalRecords, setMedicalRecords] = useState<any[]>([]);
+  const { residentProfile } = useParams() as { residentProfile: string };
   useEffect(() => {
     if (residentProfile) {
       getResidentById(residentProfile)
@@ -50,6 +52,18 @@ export default function ResidentDashboard() {
           setPrimaryNurse(data.primary_nurse || "");
         })
         .catch((error) => console.error("Error fetching resident:", error));
+    }
+
+    if (residentProfile) {
+      console.log("Fetching medical records for resident:", residentProfile);
+      getMedicalRecordsByResident(residentProfile)
+        .then((records) => {
+          console.log("Fetched medical records:", records);
+          setMedicalRecords(records);
+        })
+        .catch((error) => {
+          console.error("Error fetching medical records:", error);
+        });
     }
   }, [residentProfile]);
 
@@ -165,22 +179,24 @@ export default function ResidentDashboard() {
         </div>
       )}
 
+      {/* Medical History Tab */}
       {activeTab === "history" && (
         <div className="mt-6">
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-semibold">Medical History</h2>
-            <Button onClick={() => setIsCreateMedicalModalOpen(true)}>
+            <Button onClick={() => setIsCreateModalOpen(true)}>
               Add Medical Record
             </Button>
           </div>
-
-          <CreateMedicalRecordModal
-            isOpen={isCreateMedicalModalOpen}
-            onClose={() => setIsCreateMedicalModalOpen(false)}
-            onRecordCreated={() => {
-              // Optionally refresh the medical records list
-            }}
-          />
+          <div className="mt-4 space-y-4">
+            {medicalRecords.length > 0 ? (
+              medicalRecords.map((record) => (
+                <MedicalRecordCard key={record.id} record={record} />
+              ))
+            ) : (
+              <p className="text-gray-500">No medical records found.</p>
+            )}
+          </div>
         </div>
       )}
 

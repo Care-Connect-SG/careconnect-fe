@@ -22,3 +22,25 @@ export const createMedicalRecord = async (
     throw error;
   }
 };
+
+// api/medical.ts
+export const getMedicalRecordsByResident = async (residentId: string): Promise<any[]> => {
+    try {
+      const url = `${process.env.NEXT_PUBLIC_BE_API_URL}/medical/records/resident/${residentId}`;
+      console.log("Fetching medical records from URL:", url);
+      const response = await fetch(url, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!response.ok) {
+        throw new Error(`Error fetching medical records: ${response.statusText}`);
+      }
+      const data = await response.json();
+      console.log("Fetched medical records data:", data);
+      return data;
+    } catch (error) {
+      console.error("getMedicalRecordsByResident error:", error);
+      throw error;
+    }
+  };
+  

@@ -84,9 +84,7 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
       setTaskList(updater);
     } else {
       setTaskList((prevTasks) =>
-        prevTasks.map((task) =>
-          task.id === updater.id ? updater : task,
-        ),
+        prevTasks.map((task) => (task.id === updater.id ? updater : task)),
       );
     }
 
@@ -215,7 +213,8 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
         const priorityOrder = { High: 3, Medium: 2, Low: 1 };
         const aPriority = a.priority as keyof typeof priorityOrder;
         const bPriority = b.priority as keyof typeof priorityOrder;
-        const diff = (priorityOrder[bPriority] || 0) - (priorityOrder[aPriority] || 0);
+        const diff =
+          (priorityOrder[bPriority] || 0) - (priorityOrder[aPriority] || 0);
         return direction === "asc" ? -diff : diff;
       }
 
@@ -294,7 +293,16 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                 onClick={() => handleSort("priority")}
               >
                 <div className="flex items-center gap-1">
-                  Priority {sortConfig.key === "priority" ? (sortConfig.direction === "asc" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />) : <ArrowUpDown className="h-4 w-4" />}
+                  Priority{" "}
+                  {sortConfig.key === "priority" ? (
+                    sortConfig.direction === "asc" ? (
+                      <ArrowUp className="h-4 w-4" />
+                    ) : (
+                      <ArrowDown className="h-4 w-4" />
+                    )
+                  ) : (
+                    <ArrowUpDown className="h-4 w-4" />
+                  )}
                 </div>
               </TableHead>
               <TableHead
@@ -302,7 +310,16 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                 onClick={() => handleSort("status")}
               >
                 <div className="flex items-center gap-1">
-                  Status {sortConfig.key === "status" ? (sortConfig.direction === "asc" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />) : <ArrowUpDown className="h-4 w-4" />}
+                  Status{" "}
+                  {sortConfig.key === "status" ? (
+                    sortConfig.direction === "asc" ? (
+                      <ArrowUp className="h-4 w-4" />
+                    ) : (
+                      <ArrowDown className="h-4 w-4" />
+                    )
+                  ) : (
+                    <ArrowUpDown className="h-4 w-4" />
+                  )}
                 </div>
               </TableHead>
               <TableHead
@@ -310,7 +327,16 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                 onClick={() => handleSort("due_date")}
               >
                 <div className="flex items-center gap-1">
-                  Due Date {sortConfig.key === "due_date" ? (sortConfig.direction === "asc" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />) : <ArrowUpDown className="h-4 w-4" />}
+                  Due Date{" "}
+                  {sortConfig.key === "due_date" ? (
+                    sortConfig.direction === "asc" ? (
+                      <ArrowUp className="h-4 w-4" />
+                    ) : (
+                      <ArrowDown className="h-4 w-4" />
+                    )
+                  ) : (
+                    <ArrowUpDown className="h-4 w-4" />
+                  )}
                 </div>
               </TableHead>
               <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
@@ -320,7 +346,10 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
           </TableHeader>
           <TableBody className="divide-y divide-gray-200">
             {taskList.map((task) => (
-              <TableRow key={task.id} className="hover:bg-muted hover:duration-300 ease-in-out">
+              <TableRow
+                key={task.id}
+                className="hover:bg-muted hover:duration-300 ease-in-out"
+              >
                 <TableCell className="px-6 py-4">
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
@@ -343,7 +372,9 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                     <AlertDialogContent>
                       <AlertDialogHeader>
                         <AlertDialogTitle>
-                          {task.status === TaskStatus.COMPLETED ? "Mark Task as Incomplete" : "Complete Task"}
+                          {task.status === TaskStatus.COMPLETED
+                            ? "Mark Task as Incomplete"
+                            : "Complete Task"}
                         </AlertDialogTitle>
                         <AlertDialogDescription>
                           {task.status === TaskStatus.COMPLETED
@@ -354,46 +385,64 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction onClick={handleToggleTaskCompletion}>
-                          {task.status === TaskStatus.COMPLETED ? "Mark as Incomplete" : "Confirm Completion"}
+                          {task.status === TaskStatus.COMPLETED
+                            ? "Mark as Incomplete"
+                            : "Confirm Completion"}
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
                 </TableCell>
-                <TableCell className="px-6 py-4 font-medium text-gray-900" onClick={() => router.push(`/dashboard/tasks/${task.id}`)}>
+                <TableCell
+                  className="px-6 py-4 font-medium text-gray-900"
+                  onClick={() => router.push(`/dashboard/tasks/${task.id}`)}
+                >
                   {task.task_title}
                 </TableCell>
-                <TableCell className="px-6 py-4 text-gray-900" onClick={() => router.push(`/dashboard/tasks/${task.id}`)}>
+                <TableCell
+                  className="px-6 py-4 text-gray-900"
+                  onClick={() => router.push(`/dashboard/tasks/${task.id}`)}
+                >
                   {toTitleCase(task.resident_name) || "N/A"}
                 </TableCell>
-                <TableCell className="px-6 py-4 text-gray-900" onClick={() => router.push(`/dashboard/tasks/${task.id}`)}>
+                <TableCell
+                  className="px-6 py-4 text-gray-900"
+                  onClick={() => router.push(`/dashboard/tasks/${task.id}`)}
+                >
                   {toTitleCase(task.assigned_to_name) || "Unassigned"}
                 </TableCell>
                 <TableCell className="px-6 py-4">
-                  <span className={`px-2 py-1 text-xs rounded-full ${
-                    task.priority === "High"
-                      ? "bg-red-100 text-red-800"
-                      : task.priority === "Medium"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-green-100 text-green-800"
-                  }`}>
+                  <span
+                    className={`px-2 py-1 text-xs rounded-full ${
+                      task.priority === "High"
+                        ? "bg-red-100 text-red-800"
+                        : task.priority === "Medium"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-green-100 text-green-800"
+                    }`}
+                  >
                     {task.priority || "Low"}
                   </span>
                 </TableCell>
                 <TableCell className="px-6 py-4">
-                  <span className={`px-2 py-1 text-xs rounded-full ${
-                    task.status === "Assigned"
-                      ? "bg-blue-100 text-blue-800"
-                      : task.status === "Completed"
-                        ? "bg-green-100 text-green-800"
-                        : task.status === "Delayed"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-orange-100 text-orange-800"
-                  }`}>
+                  <span
+                    className={`px-2 py-1 text-xs rounded-full ${
+                      task.status === "Assigned"
+                        ? "bg-blue-100 text-blue-800"
+                        : task.status === "Completed"
+                          ? "bg-green-100 text-green-800"
+                          : task.status === "Delayed"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-orange-100 text-orange-800"
+                    }`}
+                  >
                     {task.status}
                   </span>
                 </TableCell>
-                <TableCell className="px-6 py-4 text-gray-900" onClick={() => router.push(`/dashboard/tasks/${task.id}`)}>
+                <TableCell
+                  className="px-6 py-4 text-gray-900"
+                  onClick={() => router.push(`/dashboard/tasks/${task.id}`)}
+                >
                   {new Date(task.due_date).toLocaleDateString()}
                 </TableCell>
                 <TableCell className="px-6 py-4">
@@ -414,6 +463,45 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                         <Edit className="mr-2 h-4 w-4" />
                         Edit
                       </DropdownMenuItem>
+                      {task.assigned_to &&
+                        session?.user?.id &&
+                        task.assigned_to === session.user.id &&
+                        task.assigned_to_name && (
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                            }}
+                          >
+                            <TaskReassignmentForm
+                              taskId={task.id}
+                              currentNurseId={task.assigned_to}
+                              currentNurseName={task.assigned_to_name}
+                            />
+                          </DropdownMenuItem>
+                        )}
+                      {task.status === TaskStatus.REASSIGNMENT_REQUESTED &&
+                        task.reassignment_requested_to &&
+                        session?.user?.id &&
+                        task.reassignment_requested_to === session.user.id &&
+                        task.assigned_to_name &&
+                        task.reassignment_requested_by_name && (
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                            }}
+                          >
+                            <TaskReassignmentActions
+                              taskId={task.id}
+                              taskTitle={task.task_title}
+                              currentNurseId={task.assigned_to}
+                              currentNurseName={task.assigned_to_name}
+                              requestingNurseName={
+                                task.reassignment_requested_by_name
+                              }
+                              status={task.status}
+                            />
+                          </DropdownMenuItem>
+                        )}
                       <DropdownMenuItem
                         onClick={(e) => {
                           e.stopPropagation();
@@ -421,7 +509,7 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                         }}
                       >
                         <Copy className="mr-2 h-4 w-4" />
-                        Copy
+                        Duplicate
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={(e) => {

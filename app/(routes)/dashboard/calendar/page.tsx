@@ -1,6 +1,5 @@
 "use client";
 
-import { Metadata } from "next";
 import { Button } from "@/components/ui/button";
 import { Calendar as DatePicker } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
@@ -18,23 +17,38 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { fetchActivities } from "@/app/api/activities";
 import { format } from "date-fns";
 import { addMonths, subMonths } from "date-fns";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Filter, Plus, Search } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ActivityCalendar from "./_components/activity-calendar";
-
-export const metadata: Metadata = {
-  title: "Calendar | CareConnect",
-  description: "Activity Management Calendar",
-};
 
 export default function CalendarPage() {
   const [date, setDate] = useState(new Date());
   const [searchQuery, setSearchQuery] = useState("");
-  const [locationFilter, setLocationFilter] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
+  const [locationFilter, setLocationFilter] = useState<string | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [dateFilter, setDateFilter] = useState<Date>();
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [availableLocations, setAvailableLocations] = useState<string[]>([]);
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+
+  const loadFilters = useCallback(async () => {
+    try {
+      const activities = await fetchActivities();
+      const locations = [...new Set(activities.map(a => a.location))].sort();
+      const categories = [...new Set(activities.map(a => a.category))].sort();
+      setAvailableLocations(locations);
+      setAvailableCategories(categories);
+    } catch (error) {
+      console.error("Error loading filters:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadFilters();
+  }, [loadFilters]);
 
   const handleNavigate = (action: "PREV" | "NEXT" | "TODAY") => {
     switch (action) {
@@ -104,20 +118,36 @@ export default function CalendarPage() {
               <div className="grid space-y-4">
                 <div className="space-y-2">
                   <Label>Location</Label>
-                  <Input
-                    placeholder="Filter by location"
-                    value={locationFilter}
-                    onChange={(e) => setLocationFilter(e.target.value)}
-                  />
+                  <Select value={locationFilter || undefined} onValueChange={setLocationFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select location" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All locations</SelectItem>
+                      {availableLocations.map((location) => (
+                        <SelectItem key={location} value={location}>
+                          {location}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
                   <Label>Category</Label>
-                  <Input
-                    placeholder="Filter by category"
-                    value={categoryFilter}
-                    onChange={(e) => setCategoryFilter(e.target.value)}
-                  />
+                  <Select value={categoryFilter || undefined} onValueChange={setCategoryFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All categories</SelectItem>
+                      {availableCategories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
@@ -149,8 +179,8 @@ export default function CalendarPage() {
                 <Button
                   variant="ghost"
                   onClick={() => {
-                    setLocationFilter("");
-                    setCategoryFilter("");
+                    setLocationFilter(null);
+                    setCategoryFilter(null);
                     setDateFilter(undefined);
                   }}
                 >
@@ -159,6 +189,11 @@ export default function CalendarPage() {
               </div>
             </PopoverContent>
           </Popover>
+
+          <Button onClick={() => setIsAddDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Activity
+          </Button>
         </div>
       </div>
 
@@ -166,9 +201,11 @@ export default function CalendarPage() {
         date={date}
         onNavigate={handleNavigate}
         searchQuery={searchQuery}
-        locationFilter={locationFilter}
-        categoryFilter={categoryFilter}
+        locationFilter={locationFilter || ""}
+        categoryFilter={categoryFilter || ""}
         dateFilter={dateFilter}
+        isAddDialogOpen={isAddDialogOpen}
+        onAddDialogClose={() => setIsAddDialogOpen(false)}
       />
     </div>
   );

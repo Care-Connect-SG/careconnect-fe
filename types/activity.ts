@@ -1,37 +1,53 @@
 export interface Activity {
   id: string;
   title: string;
-  description?: string;
+  description: string;
   start_time: string;
   end_time: string;
-  location?: string;
-  category?: string;
-  created_by?: string;
+  location: string;
+  category: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ActivityCreate {
   title: string;
-  description?: string;
+  description: string;
   start_time: string;
   end_time: string;
-  location?: string;
-  category?: string;
+  location: string;
+  category: string;
 }
-
-export const PREDEFINED_CATEGORIES = ["Outing", "Workshop", "Other"] as const;
-export const PREDEFINED_LOCATIONS = [
-  "Online",
-  "Nursing Home Yard",
-  "Common Space",
-  "Other",
-] as const;
 
 export interface ActivityFilter {
-  start_time?: string;
-  end_time?: string;
-  category?: string;
-  tags?: string;
   search?: string;
-  sort_by?: "start_time" | "title" | "category";
-  sort_order?: "asc" | "desc";
+  location?: string;
+  category?: string;
+  start_date?: string;
 }
+
+export const PREDEFINED_CATEGORIES = [
+  "Exercise",
+  "Social",
+  "Medical",
+  "Entertainment",
+  "Education",
+  "Meal",
+  "Therapy",
+  "Other"
+] as const;
+
+export const PREDEFINED_LOCATIONS = [
+  "Common Room",
+  "Dining Hall",
+  "Garden",
+  "Gym",
+  "Library",
+  "Medical Center",
+  "Recreation Room",
+  "Therapy Room",
+  "Other"
+] as const;
+
+export type Category = typeof PREDEFINED_CATEGORIES[number];
+export type Location = typeof PREDEFINED_LOCATIONS[number];

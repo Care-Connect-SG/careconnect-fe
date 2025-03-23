@@ -19,7 +19,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
 import { Activity, ActivityCreate } from "@/types/activity";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSession } from "next-auth/react";
@@ -63,10 +62,10 @@ export default function ActivityDialog({
   const { data: session } = useSession();
   const userId = session?.user?.id;
   const userRole = session?.user?.role;
-
+  
   const canEdit =
     !activity ||
-    (activity && (activity.created_by === userId || userRole === "Admin"));
+    (activity && (activity.created_by === userId || userRole === "admin" || userRole === "Admin"));
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -83,11 +82,14 @@ export default function ActivityDialog({
 
   useEffect(() => {
     if (activity) {
+      const startDate = new Date(activity.start_time + (activity.start_time.endsWith('Z') ? '' : 'Z'));
+      const endDate = new Date(activity.end_time + (activity.end_time.endsWith('Z') ? '' : 'Z'));
+      
       form.reset({
         title: activity.title,
         description: activity.description || "",
-        start_time: new Date(activity.start_time),
-        end_time: new Date(activity.end_time),
+        start_time: startDate,
+        end_time: endDate,
         location: activity.location || "",
         category: activity.category || "",
       });
@@ -257,28 +259,63 @@ export default function ActivityDialog({
               )}
             />
 
-            <div className="flex justify-end gap-2">
-              {activity && canEdit && (
-                <>
+            <div className="flex justify-between mt-6">
+              <div>
+                {activity && canEdit && (
                   <Button
                     type="button"
                     variant="destructive"
-                    onClick={() => activity._id && onDelete(activity._id)}
+                    onClick={async () => {
+                      if (!activity.id) {
+                        toast({
+                          variant: "destructive",
+                          title: "Error",
+                          description: "Activity ID is missing",
+                        });
+                        return;
+                      }
+
+                      try {
+                        await onDelete(activity.id);
+                        toast({
+                          title: "Success",
+                          description: "Activity deleted successfully",
+                        });
+                        onClose();
+                      } catch (error) {
+                        toast({
+                          variant: "destructive",
+                          title: "Error",
+                          description: error instanceof Error 
+                            ? error.message 
+                            : "Failed to delete activity. Please try again.",
+                        });
+                      }
+                    }}
                   >
                     Delete
                   </Button>
+                )}
+              </div>
+              <div className="flex gap-2">
+                {activity && (
                   <Button
                     type="button"
-                    variant="secondary"
-                    onClick={() => onDuplicate(activity)}
+                    variant="outline"
+                    onClick={() => {
+                      onDuplicate(activity);
+                      onClose();
+                    }}
                   >
                     Duplicate
                   </Button>
-                </>
-              )}
-              {canEdit && (
-                <Button type="submit">{activity ? "Update" : "Create"}</Button>
-              )}
+                )}
+                {canEdit && (
+                  <Button type="submit" variant="default">
+                    {activity ? "Update" : "Create"}
+                  </Button>
+                )}
+              </div>
             </div>
           </form>
         </Form>

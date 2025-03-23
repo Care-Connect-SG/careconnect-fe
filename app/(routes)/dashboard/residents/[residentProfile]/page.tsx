@@ -109,7 +109,7 @@ export default function ResidentDashboard() {
   const handleSaveMedicalRecord = async (updatedData: any) => {
     if (!selectedMedicalRecord || !resident) return;
     try {
-      // Use the helper to determine the template type.
+      // Use inferTemplateType to determine the template type instead of reading a non-existent property.
       const templateType = inferTemplateType(selectedMedicalRecord);
       const updatedRecord = await updateMedicalRecord(
         templateType,
@@ -117,13 +117,13 @@ export default function ResidentDashboard() {
         resident.id,
         updatedData
       );
-      // Optionally update local state or refetch medical records here.
       setIsEditMedicalModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ["medicalRecords"] });
     } catch (error) {
       console.error("Error updating medical record:", error);
     }
   };
+  
   if (isResidentLoading) {
     return <div className="text-center mt-10">Loading resident details...</div>;
   }
@@ -191,7 +191,7 @@ export default function ResidentDashboard() {
           <div className="mt-4 space-y-4">
             {medicalRecords.length > 0 ? (
               medicalRecords.map((record) => (
-                <MedicalRecordCard key={record.id} record={record} />
+                <MedicalRecordCard key={record.id} record={record} onEdit={handleEditMedicalRecord}  />
               ))
             ) : (
               <p className="text-gray-500">No medical records found.</p>

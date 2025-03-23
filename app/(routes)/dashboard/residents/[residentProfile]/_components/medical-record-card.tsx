@@ -3,11 +3,11 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Edit } from "lucide-react";
-import { MedicalRecord } from "@/lib/schema/medicalRecordSchema";
+import { MedicalRecord } from "@/types/medicalHistory";
 import { Label } from "@/components/ui/label";
 
 interface MedicalRecordCardProps {
-  record: MedicalRecord;
+  record: MedicalRecord; 
   onEdit?: (record: MedicalRecord) => void;
 }
 
@@ -49,10 +49,16 @@ const MedicalRecordCard: React.FC<MedicalRecordCardProps> = ({ record, onEdit })
         <Label className="text-lg font-semibold">{title}</Label>
         <p className="text-sm text-gray-600">{details}</p>
       </div>
-      <Button variant="outline" onClick={() => onEdit && onEdit(record)} className="flex items-center">
-        <Edit className="h-4 w-4" />
-        <span className="ml-2">Edit</span>
-      </Button>
+      {onEdit && (
+        <Button
+          variant="outline"
+          onClick={() => onEdit(record)}
+          className="flex items-center"
+        >
+          <Edit className="h-4 w-4" />
+          <span className="ml-2">Edit</span>
+        </Button>
+      )}
     </div>
   );
 };

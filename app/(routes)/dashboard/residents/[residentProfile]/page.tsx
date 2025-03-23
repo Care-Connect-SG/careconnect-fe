@@ -1,8 +1,10 @@
 "use client";
 
 import { getCarePlansForResident } from "@/app/api/careplan";
+import { createCarePlanWithEmptyValues } from "@/app/api/careplan";
 import { getMedicationsForResident } from "@/app/api/medication";
 import { getResidentById, updateResident } from "@/app/api/resident";
+import { getWellnessReportsForResident } from "@/app/api/wellnessReport";
 import { Button } from "@/components/ui/button";
 import { CarePlanRecord } from "@/types/careplan";
 import { MedicationRecord } from "@/types/medication";
@@ -10,19 +12,17 @@ import { ResidentRecord } from "@/types/resident";
 import { WellnessReportRecord } from "@/types/wellnessReport";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import CarePlanDisplay from "../_components/careplan-display";
-import EditableCarePlan from "../_components/editable-care-plan";
 import CreateMedication from "../_components/create-medication";
 import EditMedication from "../_components/edit-medication";
+import EditableCarePlan from "../_components/editable-care-plan";
 import MedicationDisplay from "../_components/medication-display";
+import WellnessReportList from "../_components/wellness-report-list";
 import EditResidentDialog from "./_components/edit-resident-dialog";
 import ResidentDetailsCard from "./_components/resident-detail-card";
 import ResidentDetailsNotesCard from "./_components/resident-detail-notes";
 import ResidentProfileCard from "./_components/resident-profile-header";
-import { createCarePlanWithEmptyValues } from "@/app/api/careplan";
-import { getWellnessReportsForResident } from "@/app/api/wellnessReport";
-import WellnessReportList from "../_components/wellness-report-list";
 
 const TABS = [
   { label: "Overview", value: "overview" },
@@ -39,9 +39,12 @@ export default function ResidentDashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedMedication, setSelectedMedication] = useState<MedicationRecord | null>(null);
+  const [selectedMedication, setSelectedMedication] =
+    useState<MedicationRecord | null>(null);
   const [isCreatingCarePlan, setIsCreatingCarePlan] = useState(false);
-  const [wellnessReports, setWellnessReports] = useState<WellnessReportRecord[]>([]);
+  const [wellnessReports, setWellnessReports] = useState<
+    WellnessReportRecord[]
+  >([]);
   const [carePlanning, setCarePlanning] = useState<CarePlanRecord[]>([]);
 
   const { data: resident, isLoading: isResidentLoading } =
@@ -218,11 +221,15 @@ export default function ResidentDashboard() {
       {activeTab === "careplan" && (
         <div className="mt-6">
           <h2 className="text-lg font-semibold">Resident Care Plan</h2>
-          {carePlanning.length > 0 ? (
+          {carePlans.length > 0 ? (
             <EditableCarePlan
-              careplan={carePlanning[0]} // Since only one care plan exists per resident
+              careplan={carePlans[0]}
               residentId={residentProfile}
-              onCarePlanUpdated={(updatedCarePlan) => setCarePlanning([updatedCarePlan])}
+              onCarePlanUpdated={(updatedCarePlan) => {
+                if (updatedCarePlan) {
+                  queryClient.invalidateQueries({ queryKey: ["carePlans", residentProfile] });
+                }
+              }}
             />
           ) : (
             <div className="flex flex-col items-center mt-4">
@@ -237,6 +244,7 @@ export default function ResidentDashboard() {
               </Button>
             </div>
           )}
+
         </div>
       )}
 

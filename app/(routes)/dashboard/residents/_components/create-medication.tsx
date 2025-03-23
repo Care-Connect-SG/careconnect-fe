@@ -7,17 +7,18 @@ declare global {
 }
 
 // Simple polyfill for browsers without BarcodeDetector
-if (typeof window !== 'undefined' && !window.BarcodeDetector) {
+if (typeof window !== "undefined" && !window.BarcodeDetector) {
   window.BarcodeDetector = class {
     async detect() {
       return [];
     }
     static getSupportedFormats() {
-      return ['code_128'];
+      return ["code_128"];
     }
   };
 }
 
+import { fetchMedicationByBarcode } from "@/app/api/fixedmedication";
 import { createMedication } from "@/app/api/medication";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,8 +33,6 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
-import { BarcodeScanner } from "react-barcode-scanner";
-import { fetchMedicationByBarcode } from "@/app/api/fixedmedication";
 // import { medications } from "@/app/api/standardmedications";
 
 interface CreateMedicationProps {
@@ -71,7 +70,7 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
         const medicationData = await fetchMedicationByBarcode(barcode);
 
         if (medicationData) {
-          setForm(prev => ({
+          setForm((prev) => ({
             ...prev,
             medication_name: medicationData.medication_name || "",
             dosage: medicationData.dosage || "",
@@ -117,9 +116,6 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
         </DialogHeader>
 
         <ScrollArea className="max-h-[70vh] overflow-y-auto px-1">
-
-
-
           {/* Scan Button
           <Button onClick={() => setIsScanning(!isScanning)} variant="outline" className="w-full">
             {isScanning ? "Cancel Scan" : "Scan Medication Barcode"}

@@ -60,7 +60,7 @@ export const updateCarePlan = async (residentId: string, carePlanData: any) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(carePlanData),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -74,7 +74,10 @@ export const updateCarePlan = async (residentId: string, carePlanData: any) => {
   }
 };
 
-export const deleteCarePlan = async (residentId: string, carePlanId: string) => {
+export const deleteCarePlan = async (
+  residentId: string,
+  carePlanId: string,
+) => {
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/careplan/${carePlanId}`,
@@ -83,7 +86,7 @@ export const deleteCarePlan = async (residentId: string, carePlanId: string) => 
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -123,7 +126,7 @@ export const createCarePlanWithEmptyValues = async (residentId: string) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(emptyCarePlan),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -136,4 +139,3 @@ export const createCarePlanWithEmptyValues = async (residentId: string) => {
     return null;
   }
 };
-

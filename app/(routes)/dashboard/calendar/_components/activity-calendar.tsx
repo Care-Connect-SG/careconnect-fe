@@ -7,12 +7,12 @@ import { getDay } from "date-fns/getDay";
 import { parse } from "date-fns/parse";
 import { startOfWeek } from "date-fns/startOfWeek";
 import { subMonths } from "date-fns/subMonths";
-import { useCallback, useEffect, useState, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Calendar as BigCalendar,
+  NavigateAction,
   View,
   dateFnsLocalizer,
-  NavigateAction,
   stringOrDate,
 } from "react-big-calendar";
 import type { Components } from "react-big-calendar";
@@ -20,6 +20,12 @@ import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
 import type { withDragAndDropProps } from "react-big-calendar/lib/addons/dragAndDrop";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
+import {
+  createActivity,
+  deleteActivity,
+  fetchActivities,
+  updateActivity,
+} from "@/app/api/activities";
 import { Button } from "@/components/ui/button";
 import { Calendar as DatePicker } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
@@ -37,17 +43,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { useSession } from "next-auth/react";
-import {
-  createActivity,
-  deleteActivity,
-  fetchActivities,
-  updateActivity,
-} from "@/app/api/activities";
 import { cn } from "@/lib/utils";
 import { Activity, ActivityCreate } from "@/types/activity";
-import { ChevronLeft, ChevronRight, Filter, Lock, Plus, Search } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  Lock,
+  Plus,
+  Search,
+} from "lucide-react";
 import { Calendar as CalendarIcon } from "lucide-react";
+import { useSession } from "next-auth/react";
 import ActivityDialog from "./activity-dialog";
 
 const locales = {
@@ -107,7 +114,11 @@ interface CalendarProps {
   onAddDialogClose?: () => void;
 }
 
-const DateCellWrapper: React.FC<WrapperProps> = ({ children, value, onSelectSlot }) => (
+const DateCellWrapper: React.FC<WrapperProps> = ({
+  children,
+  value,
+  onSelectSlot,
+}) => (
   <div className="relative h-full group cursor-pointer">
     {children}
     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/5 transition-opacity">
@@ -126,7 +137,11 @@ const DateCellWrapper: React.FC<WrapperProps> = ({ children, value, onSelectSlot
   </div>
 );
 
-const TimeSlotWrapper: React.FC<WrapperProps> = ({ children, value, onSelectSlot }) => (
+const TimeSlotWrapper: React.FC<WrapperProps> = ({
+  children,
+  value,
+  onSelectSlot,
+}) => (
   <div className="relative h-full group cursor-pointer">
     {children}
     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/5 transition-opacity">
@@ -158,81 +173,114 @@ export default function ActivityCalendar({
   const { toast } = useToast();
   const { data: session } = useSession();
   const [activities, setActivities] = useState<Activity[]>([]);
-  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(
+    null,
+  );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedEndDate, setSelectedEndDate] = useState<Date | null>(null);
   const [view, setView] = useState<View>("month");
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [restrictedEventMessage, setRestrictedEventMessage] = useState<{id: string, message: string} | null>(null);
-  const [userCreatedActivities, setUserCreatedActivities] = useState<Set<string>>(new Set());
-  const [newlyCreatedActivity, setNewlyCreatedActivity] = useState<string | null>(null);
-  
-  const canUserEditActivity = useCallback((activity: Activity) => {
-    const userId = session?.user?.id;
-    const userRole = (session?.user as any)?.role;
-    
-    return !!(
-      (userRole === "admin" || userRole === "Admin") || 
-      userCreatedActivities.has(activity.id) || 
-      (activity.created_by && activity.created_by === userId)
-    );
-  }, [session, userCreatedActivities]);
+  const [restrictedEventMessage, setRestrictedEventMessage] = useState<{
+    id: string;
+    message: string;
+  } | null>(null);
+  const [userCreatedActivities, setUserCreatedActivities] = useState<
+    Set<string>
+  >(new Set());
+  const [newlyCreatedActivity, setNewlyCreatedActivity] = useState<
+    string | null
+  >(null);
 
-  const eventStyleGetter = useCallback((event: Activity) => {
-    const userId = session?.user?.id;
-    const userRole = (session?.user as any)?.role;
-    const isAdmin = userRole === "admin" || userRole === "Admin";
-    const isCreator = event.created_by === userId;
-    const isUserCreated = userCreatedActivities.has(event.id);
-    const canEdit = canUserEditActivity(event);
-    const isNewlyCreated = event.id === newlyCreatedActivity;
-    
-    let title;
-    if (!canEdit) {
-      title = "You don't have permission to edit this activity";
-    } else if (isAdmin) {
-      title = isCreator ? "Your activity (Admin)" : "Editable (Admin)";
-    } else if (isCreator) {
-      title = "Your activity";
-    } else if (isUserCreated) {
-      title = "Created by you in this session";
-    }
-    
-    if (isNewlyCreated) {
-      title = "✨ Just created! ✨";
-    }
-    
-    return {
-      style: {
-        backgroundColor: isNewlyCreated ? "#04d361aa" : (canEdit ? "#0969da99" : "#9e9e9e99"),
-        borderColor: isNewlyCreated ? "#04d361" : (canEdit ? "#0969da" : "#757575"),
-        color: "#000",
-        borderWidth: isNewlyCreated ? "3px" : "2px",
-        borderStyle: canEdit ? "solid" : "dashed",
-        opacity: isNewlyCreated ? 1 : 0.8,
-        transition: "all 0.2s ease",
-        cursor: canEdit ? "move" : "not-allowed",
-        position: "relative" as const,
-        backgroundImage: !canEdit ? 
-          "repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,0.2) 5px, rgba(255,255,255,0.2) 10px)" : 
-          "none",
-        boxShadow: isNewlyCreated ? "0 0 8px rgba(4, 211, 97, 0.8)" : "none",
-      },
-      title
-    };
-  }, [canUserEditActivity, session, userCreatedActivities, newlyCreatedActivity]);
+  const canUserEditActivity = useCallback(
+    (activity: Activity) => {
+      const userId = session?.user?.id;
+      const userRole = (session?.user as any)?.role;
 
-  const draggableAccessor = useCallback((event: CalendarEvent) => {
-    return canUserEditActivity(event);
-  }, [canUserEditActivity]);
+      return !!(
+        userRole === "admin" ||
+        userRole === "Admin" ||
+        userCreatedActivities.has(activity.id) ||
+        (activity.created_by && activity.created_by === userId)
+      );
+    },
+    [session, userCreatedActivities],
+  );
 
-  const resizableAccessor = useCallback((event: CalendarEvent) => {
-    return canUserEditActivity(event);
-  }, [canUserEditActivity]);
+  const eventStyleGetter = useCallback(
+    (event: Activity) => {
+      const userId = session?.user?.id;
+      const userRole = (session?.user as any)?.role;
+      const isAdmin = userRole === "admin" || userRole === "Admin";
+      const isCreator = event.created_by === userId;
+      const isUserCreated = userCreatedActivities.has(event.id);
+      const canEdit = canUserEditActivity(event);
+      const isNewlyCreated = event.id === newlyCreatedActivity;
 
-  const debounce = <F extends (...args: any[]) => any>(func: F, delay: number) => {
+      let title;
+      if (!canEdit) {
+        title = "You don't have permission to edit this activity";
+      } else if (isAdmin) {
+        title = isCreator ? "Your activity (Admin)" : "Editable (Admin)";
+      } else if (isCreator) {
+        title = "Your activity";
+      } else if (isUserCreated) {
+        title = "Created by you in this session";
+      }
+
+      if (isNewlyCreated) {
+        title = "✨ Just created! ✨";
+      }
+
+      return {
+        style: {
+          backgroundColor: isNewlyCreated
+            ? "#04d361aa"
+            : canEdit
+              ? "#0969da99"
+              : "#9e9e9e99",
+          borderColor: isNewlyCreated
+            ? "#04d361"
+            : canEdit
+              ? "#0969da"
+              : "#757575",
+          color: "#000",
+          borderWidth: isNewlyCreated ? "3px" : "2px",
+          borderStyle: canEdit ? "solid" : "dashed",
+          opacity: isNewlyCreated ? 1 : 0.8,
+          transition: "all 0.2s ease",
+          cursor: canEdit ? "move" : "not-allowed",
+          position: "relative" as const,
+          backgroundImage: !canEdit
+            ? "repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,0.2) 5px, rgba(255,255,255,0.2) 10px)"
+            : "none",
+          boxShadow: isNewlyCreated ? "0 0 8px rgba(4, 211, 97, 0.8)" : "none",
+        },
+        title,
+      };
+    },
+    [canUserEditActivity, session, userCreatedActivities, newlyCreatedActivity],
+  );
+
+  const draggableAccessor = useCallback(
+    (event: CalendarEvent) => {
+      return canUserEditActivity(event);
+    },
+    [canUserEditActivity],
+  );
+
+  const resizableAccessor = useCallback(
+    (event: CalendarEvent) => {
+      return canUserEditActivity(event);
+    },
+    [canUserEditActivity],
+  );
+
+  const debounce = <F extends (...args: any[]) => any>(
+    func: F,
+    delay: number,
+  ) => {
     let timer: NodeJS.Timeout;
     return (...args: Parameters<F>) => {
       clearTimeout(timer);
@@ -244,13 +292,6 @@ export default function ActivityCalendar({
     try {
       setIsLoading(true);
       const data = await fetchActivities();
-      
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Loaded activities:', data);
-        console.log('Current user ID:', session?.user?.id);
-        console.log('User role:', (session?.user as any)?.role);
-      }
-      
       setActivities(data);
     } catch (error) {
       toast({
@@ -261,7 +302,7 @@ export default function ActivityCalendar({
     } finally {
       setIsLoading(false);
     }
-  }, [toast, session]);
+  }, [toast]);
 
   useEffect(() => {
     loadActivities();
@@ -289,13 +330,15 @@ export default function ActivityCalendar({
 
   const handleSelectActivity = useCallback((activity: Activity) => {
     setSelectedActivity(activity);
-    
-    const startTimeString = activity.start_time + (activity.start_time.endsWith('Z') ? '' : 'Z');
-    const endTimeString = activity.end_time + (activity.end_time.endsWith('Z') ? '' : 'Z');
-    
+
+    const startTimeString =
+      activity.start_time + (activity.start_time.endsWith("Z") ? "" : "Z");
+    const endTimeString =
+      activity.end_time + (activity.end_time.endsWith("Z") ? "" : "Z");
+
     const startDate = new Date(startTimeString);
     const endDate = new Date(endTimeString);
-    
+
     setSelectedDate(startDate);
     setSelectedEndDate(endDate);
     setIsDialogOpen(true);
@@ -304,35 +347,35 @@ export default function ActivityCalendar({
   const handleSaveActivity = async (activityData: Partial<ActivityCreate>) => {
     try {
       setIsUpdating(true);
-      
+
       let savedActivity: Activity;
-      
+
       if (selectedActivity) {
         savedActivity = await updateActivity(selectedActivity.id, activityData);
-        
-        setActivities(prevActivities => 
-          prevActivities.map(activity => 
-            activity.id === selectedActivity.id 
-              ? { ...activity, ...savedActivity } 
-              : activity
-          )
+
+        setActivities((prevActivities) =>
+          prevActivities.map((activity) =>
+            activity.id === selectedActivity.id
+              ? { ...activity, ...savedActivity }
+              : activity,
+          ),
         );
       } else {
         savedActivity = await createActivity(activityData);
-        setUserCreatedActivities(prev => {
+        setUserCreatedActivities((prev) => {
           const updated = new Set(prev);
           updated.add(savedActivity.id);
           return updated;
         });
-        
+
         // Set the newly created activity ID to highlight it
         setNewlyCreatedActivity(savedActivity.id);
         // Clear the highlight after 3 seconds
         setTimeout(() => setNewlyCreatedActivity(null), 3000);
-        
-        setActivities(prevActivities => [savedActivity, ...prevActivities]);
+
+        setActivities((prevActivities) => [savedActivity, ...prevActivities]);
       }
-      
+
       setIsDialogOpen(false);
       toast({
         title: "Success",
@@ -352,13 +395,13 @@ export default function ActivityCalendar({
   const handleDeleteActivity = async (id: string) => {
     try {
       setIsUpdating(true);
-      
-      setActivities(prevActivities => 
-        prevActivities.filter(activity => activity.id !== id)
+
+      setActivities((prevActivities) =>
+        prevActivities.filter((activity) => activity.id !== id),
       );
-      
+
       await deleteActivity(id);
-      
+
       toast({
         title: "Success",
         description: "Activity deleted successfully",
@@ -366,7 +409,7 @@ export default function ActivityCalendar({
       setIsDialogOpen(false);
     } catch (error) {
       await loadActivities();
-      
+
       toast({
         variant: "destructive",
         title: "Error",
@@ -381,9 +424,9 @@ export default function ActivityCalendar({
     try {
       setIsUpdating(true);
       const { id, created_at, updated_at, ...activityData } = activity;
-      
+
       const tempId = `temp-${Date.now()}`;
-      
+
       const tempActivity: Activity = {
         ...activityData,
         id: tempId,
@@ -391,20 +434,18 @@ export default function ActivityCalendar({
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
-      
-      setActivities(prevActivities => [...prevActivities, tempActivity]);
-      
+
+      setActivities((prevActivities) => [...prevActivities, tempActivity]);
+
       const newActivity = await createActivity({
         ...activityData,
         title: `${activityData.title} (Copy)`,
       });
-      
-      setActivities(prevActivities => 
-        prevActivities.map(act => 
-          act.id === tempId ? newActivity : act
-        )
+
+      setActivities((prevActivities) =>
+        prevActivities.map((act) => (act.id === tempId ? newActivity : act)),
       );
-      
+
       toast({
         title: "Success",
         description: "Activity duplicated successfully",
@@ -412,7 +453,7 @@ export default function ActivityCalendar({
       setIsDialogOpen(false);
     } catch (error) {
       await loadActivities();
-      
+
       toast({
         variant: "destructive",
         title: "Error",
@@ -446,7 +487,9 @@ export default function ActivityCalendar({
           !searchQuery ||
           activity.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           (activity.description &&
-            activity.description.toLowerCase().includes(searchQuery.toLowerCase()));
+            activity.description
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase()));
 
         const matchesLocation =
           !locationFilter ||
@@ -460,58 +503,76 @@ export default function ActivityCalendar({
           (activity.category &&
             activity.category.toLowerCase() === categoryFilter.toLowerCase());
 
-        const matchesDate = !dateFilter || 
-          new Date(activity.start_time).toLocaleDateString() === 
-          dateFilter.toLocaleDateString();
+        const matchesDate =
+          !dateFilter ||
+          new Date(activity.start_time).toLocaleDateString() ===
+            dateFilter.toLocaleDateString();
 
-        return matchesSearch && matchesLocation && matchesCategory && matchesDate;
+        return (
+          matchesSearch && matchesLocation && matchesCategory && matchesDate
+        );
       })
       .map((activity) => {
-        const start = new Date(activity.start_time + (activity.start_time.endsWith('Z') ? '' : 'Z'));
-        const end = new Date(activity.end_time + (activity.end_time.endsWith('Z') ? '' : 'Z'));
-        
-    return {
+        const start = new Date(
+          activity.start_time + (activity.start_time.endsWith("Z") ? "" : "Z"),
+        );
+        const end = new Date(
+          activity.end_time + (activity.end_time.endsWith("Z") ? "" : "Z"),
+        );
+
+        return {
           ...activity,
           start,
           end,
         };
       });
   }, [activities, searchQuery, locationFilter, categoryFilter, dateFilter]);
-  
-  const memoizedFilteredActivities = useMemo(() => filteredActivities(), 
-    [filteredActivities]);
+
+  const memoizedFilteredActivities = useMemo(
+    () => filteredActivities(),
+    [filteredActivities],
+  );
 
   const handleEventDrop = async ({ event, start, end }: any) => {
     if (!canUserEditActivity(event)) {
       setRestrictedEventMessage({
         id: event.id,
-        message: "You can only edit activities you've created or if you have admin privileges"
+        message:
+          "You can only edit activities you've created or if you have admin privileges",
       });
-      
+
       setTimeout(() => setRestrictedEventMessage(null), 3000);
-      
+
       return;
     }
-    
+
     try {
       setIsUpdating(true);
-      
-      setActivities(activities.map(activity => 
-        activity.id === event.id ? { ...activity, start_time: start.toISOString(), end_time: end.toISOString() } : activity
-      ));
-      
+
+      setActivities(
+        activities.map((activity) =>
+          activity.id === event.id
+            ? {
+                ...activity,
+                start_time: start.toISOString(),
+                end_time: end.toISOString(),
+              }
+            : activity,
+        ),
+      );
+
       await updateActivity(event.id, {
         start_time: start.toISOString(),
         end_time: end.toISOString(),
       });
-      
+
       toast({
         title: "Success",
         description: "Activity updated successfully",
       });
     } catch (error) {
       await loadActivities();
-      
+
       toast({
         variant: "destructive",
         title: "Error",
@@ -526,33 +587,42 @@ export default function ActivityCalendar({
     if (!canUserEditActivity(event)) {
       setRestrictedEventMessage({
         id: event.id,
-        message: "You can only edit activities you've created or if you have admin privileges"
+        message:
+          "You can only edit activities you've created or if you have admin privileges",
       });
-      
+
       setTimeout(() => setRestrictedEventMessage(null), 4000);
-      
+
       return;
     }
-    
+
     try {
       setIsUpdating(true);
-      
-      setActivities(activities.map(activity => 
-        activity.id === event.id ? { ...activity, start_time: start.toISOString(), end_time: end.toISOString() } : activity
-      ));
-      
+
+      setActivities(
+        activities.map((activity) =>
+          activity.id === event.id
+            ? {
+                ...activity,
+                start_time: start.toISOString(),
+                end_time: end.toISOString(),
+              }
+            : activity,
+        ),
+      );
+
       await updateActivity(event.id, {
         start_time: start.toISOString(),
         end_time: end.toISOString(),
       });
-      
+
       toast({
         title: "Success",
         description: "Activity updated successfully",
       });
     } catch (error) {
       await loadActivities();
-      
+
       toast({
         variant: "destructive",
         title: "Error",
@@ -565,7 +635,7 @@ export default function ActivityCalendar({
 
   const handleCalendarNavigate = useCallback(
     (newDate: Date, view: View, action: NavigateAction) => {
-      if (view === 'week') {
+      if (view === "week") {
         const newDateObj = new Date(date);
         switch (action) {
           case "PREV":
@@ -594,7 +664,7 @@ export default function ActivityCalendar({
         }
       }
     },
-    [onNavigate, date]
+    [onNavigate, date],
   );
 
   const handleDialogClose = () => {
@@ -625,7 +695,7 @@ export default function ActivityCalendar({
       ) {
         return;
       }
-      
+
       switch (e.key) {
         case "ArrowLeft":
           if (e.altKey) {
@@ -695,7 +765,9 @@ export default function ActivityCalendar({
       <div className="h-[calc(100vh-12rem)] relative">
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
-            <div className="text-lg text-muted-foreground">Loading activities...</div>
+            <div className="text-lg text-muted-foreground">
+              Loading activities...
+            </div>
           </div>
         ) : (
           <>
@@ -707,7 +779,7 @@ export default function ActivityCalendar({
             {restrictedEventMessage && (
               <div className="absolute top-12 left-1/2 transform -translate-x-1/2 bg-destructive text-white py-1 px-4 rounded shadow z-50">
                 {restrictedEventMessage.message}
-        </div>
+              </div>
             )}
             <DnDCalendar
               localizer={localizer}
@@ -738,7 +810,7 @@ export default function ActivityCalendar({
               max={new Date(0, 0, 0, 23, 59, 59)}
               components={components}
             />
-            
+
             <div className="absolute bottom-2 left-2 text-xs bg-white p-2 rounded border shadow-sm">
               <div className="flex flex-col space-y-1">
                 <div className="flex items-center space-x-4">
@@ -762,7 +834,10 @@ export default function ActivityCalendar({
             </div>
 
             <div className="absolute bottom-2 right-2 text-xs text-muted-foreground">
-              <p>Keyboard shortcuts: Alt+← (prev), Alt+→ (next), Ctrl+T (today), Ctrl+M (month), Ctrl+W (week), Ctrl+N (new)</p>
+              <p>
+                Keyboard shortcuts: Alt+← (prev), Alt+→ (next), Ctrl+T (today),
+                Ctrl+M (month), Ctrl+W (week), Ctrl+N (new)
+              </p>
             </div>
           </>
         )}

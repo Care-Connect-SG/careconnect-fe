@@ -25,19 +25,6 @@ export async function fetchActivities(): Promise<Activity[]> {
     throw new Error("Failed to fetch activities");
   }
   const activities = await response.json();
-  
-  // The backend response includes these fields:
-  // - id: string
-  // - title: string
-  // - description: string
-  // - start_time: string (ISO format)
-  // - end_time: string (ISO format)
-  // - location: string
-  // - category: string
-  // - created_at: string (ISO format)
-  // - updated_at: string (ISO format)
-  // - created_by: string (user ID who created the activity)
-  
   return activities;
 }
 
@@ -46,11 +33,11 @@ export async function createActivity(
 ): Promise<Activity> {
   const apiData = {
     ...data,
-    start_time: data.start_time 
-      ? new Date(data.start_time).toISOString().split('.')[0] 
+    start_time: data.start_time
+      ? new Date(data.start_time).toISOString().split(".")[0]
       : undefined,
-    end_time: data.end_time 
-      ? new Date(data.end_time).toISOString().split('.')[0] 
+    end_time: data.end_time
+      ? new Date(data.end_time).toISOString().split(".")[0]
       : undefined,
   };
 
@@ -59,11 +46,11 @@ export async function createActivity(
     headers: await getHeaders(),
     body: JSON.stringify(apiData),
   });
-  
+
   if (!response.ok) {
     throw new Error("Failed to create activity");
   }
-  
+
   const activity = await response.json();
   return activity;
 }
@@ -74,11 +61,11 @@ export async function updateActivity(
 ): Promise<Activity> {
   const apiData = {
     ...data,
-    start_time: data.start_time 
-      ? new Date(data.start_time).toISOString().split('.')[0] 
+    start_time: data.start_time
+      ? new Date(data.start_time).toISOString().split(".")[0]
       : undefined,
-    end_time: data.end_time 
-      ? new Date(data.end_time).toISOString().split('.')[0] 
+    end_time: data.end_time
+      ? new Date(data.end_time).toISOString().split(".")[0]
       : undefined,
   };
 
@@ -87,11 +74,11 @@ export async function updateActivity(
     headers: await getHeaders(),
     body: JSON.stringify(apiData),
   });
-  
+
   if (!response.ok) {
     throw new Error("Failed to update activity");
   }
-  
+
   const activity = await response.json();
   return activity;
 }
@@ -103,7 +90,7 @@ export async function deleteActivity(id: string): Promise<void> {
 
   try {
     const headers = await getHeaders();
-    
+
     const response = await fetch(`${API_URL}/api/v1/activities/${id}`, {
       method: "DELETE",
       headers,
@@ -124,4 +111,4 @@ export async function deleteActivity(id: string): Promise<void> {
   } catch (error) {
     throw error;
   }
-} 
+}

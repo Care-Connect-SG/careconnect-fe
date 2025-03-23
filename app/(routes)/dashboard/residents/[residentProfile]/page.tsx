@@ -191,7 +191,7 @@ export default function ResidentDashboard() {
           <div className="mt-4 space-y-4">
             {medicalRecords.length > 0 ? (
               medicalRecords.map((record) => (
-                <MedicalRecordCard key={record.id} record={record}  />
+                <MedicalRecordCard key={record.id} record={record} />
               ))
             ) : (
               <p className="text-gray-500">No medical records found.</p>

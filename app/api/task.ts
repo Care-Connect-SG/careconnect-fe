@@ -38,7 +38,8 @@ export const getTasks = async (filters?: {
   search?: string;
   status?: string;
   priority?: string;
-  date?: string; // Format: YYYY-MM-DD
+  // Format: YYYY-MM-DD
+  date?: string;
 }): Promise<Task[]> => {
   try {
     const queryParams = filters
@@ -58,7 +59,6 @@ export const getTasks = async (filters?: {
     }
 
     const data = await response.json();
-    // Convert UTC dates to local Date objects
     return data.map((task: any) => ({
       ...task,
       start_date: new Date(task.start_date),
@@ -91,7 +91,6 @@ export const getTaskById = async (taskId: string): Promise<Task> => {
     }
 
     const task = await response.json();
-    // Convert UTC dates to local Date objects
     return {
       ...task,
       start_date: new Date(task.start_date),
@@ -163,7 +162,6 @@ export const updateTask = async (
     }
 
     const data = await response.json();
-    // Convert UTC dates to local Date objects
     return {
       ...data,
       start_date: new Date(data.start_date),

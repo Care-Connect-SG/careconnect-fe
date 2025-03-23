@@ -44,11 +44,9 @@ export function TaskReassignmentForm({
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch available nurses
   const { data: nurses, isLoading } = useQuery({
     queryKey: ["nurses"],
     queryFn: async () => {
-      console.log("Fetching nurses...");
       const response = await fetchWithAuth(
         `${process.env.NEXT_PUBLIC_BE_API_URL}/tags/caregivers`,
         {
@@ -64,20 +62,12 @@ export function TaskReassignmentForm({
         throw new Error(errorData.detail || "Failed to fetch nurses");
       }
       const data = await response.json();
-      console.log("Fetched nurses:", data);
       return data.filter((nurse: Nurse) => nurse.id !== currentNurseId);
     },
   });
 
-  // Request reassignment mutation
   const requestReassignmentMutation = useMutation({
     mutationFn: async (targetNurseId: string) => {
-      console.log("Sending reassignment request:", {
-        taskId,
-        targetNurseId,
-        currentNurseId,
-      });
-
       try {
         const response = await fetchWithAuth(
           `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/request-reassignment?target_nurse_id=${targetNurseId}`,
@@ -90,12 +80,6 @@ export function TaskReassignmentForm({
         );
 
         const responseData = await response.json();
-        console.log("Full response:", {
-          status: response.status,
-          ok: response.ok,
-          data: responseData,
-          headers: Object.fromEntries(response.headers.entries()),
-        });
 
         if (!response.ok) {
           console.error("Error details:", {
@@ -154,11 +138,6 @@ export function TaskReassignmentForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Submitting form with nurse:", {
-      selectedNurseId,
-      taskId,
-      currentNurseId,
-    });
     if (!selectedNurseId) {
       toast({
         title: "Error",
@@ -213,7 +192,6 @@ export function TaskReassignmentForm({
                 <Select
                   value={selectedNurseId}
                   onValueChange={(value) => {
-                    console.log("Selected nurse:", value);
                     setSelectedNurseId(value);
                   }}
                   disabled={isLoading}

@@ -116,7 +116,6 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
           </DialogTitle>
         </DialogHeader>
 
-        {/* Scrollable area to prevent cut-off */}
         <ScrollArea className="max-h-[70vh] overflow-y-auto px-1">
 
 

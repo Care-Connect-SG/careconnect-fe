@@ -83,7 +83,6 @@ export default function PersonSelector({ user }: PersonSelectorProps) {
   return (
     <Card className="w-1/2 p-4">
       <div className="space-y-6">
-        {/* Primary Resident Selection (Single Select) */}
         <div>
           <div className="flex gap-2 justify-start items-center">
             <div className="flex items-center gap-1">
@@ -133,8 +132,7 @@ export default function PersonSelector({ user }: PersonSelectorProps) {
           ) : null}
         </div>
 
-        {/* Involved Residents Selection (Multi-Select) */}
-        <div className="">
+        <div>
           <div className="flex items-center gap-2 pb-2">
             <UsersRound strokeWidth={1} className="mb-2" />
             <Label className="block md:text-sm font-medium">
@@ -218,7 +216,6 @@ export default function PersonSelector({ user }: PersonSelectorProps) {
           </div>
         </div>
 
-        {/* Involved Caregivers Selection (Multi-Select) */}
         <div>
           <div className="flex items-center gap-2 pb-2">
             <UsersRound strokeWidth={1} className="mb-2" />

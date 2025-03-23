@@ -20,6 +20,14 @@ import MedicalRecordCard from "./_components/medical-record-card";
 import ResidentDetailsCard from "./_components/resident-detail-card";
 import ResidentDetailsNotesCard from "./_components/resident-detail-notes";
 import ResidentProfileCard from "./_components/resident-profile-header";
+import {
+  ToastProvider,
+  Toast,
+  ToastTitle,
+  ToastDescription,
+  ToastClose,
+  ToastViewport,
+} from "@/components/ui/toast";
 
 const TABS = [
   { label: "Overview", value: "overview" },
@@ -38,6 +46,7 @@ export default function ResidentDashboard() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedMedication, setSelectedMedication] =
     useState<MedicationRecord | null>(null);
+  const [toastOpen, setToastOpen] = useState(false);
 
   const { data: resident, isLoading: isResidentLoading } =
     useQuery<ResidentRecord>({
@@ -45,12 +54,11 @@ export default function ResidentDashboard() {
       queryFn: () => getResidentById(residentProfile),
     });
 
-  const { data: medicalRecords = [], isLoading: areMedicalRecordsLoading } =
-    useQuery({
-      queryKey: ["medicalRecords"],
-      queryFn: () => getMedicalRecordsByResident(residentProfile),
-      enabled: !!residentProfile,
-    });
+  const { data: medicalRecords = [] } = useQuery({
+    queryKey: ["medicalRecords"],
+    queryFn: () => getMedicalRecordsByResident(residentProfile),
+    enabled: !!residentProfile,
+  });
 
   const { data: medications = [], refetch: refetchMedications } = useQuery<
     MedicationRecord[]
@@ -85,11 +93,18 @@ export default function ResidentDashboard() {
 
   const handleSaveAdditionalNotes = (newNotes: string) => {
     if (!resident) return;
-    updateResidentMutation.mutate({
-      ...resident,
-      additional_notes: newNotes,
-      additional_notes_timestamp: new Date().toISOString(),
-    });
+    updateResidentMutation.mutate(
+      {
+        ...resident,
+        additional_notes: newNotes,
+        additional_notes_timestamp: new Date().toISOString(),
+      },
+      {
+        onSuccess: () => {
+          setToastOpen(true);
+        },
+      }
+    );
   };
 
   const handleEditMedication = (medication: MedicationRecord) => {
@@ -108,135 +123,146 @@ export default function ResidentDashboard() {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto mt-10">
-      <ResidentProfileCard resident={resident} onEdit={handleEditResident} />
+    <ToastProvider>
+      <div className="w-full max-w-4xl mx-auto mt-10">
+        <ResidentProfileCard resident={resident} onEdit={handleEditResident} />
 
-      <EditResidentDialog
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        initialData={resident}
-        onSave={handleModalSave}
-      />
+        <EditResidentDialog
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          initialData={resident}
+          onSave={handleModalSave}
+        />
 
-      <div className="mt-6 border-b border-gray-200">
-        <div className="flex space-x-8">
-          {TABS.map((tab) => (
-            <Button
-              key={tab.value}
-              onClick={() => setActiveTab(tab.value)}
-              className={`py-2 px-1 text-sm font-medium ${
-                activeTab === tab.value
-                  ? "text-blue-600 border-b-2 border-blue-600"
-                  : "text-gray-500"
-              }`}
-            >
-              {tab.label}
-            </Button>
-          ))}
+        <div className="mt-6 border-b border-gray-200">
+          <div className="flex space-x-8">
+            {TABS.map((tab) => (
+              <Button
+                key={tab.value}
+                onClick={() => setActiveTab(tab.value)}
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 
+                  ${
+                    activeTab === tab.value
+                      ? "bg-blue-600 text-white border border-blue-600"
+                      : "bg-gray-400 text-white hover:bg-gray-500"
+                  }
+                `}
+              >
+                {tab.label}
+              </Button>
+            ))}
+          </div>
         </div>
+
+        {activeTab === "overview" && (
+          <div className="flex flex-col sm:flex-row items-start justify-between gap-6 mt-6">
+            <ResidentDetailsCard
+              gender={resident.gender}
+              dateOfBirth={resident.date_of_birth}
+              nricNumber={resident.nric_number}
+              emergencyContactName={resident.emergency_contact_name}
+              emergencyContactNumber={resident.emergency_contact_number}
+              relationship={resident.relationship}
+              primaryNurse={resident.primary_nurse || ""}
+            />
+            <ResidentDetailsNotesCard
+              additionalNotes={resident.additional_notes || "None"}
+              initialLastSaved={resident.additional_notes_timestamp}
+              onSaveNotes={handleSaveAdditionalNotes}
+            />
+          </div>
+        )}
+
+        {activeTab === "history" && (
+          <div className="mt-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-semibold">Medical History</h2>
+              <Button onClick={() => setIsCreateModalOpen(true)}>
+                Add Medical Record
+              </Button>
+            </div>
+            <div className="mt-4 space-y-4">
+              {medicalRecords.length > 0 ? (
+                medicalRecords.map((record, index) => (
+                  <MedicalRecordCard key={record.id || index} record={record} />
+                ))
+              ) : (
+                <p className="text-gray-500">No medical records found.</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === "medication" && (
+          <div className="mt-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-semibold">Medication List</h2>
+              <Button onClick={() => setIsCreateModalOpen(true)}>
+                Add Medication
+              </Button>
+            </div>
+
+            <div className="space-y-4 mt-4">
+              {medications.length > 0 ? (
+                medications.map((medication, index) => (
+                  <MedicationDisplay
+                    key={medication.id || index}
+                    medication={medication}
+                    onEdit={handleEditMedication}
+                  />
+                ))
+              ) : (
+                <p className="text-gray-500">No medications found.</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        <CreateMedication
+          residentId={residentProfile}
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onMedicationAdded={refetchMedications}
+        />
+
+        {selectedMedication && (
+          <EditMedication
+            residentId={residentProfile}
+            medication={selectedMedication}
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+            onMedicationUpdated={refetchMedications}
+          />
+        )}
+
+        {activeTab === "careplan" && (
+          <div className="mt-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-semibold">Resident Care Plan</h2>
+              <Button onClick={() => setIsCreateModalOpen(true)}>
+                Add CarePlan
+              </Button>
+            </div>
+
+            <div className="space-y-4 mt-4">
+              {carePlans.length > 0 ? (
+                carePlans.map((careplan, index) => (
+                  <CarePlanDisplay key={careplan.id || index} careplan={careplan} />
+                ))
+              ) : (
+                <p className="text-gray-500">No care plans found.</p>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
-      {activeTab === "overview" && (
-        <div className="flex flex-col sm:flex-row items-start justify-between gap-6 mt-6">
-          <ResidentDetailsCard
-            gender={resident.gender}
-            dateOfBirth={resident.date_of_birth}
-            nricNumber={resident.nric_number}
-            emergencyContactName={resident.emergency_contact_name}
-            emergencyContactNumber={resident.emergency_contact_number}
-            relationship={resident.relationship}
-            primaryNurse={resident.primary_nurse || ""}
-          />
-          <ResidentDetailsNotesCard
-            additionalNotes={resident.additional_notes || "None"}
-            initialLastSaved={resident.additional_notes_timestamp}
-            onSaveNotes={handleSaveAdditionalNotes}
-          />
-        </div>
-      )}
-
-      {activeTab === "history" && (
-        <div className="mt-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold">Medical History</h2>
-            <Button onClick={() => setIsCreateModalOpen(true)}>
-              Add Medical Record
-            </Button>
-          </div>
-          <div className="mt-4 space-y-4">
-            {medicalRecords.length > 0 ? (
-              medicalRecords.map((record) => (
-                <MedicalRecordCard key={record.id} record={record} />
-              ))
-            ) : (
-              <p className="text-gray-500">No medical records found.</p>
-            )}
-          </div>
-        </div>
-      )}
-
-      {activeTab === "medication" && (
-        <div className="mt-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold">Medication List</h2>
-            <Button onClick={() => setIsCreateModalOpen(true)}>
-              Add Medication
-            </Button>
-          </div>
-
-          <div className="space-y-4 mt-4">
-            {medications.length > 0 ? (
-              medications.map((medication) => (
-                <MedicationDisplay
-                  key={medication.id}
-                  medication={medication}
-                  onEdit={handleEditMedication}
-                />
-              ))
-            ) : (
-              <p className="text-gray-500">No medications found.</p>
-            )}
-          </div>
-        </div>
-      )}
-
-      <CreateMedication
-        residentId={residentProfile}
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onMedicationAdded={refetchMedications}
-      />
-
-      {selectedMedication && (
-        <EditMedication
-          residentId={residentProfile}
-          medication={selectedMedication}
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          onMedicationUpdated={refetchMedications}
-        />
-      )}
-
-      {activeTab === "careplan" && (
-        <div className="mt-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold">Resident Care Plan</h2>
-            <Button onClick={() => setIsCreateModalOpen(true)}>
-              Add CarePlan
-            </Button>
-          </div>
-
-          <div className="space-y-4 mt-4">
-            {carePlans.length > 0 ? (
-              carePlans.map((careplan) => (
-                <CarePlanDisplay key={careplan.id} careplan={careplan} />
-              ))
-            ) : (
-              <p className="text-gray-500">No care plans found.</p>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
+      <Toast open={toastOpen} onOpenChange={setToastOpen}>
+        <ToastTitle>Success</ToastTitle>
+        <ToastDescription>Note saved successfully!</ToastDescription>
+        <ToastClose />
+      </Toast>
+      <ToastViewport />
+    </ToastProvider>
   );
 }

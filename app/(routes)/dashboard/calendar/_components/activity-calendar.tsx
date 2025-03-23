@@ -167,35 +167,62 @@ export default function ActivityCalendar({
   const [isUpdating, setIsUpdating] = useState(false);
   const [restrictedEventMessage, setRestrictedEventMessage] = useState<{id: string, message: string} | null>(null);
   const [userCreatedActivities, setUserCreatedActivities] = useState<Set<string>>(new Set());
+  const [newlyCreatedActivity, setNewlyCreatedActivity] = useState<string | null>(null);
   
   const canUserEditActivity = useCallback((activity: Activity) => {
     const userId = session?.user?.id;
     const userRole = (session?.user as any)?.role;
     
-    return (userRole === "admin" || userRole === "Admin") || userCreatedActivities.has(activity.id);
+    return !!(
+      (userRole === "admin" || userRole === "Admin") || 
+      userCreatedActivities.has(activity.id) || 
+      (activity.created_by && activity.created_by === userId)
+    );
   }, [session, userCreatedActivities]);
 
   const eventStyleGetter = useCallback((event: Activity) => {
+    const userId = session?.user?.id;
+    const userRole = (session?.user as any)?.role;
+    const isAdmin = userRole === "admin" || userRole === "Admin";
+    const isCreator = event.created_by === userId;
+    const isUserCreated = userCreatedActivities.has(event.id);
     const canEdit = canUserEditActivity(event);
+    const isNewlyCreated = event.id === newlyCreatedActivity;
+    
+    let title;
+    if (!canEdit) {
+      title = "You don't have permission to edit this activity";
+    } else if (isAdmin) {
+      title = isCreator ? "Your activity (Admin)" : "Editable (Admin)";
+    } else if (isCreator) {
+      title = "Your activity";
+    } else if (isUserCreated) {
+      title = "Created by you in this session";
+    }
+    
+    if (isNewlyCreated) {
+      title = "✨ Just created! ✨";
+    }
     
     return {
       style: {
-        backgroundColor: canEdit ? "#0969da99" : "#9e9e9e99",
-        borderColor: canEdit ? "#0969da" : "#757575",
+        backgroundColor: isNewlyCreated ? "#04d361aa" : (canEdit ? "#0969da99" : "#9e9e9e99"),
+        borderColor: isNewlyCreated ? "#04d361" : (canEdit ? "#0969da" : "#757575"),
         color: "#000",
-        borderWidth: "2px",
+        borderWidth: isNewlyCreated ? "3px" : "2px",
         borderStyle: canEdit ? "solid" : "dashed",
-        opacity: 0.8,
+        opacity: isNewlyCreated ? 1 : 0.8,
         transition: "all 0.2s ease",
         cursor: canEdit ? "move" : "not-allowed",
         position: "relative" as const,
         backgroundImage: !canEdit ? 
           "repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,0.2) 5px, rgba(255,255,255,0.2) 10px)" : 
           "none",
+        boxShadow: isNewlyCreated ? "0 0 8px rgba(4, 211, 97, 0.8)" : "none",
       },
-      title: !canEdit ? "You don't have permission to edit this activity" : undefined
+      title
     };
-  }, [canUserEditActivity]);
+  }, [canUserEditActivity, session, userCreatedActivities, newlyCreatedActivity]);
 
   const draggableAccessor = useCallback((event: CalendarEvent) => {
     return canUserEditActivity(event);
@@ -217,6 +244,13 @@ export default function ActivityCalendar({
     try {
       setIsLoading(true);
       const data = await fetchActivities();
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Loaded activities:', data);
+        console.log('Current user ID:', session?.user?.id);
+        console.log('User role:', (session?.user as any)?.role);
+      }
+      
       setActivities(data);
     } catch (error) {
       toast({
@@ -227,7 +261,7 @@ export default function ActivityCalendar({
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, [toast, session]);
 
   useEffect(() => {
     loadActivities();
@@ -290,6 +324,12 @@ export default function ActivityCalendar({
           updated.add(savedActivity.id);
           return updated;
         });
+        
+        // Set the newly created activity ID to highlight it
+        setNewlyCreatedActivity(savedActivity.id);
+        // Clear the highlight after 3 seconds
+        setTimeout(() => setNewlyCreatedActivity(null), 3000);
+        
         setActivities(prevActivities => [savedActivity, ...prevActivities]);
       }
       
@@ -700,17 +740,26 @@ export default function ActivityCalendar({
             />
             
             <div className="absolute bottom-2 left-2 text-xs bg-white p-2 rounded border shadow-sm">
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 mr-1 bg-[#0969da99] border-2 border-[#0969da]"></div>
-                  <span>Editable</span>
+              <div className="flex flex-col space-y-1">
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 mr-1 bg-[#0969da99] border-2 border-[#0969da]"></div>
+                    <span>Editable</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 mr-1 bg-[#9e9e9e99] border-2 border-dashed border-[#757575]"></div>
+                    <span>View only</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 mr-1 bg-[#04d361aa] border-2 border-[#04d361]"></div>
+                    <span>Newly created</span>
+                  </div>
                 </div>
-                <div className="flex items-center">
-                  <div className="w-3 h-3 mr-1 bg-[#9e9e9e99] border-2 border-dashed border-[#757575]"></div>
-                  <span>View only</span>
+                <div className="text-xs text-gray-500 italic">
+                  You can edit activities you created or as an admin
                 </div>
-        </div>
-      </div>
+              </div>
+            </div>
 
             <div className="absolute bottom-2 right-2 text-xs text-muted-foreground">
               <p>Keyboard shortcuts: Alt+← (prev), Alt+→ (next), Ctrl+T (today), Ctrl+M (month), Ctrl+W (week), Ctrl+N (new)</p>

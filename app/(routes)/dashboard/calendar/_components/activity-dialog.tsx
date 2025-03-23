@@ -69,7 +69,7 @@ export default function ActivityDialog({
     !activity || 
     (activity && (
       (userRole === "admin" || userRole === "Admin") || 
-      (canUserEditActivity ? canUserEditActivity(activity) : false)
+      (canUserEditActivity ? canUserEditActivity(activity) : (activity.created_by === userId))
     ));
 
   const form = useForm<FormValues>({

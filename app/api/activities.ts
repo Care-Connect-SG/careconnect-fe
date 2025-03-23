@@ -25,6 +25,19 @@ export async function fetchActivities(): Promise<Activity[]> {
     throw new Error("Failed to fetch activities");
   }
   const activities = await response.json();
+  
+  // The backend response includes these fields:
+  // - id: string
+  // - title: string
+  // - description: string
+  // - start_time: string (ISO format)
+  // - end_time: string (ISO format)
+  // - location: string
+  // - category: string
+  // - created_at: string (ISO format)
+  // - updated_at: string (ISO format)
+  // - created_by: string (user ID who created the activity)
+  
   return activities;
 }
 

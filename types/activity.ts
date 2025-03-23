@@ -8,6 +8,7 @@ export interface Activity {
   category: string;
   created_at: string;
   updated_at: string;
+  created_by?: string;
 }
 
 export interface ActivityCreate {

@@ -6,12 +6,12 @@ import { ResidentRecord } from "@/types/resident";
 import React from "react";
 import ResidentProfilePictureDialog from "./resident-profile-picture-dialog";
 
-interface ResidentProfileCardProps {
+interface ResidentProfileHeaderProps {
   resident: ResidentRecord;
   onEdit: () => void;
 }
 
-const ResidentProfileCard: React.FC<ResidentProfileCardProps> = ({
+const ResidentProfileHeader: React.FC<ResidentProfileHeaderProps> = ({
   resident,
   onEdit,
 }) => {
@@ -45,4 +45,4 @@ const ResidentProfileCard: React.FC<ResidentProfileCardProps> = ({
   );
 };
 
-export default ResidentProfileCard;
+export default ResidentProfileHeader;

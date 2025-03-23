@@ -131,7 +131,6 @@ export default function AllResidentsPage() {
     setIsAddModalOpen(false);
   };
 
-  // Update the URL query parameter for pagination.
   const goToPage = (page: number) => {
     router.push(`/dashboard/residents?page=${page}`);
   };

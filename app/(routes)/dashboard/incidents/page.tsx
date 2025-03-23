@@ -9,11 +9,12 @@ import { FormResponse } from "@/types/form";
 import { ReportResponse, ReportStatus } from "@/types/report";
 import { User } from "@/types/user";
 import { useEffect, useMemo, useState } from "react";
+import IncidentReportFilters from "./_components/incident-reports-filter";
 import ReportsTable from "./_components/reports-table";
 
 interface FilterOptions {
-  formId: string;
-  reporterId: string;
+  search: string;
+  reporterId: string[];
   residentId: string;
   startDate: Date | null;
   endDate: Date | null;
@@ -24,9 +25,9 @@ export default function IncidentReports() {
   const [reports, setReports] = useState<ReportResponse[]>([]);
   const [forms, setForms] = useState<FormResponse[]>([]);
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
-    formId: "",
-    reporterId: "",
-    residentId: "",
+    search: "",
+    reporterId: [],
+    residentId: "all",
     startDate: null,
     endDate: null,
   });
@@ -78,67 +79,89 @@ export default function IncidentReports() {
     }
   };
 
+  const uniqueReporters = useMemo(() => {
+    const set = new Set<string>();
+    reports.forEach((r) => {
+      if (r.reporter?.id) {
+        set.add(JSON.stringify({ id: r.reporter.id, name: r.reporter.name }));
+      }
+    });
+    return Array.from(set).map((item) => JSON.parse(item));
+  }, [reports]);
+
+  const uniqueResidents = useMemo(() => {
+    const set = new Set<string>();
+    reports.forEach((r) => {
+      if (r.primary_resident?.id) {
+        set.add(
+          JSON.stringify({
+            id: r.primary_resident.id,
+            name: r.primary_resident.name,
+          }),
+        );
+      }
+    });
+    return Array.from(set).map((item) => JSON.parse(item));
+  }, [reports]);
+
   const filteredReports = useMemo(() => {
     return reports.filter((report) => {
-      if (activeTab === "my" && report.reporter.id != user?.id) return false;
-      if (activeTab !== "my" && report.status != ReportStatus.PUBLISHED)
+      if (activeTab === "my" && report.reporter.id !== user?.id) return false;
+      if (activeTab !== "my" && report.status !== ReportStatus.PUBLISHED)
         return false;
 
-      if (
-        filterOptions.formId &&
-        filterOptions.formId !== "all" &&
-        report.form_id !== filterOptions.formId
-      )
-        return false;
+      const searchTerm = filterOptions.search.toLowerCase().trim();
+      const matchesSearch =
+        searchTerm === "" ||
+        report.form_name?.toLowerCase().includes(searchTerm);
 
-      if (
-        filterOptions.reporterId &&
-        filterOptions.reporterId !== "all" &&
-        report.reporter.id !== filterOptions.reporterId
-      )
-        return false;
+      const matchesReporter =
+        filterOptions.reporterId.length === 0 ||
+        filterOptions.reporterId.includes(report.reporter.id);
 
-      if (
-        filterOptions.residentId &&
-        filterOptions.residentId !== "all" &&
-        report.primary_resident?.id !== filterOptions.residentId
-      )
-        return false;
+      const matchesResident =
+        filterOptions.residentId === "all" ||
+        (report.primary_resident?.id &&
+          filterOptions.residentId.includes(report.primary_resident.id));
 
-      if (
-        filterOptions.startDate &&
-        new Date(report.created_at!) < filterOptions.startDate
-      )
-        return false;
+      const reportDate = new Date(report.created_at!);
 
-      if (
-        filterOptions.endDate &&
-        new Date(report.created_at!) > filterOptions.endDate
-      )
-        return false;
+      const matchesStartDate =
+        !filterOptions.startDate ||
+        reportDate >= new Date(filterOptions.startDate);
 
-      return true;
+      const matchesEndDate =
+        !filterOptions.endDate || reportDate <= new Date(filterOptions.endDate);
+
+      return (
+        matchesSearch &&
+        matchesReporter &&
+        matchesResident &&
+        matchesStartDate &&
+        matchesEndDate
+      );
     });
   }, [activeTab, filterOptions, reports, user]);
 
   return (
-    <>
-      <div className="px-6 py-4">
-        <h1 className="scroll-m-20 text-2xl font-semibold tracking-tight py-2">
-          Incident Reports
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          View all incident reports
-        </p>
-      </div>
-      <hr className="border-t-1 border-gray-300 mx-6 pt-2 pb-0"></hr>
-      <div className="px-6">
+    <div className="flex flex-col gap-8 p-8 ">
+      <h1 className="scroll-m-20 text-2xl font-semibold tracking-tight">
+        Incident Reports
+      </h1>
+      <IncidentReportFilters
+        uniqueReporters={uniqueReporters}
+        uniqueResidents={uniqueResidents}
+        filterOptions={filterOptions}
+        setFilterOptions={setFilterOptions}
+      />
+
+      <div>
         <Tabs defaultValue="all" onValueChange={setActiveTab}>
           <TabsList className="grid grid-cols-2">
             <TabsTrigger value="all">All Reports</TabsTrigger>
             <TabsTrigger value="my">My Reports</TabsTrigger>
           </TabsList>
-          <TabsContent value="all" className="mt-4">
+          <TabsContent value="all" className="mt-2">
             <ReportsTable
               user={user!}
               reports={filteredReports}
@@ -146,7 +169,7 @@ export default function IncidentReports() {
               handleDelete={handleDeleteReport}
             />
           </TabsContent>
-          <TabsContent value="my" className="mt-4">
+          <TabsContent value="my" className="mt-2">
             <ReportsTable
               user={user!}
               reports={filteredReports}
@@ -156,6 +179,6 @@ export default function IncidentReports() {
           </TabsContent>
         </Tabs>
       </div>
-    </>
+    </div>
   );
 }

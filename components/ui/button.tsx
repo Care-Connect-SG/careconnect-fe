@@ -21,6 +21,9 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         transparentHover:
           "bg-transparent text-gray-500 border border-transparent hover:bg-transparent hover:text-gray-600 hover:border-gray-600",
+
+        fullBorder:
+          "w-full flex items-center justify-between border rounded-md p-2",
       },
       size: {
         default: "h-10 px-4 py-2",

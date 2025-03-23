@@ -15,7 +15,8 @@ export const getCarePlansForResident = async (
     );
 
     if (!response.ok) {
-      throw new Error(`Error fetching care plans: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error fetching care plans");
     }
 
     const data = await response.json();
@@ -40,7 +41,8 @@ export const createCarePlan = async (residentId: string, carePlanData: any) => {
     );
 
     if (!response.ok) {
-      throw new Error(`Error creating care plan: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error creating care plan");
     }
 
     return await response.json();
@@ -64,7 +66,8 @@ export const updateCarePlan = async (residentId: string, carePlanData: any) => {
     );
 
     if (!response.ok) {
-      throw new Error(`Error updating care plan: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error updating care plan");
     }
 
     return await response.json();

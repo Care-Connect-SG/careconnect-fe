@@ -17,7 +17,8 @@ export const createMedicalRecord = async (
       body: JSON.stringify(record),
     });
     if (!response.ok) {
-      throw new Error(`Error creating medical record: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error creating medical record");
     }
     const data = await response.json();
     return data;
@@ -37,7 +38,10 @@ export const getMedicalRecordsByResident = async (
       headers: { "Content-Type": "application/json" },
     });
     if (!response.ok) {
-      throw new Error(`Error fetching medical records: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(
+        errData.detail || "Error fetching medical records by resident",
+      );
     }
     const data = await response.json();
     return data;

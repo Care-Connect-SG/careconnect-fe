@@ -1,6 +1,8 @@
 "use client";
 
+import { createMedicalRecord } from "@/app/api/medical-record";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +20,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -34,11 +41,13 @@ import {
   surgicalSchema,
 } from "@/lib/schema/medicalRecordSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { DialogDescription } from "@radix-ui/react-dialog";
+import { format, isValid } from "date-fns";
+import { CalendarIcon } from "lucide-react";
 import { useParams } from "next/navigation";
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { createMedicalRecord } from "../../../../../api/medical-record";
 
 const templateConfig = {
   condition: {
@@ -76,7 +85,7 @@ const templateConfig = {
     schema: chronicSchema,
     fields: [
       { name: "illness_name", label: "Illness Name", type: "text" },
-      { name: "date_of_onset", label: "Date of Onset", type: "date" },
+      { name: "date_of_onset", label: "Select Date", type: "date" },
       { name: "managing_physician", label: "Managing Physician", type: "text" },
       {
         name: "current_treatment_plan",
@@ -124,10 +133,32 @@ const templateConfig = {
 
 const formSchema = z.object({
   templateType: z.enum(Object.keys(templateConfig) as [string, ...string[]]),
-  formData: z.record(z.string()),
+  formData: z.record(z.string().optional()),
 });
 
 type FormValues = z.infer<typeof formSchema>;
+
+const formatDate = (dateString: string) => {
+  try {
+    const date = new Date(dateString);
+    if (!isValid(date)) return "";
+
+    return format(date, "PPP");
+  } catch (error) {
+    return "";
+  }
+};
+
+const isValidDate = (dateString: string | undefined) => {
+  if (!dateString) return false;
+
+  try {
+    const date = new Date(dateString);
+    return isValid(date);
+  } catch (error) {
+    return false;
+  }
+};
 
 const CreateMedicalHistoryDialog: React.FC<{
   isOpen: boolean;
@@ -137,20 +168,58 @@ const CreateMedicalHistoryDialog: React.FC<{
   const { residentProfile } = useParams() as { residentProfile: string };
   const { toast } = useToast();
 
+  const getDefaultFormData = (templateType: string) => {
+    const template =
+      templateConfig[templateType as keyof typeof templateConfig];
+    const defaultData: Record<string, string> = {};
+
+    template.fields.forEach((field) => {
+      defaultData[field.name] = "";
+    });
+
+    return defaultData;
+  };
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      templateType: "condition",
+      templateType: "",
       formData: {},
     },
   });
 
   const templateType = form.watch("templateType");
-  const currentTemplate =
-    templateConfig[templateType as keyof typeof templateConfig];
+  const currentTemplate = templateType
+    ? templateConfig[templateType as keyof typeof templateConfig]
+    : null;
+
+  useEffect(() => {
+    currentTemplate?.fields.map((field) => console.log(field.name));
+    if (templateType) {
+      form.setValue("formData", getDefaultFormData(templateType));
+    }
+  }, [templateType, form]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      form.reset({
+        templateType: "",
+        formData: {},
+      });
+    }
+  }, [isOpen, form]);
 
   const onSubmit = async (data: FormValues) => {
     try {
+      if (!currentTemplate) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Please select a template type",
+        });
+        return;
+      }
+
       const currentSchema = currentTemplate.schema;
       const validatedData = currentSchema.parse(data.formData);
 
@@ -184,6 +253,9 @@ const CreateMedicalHistoryDialog: React.FC<{
       <DialogContent className="max-w-md w-full p-6 max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add Medical Record</DialogTitle>
+          <DialogDescription>
+            Select medical record type and fill in the details
+          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -193,14 +265,7 @@ const CreateMedicalHistoryDialog: React.FC<{
               name="templateType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Template Type</FormLabel>
-                  <Select
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      form.setValue("formData", {});
-                    }}
-                    defaultValue={field.value}
-                  >
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a template type" />
@@ -219,33 +284,84 @@ const CreateMedicalHistoryDialog: React.FC<{
               )}
             />
 
-            {currentTemplate.fields.map((field) => (
-              <FormField
-                key={field.name}
-                control={form.control}
-                name={`formData.${field.name}`}
-                render={({ field: formField }) => (
-                  <FormItem>
-                    <FormLabel>{field.label}</FormLabel>
-                    <FormControl>
-                      {field.type === "textarea" ? (
-                        <Textarea {...formField} />
-                      ) : (
-                        <Input type={field.type} {...formField} />
-                      )}
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            ))}
+            {currentTemplate && (
+              <>
+                {currentTemplate.fields.map((field) => (
+                  <FormField
+                    key={field.name}
+                    control={form.control}
+                    name={`formData.${field.name}`}
+                    render={({ field: formField }) => (
+                      <FormItem>
+                        <FormLabel>{field.label}</FormLabel>
+                        <FormControl>
+                          {field.type === "textarea" ? (
+                            <Textarea
+                              {...formField}
+                              value={formField.value || ""}
+                            />
+                          ) : field.type === "date" ? (
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  className="w-full justify-start text-left font-normal"
+                                  type="button"
+                                >
+                                  <CalendarIcon className="mr-2 h-4 w-4" />
+                                  {formField.value &&
+                                  isValidDate(formField.value)
+                                    ? formatDate(formField.value)
+                                    : `Select ${field.label}`}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent
+                                className="w-auto p-0"
+                                align="start"
+                              >
+                                <Calendar
+                                  mode="single"
+                                  selected={
+                                    formField.value &&
+                                    isValidDate(formField.value)
+                                      ? new Date(formField.value as string)
+                                      : undefined
+                                  }
+                                  onSelect={(date) => {
+                                    formField.onChange(
+                                      date
+                                        ? date.toISOString().split("T")[0]
+                                        : "",
+                                    );
+                                  }}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
+                          ) : (
+                            <Input
+                              type={field.type}
+                              {...formField}
+                              value={formField.value || ""}
+                            />
+                          )}
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ))}
+              </>
+            )}
 
             <DialogFooter>
               <div className="flex justify-end space-x-4">
                 <Button type="button" variant="secondary" onClick={onClose}>
                   Cancel
                 </Button>
-                <Button type="submit">Save</Button>
+                <Button type="submit" disabled={!templateType}>
+                  Save
+                </Button>
               </div>
             </DialogFooter>
           </form>

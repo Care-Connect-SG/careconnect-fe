@@ -84,7 +84,7 @@ export const updateResident = async (
 
     updateData.additional_notes_timestamp = localISOString;
 
-    const response = await fetchWithAuth(
+    const response = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}`,
       {
         method: "PUT",
@@ -169,7 +169,7 @@ export const updateResidentNurse = async (
   },
 ): Promise<ResidentRecord> => {
   try {
-    const response = await fetchWithAuth(
+    const response = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}`,
       {
         method: "PUT",

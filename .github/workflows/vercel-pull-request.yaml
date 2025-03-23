@@ -15,6 +15,9 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
+      - name: Install Biome CLI (if necessary)
+        run: npm install @biomejs/cli-linux-x64 --save-dev
+
       - name: Run Biome
         run: npm run lint
 

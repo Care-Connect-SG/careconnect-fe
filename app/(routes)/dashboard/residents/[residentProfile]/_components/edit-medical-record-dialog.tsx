@@ -1,31 +1,31 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogClose,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { X } from "lucide-react";
+import React, { useState, useEffect } from "react";
 
-interface EditMedicalRecordModalProps {
+interface EditMedicalRecordDialogProps {
   isOpen: boolean;
   onClose: () => void;
   templateType: string;
   residentId: string;
-  initialData: any; // You can narrow this later to a union type for each template
+  initialData: any;
   onSave: (updatedData: any) => Promise<void>;
 }
 
-const EditMedicalRecordModal: React.FC<EditMedicalRecordModalProps> = ({
+const EditMedicalRecordDialog: React.FC<EditMedicalRecordDialogProps> = ({
   isOpen,
   onClose,
   templateType,
@@ -36,13 +36,12 @@ const EditMedicalRecordModal: React.FC<EditMedicalRecordModalProps> = ({
   const [formData, setFormData] = useState<any>(initialData);
   const { toast } = useToast();
 
-  // Update local form data if initialData changes
   useEffect(() => {
     setFormData(initialData);
   }, [initialData]);
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev: any) => ({
@@ -137,7 +136,6 @@ const EditMedicalRecordModal: React.FC<EditMedicalRecordModalProps> = ({
               </div>
             </>
           )}
-          {/* Add additional form sections for other template types as needed */}
           <DialogFooter>
             <div className="flex justify-end space-x-4">
               <Button type="button" variant="secondary" onClick={onClose}>
@@ -152,4 +150,4 @@ const EditMedicalRecordModal: React.FC<EditMedicalRecordModalProps> = ({
   );
 };
 
-export default EditMedicalRecordModal;
+export default EditMedicalRecordDialog;

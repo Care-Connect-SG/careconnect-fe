@@ -55,7 +55,7 @@ export const updateMedicalRecord = async (
   templateType: string,
   recordId: string,
   residentId: string,
-  updateData: any
+  updateData: any,
 ): Promise<any> => {
   try {
     const url = `${process.env.NEXT_PUBLIC_BE_API_URL}/medical/records/${templateType}/${recordId}?resident_id=${encodeURIComponent(residentId)}`;

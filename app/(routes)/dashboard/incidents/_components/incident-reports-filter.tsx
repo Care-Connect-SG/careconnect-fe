@@ -11,8 +11,6 @@ import {
 import { format } from "date-fns";
 import { Search, X } from "lucide-react";
 import { CalendarIcon } from "lucide-react";
-
-import { ReportResponse } from "@/types/report";
 import { CheckIcon, ChevronDownIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 

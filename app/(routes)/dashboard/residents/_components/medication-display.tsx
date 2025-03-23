@@ -49,7 +49,6 @@ const MedicationDisplay: React.FC<MedicationProps> = ({
         </div>
       </CardHeader>
 
-      {/* Medication Details */}
       <CardContent className="space-y-3 mt-1 text-sm text-gray-700 px-4">
         <div className="flex items-center space-x-2">
           <Pill size={16} className="text-gray-500" />
@@ -83,7 +82,6 @@ const MedicationDisplay: React.FC<MedicationProps> = ({
           </div>
         )}
 
-        {/* Prescribed By */}
         <div className="border-t border-gray-200 pt-3 text-gray-600 text-sm">
           <strong>Prescribed by:</strong> Doctor David Lim
         </div>

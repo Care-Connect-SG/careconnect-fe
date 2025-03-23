@@ -17,6 +17,7 @@ export interface ReportCreate {
   involved_caregivers?: CaregiverTag[];
   report_content: ReportSectionContent[];
   status: ReportStatus;
+  reference_report_id?: string;
 }
 
 export interface ReportResponse extends ReportCreate {

@@ -1,6 +1,7 @@
 "use client";
 
 import { getCarePlansForResident } from "@/app/api/careplan";
+import { getMedicalRecordsByResident } from "@/app/api/medical-record";
 import { getMedicationsForResident } from "@/app/api/medication";
 import { Button } from "@/components/ui/button";
 import { CarePlanRecord } from "@/types/careplan";
@@ -14,9 +15,10 @@ import CreateMedication from "../_components/create-medication";
 import EditMedication from "../_components/edit-medication";
 import EditResidentDialog from "../_components/edit-resident-dialog";
 import MedicationDisplay from "../_components/medication-display";
+import MedicalRecordCard from "./_components/medical-record-card";
 import ResidentDetailsCard from "./_components/resident-detail-card";
 import ResidentDetailsNotesCard from "./_components/resident-detail-notes";
-import ResidentProfileCard from "./_components/resident-profile-card";
+import ResidentProfileCard from "./_components/resident-profile-header";
 
 const TABS = [
   { label: "Overview", value: "overview" },
@@ -159,6 +161,26 @@ export default function ResidentDashboard() {
             initialLastSaved={resident.additional_notes_timestamp}
             onSaveNotes={handleSaveAdditionalNotes}
           />
+        </div>
+      )}
+
+      {activeTab === "history" && (
+        <div className="mt-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold">Medical History</h2>
+            <Button onClick={() => setIsCreateModalOpen(true)}>
+              Add Medical Record
+            </Button>
+          </div>
+          <div className="mt-4 space-y-4">
+            {medicalRecords.length > 0 ? (
+              medicalRecords.map((record) => (
+                <MedicalRecordCard key={record.id} record={record} />
+              ))
+            ) : (
+              <p className="text-gray-500">No medical records found.</p>
+            )}
+          </div>
         </div>
       )}
 

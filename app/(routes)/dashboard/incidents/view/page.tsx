@@ -229,6 +229,19 @@ export default function ViewReportPage() {
                     </div>
                   )}
               </div>
+              {report?.reference_report_id && (
+                <div className="mt-4">
+                  <h2 className="text-gray-500 font-semibold mb-2">
+                    Reference Report
+                  </h2>
+                  <Link
+                    href={`/dashboard/incidents/view?reportId=${report.reference_report_id}`}
+                    className="border-b border-dotted border-muted-foreground hover:border-primary text-blue-600"
+                  >
+                    View Reference Report
+                  </Link>
+                </div>
+              )}
             </div>
 
             <hr className="border-t-1 border-gray-300 mt-8 mb-6"></hr>

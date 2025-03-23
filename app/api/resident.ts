@@ -12,7 +12,8 @@ export const getResidents = async (): Promise<ResidentRecord[]> => {
       },
     );
     if (!response.ok) {
-      throw new Error(`Error fetching residents: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error fetching residents");
     }
     const data = await response.json();
     return data;
@@ -36,7 +37,8 @@ export const getResidentsByPage = async (
       headers: { "Content-Type": "application/json" },
     });
     if (!response.ok) {
-      throw new Error(`Error fetching residents: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error fetching residents by page");
     }
     const data = await response.json();
     return data;
@@ -58,7 +60,8 @@ export const getResidentById = async (
       },
     );
     if (!response.ok) {
-      throw new Error(`Error fetching resident: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error fetching resident by ID");
     }
     const data = await response.json();
     return data;
@@ -89,7 +92,8 @@ export const updateResident = async (
       },
     );
     if (!response.ok) {
-      throw new Error(`Error updating resident: ${response.statusText}`);
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Error updating resident details");
     }
     const data = await response.json();
     return data;
@@ -98,6 +102,54 @@ export const updateResident = async (
     throw error;
   }
 };
+
+export async function removeResidentProfilePicture(
+  resident: ResidentRecord,
+): Promise<ResidentRecord> {
+  try {
+    const updatedResident = await updateResident(resident.id, {
+      ...resident,
+      photograph: null,
+    });
+
+    return updatedResident;
+  } catch (error) {
+    console.error("Error removing profile picture:", error);
+    throw error;
+  }
+}
+
+export async function editResidentProfilePicture(
+  resident: ResidentRecord,
+  formData: FormData,
+): Promise<ResidentRecord> {
+  try {
+    const response = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/images/upload`,
+      {
+        method: "POST",
+        body: formData,
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Error uploading profile picture");
+    }
+
+    const result = await response.json();
+
+    const updatedResident = await updateResident(resident.id, {
+      ...resident,
+      photograph: result.data.url,
+    });
+
+    return updatedResident;
+  } catch (error) {
+    console.error("Error editing profile picture:", error);
+    throw error;
+  }
+}
 
 export const updateResidentNurse = async (
   residentId: string,
@@ -125,7 +177,8 @@ export const updateResidentNurse = async (
       },
     );
     if (!response.ok) {
-      throw new Error(`Error updating resident: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error updating resident nurse");
     }
     const data = await response.json();
     return data;
@@ -145,7 +198,8 @@ export const deleteResident = async (residentId: string): Promise<void> => {
       },
     );
     if (!response.ok) {
-      throw new Error(`Error deleting resident: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error deleting resident");
     }
   } catch (error) {
     console.error("deleteResident error:", error);
@@ -166,7 +220,8 @@ export const createResident = async (
       },
     );
     if (!response.ok) {
-      throw new Error(`Error creating resident: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error creating new resident");
     }
     const data = await response.json();
     return data;

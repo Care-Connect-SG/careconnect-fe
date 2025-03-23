@@ -39,10 +39,11 @@ const EditPicture: React.FC<EditPictureProps> = ({ user, onClose }) => {
     [],
   );
 
+  // Max file size: 5MB
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     maxFiles: 1,
-    maxSize: 5242880, // 5MB
+    maxSize: 5242880,
     multiple: false,
   });
 

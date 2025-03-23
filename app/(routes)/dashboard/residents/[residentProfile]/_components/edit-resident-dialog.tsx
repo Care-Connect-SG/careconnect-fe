@@ -103,7 +103,6 @@ const EditResidentDialog: React.FC<EditResidentDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Name */}
           <div>
             <Label htmlFor="fullName">Name</Label>
             <Input
@@ -113,7 +112,6 @@ const EditResidentDialog: React.FC<EditResidentDialogProps> = ({
               required
             />
           </div>
-          {/* Room Number */}
           <div>
             <Label htmlFor="roomNumber">Room</Label>
             <Input
@@ -123,7 +121,6 @@ const EditResidentDialog: React.FC<EditResidentDialogProps> = ({
               required
             />
           </div>
-          {/* Gender */}
           <div>
             <Label htmlFor="gender">Gender</Label>
             <Select value={gender} onValueChange={(value) => setGender(value)}>
@@ -140,7 +137,6 @@ const EditResidentDialog: React.FC<EditResidentDialogProps> = ({
               </SelectContent>
             </Select>
           </div>
-          {/* Date of Birth */}
           <div>
             <Label htmlFor="dateOfBirth">Date of Birth</Label>
             <Input
@@ -151,7 +147,6 @@ const EditResidentDialog: React.FC<EditResidentDialogProps> = ({
               required
             />
           </div>
-          {/* NRIC Number */}
           <div>
             <Label htmlFor="nricNumber">NRIC Number</Label>
             <Input
@@ -161,7 +156,6 @@ const EditResidentDialog: React.FC<EditResidentDialogProps> = ({
               required
             />
           </div>
-          {/* Relationship */}
           <div>
             <Label htmlFor="relationship">Relationship</Label>
             <Input
@@ -171,7 +165,6 @@ const EditResidentDialog: React.FC<EditResidentDialogProps> = ({
               required
             />
           </div>
-          {/* Emergency Contact Name */}
           <div>
             <Label htmlFor="emergencyContactName">Emergency Contact</Label>
             <Input
@@ -181,7 +174,6 @@ const EditResidentDialog: React.FC<EditResidentDialogProps> = ({
               required
             />
           </div>
-          {/* Emergency Contact Number */}
           <div>
             <Label htmlFor="emergencyContactNumber">Contact Number</Label>
             <Input
@@ -191,7 +183,6 @@ const EditResidentDialog: React.FC<EditResidentDialogProps> = ({
               required
             />
           </div>
-          {/* Primary Nurse */}
           <div>
             <Label htmlFor="primaryNurse">Primary Nurse</Label>
             <Input

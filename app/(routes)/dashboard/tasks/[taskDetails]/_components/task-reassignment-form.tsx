@@ -1,5 +1,7 @@
 "use client";
 
+import { requestReassignment } from "@/app/api/task";
+import { getAllTagNurses } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,7 +21,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
@@ -44,79 +45,15 @@ export function TaskReassignmentForm({
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch available nurses
   const { data: nurses, isLoading } = useQuery({
     queryKey: ["nurses"],
-    queryFn: async () => {
-      console.log("Fetching nurses...");
-      const response = await fetchWithAuth(
-        `${process.env.NEXT_PUBLIC_BE_API_URL}/tags/caregivers`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-      );
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to fetch nurses:", errorData);
-        throw new Error(errorData.detail || "Failed to fetch nurses");
-      }
-      const data = await response.json();
-      console.log("Fetched nurses:", data);
-      return data.filter((nurse: Nurse) => nurse.id !== currentNurseId);
-    },
+    queryFn: () => getAllTagNurses(currentNurseId),
   });
 
-  // Request reassignment mutation
   const requestReassignmentMutation = useMutation({
     mutationFn: async (targetNurseId: string) => {
-      console.log("Sending reassignment request:", {
-        taskId,
-        targetNurseId,
-        currentNurseId,
-      });
-
       try {
-        const response = await fetchWithAuth(
-          `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/request-reassignment?target_nurse_id=${targetNurseId}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          },
-        );
-
-        const responseData = await response.json();
-        console.log("Full response:", {
-          status: response.status,
-          ok: response.ok,
-          data: responseData,
-          headers: Object.fromEntries(response.headers.entries()),
-        });
-
-        if (!response.ok) {
-          console.error("Error details:", {
-            status: response.status,
-            data: responseData,
-            detail: responseData.detail,
-          });
-
-          let errorMessage;
-          if (Array.isArray(responseData.detail)) {
-            errorMessage = responseData.detail.join(", ");
-          } else if (typeof responseData.detail === "object") {
-            errorMessage = JSON.stringify(responseData.detail);
-          } else {
-            errorMessage =
-              responseData.detail || "Failed to request reassignment";
-          }
-
-          throw new Error(errorMessage);
-        }
-
+        const responseData = await requestReassignment(taskId, targetNurseId);
         return responseData;
       } catch (error: any) {
         console.error("Request failed:", {
@@ -154,11 +91,6 @@ export function TaskReassignmentForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Submitting form with nurse:", {
-      selectedNurseId,
-      taskId,
-      currentNurseId,
-    });
     if (!selectedNurseId) {
       toast({
         title: "Error",
@@ -213,7 +145,6 @@ export function TaskReassignmentForm({
                 <Select
                   value={selectedNurseId}
                   onValueChange={(value) => {
-                    console.log("Selected nurse:", value);
                     setSelectedNurseId(value);
                   }}
                   disabled={isLoading}

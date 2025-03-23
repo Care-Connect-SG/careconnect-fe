@@ -61,11 +61,11 @@ export default function ActivityDialog({
   const { toast } = useToast();
   const { data: session } = useSession();
   const userId = session?.user?.id;
-  const userRole = session?.user?.role;
+  const userRole = (session?.user as any)?.role;
   
   const canEdit =
     !activity ||
-    (activity && (activity.created_by === userId || userRole === "admin" || userRole === "Admin"));
+    (activity && (userRole === "admin" || userRole === "Admin"));
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),

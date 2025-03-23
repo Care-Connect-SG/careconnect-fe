@@ -12,6 +12,7 @@ export interface ResidentRecord {
   additional_notes?: string;
   additional_notes_timestamp?: string;
   primary_nurse?: string;
+  photograph?: string | null;
 }
 
 export interface RegistrationCreate {

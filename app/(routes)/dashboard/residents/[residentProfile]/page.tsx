@@ -13,12 +13,13 @@ import { getResidentById, updateResident } from "../../../../api/resident";
 import CarePlanDisplay from "../_components/careplan-display";
 import CreateMedication from "../_components/create-medication";
 import EditMedication from "../_components/edit-medication";
-import EditResidentDialog from "../_components/edit-resident-dialog";
 import MedicationDisplay from "../_components/medication-display";
 import MedicalRecordCard from "./_components/medical-record-card";
 import ResidentDetailsCard from "./_components/resident-detail-card";
 import ResidentDetailsNotesCard from "./_components/resident-detail-notes";
 import ResidentProfileCard from "./_components/resident-profile-header";
+import EditResidentDialog from "./_components/edit-resident-dialog";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const TABS = [
   { label: "Overview", value: "overview" },
@@ -31,57 +32,55 @@ const TABS = [
 export default function ResidentDashboard() {
   const { residentProfile } = useParams() as { residentProfile: string };
   const [activeTab, setActiveTab] = useState("overview");
-  const [primaryNurse, setPrimaryNurse] = useState("");
-  const [medications, setMedications] = useState<MedicationRecord[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedMedication, setSelectedMedication] =
     useState<MedicationRecord | null>(null);
-  const [resident, setResident] = useState<ResidentRecord | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [carePlans, setCarePlans] = useState<CarePlanRecord[]>([]);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (residentProfile) {
-      getResidentById(residentProfile)
-        .then((data: ResidentRecord) => {
-          setResident(data);
-          setPrimaryNurse(data.primary_nurse || "");
-        })
-        .catch((error) => console.error("Error fetching resident:", error));
-    }
-  }, [residentProfile]);
+  const { data: resident, isLoading: isResidentLoading } =
+    useQuery<ResidentRecord>({
+      queryKey: ["resident"],
+      queryFn: () => getResidentById(residentProfile),
+    });
 
-  useEffect(() => {
-    if (activeTab === "medication" && residentProfile) {
-      getMedicationsForResident(residentProfile)
-        .then(setMedications)
-        .catch(console.error);
-    }
-  }, [activeTab, residentProfile]);
+  const { data: medicalRecords = [], isLoading: areMedicalRecordsLoading } =
+    useQuery({
+      queryKey: ["medicalRecords"],
+      queryFn: () => getMedicalRecordsByResident(residentProfile),
+      enabled: !!residentProfile,
+    });
 
-  useEffect(() => {
-    if (activeTab === "careplan" && residentProfile) {
-      getCarePlansForResident(residentProfile)
-        .then(setCarePlans)
-        .catch(console.error);
-    }
-  }, [activeTab, residentProfile]);
+  const { data: medications = [], refetch: refetchMedications } = useQuery<
+    MedicationRecord[]
+  >({
+    queryKey: ["medications"],
+    queryFn: () => getMedicationsForResident(residentProfile),
+    enabled: activeTab === "medication",
+  });
 
-  const handleEditResident = () => {
-    setIsModalOpen(true);
-  };
+  const { data: carePlans = [], refetch: refetchCarePlans } = useQuery<
+    CarePlanRecord[]
+  >({
+    queryKey: ["carePlans"],
+    queryFn: () => getCarePlansForResident(residentProfile),
+    enabled: activeTab === "careplan",
+  });
 
-  const handleModalSave = async (updatedData: any) => {
-    if (!resident) return;
-    try {
-      const updatedResident = await updateResident(resident.id, updatedData);
-      setResident(updatedResident);
-      setPrimaryNurse(updatedResident.primary_nurse || "");
-    } catch (error) {
-      console.error("Error updating resident profile:", error);
-    }
-    setIsModalOpen(false);
+  const updateResidentMutation = useMutation({
+    mutationFn: (updatedData: Partial<ResidentRecord>) =>
+      updateResident(residentProfile, updatedData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["resident"] });
+      setIsModalOpen(false);
+    },
+  });
+
+  const handleEditResident = () => setIsModalOpen(true);
+
+  const handleModalSave = (updatedData: Partial<ResidentRecord>) => {
+    updateResidentMutation.mutate(updatedData);
   };
 
   const handleSaveAdditionalNotes = async (newNotes: string) => {
@@ -92,7 +91,7 @@ export default function ResidentDashboard() {
         additional_notes: newNotes,
         additional_notes_timestamp: new Date().toISOString(),
       });
-      setResident(updatedResident);
+      queryClient.invalidateQueries({ queryKey: ["resident"] });
     } catch (error) {
       console.error("Error updating additional notes:", error);
     }
@@ -116,7 +115,7 @@ export default function ResidentDashboard() {
           new Date(resident.date_of_birth).getFullYear()
         }
         room={resident.room_number}
-        imageUrl="/images/no-image.png"
+        imageUrl={resident.photograph || "/images/no-image.png"}
         onEdit={handleEditResident}
       />
 
@@ -199,52 +198,54 @@ export default function ResidentDashboard() {
                 <MedicationDisplay
                   key={medication.id}
                   medication={medication}
-                  onEdit={handleEditMedication}
+                  onEdit={() => handleEditMedication(medication)}
                 />
               ))
             ) : (
               <p className="text-gray-500">No medications found.</p>
             )}
           </div>
+
+          <CreateMedication
+            isOpen={isCreateModalOpen}
+            onClose={() => setIsCreateModalOpen(false)}
+            residentId={residentProfile}
+            onMedicationAdded={() => {
+              setIsCreateModalOpen(false);
+              refetchMedications();
+            }}
+          />
+
+          {selectedMedication && (
+            <EditMedication
+              isOpen={isEditModalOpen}
+              onClose={() => {
+                setIsEditModalOpen(false);
+                setSelectedMedication(null);
+              }}
+              medication={selectedMedication}
+              residentId={residentProfile}
+              onMedicationUpdated={() => {
+                setIsEditModalOpen(false);
+                setSelectedMedication(null);
+                refetchMedications();
+              }}
+            />
+          )}
         </div>
-      )}
-
-      <CreateMedication
-        residentId={residentProfile}
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onMedicationAdded={() => {
-          setIsCreateModalOpen(false);
-          getMedicationsForResident(residentProfile).then(setMedications);
-        }}
-      />
-
-      {selectedMedication && (
-        <EditMedication
-          residentId={residentProfile}
-          medication={selectedMedication}
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          onMedicationUpdated={() => {
-            setIsEditModalOpen(false);
-            getMedicationsForResident(residentProfile).then(setMedications);
-          }}
-        />
       )}
 
       {activeTab === "careplan" && (
         <div className="mt-6">
           <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold">Resident Care Plan</h2>
-            <Button onClick={() => setIsCreateModalOpen(true)}>
-              Add CarePlan
-            </Button>
+            <h2 className="text-lg font-semibold">Care Plans</h2>
+            <Button>Add Care Plan</Button>
           </div>
 
           <div className="space-y-4 mt-4">
             {carePlans.length > 0 ? (
-              carePlans.map((careplan) => (
-                <CarePlanDisplay key={careplan.id} careplan={careplan} />
+              carePlans.map((carePlan) => (
+                <CarePlanDisplay key={carePlan.id} careplan={carePlan} />
               ))
             ) : (
               <p className="text-gray-500">No care plans found.</p>

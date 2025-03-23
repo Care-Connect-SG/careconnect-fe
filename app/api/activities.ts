@@ -11,8 +11,8 @@ async function getHeaders() {
   if (session?.accessToken) {
     headers.Authorization = `Bearer ${session.accessToken}`;
   }
-  if (session?.user?.role) {
-    headers["X-User-Role"] = session.user.role;
+  if (session && (session.user as any)?.role) {
+    headers["X-User-Role"] = (session.user as any).role;
   }
   return headers;
 }

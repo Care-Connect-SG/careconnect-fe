@@ -3,8 +3,13 @@ import {
   Activity,
   ActivityCreate,
   ActivityFilter,
-  activityService,
 } from "@/types/activity";
+import { 
+  fetchActivities as fetchActivitiesApi, 
+  createActivity as createActivityApi, 
+  updateActivity as updateActivityApi, 
+  deleteActivity as deleteActivityApi 
+} from "@/app/api/activities";
 import React, {
   createContext,
   useContext,
@@ -58,8 +63,42 @@ export const ActivityProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       setLoading(true);
       setError(null);
-      const data = await activityService.list(filters);
-      setActivities(data);
+      // The API doesn't support filters yet, so we fetch all and filter client-side
+      const data = await fetchActivitiesApi();
+      
+      // Apply filters client-side
+      let filteredData = [...data];
+      
+      if (filters.search) {
+        const searchLower = filters.search.toLowerCase();
+        filteredData = filteredData.filter(
+          activity => 
+            activity.title.toLowerCase().includes(searchLower) ||
+            (activity.description && activity.description.toLowerCase().includes(searchLower))
+        );
+      }
+      
+      if (filters.location) {
+        filteredData = filteredData.filter(
+          activity => activity.location === filters.location
+        );
+      }
+      
+      if (filters.category) {
+        filteredData = filteredData.filter(
+          activity => activity.category === filters.category
+        );
+      }
+      
+      if (filters.start_date) {
+        const filterDate = new Date(filters.start_date).toDateString();
+        filteredData = filteredData.filter(activity => {
+          const activityDate = new Date(activity.start_time).toDateString();
+          return activityDate === filterDate;
+        });
+      }
+      
+      setActivities(filteredData);
     } catch (err) {
       setError("Failed to fetch activities");
       toast({
@@ -75,7 +114,7 @@ export const ActivityProvider: React.FC<{ children: React.ReactNode }> = ({
   const createActivity = async (data: ActivityCreate) => {
     try {
       setLoading(true);
-      await activityService.create(data);
+      await createActivityApi(data);
       toast({
         title: "Success",
         description: "Activity created successfully",
@@ -99,7 +138,7 @@ export const ActivityProvider: React.FC<{ children: React.ReactNode }> = ({
   ) => {
     try {
       setLoading(true);
-      await activityService.update(String(id), data);
+      await updateActivityApi(String(id), data);
       toast({
         title: "Success",
         description: "Activity updated successfully",
@@ -121,7 +160,7 @@ export const ActivityProvider: React.FC<{ children: React.ReactNode }> = ({
   const deleteActivity = async (id: string) => {
     try {
       setLoading(true);
-      await activityService.delete(id);
+      await deleteActivityApi(id);
       toast({
         title: "Success",
         description: "Activity deleted successfully",

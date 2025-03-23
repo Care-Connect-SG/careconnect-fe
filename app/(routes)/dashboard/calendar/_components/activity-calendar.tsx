@@ -171,11 +171,7 @@ export default function ActivityCalendar({
     const userId = session?.user?.id;
     const userRole = (session?.user as any)?.role;
     
-    const activityCreator = (activity as Activity & { created_by?: string }).created_by;
-    
-    return activityCreator === userId || 
-           userRole === "admin" || 
-           userRole === "Admin";
+    return userRole === "admin" || userRole === "Admin";
   }, [session]);
 
   const eventStyleGetter = useCallback((event: Activity) => {
@@ -428,7 +424,7 @@ export default function ActivityCalendar({
         const start = new Date(activity.start_time + (activity.start_time.endsWith('Z') ? '' : 'Z'));
         const end = new Date(activity.end_time + (activity.end_time.endsWith('Z') ? '' : 'Z'));
         
-        return {
+    return {
           ...activity,
           start,
           end,
@@ -665,7 +661,7 @@ export default function ActivityCalendar({
             {restrictedEventMessage && (
               <div className="absolute top-12 left-1/2 transform -translate-x-1/2 bg-destructive text-white py-1 px-4 rounded shadow z-50">
                 {restrictedEventMessage.message}
-              </div>
+        </div>
             )}
             <DnDCalendar
               localizer={localizer}
@@ -707,8 +703,8 @@ export default function ActivityCalendar({
                   <div className="w-3 h-3 mr-1 bg-[#9e9e9e99] border-2 border-dashed border-[#757575]"></div>
                   <span>View only</span>
                 </div>
-              </div>
-            </div>
+        </div>
+      </div>
 
             <div className="absolute bottom-2 right-2 text-xs text-muted-foreground">
               <p>Keyboard shortcuts: Alt+← (prev), Alt+→ (next), Ctrl+T (today), Ctrl+M (month), Ctrl+W (week), Ctrl+N (new)</p>

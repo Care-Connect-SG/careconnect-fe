@@ -46,6 +46,7 @@ interface ActivityDialogProps {
   onSave: (activity: Partial<ActivityCreate>) => void;
   onDelete: (id: string) => void;
   onDuplicate: (activity: Activity) => void;
+  canUserEditActivity?: (activity: Activity) => boolean;
 }
 
 export default function ActivityDialog({
@@ -57,6 +58,7 @@ export default function ActivityDialog({
   onSave,
   onDelete,
   onDuplicate,
+  canUserEditActivity,
 }: ActivityDialogProps) {
   const { toast } = useToast();
   const { data: session } = useSession();
@@ -64,8 +66,11 @@ export default function ActivityDialog({
   const userRole = (session?.user as any)?.role;
   
   const canEdit =
-    !activity ||
-    (activity && (userRole === "admin" || userRole === "Admin"));
+    !activity || 
+    (activity && (
+      (userRole === "admin" || userRole === "Admin") || 
+      (canUserEditActivity ? canUserEditActivity(activity) : false)
+    ));
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),

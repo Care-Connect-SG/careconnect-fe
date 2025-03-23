@@ -166,13 +166,14 @@ export default function ActivityCalendar({
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [restrictedEventMessage, setRestrictedEventMessage] = useState<{id: string, message: string} | null>(null);
+  const [userCreatedActivities, setUserCreatedActivities] = useState<Set<string>>(new Set());
   
   const canUserEditActivity = useCallback((activity: Activity) => {
     const userId = session?.user?.id;
     const userRole = (session?.user as any)?.role;
     
-    return userRole === "admin" || userRole === "Admin";
-  }, [session]);
+    return (userRole === "admin" || userRole === "Admin") || userCreatedActivities.has(activity.id);
+  }, [session, userCreatedActivities]);
 
   const eventStyleGetter = useCallback((event: Activity) => {
     const canEdit = canUserEditActivity(event);
@@ -284,6 +285,11 @@ export default function ActivityCalendar({
         );
       } else {
         savedActivity = await createActivity(activityData);
+        setUserCreatedActivities(prev => {
+          const updated = new Set(prev);
+          updated.add(savedActivity.id);
+          return updated;
+        });
         setActivities(prevActivities => [savedActivity, ...prevActivities]);
       }
       
@@ -722,6 +728,7 @@ export default function ActivityCalendar({
         onSave={handleSaveActivity}
         onDelete={handleDeleteActivity}
         onDuplicate={handleDuplicateActivity}
+        canUserEditActivity={canUserEditActivity}
       />
     </>
   );

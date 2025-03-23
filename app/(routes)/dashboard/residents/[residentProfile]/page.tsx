@@ -3,14 +3,14 @@
 import { getCarePlansForResident } from "@/app/api/careplan";
 import { getMedicalRecordsByResident } from "@/app/api/medical-record";
 import { getMedicationsForResident } from "@/app/api/medication";
-import { getResidentById, updateResident } from "@/app/api/resident";
 import { Button } from "@/components/ui/button";
 import { CarePlanRecord } from "@/types/careplan";
 import { MedicationRecord } from "@/types/medication";
 import { ResidentRecord } from "@/types/resident";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { getResidentById, updateResident } from "../../../../api/resident";
 import CarePlanDisplay from "../_components/careplan-display";
 import CreateMedication from "../_components/create-medication";
 import EditMedication from "../_components/edit-medication";
@@ -31,13 +31,13 @@ const TABS = [
 
 export default function ResidentDashboard() {
   const { residentProfile } = useParams() as { residentProfile: string };
-  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("overview");
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedMedication, setSelectedMedication] =
     useState<MedicationRecord | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: resident, isLoading: isResidentLoading } =
     useQuery<ResidentRecord>({
@@ -83,13 +83,18 @@ export default function ResidentDashboard() {
     updateResidentMutation.mutate(updatedData);
   };
 
-  const handleSaveAdditionalNotes = (newNotes: string) => {
+  const handleSaveAdditionalNotes = async (newNotes: string) => {
     if (!resident) return;
-    updateResidentMutation.mutate({
-      ...resident,
-      additional_notes: newNotes,
-      additional_notes_timestamp: new Date().toISOString(),
-    });
+    try {
+      const updatedResident = await updateResident(resident.id, {
+        ...resident,
+        additional_notes: newNotes,
+        additional_notes_timestamp: new Date().toISOString(),
+      });
+      queryClient.invalidateQueries({ queryKey: ["resident"] });
+    } catch (error) {
+      console.error("Error updating additional notes:", error);
+    }
   };
 
   const handleEditMedication = (medication: MedicationRecord) => {
@@ -97,19 +102,22 @@ export default function ResidentDashboard() {
     setIsEditModalOpen(true);
   };
 
-  if (isResidentLoading) {
-    return <div className="text-center mt-10">Loading resident details...</div>;
-  }
-
   if (!resident) {
-    return (
-      <div className="text-center mt-10 text-red-500">Resident not found</div>
-    );
+    return <div className="text-center mt-10">Loading resident details...</div>;
   }
 
   return (
     <div className="w-full max-w-4xl mx-auto mt-10">
-      <ResidentProfileCard resident={resident} onEdit={handleEditResident} />
+      <ResidentProfileCard
+        name={resident.full_name}
+        age={
+          new Date().getFullYear() -
+          new Date(resident.date_of_birth).getFullYear()
+        }
+        room={resident.room_number}
+        imageUrl={resident.photograph || "/images/no-image.png"}
+        onEdit={handleEditResident}
+      />
 
       <EditResidentDialog
         isOpen={isModalOpen}
@@ -190,46 +198,54 @@ export default function ResidentDashboard() {
                 <MedicationDisplay
                   key={medication.id}
                   medication={medication}
-                  onEdit={handleEditMedication}
+                  onEdit={() => handleEditMedication(medication)}
                 />
               ))
             ) : (
               <p className="text-gray-500">No medications found.</p>
             )}
           </div>
+
+          <CreateMedication
+            isOpen={isCreateModalOpen}
+            onClose={() => setIsCreateModalOpen(false)}
+            residentId={residentProfile}
+            onMedicationAdded={() => {
+              setIsCreateModalOpen(false);
+              refetchMedications();
+            }}
+          />
+
+          {selectedMedication && (
+            <EditMedication
+              isOpen={isEditModalOpen}
+              onClose={() => {
+                setIsEditModalOpen(false);
+                setSelectedMedication(null);
+              }}
+              medication={selectedMedication}
+              residentId={residentProfile}
+              onMedicationUpdated={() => {
+                setIsEditModalOpen(false);
+                setSelectedMedication(null);
+                refetchMedications();
+              }}
+            />
+          )}
         </div>
-      )}
-
-      <CreateMedication
-        residentId={residentProfile}
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onMedicationAdded={refetchMedications}
-      />
-
-      {selectedMedication && (
-        <EditMedication
-          residentId={residentProfile}
-          medication={selectedMedication}
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          onMedicationUpdated={refetchMedications}
-        />
       )}
 
       {activeTab === "careplan" && (
         <div className="mt-6">
           <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold">Resident Care Plan</h2>
-            <Button onClick={() => setIsCreateModalOpen(true)}>
-              Add CarePlan
-            </Button>
+            <h2 className="text-lg font-semibold">Care Plans</h2>
+            <Button>Add Care Plan</Button>
           </div>
 
           <div className="space-y-4 mt-4">
             {carePlans.length > 0 ? (
-              carePlans.map((careplan) => (
-                <CarePlanDisplay key={careplan.id} careplan={careplan} />
+              carePlans.map((carePlan) => (
+                <CarePlanDisplay key={carePlan.id} careplan={carePlan} />
               ))
             ) : (
               <p className="text-gray-500">No care plans found.</p>

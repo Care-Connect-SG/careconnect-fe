@@ -13,7 +13,7 @@ import { User } from "@/types/user";
 import { Pencil } from "lucide-react";
 import { useState } from "react";
 import React from "react";
-import EditProfilePicture from "./edit-profile-picture";
+import EditPicture from "./edit-profile-picture";
 
 interface ProfilePictureDialogProps {
   user: User;
@@ -41,7 +41,7 @@ const ProfilePictureDialog: React.FC<ProfilePictureDialogProps> = ({
             Edit your profile picture by uploading a new image.
           </DialogDescription>
         </DialogHeader>
-        <EditProfilePicture user={user} onClose={() => setOpen(false)} />
+        <EditPicture user={user} onClose={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   );

@@ -146,10 +146,11 @@ export default function ResidentDashboard() {
             <Button
               key={tab.value}
               onClick={() => setActiveTab(tab.value)}
-              className={`py-2 px-1 text-sm font-medium ${activeTab === tab.value
-                ? "text-blue-600 border-b-2 border-blue-600"
-                : "text-gray-500"
-                }`}
+              className={`py-2 px-1 text-sm font-medium ${
+                activeTab === tab.value
+                  ? "text-blue-600 border-b-2 border-blue-600"
+                  : "text-gray-500"
+              }`}
             >
               {tab.label}
             </Button>
@@ -227,7 +228,9 @@ export default function ResidentDashboard() {
               residentId={residentProfile}
               onCarePlanUpdated={(updatedCarePlan) => {
                 if (updatedCarePlan) {
-                  queryClient.invalidateQueries({ queryKey: ["carePlans", residentProfile] });
+                  queryClient.invalidateQueries({
+                    queryKey: ["carePlans", residentProfile],
+                  });
                 }
               }}
             />
@@ -244,7 +247,6 @@ export default function ResidentDashboard() {
               </Button>
             </div>
           )}
-
         </div>
       )}
 

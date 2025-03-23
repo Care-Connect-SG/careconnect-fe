@@ -1,8 +1,5 @@
 "use client";
 
-import React, { useState, useRef } from "react";
-import Webcam from "react-webcam";
-import { BrowserQRCodeReader } from "@zxing/browser";
 import { fetchMedicationByBarcode } from "@/app/api/fixedmedication";
 import { createMedication } from "@/app/api/medication";
 import { Button } from "@/components/ui/button";
@@ -17,6 +14,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
+import { BrowserQRCodeReader } from "@zxing/browser";
+import React, { useState, useRef } from "react";
+import Webcam from "react-webcam";
 
 interface CreateMedicationProps {
   residentId: string;
@@ -53,7 +53,9 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
     img.src = imageSrc;
     img.onload = async () => {
       try {
-        const result = await new BrowserQRCodeReader().decodeFromImageElement(img);
+        const result = await new BrowserQRCodeReader().decodeFromImageElement(
+          img,
+        );
         const scannedId = result.getText();
         console.log("✅ Scanned QR code:", scannedId);
 
@@ -79,7 +81,7 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -107,7 +109,6 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
           >
             {isScanning ? "Cancel Scan" : "📷 Scan Medication QR Code"}
           </Button>
-
 
           {isScanning && (
             <div className="relative mt-2 space-y-2">

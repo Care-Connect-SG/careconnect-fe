@@ -19,7 +19,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
 import { Activity, ActivityCreate } from "@/types/activity";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSession } from "next-auth/react";
@@ -47,6 +46,7 @@ interface ActivityDialogProps {
   onSave: (activity: Partial<ActivityCreate>) => void;
   onDelete: (id: string) => void;
   onDuplicate: (activity: Activity) => void;
+  canUserEditActivity?: (activity: Activity) => boolean;
 }
 
 export default function ActivityDialog({
@@ -58,28 +58,21 @@ export default function ActivityDialog({
   onSave,
   onDelete,
   onDuplicate,
+  canUserEditActivity,
 }: ActivityDialogProps) {
   const { toast } = useToast();
   const { data: session } = useSession();
   const userId = session?.user?.id;
-  const userRole = session?.user?.role;
-
-  console.log("Session data:", {
-    userId,
-    userRole,
-    activityCreatedBy: activity?.created_by,
-    sessionUser: session?.user,
-  });
+  const userRole = (session?.user as any)?.role;
 
   const canEdit =
     !activity ||
-    (activity && (activity.created_by === userId || userRole === "Admin"));
-
-  console.log("Can edit:", canEdit, {
-    condition1: !activity,
-    condition2: activity?.created_by === userId,
-    condition3: userRole === "Admin",
-  });
+    (activity &&
+      (userRole === "admin" ||
+        userRole === "Admin" ||
+        (canUserEditActivity
+          ? canUserEditActivity(activity)
+          : activity.created_by === userId)));
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -96,11 +89,18 @@ export default function ActivityDialog({
 
   useEffect(() => {
     if (activity) {
+      const startDate = new Date(
+        activity.start_time + (activity.start_time.endsWith("Z") ? "" : "Z"),
+      );
+      const endDate = new Date(
+        activity.end_time + (activity.end_time.endsWith("Z") ? "" : "Z"),
+      );
+
       form.reset({
         title: activity.title,
         description: activity.description || "",
-        start_time: new Date(activity.start_time),
-        end_time: new Date(activity.end_time),
+        start_time: startDate,
+        end_time: endDate,
         location: activity.location || "",
         category: activity.category || "",
       });
@@ -139,7 +139,6 @@ export default function ActivityDialog({
 
       onSave(activityData);
     } catch (error) {
-      console.error("Failed to save activity:", error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -271,28 +270,64 @@ export default function ActivityDialog({
               )}
             />
 
-            <div className="flex justify-end gap-2">
-              {activity && canEdit && (
-                <>
+            <div className="flex justify-between mt-6">
+              <div>
+                {activity && canEdit && (
                   <Button
                     type="button"
                     variant="destructive"
-                    onClick={() => activity._id && onDelete(activity._id)}
+                    onClick={async () => {
+                      if (!activity.id) {
+                        toast({
+                          variant: "destructive",
+                          title: "Error",
+                          description: "Activity ID is missing",
+                        });
+                        return;
+                      }
+
+                      try {
+                        await onDelete(activity.id);
+                        toast({
+                          title: "Success",
+                          description: "Activity deleted successfully",
+                        });
+                        onClose();
+                      } catch (error) {
+                        toast({
+                          variant: "destructive",
+                          title: "Error",
+                          description:
+                            error instanceof Error
+                              ? error.message
+                              : "Failed to delete activity. Please try again.",
+                        });
+                      }
+                    }}
                   >
                     Delete
                   </Button>
+                )}
+              </div>
+              <div className="flex gap-2">
+                {activity && (
                   <Button
                     type="button"
-                    variant="secondary"
-                    onClick={() => onDuplicate(activity)}
+                    variant="outline"
+                    onClick={() => {
+                      onDuplicate(activity);
+                      onClose();
+                    }}
                   >
                     Duplicate
                   </Button>
-                </>
-              )}
-              {canEdit && (
-                <Button type="submit">{activity ? "Update" : "Create"}</Button>
-              )}
+                )}
+                {canEdit && (
+                  <Button type="submit" variant="default">
+                    {activity ? "Update" : "Create"}
+                  </Button>
+                )}
+              </div>
             </div>
           </form>
         </Form>

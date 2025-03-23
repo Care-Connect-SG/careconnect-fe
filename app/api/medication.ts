@@ -15,13 +15,16 @@ export const getMedicationsForResident = async (
     );
 
     if (!response.ok) {
-      throw new Error(`Error fetching medications: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(
+        errData.detail || "Error fetching medications for the resident",
+      );
     }
 
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error fetching medications:", error);
+    console.error("Error fetching medications for the resident:", error);
     return [];
   }
 };
@@ -43,12 +46,15 @@ export const createMedication = async (
     );
 
     if (!response.ok) {
-      throw new Error(`Error creating medication: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(
+        errData.detail || "Error creating medication for the resident",
+      );
     }
 
     return await response.json();
   } catch (error) {
-    console.error("Error creating medication:", error);
+    console.error("Error creating medication for the resident:", error);
     return null;
   }
 };
@@ -70,12 +76,15 @@ export const updateMedication = async (
     );
 
     if (!response.ok) {
-      throw new Error(`Error updating medication: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(
+        errData.detail || "Error updating medication for the resident",
+      );
     }
 
     return await response.json();
   } catch (error) {
-    console.error("Error updating medication:", error);
+    console.error("Error updating medication for the resident:", error);
     return null;
   }
 };

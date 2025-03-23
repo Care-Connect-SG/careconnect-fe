@@ -99,3 +99,18 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.rbc-toolbar-label {
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.rbc-toolbar {
+  margin-bottom: 24px !important;
+  font-size: 0.875rem !important;
+}
+
+.rbc-event-content,
+.rbc-event-label {
+  font-size: 0.875rem !important;
+}

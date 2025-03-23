@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import SessionProvider from "@/components/providers/SessionProvider";
 import { Toaster } from "@/components/ui/toaster";
-import { authOptions } from "@/lib/auth";
-import { getServerSession } from "next-auth";
+import { Providers } from "./providers";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
   title: "CareConnect",
-  description: "Activity Management System",
+  description:
+    "A comprehensive care management system for elderly care facilities",
 };
 
 export default async function RootLayout({
@@ -18,15 +17,11 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
-
   return (
     <html lang="en">
       <body className={inter.className}>
-        <SessionProvider session={session}>
-          {children}
-          <Toaster />
-        </SessionProvider>
+        <Providers>{children}</Providers>
+        <Toaster />
       </body>
     </html>
   );

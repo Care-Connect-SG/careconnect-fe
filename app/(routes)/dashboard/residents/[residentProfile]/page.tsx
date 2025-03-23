@@ -257,3 +257,14 @@ export default function ResidentDashboard() {
     </div>
   );
 }
+// "use client";
+// import BarcodeScanner from "../_components/react-scanner";
+
+// export default function ScanTestPage() {
+//   return (
+//     <div className="p-6">
+//       <h1 className="text-2xl font-bold mb-4">📷 Barcode Scanner Test</h1>
+//       <BarcodeScanner />
+//     </div>
+//   );
+// }

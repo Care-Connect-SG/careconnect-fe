@@ -1,23 +1,8 @@
 "use client";
 
-declare global {
-  interface Window {
-    BarcodeDetector?: any;
-  }
-}
-
-// Simple polyfill for browsers without BarcodeDetector
-if (typeof window !== "undefined" && !window.BarcodeDetector) {
-  window.BarcodeDetector = class {
-    async detect() {
-      return [];
-    }
-    static getSupportedFormats() {
-      return ["code_128"];
-    }
-  };
-}
-
+import React, { useState, useRef } from "react";
+import Webcam from "react-webcam";
+import { BrowserQRCodeReader } from "@zxing/browser";
 import { fetchMedicationByBarcode } from "@/app/api/fixedmedication";
 import { createMedication } from "@/app/api/medication";
 import { Button } from "@/components/ui/button";
@@ -32,8 +17,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
-import { useState } from "react";
-// import { medications } from "@/app/api/standardmedications";
 
 interface CreateMedicationProps {
   residentId: string;
@@ -48,27 +31,33 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
   onClose,
   onMedicationAdded,
 }) => {
-  const [form, setForm] = useState({
+  const initialForm = {
     medication_name: "",
     dosage: "",
     frequency: "",
     start_date: "",
     end_date: "",
     instructions: "",
-  });
+  };
 
+  const [form, setForm] = useState(initialForm);
   const [isScanning, setIsScanning] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
-  const [scanSupported, setScanSupported] = useState(true);
+  const webcamRef = useRef<Webcam>(null);
 
-  const handleScan = async (result: { data: string } | null) => {
-    if (result?.data) {
-      const barcode = result.data;
-      console.log("Scanned Barcode:", barcode);
+  const handleScan = async () => {
+    const imageSrc = webcamRef.current?.getScreenshot();
+    if (!imageSrc) return;
 
+    const img = new Image();
+    img.src = imageSrc;
+    img.onload = async () => {
       try {
-        const medicationData = await fetchMedicationByBarcode(barcode);
+        const result = await new BrowserQRCodeReader().decodeFromImageElement(img);
+        const scannedId = result.getText();
+        console.log("✅ Scanned QR code:", scannedId);
 
+        const medicationData = await fetchMedicationByBarcode(scannedId);
         if (medicationData) {
           setForm((prev) => ({
             ...prev,
@@ -76,27 +65,21 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
             dosage: medicationData.dosage || "",
             frequency: medicationData.frequency || "",
             instructions: medicationData.instructions || "",
-            // Keep existing dates or reset as needed
           }));
           setScanError(null);
           setIsScanning(false);
         } else {
           setScanError("❌ Medication not found. Please enter manually.");
         }
-      } catch (error) {
-        console.error("Fetch error:", error);
-        setScanError("❌ Error fetching medication data. Please try again.");
+      } catch (error: any) {
+        console.error("Scan error:", error);
+        setScanError("❌ Unable to read QR code. Try again.");
       }
-    }
-  };
-
-  const handleError = (err: any) => {
-    console.error("Barcode Scan Error:", err);
-    setScanError("❌ Unable to read barcode. Please try again.");
+    };
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -104,129 +87,103 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
   const handleSubmit = async () => {
     await createMedication(residentId, form);
     onMedicationAdded();
+    setForm(initialForm); // ✅ Reset form after saving
+    onClose();
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-lg w-full p-6 rounded-lg shadow-lg">
-        <DialogHeader className="mb-4">
+        <DialogHeader className="mb-2">
           <DialogTitle className="text-xl font-semibold text-gray-800">
             Add New Medication
           </DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[70vh] overflow-y-auto px-1">
-          {/* Scan Button
-          <Button onClick={() => setIsScanning(!isScanning)} variant="outline" className="w-full">
-            {isScanning ? "Cancel Scan" : "Scan Medication Barcode"}
+        <ScrollArea className="max-h-[70vh] overflow-y-auto px-1 space-y-6">
+          <Button
+            onClick={() => setIsScanning((prev) => !prev)}
+            className="w-full bg-blue-100 hover:bg-blue-200 text-blue-800"
+          >
+            {isScanning ? "Cancel Scan" : "📷 Scan Medication QR Code"}
           </Button>
 
-          {/* Barcode Scanner */}
-          {/* {isScanning && (
-            <div className="mt-4">
-              {isScanning && (
-                <div className="mt-4">
-                  {scanSupported ? (
-                    <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden">
-                      <BarcodeScanner
-                        options={{ formats: ['code_128'] }}
-                        onCapture={handleScan}
-                        onError={handleError}
-                        className="absolute inset-0 w-full h-full object-cover"
-                      />
-                    </div>
-                  ) : (
-                    <div className="p-4 bg-red-50 rounded-lg border border-red-200">
-                      <p className="text-red-600">
-                        ⚠️ Barcode scanning not supported in your browser.<br />
-                        Supported browsers: Chrome 83+, Edge 83+, Android WebView
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
+
+          {isScanning && (
+            <div className="relative mt-2 space-y-2">
+              <Webcam
+                ref={webcamRef}
+                audio={false}
+                screenshotFormat="image/png"
+                videoConstraints={{
+                  width: { ideal: 1280 },
+                  height: { ideal: 720 },
+                  facingMode: "environment",
+                }}
+                className="w-full rounded-lg border"
+              />
+              <Button onClick={handleScan} className="w-full">
+                🔍 Scan Now
+              </Button>
+              {scanError && <p className="text-red-500 mt-1">{scanError}</p>}
             </div>
           )}
-          {scanError && <p className="text-red-500">{scanError}</p>} */}
 
-          <div className="space-y-5">
-            <div>
-              <Label className="text-sm font-medium text-gray-700">
-                Medication Name
-              </Label>
+          <div className="space-y-4">
+            <div className="mt-4">
+              <Label>Medication Name</Label>
               <Input
                 name="medication_name"
                 value={form.medication_name}
                 onChange={handleChange}
-                className="mt-1"
               />
             </div>
-
             <div>
-              <Label className="text-sm font-medium text-gray-700">
-                Dosage
-              </Label>
+              <Label>Dosage</Label>
               <Input
                 name="dosage"
                 value={form.dosage}
                 onChange={handleChange}
-                className="mt-1"
               />
             </div>
-
             <div>
-              <Label className="text-sm font-medium text-gray-700">
-                Frequency
-              </Label>
+              <Label>Frequency</Label>
               <Input
                 name="frequency"
                 value={form.frequency}
                 onChange={handleChange}
-                className="mt-1"
               />
             </div>
-
             <div>
-              <Label className="text-sm font-medium text-gray-700">
-                Start Date
-              </Label>
+              <Label>Start Date</Label>
               <Input
                 type="date"
                 name="start_date"
                 value={form.start_date}
                 onChange={handleChange}
-                className="mt-1"
               />
             </div>
-
             <div>
-              <Label className="text-sm font-medium text-gray-700">
-                End Date (Optional)
-              </Label>
+              <Label>End Date</Label>
               <Input
                 type="date"
                 name="end_date"
                 value={form.end_date}
                 onChange={handleChange}
-                className="mt-1"
               />
             </div>
-
             <div>
-              <Label className="text-sm font-medium text-gray-700">
-                Instructions
-              </Label>
+              <Label>Instructions</Label>
               <Textarea
                 name="instructions"
                 value={form.instructions}
                 onChange={handleChange}
-                className="mt-1"
               />
             </div>
           </div>
         </ScrollArea>
 
-        <DialogFooter className="mt-5">
+        <DialogFooter className="mt-6">
           <Button
             onClick={handleSubmit}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"

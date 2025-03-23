@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { CarePlanRecord } from "@/types/careplan";
 import { MedicationRecord } from "@/types/medication";
 import { ResidentRecord } from "@/types/resident";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { getResidentById, updateResident } from "../../../../api/resident";
@@ -14,12 +15,11 @@ import CarePlanDisplay from "../_components/careplan-display";
 import CreateMedication from "../_components/create-medication";
 import EditMedication from "../_components/edit-medication";
 import MedicationDisplay from "../_components/medication-display";
+import EditResidentDialog from "./_components/edit-resident-dialog";
 import MedicalRecordCard from "./_components/medical-record-card";
 import ResidentDetailsCard from "./_components/resident-detail-card";
 import ResidentDetailsNotesCard from "./_components/resident-detail-notes";
 import ResidentProfileCard from "./_components/resident-profile-header";
-import EditResidentDialog from "./_components/edit-resident-dialog";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const TABS = [
   { label: "Overview", value: "overview" },

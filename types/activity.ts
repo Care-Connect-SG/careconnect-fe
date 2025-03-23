@@ -35,7 +35,7 @@ export const PREDEFINED_CATEGORIES = [
   "Education",
   "Meal",
   "Therapy",
-  "Other"
+  "Other",
 ] as const;
 
 export const PREDEFINED_LOCATIONS = [
@@ -47,8 +47,8 @@ export const PREDEFINED_LOCATIONS = [
   "Medical Center",
   "Recreation Room",
   "Therapy Room",
-  "Other"
+  "Other",
 ] as const;
 
-export type Category = typeof PREDEFINED_CATEGORIES[number];
-export type Location = typeof PREDEFINED_LOCATIONS[number];
+export type Category = (typeof PREDEFINED_CATEGORIES)[number];
+export type Location = (typeof PREDEFINED_LOCATIONS)[number];

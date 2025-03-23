@@ -64,13 +64,15 @@ export default function ActivityDialog({
   const { data: session } = useSession();
   const userId = session?.user?.id;
   const userRole = (session?.user as any)?.role;
-  
+
   const canEdit =
-    !activity || 
-    (activity && (
-      (userRole === "admin" || userRole === "Admin") || 
-      (canUserEditActivity ? canUserEditActivity(activity) : (activity.created_by === userId))
-    ));
+    !activity ||
+    (activity &&
+      (userRole === "admin" ||
+        userRole === "Admin" ||
+        (canUserEditActivity
+          ? canUserEditActivity(activity)
+          : activity.created_by === userId)));
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -87,9 +89,13 @@ export default function ActivityDialog({
 
   useEffect(() => {
     if (activity) {
-      const startDate = new Date(activity.start_time + (activity.start_time.endsWith('Z') ? '' : 'Z'));
-      const endDate = new Date(activity.end_time + (activity.end_time.endsWith('Z') ? '' : 'Z'));
-      
+      const startDate = new Date(
+        activity.start_time + (activity.start_time.endsWith("Z") ? "" : "Z"),
+      );
+      const endDate = new Date(
+        activity.end_time + (activity.end_time.endsWith("Z") ? "" : "Z"),
+      );
+
       form.reset({
         title: activity.title,
         description: activity.description || "",
@@ -291,9 +297,10 @@ export default function ActivityDialog({
                         toast({
                           variant: "destructive",
                           title: "Error",
-                          description: error instanceof Error 
-                            ? error.message 
-                            : "Failed to delete activity. Please try again.",
+                          description:
+                            error instanceof Error
+                              ? error.message
+                              : "Failed to delete activity. Please try again.",
                         });
                       }
                     }}

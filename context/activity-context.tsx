@@ -1,15 +1,11 @@
-import { useToast } from "@/hooks/use-toast";
 import {
-  Activity,
-  ActivityCreate,
-  ActivityFilter,
-} from "@/types/activity";
-import { 
-  fetchActivities as fetchActivitiesApi, 
-  createActivity as createActivityApi, 
-  updateActivity as updateActivityApi, 
-  deleteActivity as deleteActivityApi 
+  createActivity as createActivityApi,
+  deleteActivity as deleteActivityApi,
+  fetchActivities as fetchActivitiesApi,
+  updateActivity as updateActivityApi,
 } from "@/app/api/activities";
+import { useToast } from "@/hooks/use-toast";
+import { Activity, ActivityCreate, ActivityFilter } from "@/types/activity";
 import React, {
   createContext,
   useContext,
@@ -65,39 +61,40 @@ export const ActivityProvider: React.FC<{ children: React.ReactNode }> = ({
       setError(null);
       // The API doesn't support filters yet, so we fetch all and filter client-side
       const data = await fetchActivitiesApi();
-      
+
       // Apply filters client-side
       let filteredData = [...data];
-      
+
       if (filters.search) {
         const searchLower = filters.search.toLowerCase();
         filteredData = filteredData.filter(
-          activity => 
+          (activity) =>
             activity.title.toLowerCase().includes(searchLower) ||
-            (activity.description && activity.description.toLowerCase().includes(searchLower))
+            (activity.description &&
+              activity.description.toLowerCase().includes(searchLower)),
         );
       }
-      
+
       if (filters.location) {
         filteredData = filteredData.filter(
-          activity => activity.location === filters.location
+          (activity) => activity.location === filters.location,
         );
       }
-      
+
       if (filters.category) {
         filteredData = filteredData.filter(
-          activity => activity.category === filters.category
+          (activity) => activity.category === filters.category,
         );
       }
-      
+
       if (filters.start_date) {
         const filterDate = new Date(filters.start_date).toDateString();
-        filteredData = filteredData.filter(activity => {
+        filteredData = filteredData.filter((activity) => {
           const activityDate = new Date(activity.start_time).toDateString();
           return activityDate === filterDate;
         });
       }
-      
+
       setActivities(filteredData);
     } catch (err) {
       setError("Failed to fetch activities");

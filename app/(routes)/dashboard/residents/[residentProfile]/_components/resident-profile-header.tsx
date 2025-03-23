@@ -1,9 +1,9 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { ResidentRecord } from "@/types/resident";
 import Image from "next/image";
 import React from "react";
-import { ResidentRecord } from "@/types/resident";
 
 interface ResidentProfileCardProps {
   name: string;

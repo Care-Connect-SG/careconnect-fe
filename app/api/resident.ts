@@ -1,5 +1,5 @@
-import { RegistrationCreate, ResidentRecord } from "@/types/resident";
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
+import { RegistrationCreate, ResidentRecord } from "@/types/resident";
 
 export const getResidents = async (): Promise<ResidentRecord[]> => {
   try {

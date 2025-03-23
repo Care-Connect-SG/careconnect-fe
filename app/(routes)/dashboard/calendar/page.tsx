@@ -1,5 +1,6 @@
 "use client";
 
+import { fetchActivities } from "@/app/api/activities";
 import { Button } from "@/components/ui/button";
 import { Calendar as DatePicker } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
@@ -17,10 +18,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { fetchActivities } from "@/app/api/activities";
 import { format } from "date-fns";
 import { addMonths, subMonths } from "date-fns";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Filter, Plus, Search } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  Plus,
+  Search,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import ActivityCalendar from "./_components/activity-calendar";
 
@@ -37,8 +44,8 @@ export default function CalendarPage() {
   const loadFilters = useCallback(async () => {
     try {
       const activities = await fetchActivities();
-      const locations = [...new Set(activities.map(a => a.location))].sort();
-      const categories = [...new Set(activities.map(a => a.category))].sort();
+      const locations = [...new Set(activities.map((a) => a.location))].sort();
+      const categories = [...new Set(activities.map((a) => a.category))].sort();
       setAvailableLocations(locations);
       setAvailableCategories(categories);
     } catch (error) {
@@ -118,7 +125,10 @@ export default function CalendarPage() {
               <div className="grid space-y-4">
                 <div className="space-y-2">
                   <Label>Location</Label>
-                  <Select value={locationFilter || undefined} onValueChange={setLocationFilter}>
+                  <Select
+                    value={locationFilter || undefined}
+                    onValueChange={setLocationFilter}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select location" />
                     </SelectTrigger>
@@ -135,7 +145,10 @@ export default function CalendarPage() {
 
                 <div className="space-y-2">
                   <Label>Category</Label>
-                  <Select value={categoryFilter || undefined} onValueChange={setCategoryFilter}>
+                  <Select
+                    value={categoryFilter || undefined}
+                    onValueChange={setCategoryFilter}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
@@ -158,7 +171,7 @@ export default function CalendarPage() {
                         variant="outline"
                         className={cn(
                           "w-full justify-start text-left font-normal",
-                          !dateFilter && "text-muted-foreground"
+                          !dateFilter && "text-muted-foreground",
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />

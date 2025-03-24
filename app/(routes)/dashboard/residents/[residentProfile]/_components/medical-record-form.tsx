@@ -225,7 +225,7 @@ const CreateMedicalHistoryDialog: React.FC<{
       const createdRecord = await createMedicalRecord(
         data.templateType,
         residentProfile,
-        validatedData
+        validatedData,
       );
 
       toast({
@@ -330,7 +330,7 @@ const CreateMedicalHistoryDialog: React.FC<{
                                     formField.onChange(
                                       date
                                         ? date.toISOString().split("T")[0]
-                                        : ""
+                                        : "",
                                     );
                                   }}
                                   initialFocus

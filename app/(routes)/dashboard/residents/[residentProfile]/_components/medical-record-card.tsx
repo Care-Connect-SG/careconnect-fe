@@ -1,70 +1,250 @@
 "use client";
 
+import { format } from "date-fns";
+import { MedicalRecordType, MedicalRecord as BackendMedicalRecord, inferTemplateType } from "@/types/medical-record";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { MedicalRecord } from "@/types/medical-record";
-import { Edit } from "lucide-react";
-import React from "react";
+import { Pencil, Trash2 } from "lucide-react";
+import EditMedicalRecordDialog from "./edit-medical-record-dialog";
+import { useState } from "react";
+import { deleteMedicalRecord } from "@/app/api/medical-record";
+import { useToast } from "@/hooks/use-toast";
+import { useParams } from "next/navigation";
 
 interface MedicalRecordCardProps {
-  record: MedicalRecord;
-  onEdit?: (record: MedicalRecord) => void;
+  record: BackendMedicalRecord;
+  onRecordUpdated?: () => void;
+  onEdit: (record: BackendMedicalRecord) => void;
 }
 
 const MedicalRecordCard: React.FC<MedicalRecordCardProps> = ({
   record,
+  onRecordUpdated,
   onEdit,
 }) => {
-  const { title, details } =
-    "condition_name" in record
-      ? {
-          title: `Condition: ${record.condition_name}`,
-          details: `Diagnosed: ${record.date_of_diagnosis} | Physician: ${record.treating_physician} | Status: ${record.current_status}`,
-        }
-      : "allergen" in record
-        ? {
-            title: `Allergy: ${record.allergen}`,
-            details: `Reaction: ${record.reaction_description} | Noted: ${record.date_first_noted} | Severity: ${record.severity}`,
-          }
-        : "illness_name" in record
-          ? {
-              title: `Chronic Illness: ${record.illness_name}`,
-              details: `Onset: ${record.date_of_onset} | Physician: ${record.managing_physician}`,
-            }
-          : "procedure" in record
-            ? {
-                title: `Surgical: ${record.procedure}`,
-                details: `Date: ${record.date} | Surgeon: ${record.surgeon} | Hospital: ${record.hospital}`,
-              }
-            : "vaccine" in record
-              ? {
-                  title: `Immunization: ${record.vaccine}`,
-                  details: `Administered: ${record.date_administered} | Next Due: ${
-                    record.next_due_date || "N/A"
-                  }`,
-                }
-              : {
-                  title: "Unknown Record",
-                  details: "",
-                };
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const { toast } = useToast();
+  const { residentProfile } = useParams() as { residentProfile: string };
+
+  const handleDelete = async () => {
+    try {
+      const recordType = inferTemplateType(record) as MedicalRecordType;
+      await deleteMedicalRecord(
+        (record._id || record.id || "") as string,
+        recordType,
+        residentProfile
+      );
+      toast({
+        variant: "default",
+        title: "Success",
+        description: "Medical record deleted successfully.",
+      });
+      if (onRecordUpdated) onRecordUpdated();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: `Error: ${error.message}`,
+      });
+    }
+  };
+
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return "";
+    try {
+      return format(new Date(dateString), "PPP");
+    } catch (error) {
+      return dateString;
+    }
+  };
+
+  const renderRecordDetails = () => {
+    const recordType = inferTemplateType(record);
+    switch (recordType) {
+      case MedicalRecordType.CONDITION:
+        const conditionRecord = record as any;
+        return (
+          <>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-medium text-gray-500">Condition</p>
+                <p className="text-sm">{conditionRecord.condition_name || "N/A"}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Diagnosis Date</p>
+                <p className="text-sm">{formatDate(conditionRecord.date_of_diagnosis)}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Treating Physician</p>
+                <p className="text-sm">{conditionRecord.treating_physician || "N/A"}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Current Status</p>
+                <p className="text-sm">{conditionRecord.current_status || "N/A"}</p>
+              </div>
+            </div>
+            <div className="mt-4">
+              <p className="text-sm font-medium text-gray-500">Treatment Details</p>
+              <p className="text-sm">{conditionRecord.treatment_details || "N/A"}</p>
+            </div>
+          </>
+        );
+
+      case MedicalRecordType.ALLERGY:
+        const allergyRecord = record as any;
+        return (
+          <>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-medium text-gray-500">Allergen</p>
+                <p className="text-sm">{allergyRecord.allergen || "N/A"}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Severity</p>
+                <p className="text-sm">{allergyRecord.severity || "N/A"}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">First Noted</p>
+                <p className="text-sm">{formatDate(allergyRecord.date_first_noted)}</p>
+              </div>
+            </div>
+            {allergyRecord.management_notes && (
+              <div className="mt-4">
+                <p className="text-sm font-medium text-gray-500">Management Notes</p>
+                <p className="text-sm">{allergyRecord.management_notes}</p>
+              </div>
+            )}
+          </>
+        );
+
+      case MedicalRecordType.CHRONIC_ILLNESS:
+        const chronicRecord = record as any;
+        return (
+          <>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-medium text-gray-500">Illness</p>
+                <p className="text-sm">{chronicRecord.illness_name || "N/A"}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Onset Date</p>
+                <p className="text-sm">{formatDate(chronicRecord.date_of_onset)}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Managing Physician</p>
+                <p className="text-sm">{chronicRecord.managing_physician || "N/A"}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Monitoring Parameters</p>
+                <p className="text-sm">{chronicRecord.monitoring_parameters || "N/A"}</p>
+              </div>
+            </div>
+            <div className="mt-4">
+              <p className="text-sm font-medium text-gray-500">Treatment Plan</p>
+              <p className="text-sm">{chronicRecord.current_treatment_plan || "N/A"}</p>
+            </div>
+          </>
+        );
+
+      case MedicalRecordType.SURGICAL:
+        const surgicalRecord = record as any;
+        return (
+          <>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-medium text-gray-500">Procedure</p>
+                <p className="text-sm">{surgicalRecord.procedure || "N/A"}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Surgery Date</p>
+                <p className="text-sm">{formatDate(surgicalRecord.surgery_date)}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Surgeon</p>
+                <p className="text-sm">{surgicalRecord.surgeon || "N/A"}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Hospital</p>
+                <p className="text-sm">{surgicalRecord.hospital || "N/A"}</p>
+              </div>
+            </div>
+            {surgicalRecord.complications && (
+              <div className="mt-4">
+                <p className="text-sm font-medium text-gray-500">Complications</p>
+                <p className="text-sm">{surgicalRecord.complications}</p>
+              </div>
+            )}
+          </>
+        );
+
+      case MedicalRecordType.IMMUNIZATION:
+        const immunizationRecord = record as any;
+        return (
+          <>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-medium text-gray-500">Vaccine</p>
+                <p className="text-sm">{immunizationRecord.vaccine || "N/A"}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Administered Date</p>
+                <p className="text-sm">{formatDate(immunizationRecord.date_administered)}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Facility</p>
+                <p className="text-sm">{immunizationRecord.administering_facility || "N/A"}</p>
+              </div>
+              {immunizationRecord.next_due_date && (
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Next Due Date</p>
+                  <p className="text-sm">{formatDate(immunizationRecord.next_due_date)}</p>
+                </div>
+              )}
+            </div>
+          </>
+        );
+
+      default:
+        return null;
+    }
+  };
 
   return (
-    <div className="p-4 border rounded-md shadow-sm flex justify-between items-center">
-      <div>
-        <Label className="text-lg font-semibold">{title}</Label>
-        <p className="text-sm text-gray-600">{details}</p>
-      </div>
-      {onEdit && (
-        <Button
-          variant="outline"
-          onClick={() => onEdit(record)}
-          className="flex items-center"
-        >
-          <Edit className="h-4 w-4" />
-          <span className="ml-2">Edit</span>
-        </Button>
-      )}
-    </div>
+    <Card className="w-full">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">
+          {inferTemplateType(record).replace("_", " ")}
+        </CardTitle>
+        <div className="flex space-x-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsEditDialogOpen(true)}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleDelete}
+            className="text-red-500 hover:text-red-700"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>{renderRecordDetails()}</CardContent>
+
+      <EditMedicalRecordDialog
+        isOpen={isEditDialogOpen}
+        onClose={() => setIsEditDialogOpen(false)}
+        templateType={inferTemplateType(record) as MedicalRecordType}
+        residentId={residentProfile}
+        initialData={record}
+        onSave={async (data) => { if (onRecordUpdated) onRecordUpdated(); return Promise.resolve(); }}
+      />
+    </Card>
   );
 };
 

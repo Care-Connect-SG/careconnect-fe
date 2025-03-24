@@ -6,7 +6,7 @@ import { updateMedicalRecord } from "@/app/api/medical-record";
 import { getMedicationsForResident } from "@/app/api/medication";
 import { Button } from "@/components/ui/button";
 import { CarePlanRecord } from "@/types/careplan";
-import { MedicalRecord } from "@/types/medical-record";
+import { MedicalRecord, MedicalRecordType } from "@/types/medical-record";
 import { inferTemplateType } from "@/types/medical-record";
 import { MedicationRecord } from "@/types/medication";
 import { ResidentRecord } from "@/types/resident";
@@ -128,17 +128,40 @@ export default function ResidentDashboard() {
   const handleSaveMedicalRecord = async (updatedData: any) => {
     if (!selectedMedicalRecord || !resident) return;
     try {
-      const templateType = inferTemplateType(selectedMedicalRecord);
-      const updatedRecord = await updateMedicalRecord(
+      const templateType: MedicalRecordType = inferTemplateType(selectedMedicalRecord);
+      
+      // Get the record ID from either _id or id field
+      const recordId = selectedMedicalRecord._id || selectedMedicalRecord.id;
+      if (!recordId) {
+        throw new Error("No record ID found");
+      }
+
+      // Debug logging
+      console.log('Saving medical record:', {
         templateType,
-        selectedMedicalRecord.id,
+        recordId,
+        residentId: resident.id,
+        selectedMedicalRecord,
+        updatedData
+      });
+
+      // Remove _id and id from the update data to avoid conflicts
+      const { _id, id, ...cleanedData } = updatedData;
+      
+      await updateMedicalRecord(
+        recordId,
+        templateType,
         resident.id,
-        updatedData,
+        {
+          ...cleanedData,
+          resident_id: resident.id
+        }
       );
       setIsEditMedicalModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ["medicalRecords"] });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating medical record:", error);
+      throw error; // Let the dialog component handle the error
     }
   };
 

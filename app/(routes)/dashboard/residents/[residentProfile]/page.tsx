@@ -124,7 +124,7 @@ export default function ResidentDashboard() {
         templateType,
         selectedMedicalRecord.id,
         resident.id,
-        updatedData,
+        updatedData
       );
       setIsEditMedicalModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ["medicalRecords"] });
@@ -210,9 +210,9 @@ export default function ResidentDashboard() {
           </div>
           <div className="mt-4 space-y-4">
             {medicalRecords.length > 0 ? (
-              medicalRecords.map((record) => (
+              medicalRecords.map((record, index) => (
                 <MedicalRecordCard
-                  key={record.id}
+                  key={index}
                   record={record}
                   onEdit={handleEditMedicalRecord}
                 />
@@ -252,9 +252,9 @@ export default function ResidentDashboard() {
 
           <div className="space-y-4 mt-4">
             {medications.length > 0 ? (
-              medications.map((medication) => (
+              medications.map((medication, index) => (
                 <MedicationDisplay
-                  key={medication.id}
+                  key={index}
                   medication={medication}
                   onEdit={() => handleEditMedication(medication)}
                 />
@@ -302,8 +302,8 @@ export default function ResidentDashboard() {
 
           <div className="space-y-4 mt-4">
             {carePlans.length > 0 ? (
-              carePlans.map((carePlan) => (
-                <CarePlanDisplay key={carePlan.id} careplan={carePlan} />
+              carePlans.map((carePlan, index) => (
+                <CarePlanDisplay key={index} careplan={carePlan} />
               ))
             ) : (
               <p className="text-gray-500">No care plans found.</p>

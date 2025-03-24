@@ -1,13 +1,20 @@
 "use client";
 
-import { MedicalRecord } from "@/lib/schema/medicalRecordSchema";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { MedicalRecord } from "@/types/medical-record";
+import { Edit } from "lucide-react";
 import React from "react";
 
 interface MedicalRecordCardProps {
   record: MedicalRecord;
+  onEdit?: (record: MedicalRecord) => void;
 }
 
-const MedicalRecordCard: React.FC<MedicalRecordCardProps> = ({ record }) => {
+const MedicalRecordCard: React.FC<MedicalRecordCardProps> = ({
+  record,
+  onEdit,
+}) => {
   const { title, details } =
     "condition_name" in record
       ? {
@@ -42,9 +49,21 @@ const MedicalRecordCard: React.FC<MedicalRecordCardProps> = ({ record }) => {
                 };
 
   return (
-    <div className="p-4 border rounded-md shadow-sm">
-      <h3 className="text-lg font-semibold">{title}</h3>
-      <p className="text-sm text-gray-600">{details}</p>
+    <div className="p-4 border rounded-md shadow-sm flex justify-between items-center">
+      <div>
+        <Label className="text-lg font-semibold">{title}</Label>
+        <p className="text-sm text-gray-600">{details}</p>
+      </div>
+      {onEdit && (
+        <Button
+          variant="outline"
+          onClick={() => onEdit(record)}
+          className="flex items-center"
+        >
+          <Edit className="h-4 w-4" />
+          <span className="ml-2">Edit</span>
+        </Button>
+      )}
     </div>
   );
 };

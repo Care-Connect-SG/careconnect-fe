@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchMedicationByBarcode } from "@/app/api/fixedmedication";
+import { fetchMedicationByBarcode } from "@/app/api/fixed-medication";
 import { createMedication } from "@/app/api/medication";
 import { Button } from "@/components/ui/button";
 import {
@@ -57,7 +57,6 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
           img,
         );
         const scannedId = result.getText();
-        console.log("✅ Scanned QR code:", scannedId);
 
         const medicationData = await fetchMedicationByBarcode(scannedId);
         if (medicationData) {
@@ -89,7 +88,7 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
   const handleSubmit = async () => {
     await createMedication(residentId, form);
     onMedicationAdded();
-    setForm(initialForm); // ✅ Reset form after saving
+    setForm(initialForm);
     onClose();
   };
 

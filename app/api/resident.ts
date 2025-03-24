@@ -13,7 +13,8 @@ export const getResidents = async (): Promise<ResidentRecord[]> => {
       },
     );
     if (!response.ok) {
-      throw new Error(`Error fetching residents: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error fetching residents");
     }
     const data = await response.json();
     return data;
@@ -37,7 +38,8 @@ export const getResidentsByPage = async (
       headers: { "Content-Type": "application/json" },
     });
     if (!response.ok) {
-      throw new Error(`Error fetching residents: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error fetching residents by page");
     }
     const data = await response.json();
     return data;
@@ -59,7 +61,8 @@ export const getResidentById = async (
       },
     );
     if (!response.ok) {
-      throw new Error(`Error fetching resident: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error fetching resident by ID");
     }
     const data = await response.json();
     return data;
@@ -91,7 +94,7 @@ export const updateResident = async (
     );
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.detail || "Unable to update resident details");
+      throw new Error(errorData.detail || "Error updating resident details");
     }
     const data = await response.json();
     return data;
@@ -132,7 +135,7 @@ export async function editResidentProfilePicture(
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.detail || "Upload failed");
+      throw new Error(errorData.detail || "Error uploading profile picture");
     }
 
     const result = await response.json();
@@ -166,7 +169,7 @@ export const updateResidentNurse = async (
   },
 ): Promise<ResidentRecord> => {
   try {
-    const response = await fetchWithAuth(
+    const response = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}`,
       {
         method: "PUT",
@@ -175,7 +178,8 @@ export const updateResidentNurse = async (
       },
     );
     if (!response.ok) {
-      throw new Error(`Error updating resident: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error updating resident nurse");
     }
     const data = await response.json();
     return data;
@@ -195,7 +199,8 @@ export const deleteResident = async (residentId: string): Promise<void> => {
       },
     );
     if (!response.ok) {
-      throw new Error(`Error deleting resident: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error deleting resident");
     }
   } catch (error) {
     console.error("deleteResident error:", error);
@@ -216,7 +221,8 @@ export const createResident = async (
       },
     );
     if (!response.ok) {
-      throw new Error(`Error creating resident: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error creating new resident");
     }
     const data = await response.json();
     return data;

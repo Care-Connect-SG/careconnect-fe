@@ -15,7 +15,8 @@ export const getCarePlansForResident = async (
     );
 
     if (!response.ok) {
-      throw new Error(`Error fetching care plans: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error fetching care plans");
     }
 
     const data = await response.json();
@@ -40,7 +41,8 @@ export const createCarePlan = async (residentId: string, carePlanData: any) => {
     );
 
     if (!response.ok) {
-      throw new Error(`Error creating care plan: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error creating care plan");
     }
 
     return await response.json();
@@ -64,7 +66,8 @@ export const updateCarePlan = async (residentId: string, carePlanData: any) => {
     );
 
     if (!response.ok) {
-      throw new Error(`Error updating care plan: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error updating care plan");
     }
 
     return await response.json();
@@ -90,7 +93,8 @@ export const deleteCarePlan = async (
     );
 
     if (!response.ok) {
-      throw new Error(`Error deleting care plan: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error deleting care plans");
     }
 
     return { success: true };
@@ -103,7 +107,7 @@ export const deleteCarePlan = async (
 export const createCarePlanWithEmptyValues = async (residentId: string) => {
   const emptyCarePlan = {
     resident_id: residentId,
-    created_date: new Date().toISOString().split("T")[0], // today's date
+    created_date: new Date().toISOString().split("T")[0],
     medical_conditions: "",
     doctor_appointments: "",
     dietary_restrictions: "",
@@ -130,7 +134,10 @@ export const createCarePlanWithEmptyValues = async (residentId: string) => {
     );
 
     if (!response.ok) {
-      throw new Error(`Error creating care plan: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(
+        errData.detail || "Error creating care plan with empty values",
+      );
     }
 
     return await response.json();

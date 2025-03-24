@@ -23,7 +23,8 @@ export const getReports = async (
     });
 
     if (!response.ok) {
-      throw new Error(`Error fetching reports: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error fetching reports");
     }
 
     const data = await response.json();
@@ -50,7 +51,8 @@ export const createReport = async (
     );
 
     if (!response.ok) {
-      throw new Error(`Error creating report: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error creating report");
     }
 
     const data = await response.json();
@@ -78,7 +80,8 @@ export const updateReport = async (
     );
 
     if (!response.ok) {
-      throw new Error(`Error updating report: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error updating report");
     }
 
     const data = await response.json();
@@ -102,7 +105,8 @@ export const submitForm = async (reportId: string): Promise<string> => {
     );
 
     if (!response.ok) {
-      throw new Error(`Error submitting report: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error submitting report");
     }
 
     const data = await response.json();
@@ -128,16 +132,15 @@ export const getReportById = async (
     );
 
     if (!response.ok) {
-      throw new Error(`Error fetching report: ${response.statusText}`);
-      //TODO: Find a better way to handle errors
+      const errData = await response.json();
+      throw Error(errData.detail || "Error fetching report by ID");
     }
 
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error fetching report: ", error);
+    console.error("Error fetching report by ID: ", error);
     throw error;
-    //TODO: Find a better way to handle errors
   }
 };
 
@@ -154,7 +157,8 @@ export const deleteReport = async (reportId: string): Promise<void> => {
     );
 
     if (!response.ok) {
-      throw new Error(`Error deleting report: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error deleting report");
     }
   } catch (error) {
     console.error("Error deleting report:", error);
@@ -180,15 +184,14 @@ export const getResidentTags = async (
     });
 
     if (!response.ok) {
-      throw new Error(
-        `Error fetching residents for tagging: ${response.statusText}`,
-      );
+      const errData = await response.json();
+      throw Error(errData.detail || "Error fetching resident tags");
     }
 
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error fetching residents for tagging: ", error);
+    console.error("Error fetching resident tags: ", error);
     throw error;
   }
 };
@@ -211,15 +214,14 @@ export const getCaregiverTags = async (
     });
 
     if (!response.ok) {
-      throw new Error(
-        `Error fetching caregivers for tagging: ${response.statusText}`,
-      );
+      const errData = await response.json();
+      throw Error(errData.detail || "Error fetching caregiver tags");
     }
 
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error fetching caregivers for tagging: ", error);
+    console.error("Error fetching caregiver tags: ", error);
     throw error;
   }
 };

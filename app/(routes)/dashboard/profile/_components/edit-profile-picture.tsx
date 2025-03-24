@@ -13,15 +13,12 @@ import React, { useRef, useState, useCallback } from "react";
 import AvatarEditor from "react-avatar-editor";
 import { FileRejection, useDropzone } from "react-dropzone";
 
-interface EditProfilePictureProps {
+interface EditPictureProps {
   user: User;
   onClose: () => void;
 }
 
-const EditProfilePicture: React.FC<EditProfilePictureProps> = ({
-  user,
-  onClose,
-}) => {
+const EditPicture: React.FC<EditPictureProps> = ({ user, onClose }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -198,4 +195,4 @@ const EditProfilePicture: React.FC<EditProfilePictureProps> = ({
   );
 };
 
-export default EditProfilePicture;
+export default EditPicture;

@@ -5,11 +5,13 @@ import { Card } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { FormCreate, FormResponse } from "@/types/form";
 import { Plus } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import FormCard from "../_components/form-card";
 
 export default function IncidentReportingFormsAdmin() {
+  const { data: session } = useSession();
   const [forms, setForms] = useState<FormResponse[]>([]);
 
   useEffect(() => {
@@ -56,7 +58,7 @@ export default function IncidentReportingFormsAdmin() {
     const duplicatedForm: FormCreate = {
       title: originalForm!.title,
       description: originalForm!.description,
-      creator_id: "user567",
+      creator_id: session?.user?.id!,
       json_content: originalForm!.json_content,
       status: "Draft",
     };

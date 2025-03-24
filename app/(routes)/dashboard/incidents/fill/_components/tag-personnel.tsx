@@ -156,9 +156,9 @@ export default function PersonSelector({ user }: PersonSelectorProps) {
                           (resident) =>
                             !(resident.name === primaryResident?.name),
                         )
-                        .map((resident) => (
+                        .map((resident, index) => (
                           <CommandItem
-                            key={resident.id}
+                            key={index}
                             onSelect={() => {
                               involvedResidents.some(
                                 (r) => r.id === resident.id,
@@ -237,9 +237,9 @@ export default function PersonSelector({ user }: PersonSelectorProps) {
                     <CommandGroup>
                       {caregiverOptions
                         .filter((caregiver) => !(caregiver.id === user?.id))
-                        .map((caregiver) => (
+                        .map((caregiver, index) => (
                           <CommandItem
-                            key={caregiver.id}
+                            key={index}
                             onSelect={() => {
                               involvedCaregivers.some(
                                 (c) => c.id === caregiver.id,
@@ -274,13 +274,9 @@ export default function PersonSelector({ user }: PersonSelectorProps) {
             </Popover>
           </div>
           <div className="flex flex-wrap gap-2 mb-2">
-            {involvedCaregivers.map((caregiver) => {
+            {involvedCaregivers.map((caregiver, index) => {
               return caregiver ? (
-                <Badge
-                  key={caregiver.id}
-                  variant="secondary"
-                  className="font-medium"
-                >
+                <Badge key={index} variant="secondary" className="font-medium">
                   {caregiver.name}
                   <X
                     className="h-3 w-3 cursor-pointer"

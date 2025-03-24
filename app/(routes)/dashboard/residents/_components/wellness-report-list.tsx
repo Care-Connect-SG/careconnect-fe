@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import {
@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { WellnessReportRecord } from "@/types/wellnessReport";
+import { WellnessReportRecord } from "@/types/wellness-report";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -38,7 +38,6 @@ const WellnessReportList: React.FC<Props> = ({ reports }) => {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">Wellness Reports</h2>
 
-        {/* Sort Dropdown */}
         <div className="flex items-center gap-2">
           <Label className="text-sm text-gray-700">Sort by:</Label>
           <Select
@@ -62,9 +61,9 @@ const WellnessReportList: React.FC<Props> = ({ reports }) => {
         {sortedReports.length === 0 ? (
           <p className="text-gray-500 text-sm">No wellness reports found.</p>
         ) : (
-          sortedReports.map((report) => (
+          sortedReports.map((report, index) => (
             <Card
-              key={report.id}
+              key={index}
               className="p-6 border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition"
             >
               <div className="flex flex-col gap-2">

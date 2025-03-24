@@ -8,6 +8,7 @@ import {
   createReport,
   deleteReport,
   getReportById,
+  getReports,
   updateReport,
 } from "@/app/api/report";
 import { getCurrentUser } from "@/app/api/user";
@@ -19,10 +20,21 @@ import FormElementFill from "./_components/form-element-fill";
 import PersonSelector from "./_components/tag-personnel";
 
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
+import { ReportResponse } from "@/types/report";
 import { User } from "@/types/user";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronLeft, Trash2 } from "lucide-react";
+import { ChevronLeft, Trash2, X } from "lucide-react";
 import { FormProvider, useForm } from "react-hook-form";
 import { LoadingSkeleton } from "../_components/loading-skeleton";
 import { ReportSchema, reportSchema } from "./schema";
@@ -37,6 +49,13 @@ export default function CreateReportPage() {
   const [form, setForm] = useState<FormResponse | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [availableReports, setAvailableReports] = useState<ReportResponse[]>(
+    [],
+  );
+  const [showReference, setShowReference] = useState(false);
+  const [referenceReportId, setReferenceReportId] = useState<string | null>(
+    null,
+  );
 
   const methods = useForm<ReportSchema>({
     resolver: zodResolver(reportSchema),
@@ -63,7 +82,24 @@ export default function CreateReportPage() {
         });
       }
     }
+
     fetchUser();
+  }, []);
+
+  useEffect(() => {
+    async function fetchAllReports() {
+      try {
+        const allReports = await getReports();
+        const publishedReports = allReports.filter(
+          (report: ReportResponse) => report.status === ReportStatus.PUBLISHED,
+        );
+        setAvailableReports(publishedReports);
+      } catch (error) {
+        console.error("Failed to fetch reports for reference dropdown");
+      }
+    }
+
+    fetchAllReports();
   }, []);
 
   useEffect(() => {
@@ -98,6 +134,11 @@ export default function CreateReportPage() {
               involved_residents: reportData.involved_residents || [],
               involved_caregivers: reportData.involved_caregivers || [],
             });
+
+            if (reportData.reference_report_id) {
+              setReferenceReportId(reportData.reference_report_id);
+              setShowReference(true);
+            }
           } catch (error) {
             console.error("Error loading report:", error);
             router.replace("/404");
@@ -154,6 +195,10 @@ export default function CreateReportPage() {
       involved_caregivers: data.involved_caregivers,
       status: ReportStatus.DRAFT,
     };
+
+    if (referenceReportId) {
+      reportData.reference_report_id = referenceReportId;
+    }
 
     if (mode === "publish") {
       reportData.status = ReportStatus.PUBLISHED;
@@ -313,6 +358,57 @@ export default function CreateReportPage() {
           <div className="flex justify-between gap-4">
             <FormHeaderView title={form.title} description={form.description} />
             <PersonSelector user={user} />
+          </div>
+
+          <div className="flex items-center gap-4 mt-4">
+            <div>
+              <Label className="block text-sm font-medium text-gray-700">
+                Reference Report (optional)
+              </Label>
+              {showReference ? (
+                <div className="flex items-center gap-2 mt-1">
+                  <Select
+                    value={referenceReportId || ""}
+                    onValueChange={(value) => setReferenceReportId(value)}
+                  >
+                    <SelectTrigger className="w-[300px]">
+                      <SelectValue placeholder="Select a report" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Available Reports</SelectLabel>
+                        {availableReports.map((report) => (
+                          <SelectItem key={report.id} value={report.id}>
+                            {report.form_name} —{" "}
+                            {new Date(report.created_at).toLocaleDateString()}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setReferenceReportId(null);
+                      setShowReference(false);
+                    }}
+                    className="rounded-full h-8 w-8"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-1"
+                  onClick={() => setShowReference(true)}
+                >
+                  + Add Reference Report
+                </Button>
+              )}
+            </div>
           </div>
 
           <div className="py-4 space-y-4">

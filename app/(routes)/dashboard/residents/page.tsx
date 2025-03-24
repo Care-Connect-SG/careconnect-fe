@@ -14,8 +14,8 @@ import {
   updateResidentNurse,
 } from "../../../api/resident";
 import { getAllNurses } from "../../../api/user";
-import AddResidentModal from "./_components/add-resident-modal";
-import ResidentCard, { NurseOption } from "./_components/all-resident-card";
+import AddResidentModal from "./_components/create-resident-dialog";
+import ResidentCard, { NurseOption } from "./_components/resident-card";
 
 export default function AllResidentsPage() {
   const [residents, setResidents] = useState<ResidentRecord[]>([]);

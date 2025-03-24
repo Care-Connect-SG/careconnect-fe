@@ -17,7 +17,8 @@ export const createMedicalRecord = async (
       body: JSON.stringify(record),
     });
     if (!response.ok) {
-      throw new Error(`Error creating medical record: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(errData.detail || "Error creating medical record");
     }
     const data = await response.json();
     return data;
@@ -37,12 +38,39 @@ export const getMedicalRecordsByResident = async (
       headers: { "Content-Type": "application/json" },
     });
     if (!response.ok) {
-      throw new Error(`Error fetching medical records: ${response.statusText}`);
+      const errData = await response.json();
+      throw Error(
+        errData.detail || "Error fetching medical records by resident",
+      );
     }
     const data = await response.json();
     return data;
   } catch (error) {
     console.error("getMedicalRecordsByResident error:", error);
+    throw error;
+  }
+};
+
+export const updateMedicalRecord = async (
+  templateType: string,
+  recordId: string,
+  residentId: string,
+  updateData: any,
+): Promise<any> => {
+  try {
+    const url = `${process.env.NEXT_PUBLIC_BE_API_URL}/medical/records/${templateType}/${recordId}?resident_id=${encodeURIComponent(residentId)}`;
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updateData),
+    });
+    if (!response.ok) {
+      throw new Error(`Error updating medical record: ${response.statusText}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("updateMedicalRecord error:", error);
     throw error;
   }
 };

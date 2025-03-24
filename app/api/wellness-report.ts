@@ -1,13 +1,11 @@
-import { WellnessReportRecord } from "@/types/wellnessReport";
-
-const BASE_URL = process.env.NEXT_PUBLIC_BE_API_URL;
+import { WellnessReportRecord } from "@/types/wellness-report";
 
 export const getWellnessReportsForResident = async (
   residentId: string,
 ): Promise<WellnessReportRecord[]> => {
   try {
     const response = await fetch(
-      `${BASE_URL}/residents/${residentId}/wellness-reports`,
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/wellness-reports`,
       {
         method: "GET",
         headers: { "Content-Type": "application/json" },
@@ -15,7 +13,8 @@ export const getWellnessReportsForResident = async (
     );
 
     if (!response.ok) {
-      throw new Error("Failed to fetch wellness reports");
+      const errData = await response.json();
+      throw Error(errData.detail || "Error fetching wellness reports");
     }
 
     return await response.json();
@@ -31,7 +30,7 @@ export const getWellnessReportById = async (
 ): Promise<WellnessReportRecord | null> => {
   try {
     const response = await fetch(
-      `${BASE_URL}/residents/${residentId}/wellness-reports/${reportId}`,
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/wellness-reports/${reportId}`,
       {
         method: "GET",
         headers: { "Content-Type": "application/json" },
@@ -39,7 +38,8 @@ export const getWellnessReportById = async (
     );
 
     if (!response.ok) {
-      throw new Error("Failed to fetch wellness report");
+      const errData = await response.json();
+      throw Error(errData.detail || "Error fetching wellness report by ID");
     }
 
     return await response.json();
@@ -55,7 +55,7 @@ export const createWellnessReport = async (
 ): Promise<WellnessReportRecord | null> => {
   try {
     const response = await fetch(
-      `${BASE_URL}/residents/${residentId}/wellness-reports`,
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/wellness-reports`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -64,7 +64,8 @@ export const createWellnessReport = async (
     );
 
     if (!response.ok) {
-      throw new Error("Failed to create wellness report");
+      const errData = await response.json();
+      throw Error(errData.detail || "Error creating wellness report");
     }
 
     return await response.json();
@@ -81,7 +82,7 @@ export const updateWellnessReport = async (
 ): Promise<WellnessReportRecord | null> => {
   try {
     const response = await fetch(
-      `${BASE_URL}/residents/${residentId}/wellness-reports/${reportId}`,
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/wellness-reports/${reportId}`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -90,7 +91,8 @@ export const updateWellnessReport = async (
     );
 
     if (!response.ok) {
-      throw new Error("Failed to update wellness report");
+      const errData = await response.json();
+      throw Error(errData.detail || "Error updating wellness report");
     }
 
     return await response.json();
@@ -106,7 +108,7 @@ export const deleteWellnessReport = async (
 ): Promise<boolean> => {
   try {
     const response = await fetch(
-      `${BASE_URL}/residents/${residentId}/wellness-reports/${reportId}`,
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/wellness-reports/${reportId}`,
       {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
@@ -114,7 +116,8 @@ export const deleteWellnessReport = async (
     );
 
     if (!response.ok) {
-      throw new Error("Failed to delete wellness report");
+      const errData = await response.json();
+      throw Error(errData.detail || "Error deleting wellness report");
     }
 
     return true;

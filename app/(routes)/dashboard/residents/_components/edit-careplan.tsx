@@ -13,7 +13,7 @@ import {
   DialogFooter,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { CarePlanRecord } from "@/types/careplan";
@@ -111,7 +111,6 @@ const EditableCarePlan: React.FC<CarePlanProps> = ({
       </CardHeader>
 
       <CardContent className="px-6 py-4 space-y-4">
-        {/* Success Message */}
         {successMessage && (
           <div className="mb-4 flex items-center gap-2 text-green-600 text-sm font-semibold">
             <CheckCircle size={18} className="text-green-500" />
@@ -119,18 +118,16 @@ const EditableCarePlan: React.FC<CarePlanProps> = ({
           </div>
         )}
 
-        {/* Show either the form or Create Care Plan Button */}
         {formData ? (
           <>
-            {/* Medical Appointment Care Plan */}
             <div>
               <h3 className="bg-blue-50 text-gray-800 font-semibold py-2 px-4 rounded-md text-base">
                 Medical Appointment Care Plan
               </h3>
               <div className="mt-2 space-y-1 text-sm text-gray-700 px-4">
-                <label className="block font-semibold">
+                <Label className="block font-semibold">
                   Medical Conditions
-                </label>
+                </Label>
                 {isEditing ? (
                   <Textarea
                     name="medical_conditions"
@@ -140,9 +137,9 @@ const EditableCarePlan: React.FC<CarePlanProps> = ({
                 ) : (
                   <p>{formData.medical_conditions || "N/A"}</p>
                 )}
-                <label className="block font-semibold">
+                <Label className="block font-semibold">
                   Doctor Appointments
-                </label>
+                </Label>
                 {isEditing ? (
                   <Textarea
                     name="doctor_appointments"
@@ -155,15 +152,14 @@ const EditableCarePlan: React.FC<CarePlanProps> = ({
               </div>
             </div>
 
-            {/* Dietary Plan */}
             <div>
               <h3 className="bg-blue-50 text-gray-800 font-semibold py-2 px-4 rounded-md text-base">
                 Dietary Plan
               </h3>
               <div className="mt-2 space-y-1 text-sm text-gray-700 px-4">
-                <label className="block font-semibold">
+                <Label className="block font-semibold">
                   Dietary Restrictions
-                </label>
+                </Label>
                 {isEditing ? (
                   <Textarea
                     name="dietary_restrictions"
@@ -175,7 +171,7 @@ const EditableCarePlan: React.FC<CarePlanProps> = ({
                     {formatDietaryRestrictions(formData.dietary_restrictions)}
                   </div>
                 )}
-                <label className="block font-semibold">Daily Meal Plan</label>
+                <Label className="block font-semibold">Daily Meal Plan</Label>
                 {isEditing ? (
                   <Textarea
                     name="daily_meal_plan"
@@ -188,13 +184,12 @@ const EditableCarePlan: React.FC<CarePlanProps> = ({
               </div>
             </div>
 
-            {/* Assistance & Social Activities */}
             <div>
               <h3 className="bg-blue-50 text-gray-800 font-semibold py-2 px-4 rounded-md text-base">
                 Assistance & Social Activities
               </h3>
               <div className="mt-2 space-y-1 text-sm text-gray-700 px-4">
-                <label className="block font-semibold">Hydration</label>
+                <Label className="block font-semibold">Hydration</Label>
                 {isEditing ? (
                   <Textarea
                     name="hydration"
@@ -204,9 +199,9 @@ const EditableCarePlan: React.FC<CarePlanProps> = ({
                 ) : (
                   <p>{formData.hydration || "N/A"}</p>
                 )}
-                <label className="block font-semibold">
+                <Label className="block font-semibold">
                   Nutritional Supplements
-                </label>
+                </Label>
                 {isEditing ? (
                   <Textarea
                     name="nutritional_supplements"
@@ -216,16 +211,16 @@ const EditableCarePlan: React.FC<CarePlanProps> = ({
                 ) : (
                   <p>{formData.nutritional_supplements || "N/A"}</p>
                 )}
-                <label className="block font-semibold">
+                <Label className="block font-semibold">
                   Bathing Assistance
-                </label>
+                </Label>
                 <Switch
                   checked={formData.bathing_assistance}
                   onCheckedChange={() => handleToggle("bathing_assistance")}
                 />
-                <label className="block font-semibold">
+                <Label className="block font-semibold">
                   Dressing Assistance
-                </label>
+                </Label>
                 <Switch
                   checked={formData.dressing_assistance}
                   onCheckedChange={() => handleToggle("dressing_assistance")}
@@ -233,7 +228,6 @@ const EditableCarePlan: React.FC<CarePlanProps> = ({
               </div>
             </div>
 
-            {/* Edit/Save/Delete Buttons */}
             <div className="mt-4 flex justify-between">
               <Button
                 onClick={() => setIsEditing(!isEditing)}
@@ -260,7 +254,6 @@ const EditableCarePlan: React.FC<CarePlanProps> = ({
         )}
       </CardContent>
 
-      {/* Delete Confirmation Dialog */}
       {isDeleteConfirmOpen && (
         <Dialog
           open={isDeleteConfirmOpen}

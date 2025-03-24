@@ -20,10 +20,9 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { User } from "@/types/user";
-import { X } from "lucide-react";
 import React, { useState, useEffect } from "react";
 
-interface AddResidentModalProps {
+interface CreateResidentDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (data: {
@@ -40,7 +39,7 @@ interface AddResidentModalProps {
   }) => void;
 }
 
-const AddResidentModal: React.FC<AddResidentModalProps> = ({
+const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
   isOpen,
   onClose,
   onSave,
@@ -245,4 +244,4 @@ const AddResidentModal: React.FC<AddResidentModalProps> = ({
   );
 };
 
-export default AddResidentModal;
+export default CreateResidentDialog;

@@ -124,7 +124,7 @@ export default function ResidentDashboard() {
         templateType,
         selectedMedicalRecord.id,
         resident.id,
-        updatedData
+        updatedData,
       );
       setIsEditMedicalModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ["medicalRecords"] });

@@ -2,21 +2,26 @@
 
 import { getCarePlansForResident } from "@/app/api/careplan";
 import { getMedicalRecordsByResident } from "@/app/api/medical-record";
+import { updateMedicalRecord } from "@/app/api/medical-record";
 import { getMedicationsForResident } from "@/app/api/medication";
 import { Button } from "@/components/ui/button";
 import { CarePlanRecord } from "@/types/careplan";
+import { MedicalRecord } from "@/types/medical-record";
+import { inferTemplateType } from "@/types/medical-record";
 import { MedicationRecord } from "@/types/medication";
 import { ResidentRecord } from "@/types/resident";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { getResidentById, updateResident } from "../../../../api/resident";
 import CarePlanDisplay from "../_components/careplan-display";
 import CreateMedication from "../_components/create-medication";
 import EditMedication from "../_components/edit-medication";
 import MedicationDisplay from "../_components/medication-display";
+import EditMedicalRecordModal from "./_components/edit-medical-record-dialog";
 import EditResidentDialog from "./_components/edit-resident-dialog";
 import MedicalRecordCard from "./_components/medical-record-card";
+import CreateMedicalHistoryDialog from "./_components/medical-record-form";
 import ResidentDetailsCard from "./_components/resident-detail-card";
 import ResidentDetailsNotesCard from "./_components/resident-detail-notes";
 import ResidentProfileCard from "./_components/resident-profile-header";
@@ -33,9 +38,14 @@ export default function ResidentDashboard() {
   const { residentProfile } = useParams() as { residentProfile: string };
   const [activeTab, setActiveTab] = useState("overview");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isCreateMedicalModalOpen, setIsCreateMedicalModalOpen] =
+    useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedMedication, setSelectedMedication] =
     useState<MedicationRecord | null>(null);
+  const [isEditMedicalModalOpen, setIsEditMedicalModalOpen] = useState(false);
+  const [selectedMedicalRecord, setSelectedMedicalRecord] =
+    useState<MedicalRecord | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const queryClient = useQueryClient();
 
@@ -45,12 +55,11 @@ export default function ResidentDashboard() {
       queryFn: () => getResidentById(residentProfile),
     });
 
-  const { data: medicalRecords = [], isLoading: areMedicalRecordsLoading } =
-    useQuery({
-      queryKey: ["medicalRecords"],
-      queryFn: () => getMedicalRecordsByResident(residentProfile),
-      enabled: !!residentProfile,
-    });
+  const { data: medicalRecords = [] } = useQuery({
+    queryKey: ["medicalRecords"],
+    queryFn: () => getMedicalRecordsByResident(residentProfile),
+    enabled: !!residentProfile,
+  });
 
   const { data: medications = [], refetch: refetchMedications } = useQuery<
     MedicationRecord[]
@@ -102,8 +111,36 @@ export default function ResidentDashboard() {
     setIsEditModalOpen(true);
   };
 
-  if (!resident) {
+  const handleEditMedicalRecord = (record: MedicalRecord) => {
+    setSelectedMedicalRecord(record);
+    setIsEditMedicalModalOpen(true);
+  };
+
+  const handleSaveMedicalRecord = async (updatedData: any) => {
+    if (!selectedMedicalRecord || !resident) return;
+    try {
+      const templateType = inferTemplateType(selectedMedicalRecord);
+      const updatedRecord = await updateMedicalRecord(
+        templateType,
+        selectedMedicalRecord.id,
+        resident.id,
+        updatedData,
+      );
+      setIsEditMedicalModalOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["medicalRecords"] });
+    } catch (error) {
+      console.error("Error updating medical record:", error);
+    }
+  };
+
+  if (isResidentLoading) {
     return <div className="text-center mt-10">Loading resident details...</div>;
+  }
+
+  if (!resident) {
+    return (
+      <div className="text-center mt-10 text-red-500">Resident not found</div>
+    );
   }
 
   return (
@@ -167,19 +204,40 @@ export default function ResidentDashboard() {
         <div className="mt-6">
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-semibold">Medical History</h2>
-            <Button onClick={() => setIsCreateModalOpen(true)}>
+            <Button onClick={() => setIsCreateMedicalModalOpen(true)}>
               Add Medical Record
             </Button>
           </div>
           <div className="mt-4 space-y-4">
             {medicalRecords.length > 0 ? (
-              medicalRecords.map((record) => (
-                <MedicalRecordCard key={record.id} record={record} />
+              medicalRecords.map((record, index) => (
+                <MedicalRecordCard
+                  key={index}
+                  record={record}
+                  onEdit={handleEditMedicalRecord}
+                />
               ))
             ) : (
               <p className="text-gray-500">No medical records found.</p>
             )}
           </div>
+
+          {selectedMedicalRecord && (
+            <EditMedicalRecordModal
+              isOpen={isEditMedicalModalOpen}
+              onClose={() => setIsEditMedicalModalOpen(false)}
+              templateType={inferTemplateType(selectedMedicalRecord)}
+              residentId={resident.id}
+              initialData={selectedMedicalRecord}
+              onSave={handleSaveMedicalRecord}
+            />
+          )}
+
+          <CreateMedicalHistoryDialog
+            isOpen={isCreateMedicalModalOpen}
+            onClose={() => setIsCreateMedicalModalOpen(false)}
+            onRecordCreated={() => {}}
+          />
         </div>
       )}
 
@@ -194,9 +252,9 @@ export default function ResidentDashboard() {
 
           <div className="space-y-4 mt-4">
             {medications.length > 0 ? (
-              medications.map((medication) => (
+              medications.map((medication, index) => (
                 <MedicationDisplay
-                  key={medication.id}
+                  key={index}
                   medication={medication}
                   onEdit={() => handleEditMedication(medication)}
                 />
@@ -244,8 +302,8 @@ export default function ResidentDashboard() {
 
           <div className="space-y-4 mt-4">
             {carePlans.length > 0 ? (
-              carePlans.map((carePlan) => (
-                <CarePlanDisplay key={carePlan.id} careplan={carePlan} />
+              carePlans.map((carePlan, index) => (
+                <CarePlanDisplay key={index} careplan={carePlan} />
               ))
             ) : (
               <p className="text-gray-500">No care plans found.</p>

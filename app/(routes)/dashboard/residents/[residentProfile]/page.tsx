@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import {
   createCarePlanWithEmptyValues,
@@ -17,20 +17,22 @@ import { getResidentById, updateResident } from "@/app/api/resident";
 import { getWellnessReportsForResident } from "@/app/api/wellness-report";
 
 import { Button } from "@/components/ui/button";
-import CreateMedication from "../_components/create-medication-dialog";
-import EditableCarePlan from "../_components/edit-careplan";
-import EditMedication from "../_components/edit-medication";
-import CarePlanDisplay from "../_components/resident-careplan";
-import MedicationDisplay from "../_components/resident-medication";
-import WellnessReportList from "../_components/wellness-report-list";
+import CreateMedication from "./_components/create-medication-dialog";
+import EditCarePlan from "./_components/edit-careplan";
 import EditMedicalRecordModal from "./_components/edit-medical-record-dialog";
+import EditMedication from "./_components/edit-medication";
 import EditResidentDialog from "./_components/edit-resident-dialog";
 import MedicalRecordCard from "./_components/medical-record-card";
-import CreateMedicalHistoryDialog from "./_components/medical-record-form";
+import CreateMedicalRecordDialog from "./_components/medical-record-form";
+import ResidentCarePlan from "./_components/resident-careplan";
 import ResidentDetailsCard from "./_components/resident-detail-card";
 import ResidentDetailsNotesCard from "./_components/resident-detail-notes";
-import ResidentProfileCard from "./_components/resident-profile-header";
+import ResidentMedication from "./_components/resident-medication";
+import ResidentProfileHeader from "./_components/resident-profile-header";
+import WellnessReportList from "./_components/wellness-report-list";
 
+import { useBreadcrumb } from "@/context/breadcrumb-context";
+import { toTitleCase } from "@/lib/utils";
 import { CarePlanRecord } from "@/types/careplan";
 import { MedicalRecord, inferTemplateType } from "@/types/medical-record";
 import { MedicationRecord } from "@/types/medication";
@@ -49,8 +51,8 @@ type TabValue = (typeof TABS)[number]["value"];
 
 export default function ResidentDashboard() {
   const { residentProfile } = useParams() as { residentProfile: string };
+  const { setPageName } = useBreadcrumb();
   const queryClient = useQueryClient();
-
   const [activeTab, setActiveTab] = useState<TabValue>("overview");
   const [modals, setModals] = useState({
     editResident: false,
@@ -70,6 +72,12 @@ export default function ResidentDashboard() {
       queryKey: ["resident", residentProfile],
       queryFn: () => getResidentById(residentProfile),
     });
+
+  useEffect(() => {
+    if (resident) {
+      setPageName(toTitleCase(resident.full_name) || "Resident Profile");
+    }
+  }, [resident, setPageName]);
 
   const { data: medicalRecords = [] } = useQuery<MedicalRecord[]>({
     queryKey: ["medicalRecords", residentProfile],
@@ -192,19 +200,10 @@ export default function ResidentDashboard() {
     );
   }
 
-  const calculateAge = () => {
-    return (
-      new Date().getFullYear() - new Date(resident.date_of_birth).getFullYear()
-    );
-  };
-
   return (
     <div className="w-full max-w-4xl mx-auto mt-10">
-      <ResidentProfileCard
-        name={resident.full_name}
-        age={calculateAge()}
-        room={resident.room_number}
-        imageUrl={resident.photograph || "/images/no-image.png"}
+      <ResidentProfileHeader
+        resident={resident}
         onEdit={() => openModal("editResident")}
       />
 
@@ -282,7 +281,7 @@ export default function ResidentDashboard() {
             <div className="space-y-4 mt-4">
               {medications.length > 0 ? (
                 medications.map((medication, index) => (
-                  <MedicationDisplay
+                  <ResidentMedication
                     key={medication.id || index}
                     medication={medication}
                     onEdit={() => openModal("editMedication", medication)}
@@ -298,7 +297,7 @@ export default function ResidentDashboard() {
         {activeTab === "careplan" && (
           <div>
             {carePlans.length > 0 ? (
-              <EditableCarePlan
+              <EditCarePlan
                 careplan={carePlans[0]}
                 residentId={residentProfile}
                 onCarePlanUpdated={() => {
@@ -340,7 +339,7 @@ export default function ResidentDashboard() {
             <div className="space-y-4 mt-4">
               {carePlans.length > 0 ? (
                 carePlans.map((carePlan, index) => (
-                  <CarePlanDisplay
+                  <ResidentCarePlan
                     key={carePlan.id || index}
                     careplan={carePlan}
                   />
@@ -383,7 +382,7 @@ export default function ResidentDashboard() {
         />
       )}
 
-      <CreateMedicalHistoryDialog
+      <CreateMedicalRecordDialog
         isOpen={modals.createMedicalRecord}
         onClose={() => closeModal("createMedicalRecord")}
         onRecordCreated={() => {

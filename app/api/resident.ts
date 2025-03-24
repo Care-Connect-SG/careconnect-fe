@@ -84,7 +84,7 @@ export const updateResident = async (
 
     updateData.additional_notes_timestamp = localISOString;
 
-    const response = await fetch(
+    const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}`,
       {
         method: "PUT",

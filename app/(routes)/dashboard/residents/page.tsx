@@ -14,7 +14,7 @@ import {
   updateResidentNurse,
 } from "../../../api/resident";
 import { getAllNurses } from "../../../api/user";
-import AddResidentModal from "./_components/create-resident-dialog";
+import CreateResidentDialog from "./_components/create-resident-dialog";
 import ResidentCard, { NurseOption } from "./_components/resident-card";
 
 export default function AllResidentsPage() {
@@ -61,13 +61,6 @@ export default function AllResidentsPage() {
   const filteredResidents = residents.filter((resident) =>
     resident.full_name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
-
-  const computeAge = (dob: string) => {
-    const birthDate = new Date(dob);
-    const diffMs = Date.now() - birthDate.getTime();
-    const ageDt = new Date(diffMs);
-    return Math.abs(ageDt.getUTCFullYear() - 1970);
-  };
 
   const handleNurseChange = async (id: string, newNurse: string) => {
     const currentResident = residents.find((res) => res.id === id);
@@ -159,7 +152,7 @@ export default function AllResidentsPage() {
         </div>
       </div>
 
-      <AddResidentModal
+      <CreateResidentDialog
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSave={handleAddResidentSave}
@@ -170,14 +163,7 @@ export default function AllResidentsPage() {
           filteredResidents.map((resident) => (
             <ResidentCard
               key={resident.id}
-              resident={{
-                id: resident.id,
-                name: resident.full_name,
-                age: computeAge(resident.date_of_birth),
-                room: resident.room_number || "N/A",
-                nurse: resident.primary_nurse || "N/A",
-                imageUrl: "/images/no-image.png",
-              }}
+              resident={resident}
               onNurseChange={handleNurseChange}
               onClick={handleCardClick}
               onDelete={handleDelete}

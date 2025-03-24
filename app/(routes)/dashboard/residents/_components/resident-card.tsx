@@ -1,5 +1,6 @@
 "use client";
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -9,18 +10,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ResidentRecord } from "@/types/resident";
 import { Trash } from "lucide-react";
-import Image from "next/image";
 import React from "react";
-
-export type Resident = {
-  id: string;
-  name: string;
-  age: number;
-  room: string;
-  nurse: string;
-  imageUrl: string;
-};
 
 export type NurseOption = {
   id: string;
@@ -28,7 +20,7 @@ export type NurseOption = {
 };
 
 interface ResidentCardProps {
-  resident: Resident;
+  resident: ResidentRecord;
   onNurseChange: (id: string, newNurse: string) => void;
   onClick?: (id: string) => void;
   onDelete?: (id: string) => void;
@@ -42,7 +34,7 @@ function ResidentCard({
   onDelete,
   nurseOptions,
 }: ResidentCardProps) {
-  const currentValue = resident.nurse || "";
+  const currentValue = resident.primary_nurse || "";
 
   const handleChange = (value: string) => {
     onNurseChange(resident.id, value);
@@ -59,26 +51,29 @@ function ResidentCard({
       onClick={() => onClick && onClick(resident.id)}
     >
       <div className="flex items-center gap-4">
-        <div className="relative w-14 h-14">
-          <Image
-            src={resident.imageUrl}
-            alt={resident.name}
-            fill
-            className="rounded-full object-cover border border-gray-300 shadow-sm"
-          />
-        </div>
+        <Avatar className="h-16 w-16 rounded-lg cursor-pointer">
+          <AvatarImage src={resident.photograph!} alt={resident.full_name} />
+          <AvatarFallback className="rounded-lg">
+            {resident.full_name.charAt(0)}
+          </AvatarFallback>
+        </Avatar>
 
         <div>
           <Label className="text-base font-semibold text-gray-800">
-            {resident.name}
+            {resident.full_name}
           </Label>
           <p className="text-xs text-gray-500">
             Age:{" "}
-            <span className="font-medium text-gray-700">{resident.age}</span>
+            <span className="font-medium text-gray-700">
+              {new Date().getFullYear() -
+                new Date(resident.date_of_birth).getFullYear()}
+            </span>
           </p>
           <p className="text-xs text-gray-500">
             Room:{" "}
-            <span className="font-medium text-gray-700">{resident.room}</span>
+            <span className="font-medium text-gray-700">
+              {resident.room_number}
+            </span>
           </p>
         </div>
       </div>

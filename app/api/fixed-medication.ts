@@ -4,7 +4,10 @@ export const fetchMedicationByBarcode = async (barcode: string) => {
       `${process.env.NEXT_PUBLIC_BE_API_URL}/fixedmedications/${barcode}`,
     );
 
-    if (!response.ok) throw new Error("Medication not found");
+    if (!response.ok) {
+      const errData = await response.json();
+      throw Error(errData.detail || "Error fetching medications by barcode");
+    }
 
     return await response.json();
   } catch (error) {

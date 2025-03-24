@@ -34,7 +34,7 @@ const MedicationDisplay: React.FC<MedicationProps> = ({
           <Button
             type="button"
             aria-label="Edit medication"
-            className="text-gray-500 hover:text-blue-600 transition"
+            className="bg-blue-500 text-white hover:text-white-600 transition"
             onClick={() => onEdit(medication)}
           >
             <Pencil size={18} />
@@ -42,7 +42,7 @@ const MedicationDisplay: React.FC<MedicationProps> = ({
           <Button
             type="button"
             aria-label="Delete medication"
-            className="text-gray-500 hover:text-red-600 transition"
+            className="bg-white-500 text-red-500 hover:bg-white transition"
           >
             <Trash2 size={18} />
           </Button>

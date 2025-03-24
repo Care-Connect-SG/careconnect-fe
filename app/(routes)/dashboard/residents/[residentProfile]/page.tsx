@@ -25,6 +25,14 @@ import CreateMedicalHistoryDialog from "./_components/medical-record-form";
 import ResidentDetailsCard from "./_components/resident-detail-card";
 import ResidentDetailsNotesCard from "./_components/resident-detail-notes";
 import ResidentProfileCard from "./_components/resident-profile-header";
+import {
+  ToastProvider,
+  Toast,
+  ToastTitle,
+  ToastDescription,
+  ToastClose,
+  ToastViewport,
+} from "@/components/ui/toast";
 
 const TABS = [
   { label: "Overview", value: "overview" },
@@ -48,6 +56,7 @@ export default function ResidentDashboard() {
     useState<MedicalRecord | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const queryClient = useQueryClient();
+  const [toastOpen, setToastOpen] = useState(false);
 
   const { data: resident, isLoading: isResidentLoading } =
     useQuery<ResidentRecord>({
@@ -169,11 +178,13 @@ export default function ResidentDashboard() {
             <Button
               key={tab.value}
               onClick={() => setActiveTab(tab.value)}
-              className={`py-2 px-1 text-sm font-medium ${
-                activeTab === tab.value
-                  ? "text-blue-600 border-b-2 border-blue-600"
-                  : "text-gray-500"
-              }`}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 
+                ${
+                  activeTab === tab.value
+                    ? "bg-blue-600 text-white border border-blue-600"
+                    : "bg-gray-400 text-white hover:bg-gray-500"
+                }
+              `}
             >
               {tab.label}
             </Button>
@@ -226,7 +237,7 @@ export default function ResidentDashboard() {
             <EditMedicalRecordModal
               isOpen={isEditMedicalModalOpen}
               onClose={() => setIsEditMedicalModalOpen(false)}
-              templateType={inferTemplateType(selectedMedicalRecord)}
+              templateType={inferTemplateType(selectedMedicalRecord!)}
               residentId={resident.id}
               initialData={selectedMedicalRecord}
               onSave={handleSaveMedicalRecord}

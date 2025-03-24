@@ -156,9 +156,9 @@ export default function PersonSelector({ user }: PersonSelectorProps) {
                           (resident) =>
                             !(resident.name === primaryResident?.name),
                         )
-                        .map((resident) => (
+                        .map((resident, index) => (
                           <CommandItem
-                            key={resident.id}
+                            key={index}
                             onSelect={() => {
                               involvedResidents.some(
                                 (r) => r.id === resident.id,

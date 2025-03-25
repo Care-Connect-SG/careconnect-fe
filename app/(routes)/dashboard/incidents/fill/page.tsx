@@ -21,6 +21,15 @@ import PersonSelector from "./_components/tag-personnel";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { ReportResponse } from "@/types/report";
 import { User } from "@/types/user";
@@ -356,7 +365,40 @@ export default function CreateReportPage() {
               <Label className="block text-sm font-medium text-gray-700">
                 Reference Report (optional)
               </Label>
-              {!showReference ? (
+              {showReference ? (
+                <div className="flex items-center gap-2 mt-1">
+                  <Select
+                    value={referenceReportId || ""}
+                    onValueChange={(value) => setReferenceReportId(value)}
+                  >
+                    <SelectTrigger className="w-[300px]">
+                      <SelectValue placeholder="Select a report" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Available Reports</SelectLabel>
+                        {availableReports.map((report) => (
+                          <SelectItem key={report.id} value={report.id}>
+                            {report.form_name} —{" "}
+                            {new Date(report.created_at).toLocaleDateString()}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setReferenceReportId(null);
+                      setShowReference(false);
+                    }}
+                    className="rounded-full h-8 w-8"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
                 <Button
                   variant="outline"
                   size="sm"
@@ -365,32 +407,6 @@ export default function CreateReportPage() {
                 >
                   + Add Reference Report
                 </Button>
-              ) : (
-                <div className="flex items-center gap-2 mt-1">
-                  <select
-                    className="border p-2 rounded-md"
-                    value={referenceReportId || ""}
-                    onChange={(e) => setReferenceReportId(e.target.value)}
-                  >
-                    <option value="">Select a report</option>
-                    {availableReports.map((report) => (
-                      <option key={report.id} value={report.id}>
-                        {report.form_name} —{" "}
-                        {new Date(report.created_at).toLocaleDateString()}
-                      </option>
-                    ))}
-                  </select>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setReferenceReportId(null);
-                      setShowReference(false);
-                    }}
-                  >
-                    <X className="w-4 h-4" />{" "}
-                  </Button>
-                </div>
               )}
             </div>
           </div>

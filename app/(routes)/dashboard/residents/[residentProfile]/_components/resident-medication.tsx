@@ -17,7 +17,7 @@ interface MedicationProps {
   onEdit: (medication: any) => void;
 }
 
-const MedicationDisplay: React.FC<MedicationProps> = ({
+const ResidentMedication: React.FC<MedicationProps> = ({
   medication,
   onEdit,
 }) => {
@@ -90,4 +90,4 @@ const MedicationDisplay: React.FC<MedicationProps> = ({
   );
 };
 
-export default MedicationDisplay;
+export default ResidentMedication;

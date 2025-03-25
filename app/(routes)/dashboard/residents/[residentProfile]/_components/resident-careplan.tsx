@@ -20,7 +20,7 @@ interface CarePlanProps {
   };
 }
 
-const CarePlanDisplay: React.FC<CarePlanProps> = ({ careplan }) => {
+const ResidentCarePlan: React.FC<CarePlanProps> = ({ careplan }) => {
   const formatDietaryRestrictions = (restrictions: string | undefined) => {
     if (!restrictions) return "None";
     return restrictions.split(",").map((item, index) => (
@@ -141,4 +141,4 @@ const CarePlanDisplay: React.FC<CarePlanProps> = ({ careplan }) => {
   );
 };
 
-export default CarePlanDisplay;
+export default ResidentCarePlan;

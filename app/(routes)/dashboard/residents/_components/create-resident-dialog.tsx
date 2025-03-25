@@ -20,7 +20,9 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { User } from "@/types/user";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { Paperclip } from "lucide-react";
+import { FileRejection, useDropzone } from "react-dropzone";
 
 interface CreateResidentDialogProps {
   isOpen: boolean;
@@ -55,6 +57,7 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
   const [additionalNotes, setAdditionalNotes] = useState("");
   const [primaryNurse, setPrimaryNurse] = useState("");
   const [nurseOptions, setNurseOptions] = useState<User[]>([]);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -65,6 +68,24 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
         );
     }
   }, [isOpen]);
+
+  // File upload handlers (visual only, no functionality)
+  const onDrop = useCallback(
+    (acceptedFiles: File[], _rejectedFiles: FileRejection[]) => {
+      if (acceptedFiles.length > 0) {
+        setSelectedImage(acceptedFiles[0]);
+      }
+    },
+    []
+  );
+
+  // Max file size: 5MB
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    maxFiles: 1,
+    maxSize: 5242880,
+    multiple: false,
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,6 +114,32 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
             className="absolute right-4 top-4"
           ></DialogClose>
         </DialogHeader>
+        
+        {/* Profile Picture Upload Area */}
+        <div className="mb-6">
+          <Label htmlFor="profilePicture" className="block mb-2">Profile Picture</Label>
+          <div className="cursor-pointer text-sm">
+            <Input {...getInputProps()} id="profilePicture" />
+            <div
+              className={`flex items-center justify-center py-6 px-4 border-2 border-dotted rounded-md transition-all duration-300 ease-in-out bg-gray-50
+                ${isDragActive ? 'border-gray-400 bg-blue-100' : 'border-gray-400 bg-transparent cursor-pointer hover:border-gray-500'}`}
+              {...getRootProps()}
+            >
+              <Paperclip className="mr-2 h-4 w-4 text-gray-600" />
+              <p className="text-sm font-semibold text-gray-600">
+                {selectedImage
+                  ? `Selected: ${selectedImage.name}`
+                  : "Drag and drop file here, or click to select a file"}
+              </p>
+            </div>
+            {selectedImage && (
+              <p className="mt-2 text-xs text-green-600">
+                File selected: {selectedImage.name}
+              </p>
+            )}
+          </div>
+        </div>
+        
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>

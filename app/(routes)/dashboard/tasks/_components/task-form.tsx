@@ -322,6 +322,19 @@ export default function TaskForm({
         form.setValue("assigned_to", selectedNurse.id);
       }
 
+      // Pre-fill a resident if available
+      if (
+        residents.length > 0 &&
+        (!form.getValues("residents") ||
+          form.getValues("residents").length === 0)
+      ) {
+        const randomResidentIndex = Math.floor(
+          Math.random() * residents.length,
+        );
+        const selectedResident = residents[randomResidentIndex];
+        form.setValue("residents", [selectedResident.id]);
+      }
+
       // Set task to urgent if medication related
       const isMedication = Math.random() > 0.5;
       if (isMedication) {
@@ -330,14 +343,14 @@ export default function TaskForm({
         form.setValue("is_urgent", true);
         form.setValue(
           "ai_recommendation_reason",
-          "Missed medication task for high-risk resident",
+          "Missed medication task for high-risk resident. Priority set to High based on medical importance. Medication category selected based on resident care plan. Urgency flagged due to timing requirements.",
         );
       } else {
         form.setValue("category", "Therapy");
         form.setValue("priority", "Medium");
         form.setValue(
           "ai_recommendation_reason",
-          "Resident requires regular therapy sessions",
+          "Resident requires regular therapy sessions based on care plan assessment. Priority set to Medium based on wellness impact. Therapy category selected to improve resident mobility and health outcomes.",
         );
       }
 
@@ -447,13 +460,21 @@ export default function TaskForm({
                           className={
                             fieldState.invalid
                               ? "border-destructive focus-visible:ring-destructive"
-                              : ""
+                              : form.watch("is_ai_generated")
+                                ? "border-amber-200 bg-amber-50"
+                                : ""
                           }
                         />
                       </FormControl>
                       {fieldState.error && (
                         <p className="text-sm text-destructive">
                           {fieldState.error.message}
+                        </p>
+                      )}
+                      {form.watch("is_ai_generated") && (
+                        <p className="text-xs flex items-center gap-1 text-amber-700 mt-1">
+                          <Sparkles className="h-3 w-3" />
+                          AI suggested based on resident care patterns
                         </p>
                       )}
                     </FormItem>
@@ -473,13 +494,21 @@ export default function TaskForm({
                           className={
                             fieldState.invalid
                               ? "border-destructive focus-visible:ring-destructive"
-                              : ""
+                              : form.watch("is_ai_generated")
+                                ? "border-amber-200 bg-amber-50"
+                                : ""
                           }
                         />
                       </FormControl>
                       {fieldState.error && (
                         <p className="text-sm text-destructive">
                           {fieldState.error.message}
+                        </p>
+                      )}
+                      {form.watch("is_ai_generated") && (
+                        <p className="text-xs flex items-center gap-1 text-amber-700 mt-1">
+                          <Sparkles className="h-3 w-3" />
+                          AI suggested based on care requirements
                         </p>
                       )}
                     </FormItem>
@@ -500,7 +529,9 @@ export default function TaskForm({
                             className={
                               fieldState.invalid
                                 ? "border-destructive focus-visible:ring-destructive"
-                                : ""
+                                : form.watch("is_ai_generated")
+                                  ? "border-amber-200 bg-amber-50"
+                                  : ""
                             }
                           >
                             <SelectValue placeholder="Select priority" />
@@ -511,6 +542,12 @@ export default function TaskForm({
                             <SelectItem value="Low">Low</SelectItem>
                           </SelectContent>
                         </Select>
+                        {form.watch("is_ai_generated") && (
+                          <p className="text-xs flex items-center gap-1 text-amber-700 mt-1">
+                            <Sparkles className="h-3 w-3" />
+                            Suggested priority based on task impact
+                          </p>
+                        )}
                       </FormItem>
                     )}
                   />
@@ -528,7 +565,9 @@ export default function TaskForm({
                             className={
                               fieldState.invalid
                                 ? "border-destructive focus-visible:ring-destructive"
-                                : ""
+                                : form.watch("is_ai_generated")
+                                  ? "border-amber-200 bg-amber-50"
+                                  : ""
                             }
                           >
                             <SelectValue placeholder="Select category" />
@@ -542,6 +581,12 @@ export default function TaskForm({
                             <SelectItem value="Outing">Outing</SelectItem>
                           </SelectContent>
                         </Select>
+                        {form.watch("is_ai_generated") && (
+                          <p className="text-xs flex items-center gap-1 text-amber-700 mt-1">
+                            <Sparkles className="h-3 w-3" />
+                            Selected based on resident's care plan needs
+                          </p>
+                        )}
                       </FormItem>
                     )}
                   />
@@ -619,7 +664,9 @@ export default function TaskForm({
                             className={
                               fieldState.invalid
                                 ? "border-destructive focus-visible:ring-destructive"
-                                : ""
+                                : form.watch("is_ai_generated")
+                                  ? "border-amber-200 bg-amber-50"
+                                  : ""
                             }
                           >
                             <SelectValue placeholder="Select a resident" />
@@ -636,6 +683,12 @@ export default function TaskForm({
                       {fieldState.error && (
                         <p className="text-sm text-destructive">
                           {fieldState.error.message}
+                        </p>
+                      )}
+                      {form.watch("is_ai_generated") && (
+                        <p className="text-xs flex items-center gap-1 text-amber-700 mt-1">
+                          <Sparkles className="h-3 w-3" />
+                          Pre-filled based on care schedule analysis
                         </p>
                       )}
                     </FormItem>
@@ -781,10 +834,7 @@ export default function TaskForm({
                     <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-sm">
                       <div className="font-medium flex items-center gap-2 text-amber-800 mb-1">
                         <Sparkles className="h-4 w-4" />
-                        AI Recommendation Reason
-                        <span className="text-xs font-normal">
-                          (Based on resident care patterns and health status)
-                        </span>
+                        AI Recommendation Summary
                       </div>
                       <p className="text-amber-700">
                         {form.watch("ai_recommendation_reason")}

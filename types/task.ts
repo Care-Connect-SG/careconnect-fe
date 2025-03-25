@@ -41,6 +41,9 @@ export interface TaskUpdate {
   end_recurring_date?: string;
   remind_prior?: number;
   is_ai_generated?: boolean;
+  is_urgent?: boolean;
+  needs_attention?: boolean;
+  ai_recommendation_reason?: string;
   assigned_to?: string;
   update_series?: boolean;
 }
@@ -61,6 +64,9 @@ export interface Task {
   remind_prior?: number;
   finished_at?: Date;
   is_ai_generated: boolean;
+  is_urgent?: boolean;
+  needs_attention?: boolean;
+  ai_recommendation_reason?: string;
   created_at: Date;
   assigned_to: string;
   assigned_to_name: string;

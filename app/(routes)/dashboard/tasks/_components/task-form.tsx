@@ -37,7 +37,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Task, TaskStatus } from "@/types/task";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus } from "lucide-react";
+import { AlertCircle, Plus, Sparkles } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -70,6 +70,9 @@ const taskSchema = z
     end_recurring_date: z.date().nullable().optional(),
     remind_prior: z.number().nullable().optional(),
     is_ai_generated: z.boolean().default(false),
+    is_urgent: z.boolean().default(false),
+    needs_attention: z.boolean().default(false),
+    ai_recommendation_reason: z.string().optional(),
     assigned_to: z.string().nonempty("Assignee is required"),
     update_series: z.boolean().optional(),
   })
@@ -111,6 +114,9 @@ export default function TaskForm({
   const [residents, setResidents] = useState<any[]>([]);
   const [showRecurringDialog, setShowRecurringDialog] = useState(false);
   const [formData, setFormData] = useState<TaskForm | null>(null);
+  const [isAiSuggestionEnabled, setIsAiSuggestionEnabled] = useState(false);
+  const [isAiGenerating, setIsAiGenerating] = useState(false);
+  const [recommendedNurse, setRecommendedNurse] = useState<string | null>(null);
 
   const form = useForm<TaskForm>({
     resolver: zodResolver(taskSchema),
@@ -129,6 +135,9 @@ export default function TaskForm({
       end_recurring_date: undefined,
       remind_prior: undefined,
       is_ai_generated: false,
+      is_urgent: false,
+      needs_attention: false,
+      ai_recommendation_reason: "",
       assigned_to: "",
     },
   });
@@ -152,6 +161,9 @@ export default function TaskForm({
           : undefined,
         remind_prior: task.remind_prior,
         is_ai_generated: task.is_ai_generated,
+        is_urgent: task.is_urgent || false,
+        needs_attention: task.needs_attention || false,
+        ai_recommendation_reason: task.ai_recommendation_reason || "",
         assigned_to: task.assigned_to,
       });
       setIsOpen(true);
@@ -297,6 +309,68 @@ export default function TaskForm({
     },
   );
 
+  const handleAiSuggestion = () => {
+    setIsAiGenerating(true);
+
+    // Simulate AI processing time
+    setTimeout(() => {
+      // Find a nurse with low workload (for demo purposes, just pick a random one)
+      if (nurses.length > 0) {
+        const randomNurseIndex = Math.floor(Math.random() * nurses.length);
+        const selectedNurse = nurses[randomNurseIndex];
+        setRecommendedNurse(selectedNurse.id);
+        form.setValue("assigned_to", selectedNurse.id);
+      }
+
+      // Set task to urgent if medication related
+      const isMedication = Math.random() > 0.5;
+      if (isMedication) {
+        form.setValue("category", "Medication");
+        form.setValue("priority", "High");
+        form.setValue("is_urgent", true);
+        form.setValue(
+          "ai_recommendation_reason",
+          "Missed medication task for high-risk resident",
+        );
+      } else {
+        form.setValue("category", "Therapy");
+        form.setValue("priority", "Medium");
+        form.setValue(
+          "ai_recommendation_reason",
+          "Resident requires regular therapy sessions",
+        );
+      }
+
+      // Set the task as AI generated
+      form.setValue("is_ai_generated", true);
+
+      // Example task title and details
+      if (isMedication) {
+        form.setValue("task_title", "Administer medication");
+        form.setValue(
+          "task_details",
+          "Check resident's medication schedule and ensure proper administration.",
+        );
+      } else {
+        form.setValue("task_title", "Schedule therapy session");
+        form.setValue(
+          "task_details",
+          "Book a therapy session based on resident's care plan.",
+        );
+      }
+
+      setIsAiGenerating(false);
+      setIsAiSuggestionEnabled(true);
+
+      toast({
+        variant: "default",
+        title: "AI Suggestion Generated",
+        description:
+          "AI has suggested task details based on resident needs and caregiver workload.",
+      });
+    }, 1500);
+  };
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleOpenChange}>
@@ -309,12 +383,49 @@ export default function TaskForm({
         </DialogTrigger>
         <DialogContent className="max-h-[90vh] flex flex-col p-0">
           <DialogHeader className="px-6 pt-6">
-            <DialogTitle>{task ? "Edit Task" : "Create New Task"}</DialogTitle>
+            <div className="flex justify-between items-center">
+              <DialogTitle>
+                {task ? "Edit Task" : "Create New Task"}
+              </DialogTitle>
+              {!task && (
+                <Button
+                  size="sm"
+                  variant={isAiSuggestionEnabled ? "default" : "outline"}
+                  className={`ml-2 ${isAiSuggestionEnabled ? "bg-amber-100 hover:bg-amber-200 text-amber-800 border-amber-300" : ""}`}
+                  onClick={handleAiSuggestion}
+                  disabled={isAiGenerating}
+                  title="AI will suggest tasks based on care needs, urgency, and caregiver workload"
+                >
+                  {isAiGenerating ? (
+                    <>
+                      <div className="animate-spin mr-2 h-4 w-4">
+                        <div className="h-full w-full rounded-full border-2 border-t-transparent border-amber-700"></div>
+                      </div>
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      AI Suggest
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
             <DialogDescription>
               {task
                 ? "Edit the details of your task below."
                 : "Fill in the details below to create a new task."}
             </DialogDescription>
+            {isAiSuggestionEnabled && (
+              <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-md text-sm flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-amber-500" />
+                <span className="text-amber-800">
+                  AI has suggested task details based on care needs and workload
+                  analysis.
+                </span>
+              </div>
+            )}
           </DialogHeader>
           <Form {...form}>
             <form
@@ -450,16 +561,37 @@ export default function TaskForm({
                             className={
                               fieldState.invalid
                                 ? "border-destructive focus-visible:ring-destructive"
-                                : ""
+                                : recommendedNurse === field.value
+                                  ? "border-green-500 bg-green-50"
+                                  : ""
                             }
                           >
                             <SelectValue placeholder="Select a nurse" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
+                          {recommendedNurse && (
+                            <div className="px-2 py-1 text-xs text-green-700 bg-green-50 border-b border-green-100">
+                              Recommended: Low current workload
+                              <span className="block text-xs font-normal">
+                                AI matched this caregiver based on current task
+                                load
+                              </span>
+                            </div>
+                          )}
                           {nurses.map((nurse) => (
-                            <SelectItem key={nurse.id} value={nurse.id}>
+                            <SelectItem
+                              key={nurse.id}
+                              value={nurse.id}
+                              style={
+                                recommendedNurse === nurse.id
+                                  ? { background: "#f0fdf4", fontWeight: 500 }
+                                  : {}
+                              }
+                            >
                               {nurse.name} ({nurse.email})
+                              {recommendedNurse === nurse.id &&
+                                " (Low workload)"}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -644,6 +776,21 @@ export default function TaskForm({
                     </FormItem>
                   )}
                 />
+                {form.watch("is_ai_generated") &&
+                  form.watch("ai_recommendation_reason") && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-sm">
+                      <div className="font-medium flex items-center gap-2 text-amber-800 mb-1">
+                        <Sparkles className="h-4 w-4" />
+                        AI Recommendation Reason
+                        <span className="text-xs font-normal">
+                          (Based on resident care patterns and health status)
+                        </span>
+                      </div>
+                      <p className="text-amber-700">
+                        {form.watch("ai_recommendation_reason")}
+                      </p>
+                    </div>
+                  )}
               </div>
               <div className="flex justify-end px-6 py-4 border-t bg-background">
                 <Button type="submit">

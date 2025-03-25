@@ -39,6 +39,7 @@ import { useToast } from "@/hooks/use-toast";
 import { toTitleCase } from "@/lib/utils";
 import { Task, TaskStatus } from "@/types/task";
 import {
+  AlertCircle,
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
@@ -48,6 +49,7 @@ import {
   Download,
   Edit,
   MoreHorizontal,
+  Sparkles,
   Trash,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -269,6 +271,27 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="mb-4 p-4 bg-gray-50 border-b border-gray-200">
+        <h3 className="text-sm font-medium text-gray-700 mb-2">
+          AI Features Guide:
+        </h3>
+        <div className="flex flex-wrap gap-4 text-xs">
+          <div className="flex items-center">
+            <span className="inline-flex items-center px-2 py-0.5 rounded font-medium bg-amber-100 text-amber-800 mr-2">
+              <Sparkles className="w-3 h-3 mr-1" />
+              AI
+            </span>
+            <span>AI-suggested task based on care patterns</span>
+          </div>
+          <div className="flex items-center">
+            <span className="inline-flex items-center px-2 py-0.5 rounded font-medium bg-red-100 text-red-800 mr-2">
+              <AlertCircle className="w-3 h-3 mr-1" />
+              Urgent
+            </span>
+            <span>High-priority task requiring immediate attention</span>
+          </div>
+        </div>
+      </div>
       <div className="overflow-x-auto">
         <Table className="w-full">
           <TableHeader className="bg-gray-50">
@@ -345,7 +368,9 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
             {taskList.map((task) => (
               <TableRow
                 key={task.id}
-                className="hover:bg-muted hover:duration-300 ease-in-out"
+                className={`hover:bg-muted hover:duration-300 ease-in-out ${
+                  task.is_urgent ? "bg-red-50" : ""
+                }`}
               >
                 <TableCell className="px-6 py-4">
                   <AlertDialog>
@@ -394,7 +419,26 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                   className="px-6 py-4 font-medium text-gray-900"
                   onClick={() => router.push(`/dashboard/tasks/${task.id}`)}
                 >
-                  {task.task_title}
+                  <div className="flex items-center">
+                    {task.task_title}
+                    {task.is_ai_generated && (
+                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                        <Sparkles className="w-3 h-3 mr-1" />
+                        AI
+                      </span>
+                    )}
+                    {task.is_urgent && (
+                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                        <AlertCircle className="w-3 h-3 mr-1" />
+                        Urgent
+                      </span>
+                    )}
+                  </div>
+                  {task.ai_recommendation_reason && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      {task.ai_recommendation_reason}
+                    </p>
+                  )}
                 </TableCell>
                 <TableCell
                   className="px-6 py-4 text-gray-900"

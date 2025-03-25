@@ -46,7 +46,7 @@ const ResidentDetailsNotesCard: React.FC<ResidentDetailsNotesCardProps> = ({
         {isEditing ? (
           <Button
             onClick={handleSaveNote}
-            className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+            className="flex items-center gap-1 text-blue-500 hover:text-blue-700 bg-transparent hover:bg-transparent"
           >
             <Check className="h-4 w-4" />
             <span>Save</span>
@@ -54,7 +54,7 @@ const ResidentDetailsNotesCard: React.FC<ResidentDetailsNotesCardProps> = ({
         ) : (
           <Button
             onClick={handleAddNote}
-            className="flex items-center gap-1 text-blue-500 hover:text-blue-700"
+            className="flex items-center gap-1 text-blue-500 hover:text-blue-700 bg-transparent hover:bg-transparent"
           >
             <PlusCircle className="h-4 w-4" />
             <span>Add</span>

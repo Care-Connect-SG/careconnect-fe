@@ -213,7 +213,7 @@ export default function ResidentDashboard() {
             <Button
               key={tab.value}
               onClick={() => setActiveTab(tab.value)}
-              className={`py-2 px-1 text-sm font-medium ${
+              className={`py-2 px-1 text-sm font-medium bg-transparent hover:bg-transparent ${
                 activeTab === tab.value
                   ? "text-blue-600 border-b-2 border-blue-600"
                   : "text-gray-500"

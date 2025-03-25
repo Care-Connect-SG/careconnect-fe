@@ -20,8 +20,8 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { User } from "@/types/user";
-import React, { useState, useEffect, useCallback } from "react";
 import { Paperclip } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
 import { FileRejection, useDropzone } from "react-dropzone";
 
 interface CreateResidentDialogProps {
@@ -76,7 +76,7 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
         setSelectedImage(acceptedFiles[0]);
       }
     },
-    []
+    [],
   );
 
   // Max file size: 5MB
@@ -114,22 +114,24 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
             className="absolute right-4 top-4"
           ></DialogClose>
         </DialogHeader>
-        
-        {/* Profile Picture Upload Area */}
+
+        {/* ID Document Scan for OCR */}
         <div className="mb-6">
-          <Label htmlFor="profilePicture" className="block mb-2">Profile Picture</Label>
+          <Label htmlFor="documentScan" className="block mb-2">
+            ID Document Scan
+          </Label>
           <div className="cursor-pointer text-sm">
-            <Input {...getInputProps()} id="profilePicture" />
+            <Input {...getInputProps()} id="documentScan" />
             <div
               className={`flex items-center justify-center py-6 px-4 border-2 border-dotted rounded-md transition-all duration-300 ease-in-out bg-gray-50
-                ${isDragActive ? 'border-gray-400 bg-blue-100' : 'border-gray-400 bg-transparent cursor-pointer hover:border-gray-500'}`}
+                ${isDragActive ? "border-gray-400 bg-blue-100" : "border-gray-400 bg-transparent cursor-pointer hover:border-gray-500"}`}
               {...getRootProps()}
             >
               <Paperclip className="mr-2 h-4 w-4 text-gray-600" />
               <p className="text-sm font-semibold text-gray-600">
                 {selectedImage
                   ? `Selected: ${selectedImage.name}`
-                  : "Drag and drop file here, or click to select a file"}
+                  : "Drag and drop ID document here, or click to select a file"}
               </p>
             </div>
             {selectedImage && (
@@ -139,7 +141,7 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
             )}
           </div>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>

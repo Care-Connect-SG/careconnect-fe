@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { DateTimePicker } from "@/components/ui/datetime-picker";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -400,30 +401,33 @@ export default function TaskForm({
               <DialogTitle>
                 {task ? "Edit Task" : "Create New Task"}
               </DialogTitle>
-              {!task && (
-                <Button
-                  size="sm"
-                  variant={isAiSuggestionEnabled ? "default" : "outline"}
-                  className={`ml-2 ${isAiSuggestionEnabled ? "bg-amber-100 hover:bg-amber-200 text-amber-800 border-amber-300" : ""}`}
-                  onClick={handleAiSuggestion}
-                  disabled={isAiGenerating}
-                  title="AI will suggest tasks based on care needs, urgency, and caregiver workload"
-                >
-                  {isAiGenerating ? (
-                    <>
-                      <div className="animate-spin mr-2 h-4 w-4">
-                        <div className="h-full w-full rounded-full border-2 border-t-transparent border-amber-700"></div>
-                      </div>
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      AI Suggest
-                    </>
-                  )}
-                </Button>
-              )}
+              <div className="flex items-center">
+                {!task && (
+                  <Button
+                    size="sm"
+                    variant={isAiSuggestionEnabled ? "default" : "outline"}
+                    className={`mr-8 ${isAiSuggestionEnabled ? "bg-amber-100 hover:bg-amber-200 text-amber-800 border-amber-300" : ""}`}
+                    onClick={handleAiSuggestion}
+                    disabled={isAiGenerating}
+                    title="AI will suggest tasks based on care needs, urgency, and caregiver workload"
+                  >
+                    {isAiGenerating ? (
+                      <>
+                        <div className="animate-spin mr-2 h-4 w-4">
+                          <div className="h-full w-full rounded-full border-2 border-t-transparent border-amber-700"></div>
+                        </div>
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        AI Suggest
+                      </>
+                    )}
+                  </Button>
+                )}
+                <DialogClose className="absolute right-4 top-4"></DialogClose>
+              </div>
             </div>
             <DialogDescription>
               {task
@@ -606,8 +610,9 @@ export default function TaskForm({
                             className={
                               fieldState.invalid
                                 ? "border-destructive focus-visible:ring-destructive"
-                                : recommendedNurse === field.value
-                                  ? "border-green-500 bg-green-50"
+                                : form.watch("is_ai_generated") &&
+                                    recommendedNurse === field.value
+                                  ? "border-amber-200 bg-amber-50"
                                   : ""
                             }
                           >
@@ -615,15 +620,6 @@ export default function TaskForm({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {recommendedNurse && (
-                            <div className="px-2 py-1 text-xs text-green-700 bg-green-50 border-b border-green-100">
-                              Recommended: Low current workload
-                              <span className="block text-xs font-normal">
-                                AI matched this caregiver based on current task
-                                load
-                              </span>
-                            </div>
-                          )}
                           {nurses.map((nurse) => (
                             <SelectItem
                               key={nurse.id}
@@ -646,6 +642,13 @@ export default function TaskForm({
                           {fieldState.error.message}
                         </p>
                       )}
+                      {form.watch("is_ai_generated") &&
+                        recommendedNurse === field.value && (
+                          <p className="text-xs flex items-center gap-1 text-amber-700 mt-1">
+                            <Sparkles className="h-3 w-3" />
+                            Recommended based on current workload analysis
+                          </p>
+                        )}
                     </FormItem>
                   )}
                 />

@@ -4,7 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ResidentRecord } from "@/types/resident";
 import { User } from "@/types/user";
-import { ChevronLeft, ChevronRight, MoreHorizontal, Search } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  MoreHorizontal,
+  Search,
+} from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import {
@@ -27,7 +32,7 @@ export default function AllResidentsPage() {
   const searchParams = useSearchParams();
   const pageParam = searchParams.get("page");
   const currentPage = pageParam ? parseInt(pageParam, 10) : 1;
-  const LIMIT = 8; // Assuming your backend limit is 8
+  const LIMIT = 8;
   const [totalPages, setTotalPages] = useState(1);
 
   const fetchResidents = () => {
@@ -36,9 +41,7 @@ export default function AllResidentsPage() {
         setResidents(data);
         const hasMore = data.length === LIMIT;
         setHasNextPage(hasMore);
-        // If we have more pages, we're at least on page 2
-        // If we're on page 2 and have no more pages, total is 2
-        // If we're on page 1 and have no more pages, total is 1
+
         setTotalPages(hasMore ? currentPage + 1 : currentPage);
       })
       .catch((error) => {
@@ -133,7 +136,6 @@ export default function AllResidentsPage() {
     const maxVisiblePages = 5;
 
     if (totalPages <= maxVisiblePages) {
-      // Show all pages if total is less than max visible
       for (let i = 1; i <= totalPages; i++) {
         pages.push(
           <Button
@@ -144,11 +146,10 @@ export default function AllResidentsPage() {
             className="w-8"
           >
             {i}
-          </Button>
+          </Button>,
         );
       }
     } else {
-      // Always show first page
       pages.push(
         <Button
           key={1}
@@ -158,20 +159,22 @@ export default function AllResidentsPage() {
           className="w-8"
         >
           1
-        </Button>
+        </Button>,
       );
 
-      // Show ellipsis and pages around current page
       if (currentPage > 3) {
         pages.push(
           <span key="start-ellipsis" className="px-2">
             <MoreHorizontal className="h-4 w-4" />
-          </span>
+          </span>,
         );
       }
 
-      // Show pages around current page
-      for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+      for (
+        let i = Math.max(2, currentPage - 1);
+        i <= Math.min(totalPages - 1, currentPage + 1);
+        i++
+      ) {
         pages.push(
           <Button
             key={i}
@@ -181,20 +184,18 @@ export default function AllResidentsPage() {
             className="w-8"
           >
             {i}
-          </Button>
+          </Button>,
         );
       }
 
-      // Show ellipsis and last page
       if (currentPage < totalPages - 2) {
         pages.push(
           <span key="end-ellipsis" className="px-2">
             <MoreHorizontal className="h-4 w-4" />
-          </span>
+          </span>,
         );
       }
 
-      // Always show last page
       pages.push(
         <Button
           key={totalPages}
@@ -204,7 +205,7 @@ export default function AllResidentsPage() {
           className="w-8"
         >
           {totalPages}
-        </Button>
+        </Button>,
       );
     }
 
@@ -286,4 +287,3 @@ export default function AllResidentsPage() {
     </div>
   );
 }
-

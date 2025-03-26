@@ -1,4 +1,4 @@
-export enum MedicalRecordType {
+export enum MedicalHistoryType {
   CONDITION = "condition",
   ALLERGY = "allergy",
   CHRONIC_ILLNESS = "chronic",
@@ -70,18 +70,18 @@ export interface ImmunizationRecord {
   updated_at?: string;
 }
 
-export type MedicalRecord =
+export type MedicalHistory =
   | ConditionRecord
   | AllergyRecord
   | ChronicIllnessRecord
   | SurgicalHistoryRecord
   | ImmunizationRecord;
 
-export function inferTemplateType(record: MedicalRecord): MedicalRecordType {
-  if ("condition_name" in record) return MedicalRecordType.CONDITION;
-  if ("allergen" in record) return MedicalRecordType.ALLERGY;
-  if ("illness_name" in record) return MedicalRecordType.CHRONIC_ILLNESS;
-  if ("procedure" in record) return MedicalRecordType.SURGICAL;
-  if ("vaccine" in record) return MedicalRecordType.IMMUNIZATION;
+export function inferTemplateType(record: MedicalHistory): MedicalHistoryType {
+  if ("condition_name" in record) return MedicalHistoryType.CONDITION;
+  if ("allergen" in record) return MedicalHistoryType.ALLERGY;
+  if ("illness_name" in record) return MedicalHistoryType.CHRONIC_ILLNESS;
+  if ("procedure" in record) return MedicalHistoryType.SURGICAL;
+  if ("vaccine" in record) return MedicalHistoryType.IMMUNIZATION;
   throw new Error("Unknown medical record type");
 }

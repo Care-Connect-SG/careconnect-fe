@@ -1,6 +1,6 @@
 "use client";
 
-import { createMedicalRecord } from "@/app/api/medical-record";
+import { createMedicalHistory } from "@/app/api/medical-history";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { MedicalRecordType } from "@/types/medical-record";
+import { MedicalHistoryType } from "@/types/medical-history";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { format, isValid } from "date-fns";
@@ -44,7 +44,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 const templateConfig = {
-  [MedicalRecordType.CONDITION]: {
+  [MedicalHistoryType.CONDITION]: {
     label: "Condition",
     schema: z.object({
       condition_name: z.string().min(1, "Condition name is required"),
@@ -57,45 +57,67 @@ const templateConfig = {
       { name: "condition_name", label: "Condition Name", type: "text" },
       { name: "date_of_diagnosis", label: "Date of Diagnosis", type: "date" },
       { name: "treating_physician", label: "Treating Physician", type: "text" },
-      { name: "treatment_details", label: "Treatment Details", type: "textarea" },
+      {
+        name: "treatment_details",
+        label: "Treatment Details",
+        type: "textarea",
+      },
       { name: "current_status", label: "Current Status", type: "text" },
     ],
   },
-  [MedicalRecordType.ALLERGY]: {
+  [MedicalHistoryType.ALLERGY]: {
     label: "Allergy",
     schema: z.object({
       allergen: z.string().min(1, "Allergen is required"),
-      reaction_description: z.string().min(1, "Reaction description is required"),
+      reaction_description: z
+        .string()
+        .min(1, "Reaction description is required"),
       date_first_noted: z.string().min(1, "Date first noted is required"),
       severity: z.string().min(1, "Severity is required"),
       management_notes: z.string().optional(),
     }),
     fields: [
       { name: "allergen", label: "Allergen", type: "text" },
-      { name: "reaction_description", label: "Reaction Description", type: "text" },
+      {
+        name: "reaction_description",
+        label: "Reaction Description",
+        type: "text",
+      },
       { name: "date_first_noted", label: "Date First Noted", type: "date" },
       { name: "severity", label: "Severity", type: "text" },
       { name: "management_notes", label: "Management Notes", type: "textarea" },
     ],
   },
-  [MedicalRecordType.CHRONIC_ILLNESS]: {
+  [MedicalHistoryType.CHRONIC_ILLNESS]: {
     label: "Chronic Illness",
     schema: z.object({
       illness_name: z.string().min(1, "Illness name is required"),
       date_of_onset: z.string().min(1, "Date of onset is required"),
       managing_physician: z.string().min(1, "Managing physician is required"),
-      current_treatment_plan: z.string().min(1, "Current treatment plan is required"),
-      monitoring_parameters: z.string().min(1, "Monitoring parameters are required"),
+      current_treatment_plan: z
+        .string()
+        .min(1, "Current treatment plan is required"),
+      monitoring_parameters: z
+        .string()
+        .min(1, "Monitoring parameters are required"),
     }),
     fields: [
       { name: "illness_name", label: "Illness Name", type: "text" },
       { name: "date_of_onset", label: "Date of Onset", type: "date" },
       { name: "managing_physician", label: "Managing Physician", type: "text" },
-      { name: "current_treatment_plan", label: "Current Treatment Plan", type: "textarea" },
-      { name: "monitoring_parameters", label: "Monitoring Parameters", type: "text" },
+      {
+        name: "current_treatment_plan",
+        label: "Current Treatment Plan",
+        type: "textarea",
+      },
+      {
+        name: "monitoring_parameters",
+        label: "Monitoring Parameters",
+        type: "text",
+      },
     ],
   },
-  [MedicalRecordType.SURGICAL]: {
+  [MedicalHistoryType.SURGICAL]: {
     label: "Surgical History",
     schema: z.object({
       procedure: z.string().min(1, "Procedure is required"),
@@ -112,25 +134,36 @@ const templateConfig = {
       { name: "complications", label: "Complications", type: "textarea" },
     ],
   },
-  [MedicalRecordType.IMMUNIZATION]: {
+  [MedicalHistoryType.IMMUNIZATION]: {
     label: "Immunization",
     schema: z.object({
       vaccine: z.string().min(1, "Vaccine is required"),
       date_administered: z.string().min(1, "Date administered is required"),
-      administering_facility: z.string().min(1, "Administering facility is required"),
+      administering_facility: z
+        .string()
+        .min(1, "Administering facility is required"),
       next_due_date: z.string().optional(),
     }),
     fields: [
       { name: "vaccine", label: "Vaccine", type: "text" },
       { name: "date_administered", label: "Date Administered", type: "date" },
-      { name: "administering_facility", label: "Administering Facility", type: "text" },
-      { name: "next_due_date", label: "Next Due Date (Optional)", type: "date", required: false },
+      {
+        name: "administering_facility",
+        label: "Administering Facility",
+        type: "text",
+      },
+      {
+        name: "next_due_date",
+        label: "Next Due Date (Optional)",
+        type: "date",
+        required: false,
+      },
     ],
   },
 };
 
 const formSchema = z.object({
-  templateType: z.nativeEnum(MedicalRecordType),
+  templateType: z.nativeEnum(MedicalHistoryType),
   formData: z.record(z.string().optional()),
 });
 
@@ -164,7 +197,7 @@ const CreateMedicalHistoryDialog: React.FC<{
   const { residentProfile } = useParams() as { residentProfile: string };
   const { toast } = useToast();
 
-  const getDefaultFormData = (templateType: MedicalRecordType) => {
+  const getDefaultFormData = (templateType: MedicalHistoryType) => {
     const template = templateConfig[templateType];
     const defaultData: Record<string, string> = {};
     template.fields.forEach((field) => {
@@ -176,7 +209,7 @@ const CreateMedicalHistoryDialog: React.FC<{
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      templateType: MedicalRecordType.CONDITION,
+      templateType: MedicalHistoryType.CONDITION,
       formData: {},
     },
   });
@@ -193,7 +226,7 @@ const CreateMedicalHistoryDialog: React.FC<{
   useEffect(() => {
     if (!isOpen) {
       form.reset({
-        templateType: MedicalRecordType.CONDITION,
+        templateType: MedicalHistoryType.CONDITION,
         formData: {},
       });
     }
@@ -213,10 +246,10 @@ const CreateMedicalHistoryDialog: React.FC<{
       const currentSchema = currentTemplate.schema;
       const validatedData = currentSchema.parse(data.formData);
 
-      await createMedicalRecord(
+      await createMedicalHistory(
         data.templateType,
         residentProfile,
-        validatedData
+        validatedData,
       );
 
       toast({
@@ -299,22 +332,29 @@ const CreateMedicalHistoryDialog: React.FC<{
                                   type="button"
                                 >
                                   <CalendarIcon className="mr-2 h-4 w-4" />
-                                  {formField.value && isValidDate(formField.value)
+                                  {formField.value &&
+                                  isValidDate(formField.value)
                                     ? formatDate(formField.value)
                                     : `Select ${field.label}`}
                                 </Button>
                               </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
+                              <PopoverContent
+                                className="w-auto p-0"
+                                align="start"
+                              >
                                 <Calendar
                                   mode="single"
                                   selected={
-                                    formField.value && isValidDate(formField.value)
+                                    formField.value &&
+                                    isValidDate(formField.value)
                                       ? new Date(formField.value)
                                       : undefined
                                   }
                                   onSelect={(date) => {
                                     formField.onChange(
-                                      date ? date.toISOString().split("T")[0] : ""
+                                      date
+                                        ? date.toISOString().split("T")[0]
+                                        : "",
                                     );
                                   }}
                                   initialFocus

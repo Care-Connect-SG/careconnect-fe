@@ -1,24 +1,27 @@
 "use client";
 
-import { format } from "date-fns";
-import { MedicalRecordType, MedicalRecord as BackendMedicalRecord, inferTemplateType } from "@/types/medical-record";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { deleteMedicalHistory } from "@/app/api/medical-history";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2 } from "lucide-react";
-import EditMedicalRecordDialog from "./edit-medical-record-dialog";
-import { useState } from "react";
-import { deleteMedicalRecord } from "@/app/api/medical-record";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import {
+  MedicalHistory as BackendMedicalHistory,
+  MedicalHistoryType,
+  inferTemplateType,
+} from "@/types/medical-history";
+import { format } from "date-fns";
+import { Pencil, Trash2 } from "lucide-react";
 import { useParams } from "next/navigation";
+import { useState } from "react";
+import EditMedicalHistoryDialog from "./edit-medical-history-dialog";
 
-interface MedicalRecordCardProps {
-  record: BackendMedicalRecord;
+interface MedicalHistoryCardProps {
+  record: BackendMedicalHistory;
   onRecordUpdated?: () => void;
-  onEdit: (record: BackendMedicalRecord) => void;
+  onEdit: (record: BackendMedicalHistory) => void;
 }
 
-const MedicalRecordCard: React.FC<MedicalRecordCardProps> = ({
+const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({
   record,
   onRecordUpdated,
   onEdit,
@@ -29,11 +32,11 @@ const MedicalRecordCard: React.FC<MedicalRecordCardProps> = ({
 
   const handleDelete = async () => {
     try {
-      const recordType = inferTemplateType(record) as MedicalRecordType;
-      await deleteMedicalRecord(
-        (record._id || record.id || "") as string,
+      const recordType = inferTemplateType(record) as MedicalHistoryType;
+      await deleteMedicalHistory(
+        (record.id || "") as string,
         recordType,
-        residentProfile
+        residentProfile,
       );
       toast({
         variant: "default",
@@ -62,36 +65,54 @@ const MedicalRecordCard: React.FC<MedicalRecordCardProps> = ({
   const renderRecordDetails = () => {
     const recordType = inferTemplateType(record);
     switch (recordType) {
-      case MedicalRecordType.CONDITION:
+      case MedicalHistoryType.CONDITION:
         const conditionRecord = record as any;
         return (
           <>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm font-medium text-gray-500">Condition</p>
-                <p className="text-sm">{conditionRecord.condition_name || "N/A"}</p>
+                <p className="text-sm">
+                  {conditionRecord.condition_name || "N/A"}
+                </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Diagnosis Date</p>
-                <p className="text-sm">{formatDate(conditionRecord.date_of_diagnosis)}</p>
+                <p className="text-sm font-medium text-gray-500">
+                  Diagnosis Date
+                </p>
+                <p className="text-sm">
+                  {formatDate(conditionRecord.date_of_diagnosis)}
+                </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Treating Physician</p>
-                <p className="text-sm">{conditionRecord.treating_physician || "N/A"}</p>
+                <p className="text-sm font-medium text-gray-500">
+                  Treating Physician
+                </p>
+                <p className="text-sm">
+                  {conditionRecord.treating_physician || "N/A"}
+                </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Current Status</p>
-                <p className="text-sm">{conditionRecord.current_status || "N/A"}</p>
+                <p className="text-sm font-medium text-gray-500">
+                  Current Status
+                </p>
+                <p className="text-sm">
+                  {conditionRecord.current_status || "N/A"}
+                </p>
               </div>
             </div>
             <div className="mt-4">
-              <p className="text-sm font-medium text-gray-500">Treatment Details</p>
-              <p className="text-sm">{conditionRecord.treatment_details || "N/A"}</p>
+              <p className="text-sm font-medium text-gray-500">
+                Treatment Details
+              </p>
+              <p className="text-sm">
+                {conditionRecord.treatment_details || "N/A"}
+              </p>
             </div>
           </>
         );
 
-      case MedicalRecordType.ALLERGY:
+      case MedicalHistoryType.ALLERGY:
         const allergyRecord = record as any;
         return (
           <>
@@ -106,19 +127,23 @@ const MedicalRecordCard: React.FC<MedicalRecordCardProps> = ({
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">First Noted</p>
-                <p className="text-sm">{formatDate(allergyRecord.date_first_noted)}</p>
+                <p className="text-sm">
+                  {formatDate(allergyRecord.date_first_noted)}
+                </p>
               </div>
             </div>
             {allergyRecord.management_notes && (
               <div className="mt-4">
-                <p className="text-sm font-medium text-gray-500">Management Notes</p>
+                <p className="text-sm font-medium text-gray-500">
+                  Management Notes
+                </p>
                 <p className="text-sm">{allergyRecord.management_notes}</p>
               </div>
             )}
           </>
         );
 
-      case MedicalRecordType.CHRONIC_ILLNESS:
+      case MedicalHistoryType.CHRONIC_ILLNESS:
         const chronicRecord = record as any;
         return (
           <>
@@ -129,25 +154,39 @@ const MedicalRecordCard: React.FC<MedicalRecordCardProps> = ({
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Onset Date</p>
-                <p className="text-sm">{formatDate(chronicRecord.date_of_onset)}</p>
+                <p className="text-sm">
+                  {formatDate(chronicRecord.date_of_onset)}
+                </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Managing Physician</p>
-                <p className="text-sm">{chronicRecord.managing_physician || "N/A"}</p>
+                <p className="text-sm font-medium text-gray-500">
+                  Managing Physician
+                </p>
+                <p className="text-sm">
+                  {chronicRecord.managing_physician || "N/A"}
+                </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Monitoring Parameters</p>
-                <p className="text-sm">{chronicRecord.monitoring_parameters || "N/A"}</p>
+                <p className="text-sm font-medium text-gray-500">
+                  Monitoring Parameters
+                </p>
+                <p className="text-sm">
+                  {chronicRecord.monitoring_parameters || "N/A"}
+                </p>
               </div>
             </div>
             <div className="mt-4">
-              <p className="text-sm font-medium text-gray-500">Treatment Plan</p>
-              <p className="text-sm">{chronicRecord.current_treatment_plan || "N/A"}</p>
+              <p className="text-sm font-medium text-gray-500">
+                Treatment Plan
+              </p>
+              <p className="text-sm">
+                {chronicRecord.current_treatment_plan || "N/A"}
+              </p>
             </div>
           </>
         );
 
-      case MedicalRecordType.SURGICAL:
+      case MedicalHistoryType.SURGICAL:
         const surgicalRecord = record as any;
         return (
           <>
@@ -157,8 +196,12 @@ const MedicalRecordCard: React.FC<MedicalRecordCardProps> = ({
                 <p className="text-sm">{surgicalRecord.procedure || "N/A"}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Surgery Date</p>
-                <p className="text-sm">{formatDate(surgicalRecord.surgery_date)}</p>
+                <p className="text-sm font-medium text-gray-500">
+                  Surgery Date
+                </p>
+                <p className="text-sm">
+                  {formatDate(surgicalRecord.surgery_date)}
+                </p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Surgeon</p>
@@ -171,14 +214,16 @@ const MedicalRecordCard: React.FC<MedicalRecordCardProps> = ({
             </div>
             {surgicalRecord.complications && (
               <div className="mt-4">
-                <p className="text-sm font-medium text-gray-500">Complications</p>
+                <p className="text-sm font-medium text-gray-500">
+                  Complications
+                </p>
                 <p className="text-sm">{surgicalRecord.complications}</p>
               </div>
             )}
           </>
         );
 
-      case MedicalRecordType.IMMUNIZATION:
+      case MedicalHistoryType.IMMUNIZATION:
         const immunizationRecord = record as any;
         return (
           <>
@@ -188,17 +233,27 @@ const MedicalRecordCard: React.FC<MedicalRecordCardProps> = ({
                 <p className="text-sm">{immunizationRecord.vaccine || "N/A"}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Administered Date</p>
-                <p className="text-sm">{formatDate(immunizationRecord.date_administered)}</p>
+                <p className="text-sm font-medium text-gray-500">
+                  Administered Date
+                </p>
+                <p className="text-sm">
+                  {formatDate(immunizationRecord.date_administered)}
+                </p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Facility</p>
-                <p className="text-sm">{immunizationRecord.administering_facility || "N/A"}</p>
+                <p className="text-sm">
+                  {immunizationRecord.administering_facility || "N/A"}
+                </p>
               </div>
               {immunizationRecord.next_due_date && (
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Next Due Date</p>
-                  <p className="text-sm">{formatDate(immunizationRecord.next_due_date)}</p>
+                  <p className="text-sm font-medium text-gray-500">
+                    Next Due Date
+                  </p>
+                  <p className="text-sm">
+                    {formatDate(immunizationRecord.next_due_date)}
+                  </p>
                 </div>
               )}
             </div>
@@ -236,16 +291,19 @@ const MedicalRecordCard: React.FC<MedicalRecordCardProps> = ({
       </CardHeader>
       <CardContent>{renderRecordDetails()}</CardContent>
 
-      <EditMedicalRecordDialog
+      <EditMedicalHistoryDialog
         isOpen={isEditDialogOpen}
         onClose={() => setIsEditDialogOpen(false)}
-        templateType={inferTemplateType(record) as MedicalRecordType}
+        templateType={inferTemplateType(record) as MedicalHistoryType}
         residentId={residentProfile}
         initialData={record}
-        onSave={async (data) => { if (onRecordUpdated) onRecordUpdated(); return Promise.resolve(); }}
+        onSave={async (data) => {
+          if (onRecordUpdated) onRecordUpdated();
+          return Promise.resolve();
+        }}
       />
     </Card>
   );
 };
 
-export default MedicalRecordCard;
+export default MedicalHistoryCard;

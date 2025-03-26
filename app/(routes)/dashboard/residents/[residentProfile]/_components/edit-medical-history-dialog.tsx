@@ -1,24 +1,16 @@
 "use client";
 
-import { updateMedicalRecord } from "@/app/api/medical-record";
+import { updateMedicalHistory } from "@/app/api/medical-history";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -28,14 +20,12 @@ import {
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { MedicalRecordType, MedicalRecord } from "@/types/medical-record";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { MedicalHistory, MedicalHistoryType } from "@/types/medical-history";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { format, isValid } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 interface FieldConfig {
@@ -51,8 +41,8 @@ interface TemplateConfig {
   fields: FieldConfig[];
 }
 
-const templateConfig: Record<MedicalRecordType, TemplateConfig> = {
-  [MedicalRecordType.CONDITION]: {
+const templateConfig: Record<MedicalHistoryType, TemplateConfig> = {
+  [MedicalHistoryType.CONDITION]: {
     label: "Condition",
     schema: z.object({
       condition_name: z.string().min(1, "Condition name is required"),
@@ -65,45 +55,67 @@ const templateConfig: Record<MedicalRecordType, TemplateConfig> = {
       { name: "condition_name", label: "Condition Name", type: "text" },
       { name: "date_of_diagnosis", label: "Date of Diagnosis", type: "date" },
       { name: "treating_physician", label: "Treating Physician", type: "text" },
-      { name: "treatment_details", label: "Treatment Details", type: "textarea" },
+      {
+        name: "treatment_details",
+        label: "Treatment Details",
+        type: "textarea",
+      },
       { name: "current_status", label: "Current Status", type: "text" },
     ],
   },
-  [MedicalRecordType.ALLERGY]: {
+  [MedicalHistoryType.ALLERGY]: {
     label: "Allergy",
     schema: z.object({
       allergen: z.string().min(1, "Allergen is required"),
-      reaction_description: z.string().min(1, "Reaction description is required"),
+      reaction_description: z
+        .string()
+        .min(1, "Reaction description is required"),
       date_first_noted: z.string().min(1, "Date first noted is required"),
       severity: z.string().min(1, "Severity is required"),
       management_notes: z.string().optional(),
     }),
     fields: [
       { name: "allergen", label: "Allergen", type: "text" },
-      { name: "reaction_description", label: "Reaction Description", type: "text" },
+      {
+        name: "reaction_description",
+        label: "Reaction Description",
+        type: "text",
+      },
       { name: "date_first_noted", label: "Date First Noted", type: "date" },
       { name: "severity", label: "Severity", type: "text" },
       { name: "management_notes", label: "Management Notes", type: "textarea" },
     ],
   },
-  [MedicalRecordType.CHRONIC_ILLNESS]: {
+  [MedicalHistoryType.CHRONIC_ILLNESS]: {
     label: "Chronic Illness",
     schema: z.object({
       illness_name: z.string().min(1, "Illness name is required"),
       date_of_onset: z.string().min(1, "Date of onset is required"),
       managing_physician: z.string().min(1, "Managing physician is required"),
-      current_treatment_plan: z.string().min(1, "Current treatment plan is required"),
-      monitoring_parameters: z.string().min(1, "Monitoring parameters are required"),
+      current_treatment_plan: z
+        .string()
+        .min(1, "Current treatment plan is required"),
+      monitoring_parameters: z
+        .string()
+        .min(1, "Monitoring parameters are required"),
     }),
     fields: [
       { name: "illness_name", label: "Illness Name", type: "text" },
       { name: "date_of_onset", label: "Date of Onset", type: "date" },
       { name: "managing_physician", label: "Managing Physician", type: "text" },
-      { name: "current_treatment_plan", label: "Current Treatment Plan", type: "textarea" },
-      { name: "monitoring_parameters", label: "Monitoring Parameters", type: "text" },
+      {
+        name: "current_treatment_plan",
+        label: "Current Treatment Plan",
+        type: "textarea",
+      },
+      {
+        name: "monitoring_parameters",
+        label: "Monitoring Parameters",
+        type: "text",
+      },
     ],
   },
-  [MedicalRecordType.SURGICAL]: {
+  [MedicalHistoryType.SURGICAL]: {
     label: "Surgical History",
     schema: z.object({
       procedure: z.string().min(1, "Procedure is required"),
@@ -120,19 +132,30 @@ const templateConfig: Record<MedicalRecordType, TemplateConfig> = {
       { name: "complications", label: "Complications", type: "textarea" },
     ],
   },
-  [MedicalRecordType.IMMUNIZATION]: {
+  [MedicalHistoryType.IMMUNIZATION]: {
     label: "Immunization",
     schema: z.object({
       vaccine: z.string().min(1, "Vaccine is required"),
       date_administered: z.string().min(1, "Date administered is required"),
-      administering_facility: z.string().min(1, "Administering facility is required"),
+      administering_facility: z
+        .string()
+        .min(1, "Administering facility is required"),
       next_due_date: z.string().optional(),
     }),
     fields: [
       { name: "vaccine", label: "Vaccine", type: "text" },
       { name: "date_administered", label: "Date Administered", type: "date" },
-      { name: "administering_facility", label: "Administering Facility", type: "text" },
-      { name: "next_due_date", label: "Next Due Date (Optional)", type: "date", required: false },
+      {
+        name: "administering_facility",
+        label: "Administering Facility",
+        type: "text",
+      },
+      {
+        name: "next_due_date",
+        label: "Next Due Date (Optional)",
+        type: "date",
+        required: false,
+      },
     ],
   },
 };
@@ -143,16 +166,16 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-interface EditMedicalRecordDialogProps {
+interface EditMedicalHistoryDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  templateType: MedicalRecordType;
+  templateType: MedicalHistoryType;
   residentId: string;
-  initialData: MedicalRecord;
+  initialData: MedicalHistory;
   onSave: (updatedData: any) => Promise<void>;
 }
 
-const EditMedicalRecordDialog: React.FC<EditMedicalRecordDialogProps> = ({
+const EditMedicalHistoryDialog: React.FC<EditMedicalHistoryDialogProps> = ({
   isOpen,
   onClose,
   templateType,
@@ -165,25 +188,19 @@ const EditMedicalRecordDialog: React.FC<EditMedicalRecordDialogProps> = ({
 
   const currentTemplate = templateType ? templateConfig[templateType] : null;
 
-  // Create state variables for each field
   const [formValues, setFormValues] = useState<Record<string, string>>({});
 
-  // Initialize form values when dialog opens or initialData changes
   useEffect(() => {
     if (isOpen && initialData && currentTemplate) {
       const values: Record<string, string> = {};
       currentTemplate.fields.forEach((field: FieldConfig) => {
-        // Get the value from initialData
         const value = (initialData as any)[field.name];
-        // Set the value, using empty string as fallback
         values[field.name] = value ?? "";
       });
-      console.log('Setting form values:', values); // Debug log
       setFormValues(values);
     }
   }, [isOpen, initialData, currentTemplate]);
 
-  // Reset form when dialog closes
   useEffect(() => {
     if (!isOpen) {
       setFormValues({});
@@ -205,11 +222,11 @@ const EditMedicalRecordDialog: React.FC<EditMedicalRecordDialogProps> = ({
       const currentSchema = currentTemplate.schema;
       const validatedData = currentSchema.parse(formValues);
 
-      await updateMedicalRecord(
-        (initialData as any)._id || (initialData as any).id || "",
+      await updateMedicalHistory(
+        (initialData as any).id || "",
         templateType,
         residentProfile,
-        validatedData
+        validatedData,
       );
 
       toast({
@@ -268,7 +285,10 @@ const EditMedicalRecordDialog: React.FC<EditMedicalRecordDialogProps> = ({
                   id={field.name}
                   value={formValues[field.name] || ""}
                   onChange={(e) =>
-                    setFormValues({ ...formValues, [field.name]: e.target.value })
+                    setFormValues({
+                      ...formValues,
+                      [field.name]: e.target.value,
+                    })
                   }
                 />
               ) : field.type === "date" ? (
@@ -280,7 +300,8 @@ const EditMedicalRecordDialog: React.FC<EditMedicalRecordDialogProps> = ({
                       type="button"
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formValues[field.name] && isValidDate(formValues[field.name])
+                      {formValues[field.name] &&
+                      isValidDate(formValues[field.name])
                         ? formatDate(formValues[field.name])
                         : `Select ${field.label}`}
                     </Button>
@@ -289,14 +310,17 @@ const EditMedicalRecordDialog: React.FC<EditMedicalRecordDialogProps> = ({
                     <Calendar
                       mode="single"
                       selected={
-                        formValues[field.name] && isValidDate(formValues[field.name])
+                        formValues[field.name] &&
+                        isValidDate(formValues[field.name])
                           ? new Date(formValues[field.name])
                           : undefined
                       }
                       onSelect={(date) => {
                         setFormValues({
                           ...formValues,
-                          [field.name]: date ? date.toISOString().split("T")[0] : "",
+                          [field.name]: date
+                            ? date.toISOString().split("T")[0]
+                            : "",
                         });
                       }}
                       initialFocus
@@ -309,7 +333,10 @@ const EditMedicalRecordDialog: React.FC<EditMedicalRecordDialogProps> = ({
                   id={field.name}
                   value={formValues[field.name] || ""}
                   onChange={(e) =>
-                    setFormValues({ ...formValues, [field.name]: e.target.value })
+                    setFormValues({
+                      ...formValues,
+                      [field.name]: e.target.value,
+                    })
                   }
                 />
               )}
@@ -330,4 +357,4 @@ const EditMedicalRecordDialog: React.FC<EditMedicalRecordDialogProps> = ({
   );
 };
 
-export default EditMedicalRecordDialog;
+export default EditMedicalHistoryDialog;

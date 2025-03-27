@@ -250,9 +250,9 @@ export default function AllResidentsPage() {
 
       <div className="space-y-4">
         {filteredResidents.length > 0 ? (
-          filteredResidents.map((resident) => (
+          filteredResidents.map((resident, index) => (
             <ResidentCard
-              key={resident.id}
+              key={index}
               resident={resident}
               onNurseChange={handleNurseChange}
               onClick={handleCardClick}

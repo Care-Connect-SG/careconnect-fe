@@ -43,7 +43,7 @@ import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-const templateConfig = {
+export const templateConfig = {
   [MedicalHistoryType.CONDITION]: {
     label: "Condition",
     schema: z.object({
@@ -173,6 +173,7 @@ const formatDate = (dateString: string) => {
   try {
     const date = new Date(dateString);
     if (!isValid(date)) return "";
+
     return format(date, "PPP");
   } catch (error) {
     return "";
@@ -181,6 +182,7 @@ const formatDate = (dateString: string) => {
 
 const isValidDate = (dateString: string | undefined) => {
   if (!dateString) return false;
+
   try {
     const date = new Date(dateString);
     return isValid(date);
@@ -200,16 +202,18 @@ const CreateMedicalHistoryDialog: React.FC<{
   const getDefaultFormData = (templateType: MedicalHistoryType) => {
     const template = templateConfig[templateType];
     const defaultData: Record<string, string> = {};
+
     template.fields.forEach((field) => {
       defaultData[field.name] = "";
     });
+
     return defaultData;
   };
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      templateType: MedicalHistoryType.CONDITION,
+      templateType: "" as MedicalHistoryType,
       formData: {},
     },
   });
@@ -226,7 +230,7 @@ const CreateMedicalHistoryDialog: React.FC<{
   useEffect(() => {
     if (!isOpen) {
       form.reset({
-        templateType: MedicalHistoryType.CONDITION,
+        templateType: "" as MedicalHistoryType,
         formData: {},
       });
     }
@@ -246,7 +250,7 @@ const CreateMedicalHistoryDialog: React.FC<{
       const currentSchema = currentTemplate.schema;
       const validatedData = currentSchema.parse(data.formData);
 
-      await createMedicalHistory(
+      const createdRecord = await createMedicalHistory(
         data.templateType,
         residentProfile,
         validatedData,
@@ -347,7 +351,7 @@ const CreateMedicalHistoryDialog: React.FC<{
                                   selected={
                                     formField.value &&
                                     isValidDate(formField.value)
-                                      ? new Date(formField.value)
+                                      ? new Date(formField.value as string)
                                       : undefined
                                   }
                                   onSelect={(date) => {

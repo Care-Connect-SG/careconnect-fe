@@ -34,7 +34,7 @@ const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({
     try {
       const recordType = inferTemplateType(record) as MedicalHistoryType;
       await deleteMedicalHistory(
-        (record.id || "") as string,
+        record.id as string,
         recordType,
         residentProfile,
       );

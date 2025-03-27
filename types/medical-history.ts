@@ -7,8 +7,7 @@ export enum MedicalHistoryType {
 }
 
 export interface ConditionRecord {
-  _id?: string;
-  id?: string;
+  id: string;
   condition_name: string;
   date_of_diagnosis: string;
   treating_physician: string;
@@ -20,8 +19,7 @@ export interface ConditionRecord {
 }
 
 export interface AllergyRecord {
-  _id?: string;
-  id?: string;
+  id: string;
   allergen: string;
   reaction_description: string;
   date_first_noted: string;
@@ -33,8 +31,7 @@ export interface AllergyRecord {
 }
 
 export interface ChronicIllnessRecord {
-  _id?: string;
-  id?: string;
+  id: string;
   illness_name: string;
   date_of_onset: string;
   managing_physician: string;
@@ -46,8 +43,7 @@ export interface ChronicIllnessRecord {
 }
 
 export interface SurgicalHistoryRecord {
-  _id?: string;
-  id?: string;
+  id: string;
   procedure: string;
   surgery_date: string;
   surgeon: string;
@@ -59,8 +55,7 @@ export interface SurgicalHistoryRecord {
 }
 
 export interface ImmunizationRecord {
-  _id?: string;
-  id?: string;
+  id: string;
   vaccine: string;
   date_administered: string;
   administering_facility: string;

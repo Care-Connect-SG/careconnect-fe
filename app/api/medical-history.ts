@@ -60,7 +60,7 @@ export const updateMedicalHistory = async (
   recordType: MedicalHistoryType,
   residentId: string,
   updateData: any,
-): Promise<MedicalHistory> => {
+): Promise<void> => {
   try {
     const response = await fetch(
       `${
@@ -70,17 +70,18 @@ export const updateMedicalHistory = async (
       )}`,
       {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(updateData),
       },
     );
 
     if (!response.ok) {
-      const errData = await response.json();
-      throw new Error(errData.detail || "Error updating medical record");
+      const errorData = await response.json();
+      console.error("Update medical history error response:", errorData);
+      throw new Error(errorData.detail || "Error updating medical record");
     }
-
-    return await response.json();
   } catch (error) {
     console.error("Error in updateMedicalHistory:", error);
     throw error;
@@ -94,13 +95,14 @@ export const deleteMedicalHistory = async (
 ): Promise<void> => {
   try {
     const response = await fetch(
-      `${
-        process.env.NEXT_PUBLIC_BE_API_URL
-      }/medical-history/${recordId}?record_type=${recordType}&resident_id=${encodeURIComponent(
-        residentId,
-      )}`,
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/medical-history/${recordId}`,
       {
         method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          record_type: recordType,
+          resident_id: residentId,
+        }),
       },
     );
 

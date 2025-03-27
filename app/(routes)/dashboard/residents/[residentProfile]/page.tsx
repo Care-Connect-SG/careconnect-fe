@@ -263,7 +263,7 @@ export default function ResidentDashboard() {
               {medicalHistory.length > 0 ? (
                 medicalHistory.map((record, index) => (
                   <MedicalHistoryCard
-                    key={record.id || index}
+                    key={index}
                     record={record}
                     onEdit={() => openModal("editMedicalHistory", record)}
                   />

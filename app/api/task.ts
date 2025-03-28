@@ -401,3 +401,64 @@ export const rejectReassignment = async (
     throw error;
   }
 };
+
+export const getAiTaskSuggestion = async (residentId: string): Promise<TaskForm> => {
+  try {
+    const response = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/ai-suggest?resident_id=${residentId}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const errData = await response.json();
+      throw Error(errData.detail || "Failed to get AI task suggestion");
+    }
+
+    const data = await response.json();
+    return {
+      ...data,
+      start_date: new Date(data.start_date),
+      due_date: new Date(data.due_date),
+      end_recurring_date: data.end_recurring_date ? new Date(data.end_recurring_date) : undefined,
+    };
+  } catch (error) {
+    console.error("Error getting AI task suggestion:", error);
+    throw error;
+  }
+};
+
+export const getEnhancedAiTaskSuggestion = async (residentId: string): Promise<TaskForm & { recommended_nurse_id?: string }> => {
+  try {
+    const response = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/enhanced-ai-suggest?resident_id=${residentId}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const errData = await response.json();
+      throw Error(errData.detail || "Failed to get enhanced AI task suggestion");
+    }
+
+    const data = await response.json();
+    return {
+      ...data,
+      start_date: new Date(data.start_date),
+      due_date: new Date(data.due_date),
+      end_recurring_date: data.end_recurring_date ? new Date(data.end_recurring_date) : undefined,
+      recommended_nurse_id: data.recommended_nurse_id,
+    };
+  } catch (error) {
+    console.error("Error getting enhanced AI task suggestion:", error);
+    throw error;
+  }
+};

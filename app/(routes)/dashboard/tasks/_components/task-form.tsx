@@ -1,7 +1,7 @@
 "use client";
 
 import { getResidents } from "@/app/api/resident";
-import { createTask, updateTask } from "@/app/api/task";
+import { createTask, updateTask, getAiTaskSuggestion, getEnhancedAiTaskSuggestion } from "@/app/api/task";
 import { getAllNurses } from "@/app/api/user";
 import {
   AlertDialog,
@@ -94,7 +94,9 @@ const taskSchema = z
     },
   );
 
-export type TaskForm = z.infer<typeof taskSchema>;
+export type TaskForm = z.infer<typeof taskSchema> & {
+  recommended_nurse_id?: string;
+};
 
 export default function TaskForm({
   task,
@@ -118,6 +120,7 @@ export default function TaskForm({
   const [isAiSuggestionEnabled, setIsAiSuggestionEnabled] = useState(false);
   const [isAiGenerating, setIsAiGenerating] = useState(false);
   const [recommendedNurse, setRecommendedNurse] = useState<string | null>(null);
+  const [isAdvancedAi, setIsAdvancedAi] = useState(false);
 
   const form = useForm<TaskForm>({
     resolver: zodResolver(taskSchema),
@@ -310,79 +313,53 @@ export default function TaskForm({
     },
   );
 
-  const handleAiSuggestion = () => {
+  const handleAiSuggestion = async () => {
     setIsAiGenerating(true);
-
-    // Simulate AI processing time
-    setTimeout(() => {
-      // Find a nurse with low workload (for demo purposes, just pick a random one)
-      if (nurses.length > 0) {
-        const randomNurseIndex = Math.floor(Math.random() * nurses.length);
-        const selectedNurse = nurses[randomNurseIndex];
-        setRecommendedNurse(selectedNurse.id);
-        form.setValue("assigned_to", selectedNurse.id);
+    try {
+      const residentId = form.getValues("residents")?.[0];
+      if (!residentId) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Please select a resident first",
+        });
+        return;
       }
 
-      // Pre-fill a resident if available
-      if (
-        residents.length > 0 &&
-        (!form.getValues("residents") ||
-          form.getValues("residents").length === 0)
-      ) {
-        const randomResidentIndex = Math.floor(
-          Math.random() * residents.length,
-        );
-        const selectedResident = residents[randomResidentIndex];
-        form.setValue("residents", [selectedResident.id]);
+      // Use either enhanced or basic AI suggestion based on user selection
+      const suggestion = isAdvancedAi 
+        ? await getEnhancedAiTaskSuggestion(residentId)
+        : await getAiTaskSuggestion(residentId);
+      
+      // Set recommended nurse if available from enhanced AI
+      if (suggestion.recommended_nurse_id) {
+        setRecommendedNurse(suggestion.recommended_nurse_id);
       }
+      
+      // Update form with AI suggestion
+      form.reset({
+        ...form.getValues(),
+        ...suggestion,
+        residents: [residentId],
+      });
 
-      // Set task to urgent if medication related
-      const isMedication = Math.random() > 0.5;
-      if (isMedication) {
-        form.setValue("category", "Medication");
-        form.setValue("priority", "High");
-        form.setValue("is_urgent", true);
-        form.setValue(
-          "ai_recommendation_reason",
-          "Missed medication task for high-risk resident. Priority set to High based on medical importance. Medication category selected based on resident care plan. Urgency flagged due to timing requirements.",
-        );
-      } else {
-        form.setValue("category", "Therapy");
-        form.setValue("priority", "Medium");
-        form.setValue(
-          "ai_recommendation_reason",
-          "Resident requires regular therapy sessions based on care plan assessment. Priority set to Medium based on wellness impact. Therapy category selected to improve resident mobility and health outcomes.",
-        );
-      }
-
-      // Set the task as AI generated
-      form.setValue("is_ai_generated", true);
-
-      // Example task title and details
-      if (isMedication) {
-        form.setValue("task_title", "Administer medication");
-        form.setValue(
-          "task_details",
-          "Check resident's medication schedule and ensure proper administration.",
-        );
-      } else {
-        form.setValue("task_title", "Schedule therapy session");
-        form.setValue(
-          "task_details",
-          "Book a therapy session based on resident's care plan.",
-        );
-      }
-
-      setIsAiGenerating(false);
       setIsAiSuggestionEnabled(true);
-
       toast({
         variant: "default",
-        title: "AI Suggestion Generated",
-        description:
-          "AI has suggested task details based on resident needs and caregiver workload.",
+        title: isAdvancedAi ? "Enhanced AI Suggestion Generated" : "AI Suggestion Generated",
+        description: isAdvancedAi 
+          ? "GPT-4o Mini has analyzed resident data and suggested personalized task details." 
+          : "AI has suggested task details based on resident needs and caregiver workload.",
       });
-    }, 1500);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to generate AI suggestion. Please try again.",
+      });
+    } finally {
+      setIsAiGenerating(false);
+    }
   };
 
   return (
@@ -403,28 +380,44 @@ export default function TaskForm({
               </DialogTitle>
               <div className="flex items-center">
                 {!task && (
-                  <Button
-                    size="sm"
-                    variant={isAiSuggestionEnabled ? "default" : "outline"}
-                    className={`mr-8 ${isAiSuggestionEnabled ? "bg-amber-100 hover:bg-amber-200 text-amber-800 border-amber-300" : ""}`}
-                    onClick={handleAiSuggestion}
-                    disabled={isAiGenerating}
-                    title="AI will suggest tasks based on care needs, urgency, and caregiver workload"
-                  >
-                    {isAiGenerating ? (
-                      <>
-                        <div className="animate-spin mr-2 h-4 w-4">
-                          <div className="h-full w-full rounded-full border-2 border-t-transparent border-amber-700"></div>
-                        </div>
-                        Generating...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-4 h-4 mr-2" />
-                        AI Suggest
-                      </>
-                    )}
-                  </Button>
+                  <>
+                    <div className="mr-4">
+                      <label className="flex items-center text-xs cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={isAdvancedAi}
+                          onChange={() => setIsAdvancedAi(!isAdvancedAi)}
+                          className="mr-1"
+                        />
+                        Use Enhanced AI
+                      </label>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant={isAiSuggestionEnabled ? "default" : "outline"}
+                      className={`mr-8 ${isAiSuggestionEnabled ? "bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border-emerald-300" : ""}`}
+                      onClick={handleAiSuggestion}
+                      disabled={isAiGenerating}
+                      title={isAdvancedAi 
+                        ? "GPT-4o Mini will analyze resident history for personalized suggestions"
+                        : "AI will suggest tasks based on care needs, urgency, and caregiver workload"
+                      }
+                    >
+                      {isAiGenerating ? (
+                        <>
+                          <div className="animate-spin mr-2 h-4 w-4">
+                            <div className="h-full w-full rounded-full border-2 border-t-transparent border-emerald-700"></div>
+                          </div>
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          {isAdvancedAi ? "Enhanced AI" : "AI Suggest"}
+                        </>
+                      )}
+                    </Button>
+                  </>
                 )}
                 <DialogClose className="absolute right-4 top-4"></DialogClose>
               </div>
@@ -435,9 +428,9 @@ export default function TaskForm({
                 : "Fill in the details below to create a new task."}
             </DialogDescription>
             {isAiSuggestionEnabled && (
-              <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-md text-sm flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-amber-500" />
-                <span className="text-amber-800">
+              <div className="mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded-md text-sm flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-emerald-500" />
+                <span className="text-emerald-800">
                   AI has suggested task details based on care needs and workload
                   analysis.
                 </span>
@@ -465,7 +458,7 @@ export default function TaskForm({
                             fieldState.invalid
                               ? "border-destructive focus-visible:ring-destructive"
                               : form.watch("is_ai_generated")
-                                ? "border-amber-200 bg-amber-50"
+                                ? "border-emerald-200 bg-emerald-50"
                                 : ""
                           }
                         />
@@ -476,7 +469,7 @@ export default function TaskForm({
                         </p>
                       )}
                       {form.watch("is_ai_generated") && (
-                        <p className="text-xs flex items-center gap-1 text-amber-700 mt-1">
+                        <p className="text-xs flex items-center gap-1 text-emerald-700 mt-1">
                           <Sparkles className="h-3 w-3" />
                           AI suggested based on resident care patterns
                         </p>
@@ -499,7 +492,7 @@ export default function TaskForm({
                             fieldState.invalid
                               ? "border-destructive focus-visible:ring-destructive"
                               : form.watch("is_ai_generated")
-                                ? "border-amber-200 bg-amber-50"
+                                ? "border-emerald-200 bg-emerald-50"
                                 : ""
                           }
                         />
@@ -510,7 +503,7 @@ export default function TaskForm({
                         </p>
                       )}
                       {form.watch("is_ai_generated") && (
-                        <p className="text-xs flex items-center gap-1 text-amber-700 mt-1">
+                        <p className="text-xs flex items-center gap-1 text-emerald-700 mt-1">
                           <Sparkles className="h-3 w-3" />
                           AI suggested based on care requirements
                         </p>
@@ -534,7 +527,7 @@ export default function TaskForm({
                               fieldState.invalid
                                 ? "border-destructive focus-visible:ring-destructive"
                                 : form.watch("is_ai_generated")
-                                  ? "border-amber-200 bg-amber-50"
+                                  ? "border-emerald-200 bg-emerald-50"
                                   : ""
                             }
                           >
@@ -547,7 +540,7 @@ export default function TaskForm({
                           </SelectContent>
                         </Select>
                         {form.watch("is_ai_generated") && (
-                          <p className="text-xs flex items-center gap-1 text-amber-700 mt-1">
+                          <p className="text-xs flex items-center gap-1 text-emerald-700 mt-1">
                             <Sparkles className="h-3 w-3" />
                             Suggested priority based on task impact
                           </p>
@@ -570,7 +563,7 @@ export default function TaskForm({
                               fieldState.invalid
                                 ? "border-destructive focus-visible:ring-destructive"
                                 : form.watch("is_ai_generated")
-                                  ? "border-amber-200 bg-amber-50"
+                                  ? "border-emerald-200 bg-emerald-50"
                                   : ""
                             }
                           >
@@ -586,7 +579,7 @@ export default function TaskForm({
                           </SelectContent>
                         </Select>
                         {form.watch("is_ai_generated") && (
-                          <p className="text-xs flex items-center gap-1 text-amber-700 mt-1">
+                          <p className="text-xs flex items-center gap-1 text-emerald-700 mt-1">
                             <Sparkles className="h-3 w-3" />
                             Selected based on resident's care plan needs
                           </p>
@@ -610,9 +603,8 @@ export default function TaskForm({
                             className={
                               fieldState.invalid
                                 ? "border-destructive focus-visible:ring-destructive"
-                                : form.watch("is_ai_generated") &&
-                                    recommendedNurse === field.value
-                                  ? "border-amber-200 bg-amber-50"
+                                : field.value && field.value === recommendedNurse
+                                  ? "border-emerald-200 bg-emerald-50"
                                   : ""
                             }
                           >
@@ -626,13 +618,13 @@ export default function TaskForm({
                               value={nurse.id}
                               style={
                                 recommendedNurse === nurse.id
-                                  ? { background: "#f0fdf4", fontWeight: 500 }
+                                  ? { background: "#ecfdf5", fontWeight: 500 }
                                   : {}
                               }
                             >
                               {nurse.name} ({nurse.email})
                               {recommendedNurse === nurse.id &&
-                                " (Low workload)"}
+                                " ✓ Recommended"}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -644,9 +636,9 @@ export default function TaskForm({
                       )}
                       {form.watch("is_ai_generated") &&
                         recommendedNurse === field.value && (
-                          <p className="text-xs flex items-center gap-1 text-amber-700 mt-1">
+                          <p className="text-xs flex items-center gap-1 text-emerald-700 mt-1">
                             <Sparkles className="h-3 w-3" />
-                            Recommended based on current workload analysis
+                            Recommended based on current workload
                           </p>
                         )}
                     </FormItem>
@@ -668,7 +660,7 @@ export default function TaskForm({
                               fieldState.invalid
                                 ? "border-destructive focus-visible:ring-destructive"
                                 : form.watch("is_ai_generated")
-                                  ? "border-amber-200 bg-amber-50"
+                                  ? "border-emerald-200 bg-emerald-50"
                                   : ""
                             }
                           >
@@ -689,7 +681,7 @@ export default function TaskForm({
                         </p>
                       )}
                       {form.watch("is_ai_generated") && (
-                        <p className="text-xs flex items-center gap-1 text-amber-700 mt-1">
+                        <p className="text-xs flex items-center gap-1 text-emerald-700 mt-1">
                           <Sparkles className="h-3 w-3" />
                           Pre-filled based on care schedule analysis
                         </p>
@@ -834,12 +826,12 @@ export default function TaskForm({
                 />
                 {form.watch("is_ai_generated") &&
                   form.watch("ai_recommendation_reason") && (
-                    <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-sm">
-                      <div className="font-medium flex items-center gap-2 text-amber-800 mb-1">
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-md p-3 text-sm">
+                      <div className="font-medium flex items-center gap-2 text-emerald-800 mb-1">
                         <Sparkles className="h-4 w-4" />
                         AI Recommendation Summary
                       </div>
-                      <p className="text-amber-700">
+                      <p className="text-emerald-700">
                         {form.watch("ai_recommendation_reason")}
                       </p>
                     </div>

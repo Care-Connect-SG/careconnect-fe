@@ -85,102 +85,108 @@ const WellnessReportsList: React.FC<WellnessReportsListProps> = ({
 
   return (
     <div className="space-y-4">
-      {reports.map((report, index) => {
-        console.log('Rendering report:', report); // Debug log
-        return (
-          <Card key={report.id || `report-${index}`}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <div>
-                <CardTitle className="text-lg font-medium">
-                  Wellness Report
-                </CardTitle>
-                <CardDescription>
-                  Date: {formatDate(report.date)}
-                </CardDescription>
-              </div>
-              <div className="flex space-x-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleEdit(report)}
-                >
-                  <Edit2 className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => {
-                    console.log('Delete button clicked for report:', report); // Debug log
-                    handleDelete(report.id);
-                  }}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {report.monthly_summary && (
-                  <div>
-                    <h4 className="font-medium">Monthly Summary</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {report.monthly_summary}
-                    </p>
-                  </div>
-                )}
-                {report.medical_summary && (
-                  <div>
-                    <h4 className="font-medium">Medical Summary</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {report.medical_summary}
-                    </p>
-                  </div>
-                )}
-                {report.medication_update && (
-                  <div>
-                    <h4 className="font-medium">Medication Update</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {report.medication_update}
-                    </p>
-                  </div>
-                )}
-                {report.nutrition_hydration && (
-                  <div>
-                    <h4 className="font-medium">Nutrition & Hydration</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {report.nutrition_hydration}
-                    </p>
-                  </div>
-                )}
-                {report.mobility_physical && (
-                  <div>
-                    <h4 className="font-medium">Mobility & Physical</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {report.mobility_physical}
-                    </p>
-                  </div>
-                )}
-                {report.cognitive_emotional && (
-                  <div>
-                    <h4 className="font-medium">Cognitive & Emotional</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {report.cognitive_emotional}
-                    </p>
-                  </div>
-                )}
-                {report.social_engagement && (
-                  <div>
-                    <h4 className="font-medium">Social Engagement</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {report.social_engagement}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        );
-      })}
+      {reports.length === 0 ? (
+        <div className="text-center py-8 text-muted-foreground">
+          No wellness reports found for this resident. Create a new report to get started.
+        </div>
+      ) : (
+        reports.map((report, index) => {
+          console.log('Rendering report:', report); // Debug log
+          return (
+            <Card key={report.id || `report-${index}`}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <div>
+                  <CardTitle className="text-lg font-medium">
+                    Wellness Report
+                  </CardTitle>
+                  <CardDescription>
+                    Date: {formatDate(report.date)}
+                  </CardDescription>
+                </div>
+                <div className="flex space-x-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleEdit(report)}
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      console.log('Delete button clicked for report:', report); // Debug log
+                      handleDelete(report.id);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {report.monthly_summary && (
+                    <div>
+                      <h4 className="font-medium">Monthly Summary</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {report.monthly_summary}
+                      </p>
+                    </div>
+                  )}
+                  {report.medical_summary && (
+                    <div>
+                      <h4 className="font-medium">Medical Summary</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {report.medical_summary}
+                      </p>
+                    </div>
+                  )}
+                  {report.medication_update && (
+                    <div>
+                      <h4 className="font-medium">Medication Update</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {report.medication_update}
+                      </p>
+                    </div>
+                  )}
+                  {report.nutrition_hydration && (
+                    <div>
+                      <h4 className="font-medium">Nutrition & Hydration</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {report.nutrition_hydration}
+                      </p>
+                    </div>
+                  )}
+                  {report.mobility_physical && (
+                    <div>
+                      <h4 className="font-medium">Mobility & Physical</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {report.mobility_physical}
+                      </p>
+                    </div>
+                  )}
+                  {report.cognitive_emotional && (
+                    <div>
+                      <h4 className="font-medium">Cognitive & Emotional</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {report.cognitive_emotional}
+                      </p>
+                    </div>
+                  )}
+                  {report.social_engagement && (
+                    <div>
+                      <h4 className="font-medium">Social Engagement</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {report.social_engagement}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })
+      )}
 
       {editingReport && (
         <EditWellnessReportDialog

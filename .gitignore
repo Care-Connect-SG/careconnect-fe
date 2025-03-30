@@ -37,3 +37,5 @@ next-env.d.ts
 
 # pnpm
 pnpm-lock.yaml
+middleware.ts
+app/(routes)/auth/login/page.tsx

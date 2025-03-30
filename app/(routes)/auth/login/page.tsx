@@ -4,11 +4,11 @@ import { redirect } from "next/navigation";
 import LoginForm from "./_components/login-form";
 
 export default async function LoginPage() {
-  const session = await getServerSession(authOptions);
+  // const session = await getServerSession(authOptions);
 
-  if (session) {
-    redirect("/dashboard/home");
-  }
+  // if (session) {
+  //   redirect("/dashboard/home");
+  // }
 
   return (
     <div className="flex min-h-svh flex-col items-center justify-center bg-blue-50 p-6 md:p-10">

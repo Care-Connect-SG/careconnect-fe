@@ -29,7 +29,8 @@ import ResidentDetailsCard from "./_components/resident-detail-card";
 import ResidentDetailsNotesCard from "./_components/resident-detail-notes";
 import ResidentMedication from "./_components/resident-medication";
 import ResidentProfileHeader from "./_components/resident-profile-header";
-import WellnessReportList from "./_components/wellness-report-list";
+import CreateWellnessReportDialog from "./_components/create-wellness-report-dialog";
+import WellnessReportsList from "./_components/wellness-reports-list";
 
 import { useBreadcrumb } from "@/context/breadcrumb-context";
 import { toTitleCase } from "@/lib/utils";
@@ -60,6 +61,7 @@ export default function ResidentDashboard() {
     editMedication: false,
     createMedicalHistory: false,
     editMedicalHistory: false,
+    createWellnessReport: false,
   });
   const [selectedMedication, setSelectedMedication] =
     useState<MedicationRecord | null>(null);
@@ -216,14 +218,9 @@ export default function ResidentDashboard() {
           {TABS.map((tab) => (
             <Button
               key={tab.value}
+              variant={activeTab === tab.value ? "default" : "outline"}
               onClick={() => setActiveTab(tab.value)}
-              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200
-                ${
-                  activeTab === tab.value
-                    ? "bg-blue-600 text-white border border-blue-600"
-                    : "bg-gray-400 text-white hover:bg-gray-500"
-                }
-              `}
+              className="px-4 py-2"
             >
               {tab.label}
             </Button>
@@ -233,7 +230,7 @@ export default function ResidentDashboard() {
 
       <div className="mt-4">
         {activeTab === "overview" && (
-          <div className="flex flex-col sm:flex-row items-start justify-between gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <ResidentDetailsCard
               gender={resident.gender}
               dateOfBirth={resident.date_of_birth}
@@ -252,117 +249,89 @@ export default function ResidentDashboard() {
         )}
 
         {activeTab === "history" && (
-          <div>
+          <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-semibold">Medical History</h2>
+              <h2 className="text-2xl font-bold">Medical History</h2>
               <Button onClick={() => openModal("createMedicalHistory")}>
                 Add Medical Record
               </Button>
             </div>
-            <div className="mt-4 space-y-4">
-              {medicalHistory.length > 0 ? (
-                medicalHistory.map((record, index) => (
-                  <MedicalHistoryCard
-                    key={index}
-                    record={record}
-                    onEdit={() => openModal("editMedicalHistory", record)}
-                  />
-                ))
-              ) : (
-                <p className="text-gray-500">No medical records found.</p>
-              )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {medicalHistory.map((record) => (
+                <MedicalHistoryCard
+                  key={record.id}
+                  record={record}
+                  onEdit={() => openModal("editMedicalHistory", record)}
+                />
+              ))}
             </div>
           </div>
         )}
 
         {activeTab === "medication" && (
-          <div>
+          <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-semibold">Medication List</h2>
+              <h2 className="text-2xl font-bold">Medications</h2>
               <Button onClick={() => openModal("createMedication")}>
                 Add Medication
               </Button>
             </div>
-
-            <div className="space-y-4 mt-4">
-              {medications.length > 0 ? (
-                medications.map((medication, index) => (
-                  <ResidentMedication
-                    key={medication.id || index}
-                    medication={medication}
-                    onEdit={() => openModal("editMedication", medication)}
-                  />
-                ))
-              ) : (
-                <p className="text-gray-500">No medications found.</p>
-              )}
+            <div className="space-y-4">
+              {medications.map((medication) => (
+                <ResidentMedication
+                  key={medication.id}
+                  medication={medication}
+                  onEdit={() => openModal("editMedication", medication)}
+                />
+              ))}
             </div>
           </div>
         )}
 
         {activeTab === "careplan" && (
-          <div>
-            {carePlans.length > 0 ? (
-              <EditCarePlan
-                careplan={carePlans[0]}
-                residentId={residentProfile}
-                onCarePlanUpdated={() => {
-                  queryClient.invalidateQueries({
-                    queryKey: ["carePlans", residentProfile],
-                  });
-                }}
-              />
-            ) : (
-              <div className="flex flex-col items-center mt-4">
-                <p className="text-gray-500">No care plan found.</p>
-                <Button
-                  onClick={handleCreateCarePlan}
-                  variant="default"
-                  className="mt-2"
-                  disabled={isCreatingCarePlan}
-                >
-                  {isCreatingCarePlan ? "Creating..." : "Create Care Plan"}
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {activeTab === "wellness" && (
-          <div>
-            <WellnessReportList reports={wellnessReports} />
-
-            <div className="flex justify-between items-center mt-6">
-              <h2 className="text-lg font-semibold">Care Plans</h2>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Care Plans</h2>
               <Button
                 onClick={handleCreateCarePlan}
                 disabled={isCreatingCarePlan}
               >
-                {isCreatingCarePlan ? "Creating..." : "Add Care Plan"}
+                Create Care Plan
               </Button>
             </div>
+            {carePlans.map((carePlan) => (
+              <ResidentCarePlan
+                key={carePlan.id}
+                careplan={carePlan}
+              />
+            ))}
+          </div>
+        )}
 
-            <div className="space-y-4 mt-4">
-              {carePlans.length > 0 ? (
-                carePlans.map((carePlan, index) => (
-                  <ResidentCarePlan
-                    key={carePlan.id || index}
-                    careplan={carePlan}
-                  />
-                ))
-              ) : (
-                <p className="text-gray-500">No care plans found.</p>
-              )}
+        {activeTab === "wellness" && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Wellness Reports</h2>
+              <Button onClick={() => openModal("createWellnessReport")}>
+                Create Wellness Report
+              </Button>
             </div>
+            <WellnessReportsList
+              reports={wellnessReports}
+              residentId={residentProfile}
+              onReportDeleted={refetchWellnessReports}
+              onReportUpdated={refetchWellnessReports}
+            />
           </div>
         )}
       </div>
 
+      {/* Modals */}
       <EditResidentDialog
         isOpen={modals.editResident}
         onClose={() => closeModal("editResident")}
         initialData={resident}
-        onSave={(updatedData) => updateResidentMutation.mutate(updatedData)}
+        onSave={updateResidentMutation.mutate}
       />
 
       <CreateMedication
@@ -370,8 +339,8 @@ export default function ResidentDashboard() {
         onClose={() => closeModal("createMedication")}
         residentId={residentProfile}
         onMedicationAdded={() => {
-          closeModal("createMedication");
           refetchMedications();
+          closeModal("createMedication");
         }}
       />
 
@@ -382,8 +351,8 @@ export default function ResidentDashboard() {
           medication={selectedMedication}
           residentId={residentProfile}
           onMedicationUpdated={() => {
-            closeModal("editMedication");
             refetchMedications();
+            closeModal("editMedication");
           }}
         />
       )}
@@ -392,10 +361,10 @@ export default function ResidentDashboard() {
         isOpen={modals.createMedicalHistory}
         onClose={() => closeModal("createMedicalHistory")}
         onRecordCreated={() => {
-          closeModal("createMedicalHistory");
           queryClient.invalidateQueries({
             queryKey: ["medicalHistory", residentProfile],
           });
+          closeModal("createMedicalHistory");
         }}
       />
 
@@ -409,6 +378,16 @@ export default function ResidentDashboard() {
           onSave={handleSaveMedicalHistory}
         />
       )}
+
+      <CreateWellnessReportDialog
+        isOpen={modals.createWellnessReport}
+        onClose={() => closeModal("createWellnessReport")}
+        residentId={residentProfile}
+        onReportCreated={() => {
+          refetchWellnessReports();
+          closeModal("createWellnessReport");
+        }}
+      />
     </div>
   );
 }

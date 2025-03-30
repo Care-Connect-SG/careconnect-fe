@@ -1,3 +1,11 @@
+export enum MedicalHistoryType {
+  CONDITION = "condition",
+  ALLERGY = "allergy",
+  CHRONIC_ILLNESS = "chronic",
+  SURGICAL = "surgical",
+  IMMUNIZATION = "immunization",
+}
+
 export interface ConditionRecord {
   id: string;
   condition_name: string;
@@ -6,6 +14,8 @@ export interface ConditionRecord {
   treatment_details: string;
   current_status: string;
   resident_id?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface AllergyRecord {
@@ -16,6 +26,8 @@ export interface AllergyRecord {
   severity: string;
   management_notes?: string;
   resident_id?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface ChronicIllnessRecord {
@@ -26,16 +38,20 @@ export interface ChronicIllnessRecord {
   current_treatment_plan: string;
   monitoring_parameters: string;
   resident_id?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface SurgicalHistoryRecord {
   id: string;
   procedure: string;
-  date: string;
+  surgery_date: string;
   surgeon: string;
   hospital: string;
   complications?: string;
   resident_id?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface ImmunizationRecord {
@@ -45,20 +61,22 @@ export interface ImmunizationRecord {
   administering_facility: string;
   next_due_date?: string;
   resident_id?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
-export type MedicalRecord =
+export type MedicalHistory =
   | ConditionRecord
   | AllergyRecord
   | ChronicIllnessRecord
   | SurgicalHistoryRecord
   | ImmunizationRecord;
 
-export function inferTemplateType(record: MedicalRecord): string {
-  if ("condition_name" in record) return "condition";
-  if ("allergen" in record) return "allergy";
-  if ("illness_name" in record) return "chronic";
-  if ("procedure" in record) return "surgical";
-  if ("vaccine" in record) return "immunization";
+export function inferTemplateType(record: MedicalHistory): MedicalHistoryType {
+  if ("condition_name" in record) return MedicalHistoryType.CONDITION;
+  if ("allergen" in record) return MedicalHistoryType.ALLERGY;
+  if ("illness_name" in record) return MedicalHistoryType.CHRONIC_ILLNESS;
+  if ("procedure" in record) return MedicalHistoryType.SURGICAL;
+  if ("vaccine" in record) return MedicalHistoryType.IMMUNIZATION;
   throw new Error("Unknown medical record type");
 }

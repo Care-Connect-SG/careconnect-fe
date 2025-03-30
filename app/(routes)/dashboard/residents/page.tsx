@@ -4,7 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ResidentRecord } from "@/types/resident";
 import { User } from "@/types/user";
-import { Search } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  MoreHorizontal,
+  Search,
+} from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import {
@@ -28,12 +33,16 @@ export default function AllResidentsPage() {
   const pageParam = searchParams.get("page");
   const currentPage = pageParam ? parseInt(pageParam, 10) : 1;
   const LIMIT = 8;
+  const [totalPages, setTotalPages] = useState(1);
 
   const fetchResidents = () => {
     getResidentsByPage(currentPage)
       .then((data: ResidentRecord[]) => {
         setResidents(data);
-        setHasNextPage(data.length === LIMIT);
+        const hasMore = data.length === LIMIT;
+        setHasNextPage(hasMore);
+
+        setTotalPages(hasMore ? currentPage + 1 : currentPage);
       })
       .catch((error) => {
         console.error("Error fetching residents:", error);
@@ -122,6 +131,87 @@ export default function AllResidentsPage() {
     router.push(`/dashboard/residents?page=${page}`);
   };
 
+  const renderPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(
+          <Button
+            key={i}
+            variant={currentPage === i ? "default" : "outline"}
+            size="sm"
+            onClick={() => goToPage(i)}
+            className="w-8"
+          >
+            {i}
+          </Button>,
+        );
+      }
+    } else {
+      pages.push(
+        <Button
+          key={1}
+          variant={currentPage === 1 ? "default" : "outline"}
+          size="sm"
+          onClick={() => goToPage(1)}
+          className="w-8"
+        >
+          1
+        </Button>,
+      );
+
+      if (currentPage > 3) {
+        pages.push(
+          <span key="start-ellipsis" className="px-2">
+            <MoreHorizontal className="h-4 w-4" />
+          </span>,
+        );
+      }
+
+      for (
+        let i = Math.max(2, currentPage - 1);
+        i <= Math.min(totalPages - 1, currentPage + 1);
+        i++
+      ) {
+        pages.push(
+          <Button
+            key={i}
+            variant={currentPage === i ? "default" : "outline"}
+            size="sm"
+            onClick={() => goToPage(i)}
+            className="w-8"
+          >
+            {i}
+          </Button>,
+        );
+      }
+
+      if (currentPage < totalPages - 2) {
+        pages.push(
+          <span key="end-ellipsis" className="px-2">
+            <MoreHorizontal className="h-4 w-4" />
+          </span>,
+        );
+      }
+
+      pages.push(
+        <Button
+          key={totalPages}
+          variant={currentPage === totalPages ? "default" : "outline"}
+          size="sm"
+          onClick={() => goToPage(totalPages)}
+          className="w-8"
+        >
+          {totalPages}
+        </Button>,
+      );
+    }
+
+    return pages;
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-4">
       <div className="mb-6">
@@ -160,9 +250,9 @@ export default function AllResidentsPage() {
 
       <div className="space-y-4">
         {filteredResidents.length > 0 ? (
-          filteredResidents.map((resident) => (
+          filteredResidents.map((resident, index) => (
             <ResidentCard
-              key={resident.id}
+              key={index}
               resident={resident}
               onNurseChange={handleNurseChange}
               onClick={handleCardClick}
@@ -175,21 +265,23 @@ export default function AllResidentsPage() {
         )}
       </div>
 
-      <div className="fixed bottom-0 left-[240px] right-0 bg-white shadow p-4 flex justify-between items-center z-50">
+      <div className="mt-6 flex justify-center items-center gap-2">
         <Button
+          variant="outline"
+          size="icon"
           onClick={() => goToPage(currentPage - 1)}
           disabled={currentPage === 1}
-          className="px-3 py-2 text-sm w-24"
         >
-          Prev
+          <ChevronLeft className="h-4 w-4" />
         </Button>
-        <span className="text-sm">Page {currentPage}</span>
+        {renderPageNumbers()}
         <Button
+          variant="outline"
+          size="icon"
           onClick={() => goToPage(currentPage + 1)}
           disabled={!hasNextPage}
-          className="px-3 py-2 text-sm w-24"
         >
-          Next
+          <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
     </div>

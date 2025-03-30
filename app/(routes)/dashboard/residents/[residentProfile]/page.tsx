@@ -9,9 +9,9 @@ import {
   getCarePlansForResident,
 } from "@/app/api/careplan";
 import {
-  getMedicalRecordsByResident,
-  updateMedicalRecord,
-} from "@/app/api/medical-record";
+  getMedicalHistoryByResident,
+  updateMedicalHistory,
+} from "@/app/api/medical-history";
 import { getMedicationsForResident } from "@/app/api/medication";
 import { getResidentById, updateResident } from "@/app/api/resident";
 import { getWellnessReportsForResident } from "@/app/api/wellness-report";
@@ -19,11 +19,11 @@ import { getWellnessReportsForResident } from "@/app/api/wellness-report";
 import { Button } from "@/components/ui/button";
 import CreateMedication from "./_components/create-medication-dialog";
 import EditCarePlan from "./_components/edit-careplan";
-import EditMedicalRecordModal from "./_components/edit-medical-record-dialog";
+import EditMedicalHistoryModal from "./_components/edit-medical-history-dialog";
 import EditMedication from "./_components/edit-medication";
 import EditResidentDialog from "./_components/edit-resident-dialog";
-import MedicalRecordCard from "./_components/medical-record-card";
-import CreateMedicalRecordDialog from "./_components/medical-record-form";
+import MedicalHistoryCard from "./_components/medical-history-card";
+import CreateMedicalHistoryDialog from "./_components/medical-history-form";
 import ResidentCarePlan from "./_components/resident-careplan";
 import ResidentDetailsCard from "./_components/resident-detail-card";
 import ResidentDetailsNotesCard from "./_components/resident-detail-notes";
@@ -34,7 +34,7 @@ import WellnessReportList from "./_components/wellness-report-list";
 import { useBreadcrumb } from "@/context/breadcrumb-context";
 import { toTitleCase } from "@/lib/utils";
 import { CarePlanRecord } from "@/types/careplan";
-import { MedicalRecord, inferTemplateType } from "@/types/medical-record";
+import { MedicalHistory, inferTemplateType } from "@/types/medical-history";
 import { MedicationRecord } from "@/types/medication";
 import { ResidentRecord } from "@/types/resident";
 import { WellnessReportRecord } from "@/types/wellness-report";
@@ -58,13 +58,13 @@ export default function ResidentDashboard() {
     editResident: false,
     createMedication: false,
     editMedication: false,
-    createMedicalRecord: false,
-    editMedicalRecord: false,
+    createMedicalHistory: false,
+    editMedicalHistory: false,
   });
   const [selectedMedication, setSelectedMedication] =
     useState<MedicationRecord | null>(null);
-  const [selectedMedicalRecord, setSelectedMedicalRecord] =
-    useState<MedicalRecord | null>(null);
+  const [selectedMedicalHistory, setSelectedMedicalHistory] =
+    useState<MedicalHistory | null>(null);
   const [isCreatingCarePlan, setIsCreatingCarePlan] = useState(false);
 
   const { data: resident, isLoading: isResidentLoading } =
@@ -79,9 +79,9 @@ export default function ResidentDashboard() {
     }
   }, [resident, setPageName]);
 
-  const { data: medicalRecords = [] } = useQuery<MedicalRecord[]>({
-    queryKey: ["medicalRecords", residentProfile],
-    queryFn: () => getMedicalRecordsByResident(residentProfile),
+  const { data: medicalHistory = [] } = useQuery<MedicalHistory[]>({
+    queryKey: ["medicalHistory", residentProfile],
+    queryFn: () => getMedicalHistoryByResident(residentProfile),
     enabled: !!residentProfile,
   });
 
@@ -122,8 +122,8 @@ export default function ResidentDashboard() {
   const openModal = (modalName: keyof typeof modals, item?: any) => {
     if (modalName === "editMedication" && item) {
       setSelectedMedication(item);
-    } else if (modalName === "editMedicalRecord" && item) {
-      setSelectedMedicalRecord(item);
+    } else if (modalName === "editMedicalHistory" && item) {
+      setSelectedMedicalHistory(item);
     }
 
     setModals((prev) => ({ ...prev, [modalName]: true }));
@@ -134,8 +134,8 @@ export default function ResidentDashboard() {
 
     if (modalName === "editMedication") {
       setSelectedMedication(null);
-    } else if (modalName === "editMedicalRecord") {
-      setSelectedMedicalRecord(null);
+    } else if (modalName === "editMedicalHistory") {
+      setSelectedMedicalHistory(null);
     }
   };
 
@@ -170,23 +170,27 @@ export default function ResidentDashboard() {
     }
   };
 
-  const handleSaveMedicalRecord = async (updatedData: any) => {
-    if (!selectedMedicalRecord || !resident) return;
+  const handleSaveMedicalHistory = async (updatedData: any) => {
+    if (!selectedMedicalHistory || !resident) return;
 
     try {
-      const templateType = inferTemplateType(selectedMedicalRecord);
-      await updateMedicalRecord(
-        templateType,
-        selectedMedicalRecord.id,
-        resident.id,
+      const templateType = inferTemplateType(selectedMedicalHistory);
+      const recordId = selectedMedicalHistory.id;
+      if (!recordId) {
+        throw new Error("No record ID found");
+      }
+
+      await updateMedicalHistory(recordId, templateType, resident.id, {
         updatedData,
-      );
-      closeModal("editMedicalRecord");
-      queryClient.invalidateQueries({
-        queryKey: ["medicalRecords", residentProfile],
       });
-    } catch (error) {
+
+      closeModal("editMedicalHistory");
+      queryClient.invalidateQueries({
+        queryKey: ["medicalHistory", residentProfile],
+      });
+    } catch (error: any) {
       console.error("Error updating medical record:", error);
+      throw error;
     }
   };
 
@@ -213,11 +217,13 @@ export default function ResidentDashboard() {
             <Button
               key={tab.value}
               onClick={() => setActiveTab(tab.value)}
-              className={`py-2 px-1 text-sm font-medium bg-transparent hover:bg-transparent ${
-                activeTab === tab.value
-                  ? "text-blue-600 border-b-2 border-blue-600"
-                  : "text-gray-500"
-              }`}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200
+                ${
+                  activeTab === tab.value
+                    ? "bg-blue-600 text-white border border-blue-600"
+                    : "bg-gray-400 text-white hover:bg-gray-500"
+                }
+              `}
             >
               {tab.label}
             </Button>
@@ -249,17 +255,17 @@ export default function ResidentDashboard() {
           <div>
             <div className="flex justify-between items-center">
               <h2 className="text-lg font-semibold">Medical History</h2>
-              <Button onClick={() => openModal("createMedicalRecord")}>
+              <Button onClick={() => openModal("createMedicalHistory")}>
                 Add Medical Record
               </Button>
             </div>
             <div className="mt-4 space-y-4">
-              {medicalRecords.length > 0 ? (
-                medicalRecords.map((record, index) => (
-                  <MedicalRecordCard
-                    key={record.id || index}
+              {medicalHistory.length > 0 ? (
+                medicalHistory.map((record, index) => (
+                  <MedicalHistoryCard
+                    key={index}
                     record={record}
-                    onEdit={() => openModal("editMedicalRecord", record)}
+                    onEdit={() => openModal("editMedicalHistory", record)}
                   />
                 ))
               ) : (
@@ -382,25 +388,25 @@ export default function ResidentDashboard() {
         />
       )}
 
-      <CreateMedicalRecordDialog
-        isOpen={modals.createMedicalRecord}
-        onClose={() => closeModal("createMedicalRecord")}
+      <CreateMedicalHistoryDialog
+        isOpen={modals.createMedicalHistory}
+        onClose={() => closeModal("createMedicalHistory")}
         onRecordCreated={() => {
-          closeModal("createMedicalRecord");
+          closeModal("createMedicalHistory");
           queryClient.invalidateQueries({
-            queryKey: ["medicalRecords", residentProfile],
+            queryKey: ["medicalHistory", residentProfile],
           });
         }}
       />
 
-      {selectedMedicalRecord && (
-        <EditMedicalRecordModal
-          isOpen={modals.editMedicalRecord}
-          onClose={() => closeModal("editMedicalRecord")}
-          templateType={inferTemplateType(selectedMedicalRecord)}
+      {selectedMedicalHistory && (
+        <EditMedicalHistoryModal
+          isOpen={modals.editMedicalHistory}
+          onClose={() => closeModal("editMedicalHistory")}
+          templateType={inferTemplateType(selectedMedicalHistory)}
           residentId={resident.id}
-          initialData={selectedMedicalRecord}
-          onSave={handleSaveMedicalRecord}
+          initialData={selectedMedicalHistory}
+          onSave={handleSaveMedicalHistory}
         />
       )}
     </div>

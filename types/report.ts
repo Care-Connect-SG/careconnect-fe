@@ -1,11 +1,32 @@
 export const enum ReportStatus {
   DRAFT = "Draft",
   PUBLISHED = "Published",
+  SUBMITTED = "Submitted",
+  CHANGES_REQUESTED = "Changes Requested",
+  CHANGES_MADE = "Changes Made",
 }
 
 export interface ReportSectionContent {
   form_element_id: string;
   input: string | string[];
+}
+
+export const enum ReportReviewStatus {
+  PENDING = "Pending",
+  RESOLVED = "Resolved",
+}
+
+export interface ReportReviewCreate {
+  review_id: string;
+  reviewer: CaregiverTag;
+  review: string;
+}
+
+export interface ReportReview extends ReportReviewCreate {
+  resolution?: string | null;
+  status: ReportReviewStatus;
+  reviewed_at: Date;
+  resolved_at?: Date | null;
 }
 
 export interface ReportCreate {
@@ -23,6 +44,10 @@ export interface ReportCreate {
 export interface ReportResponse extends ReportCreate {
   id: string;
   created_at: Date;
+  submitted_at?: Date | null;
+  last_updated_at: Date;
+  published_at?: Date | null;
+  reviews: ReportReview[];
 }
 
 export interface ResidentTag {

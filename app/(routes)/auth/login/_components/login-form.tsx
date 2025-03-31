@@ -127,12 +127,12 @@ export default function LoginForm() {
               <div className="grid gap-4">
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
-                  <Link
+                  {/* <Link
                     href="#"
                     className="ml-auto text-xs underline-offset-2 hover:underline"
                   >
                     Forgot your password?
-                  </Link>
+                  </Link> */}
                 </div>
                 <FormField
                   control={form.control}

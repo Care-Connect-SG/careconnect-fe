@@ -82,7 +82,7 @@ export default function ResidentDashboard() {
   const { data: medicalHistory = [] } = useQuery<MedicalHistory[]>({
     queryKey: ["medicalHistory", residentProfile],
     queryFn: () => getMedicalHistoryByResident(residentProfile),
-    enabled: activeTab === "history" &&!!residentProfile,
+    enabled: activeTab === "history" && !!residentProfile,
   });
 
   const { data: medications = [], refetch: refetchMedications } = useQuery<

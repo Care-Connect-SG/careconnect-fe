@@ -5,7 +5,6 @@ import { createTask, updateTask } from "@/app/api/task";
 import { getAllNurses } from "@/app/api/user";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -14,6 +13,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { DateTimePicker } from "@/components/ui/datetime-picker";
 import {
   Dialog,
@@ -27,6 +27,11 @@ import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -35,9 +40,13 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Task, TaskStatus } from "@/types/task";
+import { cn } from "@/lib/utils";
+import { Task, TaskCategory, TaskPriority, TaskStatus } from "@/types/task";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
 import { Plus } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -53,7 +62,9 @@ const taskSchema = z
     notes: z.string().optional(),
     status: z.nativeEnum(TaskStatus).default(TaskStatus.ASSIGNED),
     priority: z.enum(["High", "Medium", "Low"]).optional(),
-    category: z.enum(["Meals", "Medication", "Therapy", "Outing"]).optional(),
+    category: z
+      .enum(["Meals", "Medication", "Therapy", "Outing", "Others"])
+      .optional(),
     residents: z.array(z.string()).min(1, "At least one resident is required"),
     start_date: z.date({
       required_error: "Start date is required",
@@ -107,6 +118,7 @@ export default function TaskForm({
 }) {
   const [isOpen, setIsOpen] = useState(!!task || !!open);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [nurses, setNurses] = useState<any[]>([]);
   const [residents, setResidents] = useState<any[]>([]);
   const [showRecurringDialog, setShowRecurringDialog] = useState(false);
@@ -141,8 +153,8 @@ export default function TaskForm({
         media: task.media || [],
         notes: task.notes || "",
         status: task.status,
-        priority: task.priority,
-        category: task.category,
+        priority: task.priority || TaskPriority.LOW,
+        category: task.category || TaskCategory.OTHERS,
         residents: task.resident ? [task.resident] : [],
         start_date: new Date(task.start_date + "Z"),
         due_date: new Date(task.due_date + "Z"),
@@ -232,6 +244,7 @@ export default function TaskForm({
       }
       setIsOpen(false);
       if (onClose) onClose();
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     } catch (error) {
       let errorMessage = task
         ? "Failed to update task. Please try again."
@@ -267,6 +280,7 @@ export default function TaskForm({
       });
       setIsOpen(false);
       if (onClose) onClose();
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     } catch (error) {
       let errorMessage = "Failed to update task. Please try again.";
       if (error instanceof Error) {
@@ -429,6 +443,7 @@ export default function TaskForm({
                             </SelectItem>
                             <SelectItem value="Therapy">Therapy</SelectItem>
                             <SelectItem value="Outing">Outing</SelectItem>
+                            <SelectItem value="Others">Others</SelectItem>
                           </SelectContent>
                         </Select>
                       </FormItem>
@@ -587,26 +602,57 @@ export default function TaskForm({
                     render={({ field, fieldState }) => (
                       <FormItem>
                         <Label>End Recurring Date</Label>
-                        <FormControl>
-                          <Input
-                            type="date"
-                            onChange={(e) =>
-                              field.onChange(new Date(e.target.value))
-                            }
-                            value={
-                              field.value
-                                ? new Date(field.value)
-                                    .toISOString()
-                                    .split("T")[0]
-                                : ""
-                            }
-                            className={
-                              fieldState.invalid
-                                ? "border-destructive focus-visible:ring-destructive"
-                                : ""
-                            }
-                          />
-                        </FormControl>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "w-full pl-3 text-left font-normal",
+                                  !field.value && "text-muted-foreground",
+                                  fieldState.invalid &&
+                                    "border-destructive focus-visible:ring-destructive",
+                                )}
+                                disabled={!form.watch("recurring")}
+                              >
+                                {field.value ? (
+                                  format(field.value, "MMMM do, yyyy")
+                                ) : (
+                                  <span>Pick a date</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value || undefined}
+                              onSelect={(date) => {
+                                if (!date) {
+                                  field.onChange(null);
+                                  return;
+                                }
+
+                                const selectedDate = new Date(
+                                  date.getFullYear(),
+                                  date.getMonth(),
+                                  date.getDate(),
+                                  8,
+                                  0,
+                                  0,
+                                );
+
+                                field.onChange(selectedDate);
+                              }}
+                              disabled={(date) =>
+                                form.getValues("due_date")
+                                  ? date < form.getValues("due_date")
+                                  : false
+                              }
+                            />
+                          </PopoverContent>
+                        </Popover>
                         {fieldState.error && (
                           <p className="text-sm text-destructive">
                             {fieldState.error.message}

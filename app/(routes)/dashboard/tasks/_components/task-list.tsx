@@ -38,6 +38,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { toTitleCase } from "@/lib/utils";
 import { Task, TaskStatus } from "@/types/task";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   ArrowDown,
   ArrowUp,
@@ -58,6 +59,7 @@ import TaskForm from "./task-form";
 export default function TaskListView({ tasks }: { tasks: Task[] }) {
   const router = useRouter();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const { data: session } = useSession();
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [taskList, setTaskList] = useState<Task[]>(tasks);
@@ -106,6 +108,7 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
             : task,
         ),
       );
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     } catch (error) {
       console.error("Error toggling task status:", error);
     }
@@ -120,6 +123,7 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
         title: "Task Duplicated",
         description: "The task has been successfully duplicated.",
       });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     } catch (error) {
       toast({
         variant: "destructive",
@@ -170,6 +174,7 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
           deleteSeries ? " along with its series" : ""
         }`,
       });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     } catch (error) {
       toast({
         variant: "destructive",
@@ -240,31 +245,12 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
     setTaskList(sortedTasks);
   };
 
-  const getSortIcon = (key: keyof Task | null) => {
-    if (!key) return <ArrowUpDown className="h-4 w-4" />;
-    if (sortConfig.key !== key) return <ArrowUpDown className="h-4 w-4" />;
-    return sortConfig.direction === "asc" ? (
-      <ArrowUp className="h-4 w-4" />
-    ) : (
-      <ArrowDown className="h-4 w-4" />
-    );
-  };
-
-  const getSortLabel = (key: keyof Task) => {
-    switch (key) {
-      case "due_date":
-        return "Due Date";
-      case "priority":
-        return "Priority";
-      case "status":
-        return "Status";
-      default:
-        return key;
-    }
-  };
-
   if (!taskList.length) {
-    return <p className="text-center text-gray-500 p-8">No available tasks</p>;
+    return (
+      <p className="text-center text-gray-500 p-8">
+        No tasks found for the selected date
+      </p>
+    );
   }
 
   return (
@@ -451,19 +437,11 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingTask(task);
-                        }}
-                      >
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit
-                      </DropdownMenuItem>
                       {task.assigned_to &&
                         session?.user?.id &&
                         task.assigned_to === session.user.id &&
-                        task.assigned_to_name && (
+                        task.assigned_to_name &&
+                        task.status !== TaskStatus.COMPLETED && (
                           <DropdownMenuItem
                             onClick={(e) => {
                               e.stopPropagation();
@@ -473,9 +451,20 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                               taskId={task.id}
                               currentNurseId={task.assigned_to}
                               currentNurseName={task.assigned_to_name}
+                              type="default"
                             />
                           </DropdownMenuItem>
                         )}
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingTask(task);
+                        }}
+                      >
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit
+                      </DropdownMenuItem>
+
                       {task.status === TaskStatus.REASSIGNMENT_REQUESTED &&
                         task.reassignment_requested_to &&
                         session?.user?.id &&

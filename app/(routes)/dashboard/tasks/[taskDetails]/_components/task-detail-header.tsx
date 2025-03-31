@@ -171,6 +171,7 @@ export const TaskDetailHeader = ({ task }: TaskDetailHeaderProps) => {
                 taskId={task.id}
                 currentNurseId={task.assigned_to}
                 currentNurseName={task.assigned_to_name}
+                type="default"
               />
             )}
 

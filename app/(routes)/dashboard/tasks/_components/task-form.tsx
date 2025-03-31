@@ -41,7 +41,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { Task, TaskStatus } from "@/types/task";
+import { Task, TaskCategory, TaskPriority, TaskStatus } from "@/types/task";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -153,8 +153,8 @@ export default function TaskForm({
         media: task.media || [],
         notes: task.notes || "",
         status: task.status,
-        priority: task.priority,
-        category: task.category,
+        priority: task.priority || TaskPriority.LOW,
+        category: task.category || TaskCategory.OTHERS,
         residents: task.resident ? [task.resident] : [],
         start_date: new Date(task.start_date + "Z"),
         due_date: new Date(task.due_date + "Z"),

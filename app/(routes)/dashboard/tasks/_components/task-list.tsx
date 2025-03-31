@@ -437,15 +437,6 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingTask(task);
-                        }}
-                      >
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit
-                      </DropdownMenuItem>
                       {task.assigned_to &&
                         session?.user?.id &&
                         task.assigned_to === session.user.id &&
@@ -460,9 +451,20 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                               taskId={task.id}
                               currentNurseId={task.assigned_to}
                               currentNurseName={task.assigned_to_name}
+                              type="default"
                             />
                           </DropdownMenuItem>
                         )}
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingTask(task);
+                        }}
+                      >
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit
+                      </DropdownMenuItem>
+
                       {task.status === TaskStatus.REASSIGNMENT_REQUESTED &&
                         task.reassignment_requested_to &&
                         session?.user?.id &&

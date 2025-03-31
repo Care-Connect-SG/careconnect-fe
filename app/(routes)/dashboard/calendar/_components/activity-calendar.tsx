@@ -74,6 +74,7 @@ interface CalendarProps {
   dateFilter?: Date;
   isAddDialogOpen?: boolean;
   onAddDialogClose?: () => void;
+  isAdmin: boolean;
 }
 
 const DateCellWrapper: React.FC<WrapperProps> = ({
@@ -108,6 +109,7 @@ export default function ActivityCalendar({
   dateFilter,
   isAddDialogOpen,
   onAddDialogClose,
+  isAdmin,
 }: CalendarProps) {
   const { toast } = useToast();
   const { data: session } = useSession();
@@ -135,11 +137,8 @@ export default function ActivityCalendar({
   const canUserEditActivity = useCallback(
     (activity: Activity) => {
       const userId = session?.user?.id;
-      const userRole = (session?.user as any)?.role;
-
       return !!(
-        userRole === "admin" ||
-        userRole === "Admin" ||
+        isAdmin ||
         userCreatedActivities.has(activity.id) ||
         (activity.created_by && activity.created_by === userId)
       );
@@ -150,8 +149,6 @@ export default function ActivityCalendar({
   const eventStyleGetter = useCallback(
     (event: Activity) => {
       const userId = session?.user?.id;
-      const userRole = (session?.user as any)?.role;
-      const isAdmin = userRole === "admin" || userRole === "Admin";
       const isCreator = event.created_by === userId;
       const isUserCreated = userCreatedActivities.has(event.id);
       const canEdit = canUserEditActivity(event);
@@ -752,6 +749,7 @@ export default function ActivityCalendar({
         onDelete={handleDeleteActivity}
         onDuplicate={handleDuplicateActivity}
         canUserEditActivity={canUserEditActivity}
+        isAdmin={isAdmin}
       />
     </>
   );

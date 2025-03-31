@@ -167,6 +167,7 @@ const TaskCard = ({
                   taskId={task.id}
                   currentNurseId={task.assigned_to}
                   currentNurseName={task.assigned_to_name || ""}
+                  type="icon"
                 />
               </div>
             )}

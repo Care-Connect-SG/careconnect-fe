@@ -1,6 +1,7 @@
 "use client";
 
 import { fetchActivities } from "@/app/api/activities";
+import { getCurrentUser } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import { Calendar as DatePicker } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
@@ -40,6 +41,7 @@ export default function CalendarPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [availableLocations, setAvailableLocations] = useState<string[]>([]);
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const loadFilters = useCallback(async () => {
     try {
@@ -56,6 +58,18 @@ export default function CalendarPage() {
   useEffect(() => {
     loadFilters();
   }, [loadFilters]);
+
+  useEffect(() => {
+    getCurrentUser()
+      .then((user) => {
+        if (user.role === "Admin") {
+          setIsAdmin(true);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching user role:", error);
+      });
+  }, []);
 
   const handleNavigate = (action: "PREV" | "NEXT" | "TODAY") => {
     switch (action) {
@@ -153,7 +167,6 @@ export default function CalendarPage() {
                       mode="single"
                       selected={dateFilter}
                       onSelect={setDateFilter}
-                      initialFocus
                     />
                   </PopoverContent>
                 </Popover>
@@ -189,6 +202,7 @@ export default function CalendarPage() {
           dateFilter={dateFilter}
           isAddDialogOpen={isAddDialogOpen}
           onAddDialogClose={() => setIsAddDialogOpen(false)}
+          isAdmin={isAdmin}
         />
         <div className="text-xs bg-white p-2 rounded border shadow-sm flex flex-row justify-between !mt-0">
           <div className="flex flex-col space-y-1">

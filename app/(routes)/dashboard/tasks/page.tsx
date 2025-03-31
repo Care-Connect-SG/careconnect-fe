@@ -1,13 +1,25 @@
 "use client";
 
 import { addDays, format, parse, subDays } from "date-fns";
-import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  X,
+} from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { getTasks } from "@/app/api/task";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -31,6 +43,8 @@ const TaskManagement = () => {
   const queryClient = useQueryClient();
 
   const [currentView, setCurrentView] = useState<"list" | "kanban">("list");
+  const [selectedNurses, setSelectedNurses] = useState<string[]>([]);
+  const [allSelected, setAllSelected] = useState(true);
 
   const initDate = () => {
     const dateParam = searchParams.get("date");
@@ -55,10 +69,9 @@ const TaskManagement = () => {
   });
 
   const {
-    data: tasks = [],
+    data: allTasks = [],
     isLoading,
     error,
-    refetch,
   } = useQuery({
     queryKey: [
       "tasks",
@@ -69,17 +82,87 @@ const TaskManagement = () => {
     ],
     queryFn: () => {
       const formattedDate = format(selectedDate, "yyyy-MM-dd");
-      const queryParams = {
-        ...Object.fromEntries(
-          Object.entries(filters).filter(([_, v]) => v !== undefined),
-        ),
+      const queryParams: Record<string, string> = {
         date: formattedDate,
       };
+
+      if (filters.search) queryParams.search = filters.search;
+      if (filters.status) queryParams.status = filters.status;
+      if (filters.priority) queryParams.priority = filters.priority;
 
       return getTasks(queryParams);
     },
     enabled: true,
   });
+
+  const uniqueNurseIds = useMemo(() => {
+    if (!allTasks || allTasks.length === 0) return [];
+    return Array.from(
+      new Set(
+        allTasks
+          .filter((task) => task.assigned_to)
+          .map((task) => task.assigned_to),
+      ),
+    );
+  }, [allTasks]);
+
+  useEffect(() => {
+    if (
+      uniqueNurseIds.length > 0 &&
+      selectedNurses.length === 0 &&
+      allSelected
+    ) {
+      setSelectedNurses(uniqueNurseIds);
+    }
+  }, [uniqueNurseIds, selectedNurses.length, allSelected]);
+
+  const filteredTasks = useMemo(() => {
+    if (!allTasks || allTasks.length === 0) return [];
+
+    if (selectedNurses.length === 0) {
+      return [];
+    }
+
+    return allTasks.filter(
+      (task) => task.assigned_to && selectedNurses.includes(task.assigned_to),
+    );
+  }, [allTasks, selectedNurses]);
+
+  const uniqueNurses = useMemo(() => {
+    return allTasks
+      ? Array.from(
+          new Map(
+            allTasks
+              .filter((task) => task.assigned_to && task.assigned_to_name)
+              .map((task) => [task.assigned_to, task.assigned_to_name]),
+          ),
+        )
+      : [];
+  }, [allTasks]);
+
+  const handleToggleNurse = (nurseId: string) => {
+    setSelectedNurses((prev) => {
+      if (prev.includes(nurseId)) {
+        const newSelection = prev.filter((id) => id !== nurseId);
+        setAllSelected(false);
+        return newSelection;
+      } else {
+        const newSelection = [...prev, nurseId];
+        setAllSelected(newSelection.length === uniqueNurses.length);
+        return newSelection;
+      }
+    });
+  };
+
+  const handleToggleAllNurses = () => {
+    if (allSelected) {
+      setSelectedNurses([]);
+      setAllSelected(false);
+    } else {
+      setSelectedNurses(uniqueNurses.map(([id]) => id));
+      setAllSelected(true);
+    }
+  };
 
   const updateTaskMutation = useMutation({
     mutationFn: async (updatedTask: Task) => {},
@@ -230,13 +313,74 @@ const TaskManagement = () => {
             </SelectContent>
           </Select>
 
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline">
+                {selectedNurses.length === 0
+                  ? "No Nurses"
+                  : allSelected
+                    ? "All Nurses"
+                    : `${selectedNurses.length} nurse${
+                        selectedNurses.length > 1 ? "s" : ""
+                      }`}
+                <ChevronDown className="w-4 h-4 ml-2" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-56 p-2">
+              <div className="max-h-60 overflow-auto">
+                {uniqueNurses.length > 0 && (
+                  <div
+                    className="flex items-center gap-2 cursor-pointer p-2 hover:bg-gray-100 rounded-md mb-1 border-b"
+                    onClick={handleToggleAllNurses}
+                  >
+                    <div
+                      className={`w-5 h-5 border rounded-md flex items-center justify-center ${
+                        allSelected ? "bg-blue-500" : "bg-white"
+                      }`}
+                    >
+                      {allSelected && <Check className="w-4 h-4 text-white" />}
+                    </div>
+                    <span className="text-sm font-medium">Toggle All</span>
+                  </div>
+                )}
+
+                {uniqueNurses.length > 0 ? (
+                  uniqueNurses.map(([nurseId, nurseName], index) => (
+                    <div
+                      key={nurseId || index}
+                      className="flex items-center gap-2 cursor-pointer p-2 hover:bg-gray-100 rounded-md"
+                      onClick={() => handleToggleNurse(nurseId)}
+                    >
+                      <div
+                        className={`w-5 h-5 border rounded-md flex items-center justify-center ${
+                          selectedNurses.includes(nurseId)
+                            ? "bg-blue-500"
+                            : "bg-white"
+                        }`}
+                      >
+                        {selectedNurses.includes(nurseId) && (
+                          <Check className="w-4 h-4 text-white" />
+                        )}
+                      </div>
+                      <span className="text-sm">{nurseName}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-2 text-sm text-gray-500">
+                    No nurses found
+                  </div>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+
           <Button
-            variant="outline"
+            variant="transparentHover"
             onClick={clearFilters}
             disabled={!filters.search && !filters.status && !filters.priority}
+            className="px-2"
           >
-            <X className="w-4 h-4 mr-2" />
-            Clear
+            <X className="w-4 h-4" />
           </Button>
         </div>
       </div>
@@ -248,9 +392,9 @@ const TaskManagement = () => {
       ) : error ? (
         <div className="text-red-500">Error loading tasks: {error.message}</div>
       ) : currentView === "list" ? (
-        <TaskListView tasks={tasks} />
+        <TaskListView tasks={filteredTasks} />
       ) : (
-        <TaskKanbanView tasks={tasks} />
+        <TaskKanbanView tasks={filteredTasks} />
       )}
     </div>
   );

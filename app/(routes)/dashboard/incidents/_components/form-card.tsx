@@ -62,8 +62,8 @@ export default function FormCard({
           <Badge
             className={
               status === "Published"
-                ? "hidden md:block bg-green-100 text-green-800"
-                : "hidden md:block bg-yellow-100 text-yellow-800"
+                ? "hidden md:block text-green-800 bg-green-100 h-6 hover:bg-green-200 hover:text-green-900"
+                : "hidden md:block text-yellow-800 bg-yellow-100 h-6 hover:bg-yellow-200 hover:text-yellow-900"
             }
           >
             {status}

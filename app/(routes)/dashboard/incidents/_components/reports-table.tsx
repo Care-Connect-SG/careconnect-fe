@@ -25,6 +25,7 @@ import { pdf } from "@react-pdf/renderer";
 import { Download, Edit, MoreHorizontal, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import ReportPDF from "./report-pdf";
+import getReportBadgeConfig from "./badge-config";
 
 interface ReportsTableProps {
   user: User;
@@ -123,11 +124,7 @@ export default function ReportsTable({
                 {activeTab == "my" && (
                   <TableCell>
                     <Badge
-                      className={
-                        report.status === "Draft"
-                          ? "text-yellow-800 bg-yellow-100 h-6"
-                          : "text-green-800 bg-green-100 h-6"
-                      }
+                      className={getReportBadgeConfig(report.status)}
                     >
                       {report.status}
                     </Badge>

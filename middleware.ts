@@ -5,13 +5,13 @@ import { Role } from "./types/user";
 export async function middleware(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
-  // if (req.nextUrl.pathname.startsWith("/auth/login")) {
-  //   return NextResponse.next();
-  // }
+  if (req.nextUrl.pathname.startsWith("/auth/login")) {
+    return NextResponse.next();
+  }
 
-  // if (!token || !token.accessToken) {
-  //   return NextResponse.redirect(new URL("/auth/login", req.url));
-  // }
+  if (!token || !token.accessToken) {
+    return NextResponse.redirect(new URL("/auth/login", req.url));
+  }
 
   const restrictedRoutes: Record<string, string> = {
     "/dashboard/incidents/admin": Role.ADMIN,

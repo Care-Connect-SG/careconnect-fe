@@ -463,7 +463,8 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                       {task.assigned_to &&
                         session?.user?.id &&
                         task.assigned_to === session.user.id &&
-                        task.assigned_to_name && (
+                        task.assigned_to_name &&
+                        task.status !== TaskStatus.COMPLETED && (
                           <DropdownMenuItem
                             onClick={(e) => {
                               e.stopPropagation();

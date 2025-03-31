@@ -14,6 +14,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { DateTimePicker } from "@/components/ui/datetime-picker";
 import {
   Dialog,
@@ -27,6 +28,11 @@ import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -35,9 +41,11 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 import { Task, TaskStatus } from "@/types/task";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -587,26 +595,65 @@ export default function TaskForm({
                     render={({ field, fieldState }) => (
                       <FormItem>
                         <Label>End Recurring Date</Label>
-                        <FormControl>
-                          <Input
-                            type="date"
-                            onChange={(e) =>
-                              field.onChange(new Date(e.target.value))
-                            }
-                            value={
-                              field.value
-                                ? new Date(field.value)
-                                    .toISOString()
-                                    .split("T")[0]
-                                : ""
-                            }
-                            className={
-                              fieldState.invalid
-                                ? "border-destructive focus-visible:ring-destructive"
-                                : ""
-                            }
-                          />
-                        </FormControl>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "w-full pl-3 text-left font-normal",
+                                  !field.value && "text-muted-foreground",
+                                  fieldState.invalid &&
+                                    "border-destructive focus-visible:ring-destructive",
+                                )}
+                                disabled={!form.watch("recurring")}
+                              >
+                                {field.value ? (
+                                  `${String(field.value.getDate()).padStart(
+                                    2,
+                                    "0",
+                                  )}/${String(
+                                    field.value.getMonth() + 1,
+                                  ).padStart(
+                                    2,
+                                    "0",
+                                  )}/${field.value.getFullYear()}`
+                                ) : (
+                                  <span>Pick a date</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value || undefined}
+                              onSelect={(date) => {
+                                if (!date) {
+                                  field.onChange(null);
+                                  return;
+                                }
+
+                                const selectedDate = new Date(
+                                  date.getFullYear(),
+                                  date.getMonth(),
+                                  date.getDate(),
+                                  8,
+                                  0,
+                                  0,
+                                );
+
+                                field.onChange(selectedDate);
+                              }}
+                              disabled={(date) =>
+                                form.getValues("due_date")
+                                  ? date < form.getValues("due_date")
+                                  : false
+                              }
+                            />
+                          </PopoverContent>
+                        </Popover>
                         {fieldState.error && (
                           <p className="text-sm text-destructive">
                             {fieldState.error.message}

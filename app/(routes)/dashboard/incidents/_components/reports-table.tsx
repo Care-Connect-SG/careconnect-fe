@@ -19,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ReportResponse } from "@/types/report";
+import { ReportResponse, ReportStatus } from "@/types/report";
 import { Role, User } from "@/types/user";
 import { pdf } from "@react-pdf/renderer";
 import { Download, Edit, MoreHorizontal, Trash2 } from "lucide-react";
@@ -145,7 +145,7 @@ export default function ReportsTable({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        {report.status !== "Published" && (
+                        {report.status === ReportStatus.DRAFT && (
                           <DropdownMenuItem
                             onClick={(e) => {
                               e.stopPropagation();
@@ -156,7 +156,7 @@ export default function ReportsTable({
                             Edit
                           </DropdownMenuItem>
                         )}
-                        {(report.status !== "Published" ||
+                        {(report.status === ReportStatus.DRAFT ||
                           user?.role === Role.ADMIN) && (
                           <DropdownMenuItem
                             onClick={(e) => {
@@ -164,7 +164,7 @@ export default function ReportsTable({
                               handleDelete(report.id);
                             }}
                           >
-                            <Trash2 className="mr-2 h-4 w-4" />
+                          <Trash2 className="mr-2 h-4 w-4" />
                             Delete
                           </DropdownMenuItem>
                         )}

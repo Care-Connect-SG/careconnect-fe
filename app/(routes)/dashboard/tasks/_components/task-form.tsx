@@ -5,7 +5,6 @@ import { createTask, updateTask } from "@/app/api/task";
 import { getAllNurses } from "@/app/api/user";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -44,6 +43,8 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { Task, TaskStatus } from "@/types/task";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
 import { Plus } from "lucide-react";
 import { CalendarIcon } from "lucide-react";
 import React, { useEffect, useState } from "react";
@@ -61,7 +62,9 @@ const taskSchema = z
     notes: z.string().optional(),
     status: z.nativeEnum(TaskStatus).default(TaskStatus.ASSIGNED),
     priority: z.enum(["High", "Medium", "Low"]).optional(),
-    category: z.enum(["Meals", "Medication", "Therapy", "Outing"]).optional(),
+    category: z
+      .enum(["Meals", "Medication", "Therapy", "Outing", "Others"])
+      .optional(),
     residents: z.array(z.string()).min(1, "At least one resident is required"),
     start_date: z.date({
       required_error: "Start date is required",
@@ -115,6 +118,7 @@ export default function TaskForm({
 }) {
   const [isOpen, setIsOpen] = useState(!!task || !!open);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [nurses, setNurses] = useState<any[]>([]);
   const [residents, setResidents] = useState<any[]>([]);
   const [showRecurringDialog, setShowRecurringDialog] = useState(false);
@@ -240,6 +244,7 @@ export default function TaskForm({
       }
       setIsOpen(false);
       if (onClose) onClose();
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     } catch (error) {
       let errorMessage = task
         ? "Failed to update task. Please try again."
@@ -275,6 +280,7 @@ export default function TaskForm({
       });
       setIsOpen(false);
       if (onClose) onClose();
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     } catch (error) {
       let errorMessage = "Failed to update task. Please try again.";
       if (error instanceof Error) {
@@ -437,6 +443,7 @@ export default function TaskForm({
                             </SelectItem>
                             <SelectItem value="Therapy">Therapy</SelectItem>
                             <SelectItem value="Outing">Outing</SelectItem>
+                            <SelectItem value="Others">Others</SelectItem>
                           </SelectContent>
                         </Select>
                       </FormItem>
@@ -609,15 +616,7 @@ export default function TaskForm({
                                 disabled={!form.watch("recurring")}
                               >
                                 {field.value ? (
-                                  `${String(field.value.getDate()).padStart(
-                                    2,
-                                    "0",
-                                  )}/${String(
-                                    field.value.getMonth() + 1,
-                                  ).padStart(
-                                    2,
-                                    "0",
-                                  )}/${field.value.getFullYear()}`
+                                  format(field.value, "MMMM do, yyyy")
                                 ) : (
                                   <span>Pick a date</span>
                                 )}

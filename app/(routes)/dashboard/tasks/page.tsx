@@ -18,6 +18,8 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Task } from "@/types/task";
 
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import TaskForm from "./_components/task-form";
 import TaskKanbanView from "./_components/task-kanban";
 import TaskListView from "./_components/task-list";
@@ -26,10 +28,9 @@ import { TaskViewToggle } from "./_components/task-viewtoggle";
 const TaskManagement = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [currentView, setCurrentView] = useState<"list" | "kanban">("list");
+  const queryClient = useQueryClient();
 
-  const [loading, setLoading] = useState(true);
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [currentView, setCurrentView] = useState<"list" | "kanban">("list");
 
   const initDate = () => {
     const dateParam = searchParams.get("date");
@@ -53,9 +54,52 @@ const TaskManagement = () => {
     date: format(initDate(), "yyyy-MM-dd"),
   });
 
-  useEffect(() => {
-    fetchTasks();
-  }, [filters]);
+  const {
+    data: tasks = [],
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: [
+      "tasks",
+      filters.search,
+      filters.status,
+      filters.priority,
+      format(selectedDate, "yyyy-MM-dd"),
+    ],
+    queryFn: () => {
+      const formattedDate = format(selectedDate, "yyyy-MM-dd");
+      const queryParams = {
+        ...Object.fromEntries(
+          Object.entries(filters).filter(([_, v]) => v !== undefined),
+        ),
+        date: formattedDate,
+      };
+
+      return getTasks(queryParams);
+    },
+    enabled: true,
+  });
+
+  const updateTaskMutation = useMutation({
+    mutationFn: async (updatedTask: Task) => {},
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    },
+    onError: (error) => {
+      console.error("Failed to update task", error);
+    },
+  });
+
+  const deleteTaskMutation = useMutation({
+    mutationFn: async (taskId: string) => {},
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    },
+    onError: (error) => {
+      console.error("Failed to delete task", error);
+    },
+  });
 
   useEffect(() => {
     const current = new URLSearchParams(Array.from(searchParams.entries()));
@@ -68,26 +112,6 @@ const TaskManagement = () => {
       router.push(`/dashboard/tasks${query}`, { scroll: false });
     }
   }, [selectedDate, router, searchParams]);
-
-  const fetchTasks = async () => {
-    setLoading(true);
-    try {
-      const formattedDate = format(selectedDate, "yyyy-MM-dd");
-      const queryParams = {
-        ...Object.fromEntries(
-          Object.entries(filters).filter(([_, v]) => v !== undefined),
-        ),
-        date: formattedDate,
-      };
-
-      const filteredTasks = await getTasks(queryParams);
-      setTasks(filteredTasks);
-    } catch (err) {
-      console.error("TaskManagement - Error fetching tasks:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const updateFilter = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -217,10 +241,12 @@ const TaskManagement = () => {
         </div>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="p-8">
           <Spinner />
         </div>
+      ) : error ? (
+        <div className="text-red-500">Error loading tasks: {error.message}</div>
       ) : currentView === "list" ? (
         <TaskListView tasks={tasks} />
       ) : (

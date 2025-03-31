@@ -17,6 +17,7 @@ export enum TaskCategory {
   MEDICATION = "Medication",
   THERAPY = "Therapy",
   OUTING = "Outing",
+  OTHERS = "Others",
 }
 
 export enum Recurrence {

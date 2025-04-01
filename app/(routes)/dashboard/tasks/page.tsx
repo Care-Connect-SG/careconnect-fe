@@ -45,6 +45,14 @@ const TaskManagement = () => {
   const [currentView, setCurrentView] = useState<"list" | "kanban">("list");
   const [selectedNurses, setSelectedNurses] = useState<string[]>([]);
   const [allSelected, setAllSelected] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [priorityFilter, setPriorityFilter] = useState<string>("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [assignedToFilter, setAssignedToFilter] = useState<string>("all");
+  const [residentFilter, setResidentFilter] = useState<string>("all");
+  const [isOpen, setIsOpen] = useState(false);
 
   const initDate = () => {
     const dateParam = searchParams.get("date");
@@ -58,8 +66,6 @@ const TaskManagement = () => {
     }
     return new Date();
   };
-
-  const [selectedDate, setSelectedDate] = useState(initDate);
 
   const [filters, setFilters] = useState({
     search: "",
@@ -196,6 +202,16 @@ const TaskManagement = () => {
     }
   }, [selectedDate, router, searchParams]);
 
+  useEffect(() => {
+    const open = searchParams.get("open");
+    if (open === "true") {
+      setIsOpen(true);
+      // Remove the query parameter from the URL
+      const newUrl = window.location.pathname + window.location.hash;
+      window.history.replaceState({}, "", newUrl);
+    }
+  }, [searchParams]);
+
   const updateFilter = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
@@ -244,7 +260,7 @@ const TaskManagement = () => {
               view={currentView}
               onChange={(view) => setCurrentView(view)}
             />
-            <TaskForm />
+            <TaskForm open={isOpen} onClose={() => setIsOpen(false)} />
           </div>
         </div>
       </div>

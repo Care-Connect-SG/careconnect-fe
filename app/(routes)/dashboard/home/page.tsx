@@ -1,5 +1,6 @@
 "use client";
 
+import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useSession } from "next-auth/react";
 import QuickActions from "./_components/quick-actions";
@@ -8,26 +9,31 @@ import StaffWorkload from "./_components/staff-workload";
 import StatsOverview from "./_components/stats-overview";
 import UpcomingEvents from "./_components/upcoming-events";
 
-export default function Home() {
+export default function HomePage() {
   const { data: session } = useSession();
 
   return (
-    <div className="flex flex-col w-full gap-8 p-8">
-      <p className="text-2xl font-semibold text-gray-800">
-        Hello{session?.user?.email ? " " + session.user.email : ""}!
-      </p>
-      <Separator />
+    <div className="space-y-6">
+      {/* Quick Actions - Full Width */}
+      <div className="w-full">
+        <QuickActions />
+      </div>
 
-      <QuickActions />
-      <p className="text-lg font-semibold text-gray-800">Overview</p>
-      <StatsOverview />
+      {/* Stats Overview - Full Width */}
+      <div className="w-full">
+        <StatsOverview />
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Two Column Layout for Workload and Incidents */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <StaffWorkload />
         <RecentIncidents />
       </div>
 
-      <UpcomingEvents />
+      {/* Upcoming Events - Full Width */}
+      <div className="w-full">
+        <UpcomingEvents />
+      </div>
     </div>
   );
 }

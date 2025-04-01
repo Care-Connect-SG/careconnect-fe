@@ -45,14 +45,6 @@ const TaskManagement = () => {
   const [currentView, setCurrentView] = useState<"list" | "kanban">("list");
   const [selectedNurses, setSelectedNurses] = useState<string[]>([]);
   const [allSelected, setAllSelected] = useState(true);
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [priorityFilter, setPriorityFilter] = useState<string>("all");
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
-  const [assignedToFilter, setAssignedToFilter] = useState<string>("all");
-  const [residentFilter, setResidentFilter] = useState<string>("all");
-  const [isOpen, setIsOpen] = useState(false);
 
   const initDate = () => {
     const dateParam = searchParams.get("date");
@@ -67,12 +59,26 @@ const TaskManagement = () => {
     return new Date();
   };
 
+  const [selectedDate, setSelectedDate] = useState(initDate);
+
   const [filters, setFilters] = useState({
     search: "",
     status: "",
     priority: "",
     date: format(initDate(), "yyyy-MM-dd"),
   });
+
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const open = searchParams.get("open");
+    if (open === "true") {
+      setIsOpen(true);
+      // Remove the query parameter from the URL
+      const newUrl = window.location.pathname + window.location.hash;
+      window.history.replaceState({}, "", newUrl);
+    }
+  }, [searchParams]);
 
   const {
     data: allTasks = [],
@@ -201,16 +207,6 @@ const TaskManagement = () => {
       router.push(`/dashboard/tasks${query}`, { scroll: false });
     }
   }, [selectedDate, router, searchParams]);
-
-  useEffect(() => {
-    const open = searchParams.get("open");
-    if (open === "true") {
-      setIsOpen(true);
-      // Remove the query parameter from the URL
-      const newUrl = window.location.pathname + window.location.hash;
-      window.history.replaceState({}, "", newUrl);
-    }
-  }, [searchParams]);
 
   const updateFilter = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));

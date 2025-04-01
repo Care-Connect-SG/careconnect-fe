@@ -29,8 +29,6 @@ const RecentIncidents = () => {
   }, []);
 
   const getSeverityClass = (report: ReportResponse) => {
-    // For now, we'll determine severity based on the report content
-    // You might want to adjust this logic based on your actual data structure
     const hasUrgentContent = report.report_content.some((content) =>
       content.input.toString().toLowerCase().includes("urgent"),
     );

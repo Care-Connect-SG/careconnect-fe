@@ -1,7 +1,5 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { useSession } from "next-auth/react";
 import QuickActions from "./_components/quick-actions";
 import RecentIncidents from "./_components/recent-incidents";

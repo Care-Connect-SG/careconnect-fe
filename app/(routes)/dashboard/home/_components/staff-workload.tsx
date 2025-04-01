@@ -5,16 +5,14 @@ import { getAllNurses } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { TaskStatus } from "@/types/task";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface NurseWorkload {
   id: string;
   name: string;
-  totalTasks: number;
-  completedTasks: number;
   pendingTasks: number;
-  completionRate: number;
 }
 
 const StaffWorkload = () => {
@@ -46,22 +44,16 @@ const StaffWorkload = () => {
     const nurse = nurses.find((n) => n.id === nurseId);
     if (!nurse) return null;
 
-    const nurseTasks = tasks.filter((task) => task.assigned_to?.id === nurseId);
-    const totalTasks = nurseTasks.length;
-    const completedTasks = nurseTasks.filter(
-      (task) => task.status === "completed",
+    // Filter tasks that are assigned to this nurse and are not completed
+    const pendingTasks = tasks.filter(
+      (task) =>
+        task.assigned_to === nurseId && task.status !== TaskStatus.COMPLETED,
     ).length;
-    const pendingTasks = totalTasks - completedTasks;
-    const completionRate =
-      totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
     return {
       id: nurse.id,
       name: nurse.name,
-      totalTasks,
-      completedTasks,
       pendingTasks,
-      completionRate,
     };
   };
 
@@ -96,15 +88,12 @@ const StaffWorkload = () => {
                   <div className="flex items-center justify-between">
                     <h3 className="font-medium text-gray-900">{nurse.name}</h3>
                     <span className="text-sm text-gray-500">
-                      {workload.completionRate.toFixed(0)}% Complete
+                      {workload.pendingTasks} pending tasks
                     </span>
                   </div>
-                  <Progress value={workload.completionRate} className="h-2" />
                   <div className="flex items-center justify-between text-sm text-gray-500">
                     <div className="space-x-4">
-                      <span>{workload.totalTasks} Total</span>
-                      <span>{workload.pendingTasks} Pending</span>
-                      <span>{workload.completedTasks} Completed</span>
+                      <span>{workload.pendingTasks} Tasks to Complete</span>
                     </div>
                   </div>
                 </div>

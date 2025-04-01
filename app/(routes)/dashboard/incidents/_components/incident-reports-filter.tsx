@@ -262,7 +262,7 @@ export default function IncidentReportFilters({
         disabled={!hasActiveFilters()}
         className="px-2"
       >
-        <X className="w-4 h-4 mr-2" />
+        <X className="w-4 h-4" />
       </Button>
     </div>
   );

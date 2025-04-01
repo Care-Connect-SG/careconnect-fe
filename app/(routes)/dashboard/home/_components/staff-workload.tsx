@@ -4,8 +4,8 @@ import { getTasks } from "@/app/api/task";
 import { getAllNurses } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { TaskStatus } from "@/types/task";
+import { endOfDay, startOfDay } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -24,9 +24,10 @@ const StaffWorkload = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const today = new Date();
         const [nursesData, tasksData] = await Promise.all([
           getAllNurses(),
-          getTasks(),
+          getTasks({ date: today.toISOString().split("T")[0] }),
         ]);
         setNurses(nursesData);
         setTasks(tasksData);
@@ -44,7 +45,7 @@ const StaffWorkload = () => {
     const nurse = nurses.find((n) => n.id === nurseId);
     if (!nurse) return null;
 
-    // Filter tasks that are assigned to this nurse and are not completed
+    // Filter tasks that are assigned to this nurse, not completed, and due today
     const pendingTasks = tasks.filter(
       (task) =>
         task.assigned_to === nurseId && task.status !== TaskStatus.COMPLETED,
@@ -93,7 +94,9 @@ const StaffWorkload = () => {
                   </div>
                   <div className="flex items-center justify-between text-sm text-gray-500">
                     <div className="space-x-4">
-                      <span>{workload.pendingTasks} Tasks to Complete</span>
+                      <span>
+                        {workload.pendingTasks} Tasks to Complete Today
+                      </span>
                     </div>
                   </div>
                 </div>

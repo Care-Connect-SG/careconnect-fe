@@ -1,14 +1,14 @@
 "use client";
 
+import { getResidentsByPage } from "@/app/api/resident";
+import { getTasks } from "@/app/api/task";
+import { getAllNurses } from "@/app/api/user";
 import { Card } from "@/components/ui/card";
+import { ResidentRecord } from "@/types/resident";
+import { Task, TaskStatus } from "@/types/task";
+import { User } from "@/types/user";
 import { AlertTriangle, Clock, UserCheck, Users } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getTasks } from "@/app/api/task";
-import { Task, TaskStatus } from "@/types/task";
-import { getResidentsByPage } from "@/app/api/resident";
-import { ResidentRecord } from "@/types/resident";
-import { getAllNurses } from "@/app/api/user";
-import { User } from "@/types/user";
 
 const StatsOverview = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -22,7 +22,7 @@ const StatsOverview = () => {
         const [tasksData, residentsData, nursesData] = await Promise.all([
           getTasks(),
           getResidentsByPage(1),
-          getAllNurses()
+          getAllNurses(),
         ]);
         setTasks(tasksData);
         setResidents(residentsData);
@@ -46,13 +46,21 @@ const StatsOverview = () => {
     },
     {
       title: "Pending Tasks",
-      value: tasks.filter(task => task.status === TaskStatus.ASSIGNED).length.toString(),
+      value: tasks
+        .filter((task) => task.status === TaskStatus.ASSIGNED)
+        .length.toString(),
       icon: Clock,
       color: "text-yellow-500",
     },
     {
       title: "Delayed Tasks",
-      value: tasks.filter(task => new Date(task.due_date) < new Date() && task.status !== TaskStatus.COMPLETED).length.toString(),
+      value: tasks
+        .filter(
+          (task) =>
+            new Date(task.due_date) < new Date() &&
+            task.status !== TaskStatus.COMPLETED,
+        )
+        .length.toString(),
       icon: AlertTriangle,
       color: "text-red-500",
     },

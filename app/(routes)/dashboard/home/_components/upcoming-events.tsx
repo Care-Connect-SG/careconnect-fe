@@ -2,11 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Clock, MapPin, MoreHorizontal, Users } from "lucide-react";
-import { useEffect, useState } from "react";
 import { Activity } from "@/types/activity";
 import { format } from "date-fns";
+import { Clock, MapPin, MoreHorizontal, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const UpcomingEvents = () => {
   const router = useRouter();
@@ -16,7 +16,9 @@ const UpcomingEvents = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BE_API_URL}/activities`);
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_BE_API_URL}/activities`,
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch events");
         }
@@ -54,8 +56,11 @@ const UpcomingEvents = () => {
   }
 
   const upcomingEvents = events
-    .filter(event => new Date(event.start_time) > new Date())
-    .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
+    .filter((event) => new Date(event.start_time) > new Date())
+    .sort(
+      (a, b) =>
+        new Date(a.start_time).getTime() - new Date(b.start_time).getTime(),
+    )
     .slice(0, 3);
 
   return (
@@ -97,7 +102,9 @@ const UpcomingEvents = () => {
               variant="ghost"
               size="icon"
               className="text-gray-400 hover:text-gray-600"
-              onClick={() => router.push(`/dashboard/calendar/event/${event.id}`)}
+              onClick={() =>
+                router.push(`/dashboard/calendar/event/${event.id}`)
+              }
             >
               <MoreHorizontal className="w-5 h-5" />
             </Button>

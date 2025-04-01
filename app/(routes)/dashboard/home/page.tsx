@@ -9,31 +9,27 @@ import StaffWorkload from "./_components/staff-workload";
 import StatsOverview from "./_components/stats-overview";
 import UpcomingEvents from "./_components/upcoming-events";
 
-export default function HomePage() {
+const HomePage = () => {
   const { data: session } = useSession();
+  const username = session?.user?.name || "User";
 
   return (
-    <div className="space-y-6">
-      {/* Quick Actions - Full Width */}
-      <div className="w-full">
+    <div className="flex flex-col w-full gap-8 p-8">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-2xl font-semibold text-gray-800">Hi, {username}</h1>
+        <p className="text-gray-500">Welcome to your dashboard</p>
+      </div>
+      <div className="flex flex-col space-y-6">
         <QuickActions />
-      </div>
-
-      {/* Stats Overview - Full Width */}
-      <div className="w-full">
         <StatsOverview />
-      </div>
-
-      {/* Two Column Layout for Workload and Incidents */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <StaffWorkload />
-        <RecentIncidents />
-      </div>
-
-      {/* Upcoming Events - Full Width */}
-      <div className="w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <StaffWorkload />
+          <RecentIncidents />
+        </div>
         <UpcomingEvents />
       </div>
     </div>
   );
-}
+};
+
+export default HomePage;

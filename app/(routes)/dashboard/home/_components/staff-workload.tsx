@@ -1,14 +1,14 @@
 "use client";
 
+import { getTasks } from "@/app/api/task";
+import { getAllNurses } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { useEffect, useState } from "react";
-import { getAllNurses } from "@/app/api/user";
-import { getTasks } from "@/app/api/task";
 import { Task, TaskStatus } from "@/types/task";
 import { User } from "@/types/user";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface NurseWorkload {
   nurse: User;
@@ -28,7 +28,7 @@ const StaffWorkload = () => {
       try {
         const [nursesData, tasksData] = await Promise.all([
           getAllNurses(),
-          getTasks()
+          getTasks(),
         ]);
         setNurses(nursesData);
         setTasks(tasksData);
@@ -43,13 +43,17 @@ const StaffWorkload = () => {
   }, []);
 
   const calculateWorkload = (): NurseWorkload[] => {
-    return nurses.map(nurse => {
-      const nurseTasks = tasks.filter(task => task.assigned_to === nurse.id);
+    return nurses.map((nurse) => {
+      const nurseTasks = tasks.filter((task) => task.assigned_to === nurse.id);
       return {
         nurse,
         totalTasks: nurseTasks.length,
-        pendingTasks: nurseTasks.filter(task => task.status === TaskStatus.ASSIGNED).length,
-        completedTasks: nurseTasks.filter(task => task.status === TaskStatus.COMPLETED).length
+        pendingTasks: nurseTasks.filter(
+          (task) => task.status === TaskStatus.ASSIGNED,
+        ).length,
+        completedTasks: nurseTasks.filter(
+          (task) => task.status === TaskStatus.COMPLETED,
+        ).length,
       };
     });
   };
@@ -88,17 +92,21 @@ const StaffWorkload = () => {
       </div>
       <div className="space-y-6">
         {workloads.map((workload) => {
-          const progress = workload.totalTasks > 0 
-            ? (workload.completedTasks / workload.totalTasks) * 100 
-            : 0;
+          const progress =
+            workload.totalTasks > 0
+              ? (workload.completedTasks / workload.totalTasks) * 100
+              : 0;
 
           return (
             <div key={workload.nurse.id} className="space-y-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-gray-900">{workload.nurse.name}</p>
+                  <p className="font-medium text-gray-900">
+                    {workload.nurse.name}
+                  </p>
                   <p className="text-sm text-gray-500">
-                    {workload.pendingTasks} pending • {workload.completedTasks} completed
+                    {workload.pendingTasks} pending • {workload.completedTasks}{" "}
+                    completed
                   </p>
                 </div>
                 <p className="text-sm font-medium text-gray-700">

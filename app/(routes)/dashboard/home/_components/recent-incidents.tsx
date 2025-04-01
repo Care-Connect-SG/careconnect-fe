@@ -1,107 +1,111 @@
 "use client";
 
+import { getReports } from "@/app/api/report";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { getReports } from "@/app/api/report";
 import { ReportResponse } from "@/types/report";
 import { formatDistanceToNow } from "date-fns";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const RecentIncidents = () => {
-  const router = useRouter();
   const [reports, setReports] = useState<ReportResponse[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchReports = async () => {
       try {
         const data = await getReports();
-        setReports(data);
+        setReports(data.slice(0, 4));
       } catch (error) {
         console.error("Error fetching reports:", error);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
     fetchReports();
   }, []);
 
-  if (loading) {
-    return (
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="h-6 bg-gray-200 rounded w-1/4 animate-pulse"></div>
-          <div className="h-6 bg-gray-200 rounded w-1/6 animate-pulse"></div>
-        </div>
-        <div className="space-y-4">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i} className="p-4 bg-gray-50">
-              <div className="animate-pulse">
-                <div className="h-4 bg-gray-200 rounded w-1/3 mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </Card>
+  const getSeverityClass = (report: ReportResponse) => {
+    // For now, we'll determine severity based on the report content
+    // You might want to adjust this logic based on your actual data structure
+    const hasUrgentContent = report.report_content.some(
+      (content) => content.input.toString().toLowerCase().includes("urgent")
     );
-  }
+    const hasMediumContent = report.report_content.some(
+      (content) => content.input.toString().toLowerCase().includes("moderate")
+    );
+
+    if (hasUrgentContent) return "bg-red-100 text-red-700";
+    if (hasMediumContent) return "bg-yellow-100 text-yellow-700";
+    return "bg-green-100 text-green-700";
+  };
+
+  const getStatusClass = (report: ReportResponse) => {
+    return report.status === "Published"
+      ? "bg-green-100 text-green-700"
+      : "bg-gray-100 text-gray-700";
+  };
 
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <p className="text-lg font-semibold text-gray-800">Recent Incidents</p>
+        <h2 className="text-lg font-semibold text-gray-800">Recent Incidents</h2>
         <Button
-          variant="link"
-          className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+          variant="outline"
+          className="text-sm"
           onClick={() => router.push("/dashboard/incidents")}
         >
           View All
         </Button>
       </div>
       <div className="space-y-4">
-        {reports.slice(0, 4).map((report) => (
-          <Card
-            key={report.id}
-            className="p-4 bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer"
-            onClick={() => router.push(`/dashboard/incidents/${report.id}`)}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900">{report.form_name}</p>
+        {isLoading ? (
+          <div className="flex items-center justify-center h-32">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+          </div>
+        ) : (
+          reports.map((report) => (
+            <div
+              key={report.id}
+              className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+            >
+              <div className="flex flex-col gap-1">
+                <h3 className="font-medium text-gray-900">{report.form_name}</h3>
                 <p className="text-sm text-gray-500">
-                  {report.primary_resident?.name || "N/A"} • {formatDistanceToNow(new Date(report.created_at), { addSuffix: true })}
+                  {report.primary_resident?.name || "No resident specified"}
+                </p>
+                <p className="text-xs text-gray-400">
+                  {formatDistanceToNow(new Date(report.created_at), {
+                    addSuffix: true,
+                  })}
                 </p>
               </div>
-              <div className="flex items-center space-x-2">
-                <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    report.severity === "high"
-                      ? "bg-red-100 text-red-700"
-                      : report.severity === "medium"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : "bg-green-100 text-green-700"
-                  }`}
-                >
-                  {report.severity}
+              <div className="flex flex-col items-end gap-2">
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getSeverityClass(report)}`}>
+                  {report.report_content.some((content) =>
+                    content.input.toString().toLowerCase().includes("urgent")
+                  )
+                    ? "High"
+                    : report.report_content.some((content) =>
+                        content.input.toString().toLowerCase().includes("moderate")
+                      )
+                    ? "Medium"
+                    : "Low"}
                 </span>
                 <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    report.status === "pending"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : report.status === "in_progress"
-                      ? "bg-blue-100 text-blue-700"
-                      : "bg-green-100 text-green-700"
-                  }`}
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusClass(
+                    report
+                  )}`}
                 >
                   {report.status}
                 </span>
               </div>
             </div>
-          </Card>
-        ))}
+          ))
+        )}
       </div>
     </Card>
   );

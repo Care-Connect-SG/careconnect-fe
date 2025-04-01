@@ -20,7 +20,9 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { User } from "@/types/user";
-import React, { useState, useEffect } from "react";
+import { Paperclip } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import { FileRejection, useDropzone } from "react-dropzone";
 
 interface CreateResidentDialogProps {
   isOpen: boolean;
@@ -55,6 +57,7 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
   const [additionalNotes, setAdditionalNotes] = useState("");
   const [primaryNurse, setPrimaryNurse] = useState("");
   const [nurseOptions, setNurseOptions] = useState<User[]>([]);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -65,6 +68,22 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
         );
     }
   }, [isOpen]);
+
+  const onDrop = useCallback(
+    (acceptedFiles: File[], _rejectedFiles: FileRejection[]) => {
+      if (acceptedFiles.length > 0) {
+        setSelectedImage(acceptedFiles[0]);
+      }
+    },
+    [],
+  );
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    maxFiles: 1,
+    maxSize: 5242880,
+    multiple: false,
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,12 +106,43 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Add New Resident</DialogTitle>
+          <DialogTitle>New Resident</DialogTitle>
           <DialogClose
             onClick={onClose}
             className="absolute right-4 top-4"
           ></DialogClose>
         </DialogHeader>
+
+        <div>
+          <Label htmlFor="documentScan" className="block mb-2">
+            ID Document Scan
+          </Label>
+          <div className="cursor-pointer text-sm">
+            <Input {...getInputProps()} id="documentScan" />
+            <div
+              className={`flex items-center justify-center py-2 px-3 border-2 border-dotted rounded-md transition-all duration-300 ease-in-out bg-gray-50
+                ${
+                  isDragActive
+                    ? "border-gray-400 bg-blue-100"
+                    : "border-gray-400 bg-transparent cursor-pointer hover:border-gray-500"
+                }`}
+              {...getRootProps()}
+            >
+              <Paperclip className="mr-2 h-4 w-4 text-gray-600" />
+              <p className="text-sm font-semibold text-gray-600">
+                {selectedImage
+                  ? `Selected: ${selectedImage.name}`
+                  : "Drag and drop ID document here, or click to select a file"}
+              </p>
+            </div>
+            {selectedImage && (
+              <p className="mt-2 text-xs text-green-600">
+                File selected: {selectedImage.name}
+              </p>
+            )}
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -118,7 +168,6 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
                 <SelectContent>
                   <SelectItem value="Female">Female</SelectItem>
                   <SelectItem value="Male">Male</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -181,14 +230,25 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="relationship">Relationship</Label>
-              <Input
-                id="relationship"
-                type="text"
+              <Select
                 value={relationship}
-                onChange={(e) => setRelationship(e.target.value)}
+                onValueChange={(value) => setRelationship(value)}
                 required
-                className="mt-1 block w-full"
-              />
+              >
+                <SelectTrigger id="relationship" className="mt-1 w-full">
+                  <SelectValue placeholder="Select relationship" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Mother">Mother</SelectItem>
+                  <SelectItem value="Father">Father</SelectItem>
+                  <SelectItem value="Daughter">Daughter</SelectItem>
+                  <SelectItem value="Son">Son</SelectItem>
+                  <SelectItem value="Spouse">Spouse</SelectItem>
+                  <SelectItem value="Sibling">Sibling</SelectItem>
+                  <SelectItem value="Friend">Friend</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label htmlFor="roomNumber">Room Number</Label>

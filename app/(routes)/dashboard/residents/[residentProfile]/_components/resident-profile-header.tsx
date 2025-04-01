@@ -1,9 +1,23 @@
 "use client";
 
+import { deleteResident } from "@/app/api/resident";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { toTitleCase } from "@/lib/utils";
 import { ResidentRecord } from "@/types/resident";
-import React from "react";
+import { Trash } from "lucide-react";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
 import ResidentProfilePictureDialog from "./resident-profile-picture-dialog";
 
 interface ResidentProfileHeaderProps {
@@ -15,33 +29,92 @@ const ResidentProfileHeader: React.FC<ResidentProfileHeaderProps> = ({
   resident,
   onEdit,
 }) => {
+  const { toast } = useToast();
+  const router = useRouter();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
   const age =
     new Date().getFullYear() - new Date(resident.date_of_birth).getFullYear();
-  return (
-    <div className="w-90% max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between p-4 bg-white shadow-md rounded-md">
-      <div className="flex flex-col sm:flex-row items-center gap-4">
-        <ResidentProfilePictureDialog resident={resident} />
 
-        <div className="text-center sm:text-left">
-          <h2 className="text-xl font-semibold">
-            {toTitleCase(resident.full_name)}
-          </h2>
-          <div className="flex flex-col sm:flex-row items-center gap-2">
-            <span className="text-sm text-gray-600">Age: {age}</span>
-            <span className="text-sm text-gray-600">
-              Room: {resident.room_number}
-            </span>
+  const handleDelete = async () => {
+    try {
+      await deleteResident(resident.id);
+      toast({
+        variant: "default",
+        title: "Resident deleted",
+        description: `${resident.full_name} has been deleted successfully`,
+      });
+      router.push(`/dashboard/residents`);
+    } catch (error: any) {
+      console.error("Error deleting resident:", error);
+      toast({
+        variant: "destructive",
+        title: "Error deleting resident",
+        description: error.message,
+      });
+    }
+  };
+
+  return (
+    <>
+      <div className="w-full flex flex-col sm:flex-row items-center justify-between p-4 bg-white border rounded-md">
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <ResidentProfilePictureDialog resident={resident} />
+
+          <div className="text-center sm:text-left">
+            <h2 className="text-xl font-semibold">
+              {toTitleCase(resident.full_name)}
+            </h2>
+            <div className="flex flex-col sm:flex-row items-center gap-2">
+              <span className="text-sm text-gray-600">Age: {age}</span>
+              <span className="text-sm text-gray-600">
+                Room: {resident.room_number}
+              </span>
+            </div>
           </div>
+        </div>
+
+        <div className="flex flex-row gap-4">
+          <Button
+            onClick={onEdit}
+            variant="outline"
+            className="mt-4 sm:mt-0 px-4 py-2 rounded"
+          >
+            Edit Profile
+          </Button>
+          <Button
+            variant="outline"
+            className="px-3"
+            onClick={() => setShowDeleteDialog(true)}
+          >
+            <Trash className="w-4 h-4 text-red-500" />
+          </Button>
         </div>
       </div>
 
-      <Button
-        onClick={onEdit}
-        className="mt-4 sm:mt-0 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-      >
-        Edit Profile
-      </Button>
-    </div>
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Are you sure you want to delete this resident?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This action will permanently delete {resident.full_name}'s record
+              and cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 

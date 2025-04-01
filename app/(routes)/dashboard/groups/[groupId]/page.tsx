@@ -205,7 +205,7 @@ export default function ViewGroupPage() {
 
         <div className="flex-1 space-y-5">
           <Label className="block text-sm font-medium text-gray-600">
-            <span className="text-blue-500 rounded-lg bg-blue-100 font-semibold mr-1.5 w-full px-2 py-0.5">
+            <span className="text-black rounded-full bg-blue-100 font-semibold mr-1.5 w-full px-2 py-0.5">
               {group.members.length}
             </span>
             members in this group
@@ -229,9 +229,9 @@ export default function ViewGroupPage() {
                     className="flex items-center justify-between "
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                        <span className="text-gray-700 font-semibold">
-                          {user.name.charAt(0).toUpperCase()}
+                      <div className="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center overflow-hidden">
+                        <span className="bg-blue-100 text-blue-800 text-sm">
+                          {user.name.substring(0, 2).toUpperCase()}
                         </span>
                       </div>
                       <span className="text-gray-800 font-medium">
@@ -241,7 +241,8 @@ export default function ViewGroupPage() {
                     {isAdmin && (
                       <Button
                         onClick={() => handleRemoveUser(user.id)}
-                        className="text-red-500 text-sm hover:underline"
+                        variant="ghost"
+                        className="text-red-500 text-sm hover:underline hover:text-red-500"
                       >
                         Remove
                       </Button>

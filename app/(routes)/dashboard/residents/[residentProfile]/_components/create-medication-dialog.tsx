@@ -3,6 +3,7 @@
 import { fetchMedicationByBarcode } from "@/app/api/fixed-medication";
 import { createMedication } from "@/app/api/medication";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Dialog,
   DialogContent,
@@ -12,9 +13,17 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import { BrowserQRCodeReader } from "@zxing/browser";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
 import React, { useState, useRef } from "react";
 import Webcam from "react-webcam";
 
@@ -41,6 +50,8 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
   };
 
   const [form, setForm] = useState(initialForm);
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [isScanning, setIsScanning] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
   const webcamRef = useRef<Webcam>(null);
@@ -85,10 +96,42 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handleStartDateChange = (date: Date | undefined) => {
+    setStartDate(date);
+    if (date) {
+      setForm({
+        ...form,
+        start_date: format(date, "yyyy-MM-dd"),
+      });
+    } else {
+      setForm({
+        ...form,
+        start_date: "",
+      });
+    }
+  };
+
+  const handleEndDateChange = (date: Date | undefined) => {
+    setEndDate(date);
+    if (date) {
+      setForm({
+        ...form,
+        end_date: format(date, "yyyy-MM-dd"),
+      });
+    } else {
+      setForm({
+        ...form,
+        end_date: "",
+      });
+    }
+  };
+
   const handleSubmit = async () => {
     await createMedication(residentId, form);
     onMedicationAdded();
     setForm(initialForm);
+    setStartDate(undefined);
+    setEndDate(undefined);
     onClose();
   };
 
@@ -156,21 +199,60 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
             </div>
             <div>
               <Label>Start Date</Label>
-              <Input
-                type="date"
-                name="start_date"
-                value={form.start_date}
-                onChange={handleChange}
-              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !startDate && "text-muted-foreground",
+                    )}
+                  >
+                    {startDate ? (
+                      format(startDate, "MMMM d, yyyy")
+                    ) : (
+                      <span>Select a date</span>
+                    )}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={startDate}
+                    onSelect={handleStartDateChange}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div>
-              <Label>End Date</Label>
-              <Input
-                type="date"
-                name="end_date"
-                value={form.end_date}
-                onChange={handleChange}
-              />
+              <Label>End Date (Optional)</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !endDate && "text-muted-foreground",
+                    )}
+                  >
+                    {endDate ? (
+                      format(endDate, "MMMM d, yyyy")
+                    ) : (
+                      <span>Select a date</span>
+                    )}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={endDate}
+                    onSelect={handleEndDateChange}
+                    disabled={(date) => (startDate ? date < startDate : false)}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div>
               <Label>Instructions</Label>

@@ -93,7 +93,7 @@ const DateCellWrapper: React.FC<WrapperProps> = ({
           onSelectSlot({ start: value, end });
         }}
       >
-        <Plus className="h-4 w-4 mr-2" />
+        <Plus className="h-4 w-4 mr-1" />
         Add Activity
       </Button>
     </div>
@@ -120,7 +120,7 @@ export default function ActivityCalendar({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedEndDate, setSelectedEndDate] = useState<Date | null>(null);
-  const [view, setView] = useState<View>("week");
+  const [view, setView] = useState<View>("month");
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [restrictedEventMessage, setRestrictedEventMessage] = useState<{
@@ -685,12 +685,7 @@ export default function ActivityCalendar({
       <div className="h-[100vh]">
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
-            <div className="flex flex-row items-center space-x-2">
-              <Spinner />
-              <span className="text-lg text-muted-foreground">
-                Loading activities...
-              </span>
-            </div>
+            <Spinner />
           </div>
         ) : (
           <>
@@ -730,7 +725,7 @@ export default function ActivityCalendar({
               onView={setView}
               step={30}
               timeslots={2}
-              defaultView="week"
+              defaultView="month"
               min={new Date(0, 0, 0, 0, 0, 0)}
               max={new Date(0, 0, 0, 23, 59, 59)}
               components={components}

@@ -24,23 +24,58 @@ export const getResidents = async (): Promise<ResidentRecord[]> => {
   }
 };
 
+export const getResidentsCount = async (nurse = null) => {
+  try {
+    const params = new URLSearchParams();
+    if (nurse) params.append("nurse", nurse);
+
+    const response = await fetch(
+      `${
+        process.env.NEXT_PUBLIC_BE_API_URL
+      }/residents/count/numOfResidents?${params.toString()}`,
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Failed to fetch resident count");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching resident count:", error);
+    throw error;
+  }
+};
+
 export const getResidentsByPage = async (
   page: number,
+  limit: number = 8,
   nurse?: string,
+  search?: string,
 ): Promise<ResidentRecord[]> => {
   try {
-    let url = `${process.env.NEXT_PUBLIC_BE_API_URL}/residents?page=${page}`;
-    if (nurse) {
-      url += `&nurse=${encodeURIComponent(nurse)}`;
-    }
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+
+    if (nurse) params.append("nurse", nurse);
+    if (search) params.append("search", search);
+
+    const url = `${
+      process.env.NEXT_PUBLIC_BE_API_URL
+    }/residents?${params.toString()}`;
+
     const response = await fetch(url, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });
+
     if (!response.ok) {
       const errData = await response.json();
       throw Error(errData.detail || "Error fetching residents by page");
     }
+
     const data = await response.json();
     return data;
   } catch (error) {

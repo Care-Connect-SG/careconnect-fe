@@ -205,7 +205,7 @@ export default function ResidentDashboard() {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto mt-10">
+    <div className="w-full p-8">
       <ResidentProfileHeader
         resident={resident}
         onEdit={() => openModal("editResident")}
@@ -217,11 +217,11 @@ export default function ResidentDashboard() {
             <Button
               key={tab.value}
               onClick={() => setActiveTab(tab.value)}
-              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 bg-transparent hover:bg-transparent
                 ${
                   activeTab === tab.value
-                    ? "bg-blue-600 text-white border border-blue-600"
-                    : "bg-gray-400 text-white hover:bg-gray-500"
+                    ? "text-blue-600 border-b-2 border-blue-600"
+                    : " text-gray-500"
                 }
               `}
             >

@@ -30,7 +30,7 @@ const ResidentDetailsCard: React.FC<ResidentDetailsCardProps> = ({
   primaryNurse,
 }) => {
   return (
-    <div className="w-full max-w-4xl mx-auto mt-6 p-4 bg-white shadow-md rounded-md">
+    <div className="w-full max-w-4xl mx-auto mt-6 p-4 bg-white border rounded-md">
       <h3 className="text-xl font-semibold mb-4">Resident Details</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>

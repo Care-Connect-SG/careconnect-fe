@@ -40,7 +40,7 @@ const ResidentDetailsNotesCard: React.FC<ResidentDetailsNotesCardProps> = ({
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto mt-6 p-4 bg-white shadow-md rounded-md">
+    <div className="w-full max-w-2xl mx-auto mt-6 p-4 bg-white border rounded-md">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-xl font-semibold">Additional Notes</h3>
         {isEditing ? (
@@ -48,7 +48,7 @@ const ResidentDetailsNotesCard: React.FC<ResidentDetailsNotesCardProps> = ({
             onClick={handleSaveNote}
             className="flex items-center gap-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200"
           >
-            <Check className="h-4 w-4" />
+            <Check className="h-4 w-4 mr-1" />
             <span>Save</span>
           </Button>
         ) : (
@@ -56,7 +56,7 @@ const ResidentDetailsNotesCard: React.FC<ResidentDetailsNotesCardProps> = ({
             onClick={handleAddNote}
             className="flex items-center gap-1 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200"
           >
-            <PlusCircle className="h-4 w-4" />
+            <PlusCircle className="h-4 w-4 mr-1" />
             <span>Add</span>
           </Button>
         )}

@@ -2,20 +2,23 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ResidentRecord } from "@/types/resident";
+import { Spinner } from "@/components/ui/spinner";
 import { User } from "@/types/user";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronLeft,
   ChevronRight,
+  Loader2,
   MoreHorizontal,
+  Plus,
   Search,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   createResident,
-  deleteResident,
   getResidentsByPage,
+  getResidentsCount,
   updateResidentNurse,
 } from "../../../api/resident";
 import { getAllNurses } from "../../../api/user";
@@ -23,57 +26,80 @@ import CreateResidentDialog from "./_components/create-resident-dialog";
 import ResidentCard, { NurseOption } from "./_components/resident-card";
 
 export default function AllResidentsPage() {
-  const [residents, setResidents] = useState<ResidentRecord[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [nurseOptions, setNurseOptions] = useState<NurseOption[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [hasNextPage, setHasNextPage] = useState(false);
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const router = useRouter();
+  const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const pageParam = searchParams.get("page");
   const currentPage = pageParam ? parseInt(pageParam, 10) : 1;
   const LIMIT = 8;
-  const [totalPages, setTotalPages] = useState(1);
-
-  const fetchResidents = () => {
-    getResidentsByPage(currentPage)
-      .then((data: ResidentRecord[]) => {
-        setResidents(data);
-        const hasMore = data.length === LIMIT;
-        setHasNextPage(hasMore);
-
-        setTotalPages(hasMore ? currentPage + 1 : currentPage);
-      })
-      .catch((error) => {
-        console.error("Error fetching residents:", error);
-      });
-  };
 
   useEffect(() => {
-    fetchResidents();
-  }, [currentPage]);
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
 
-  useEffect(() => {
-    getAllNurses()
-      .then((data: User[]) => {
-        const options: NurseOption[] = data.map((user) => ({
-          id: user.id,
-          name: user.name,
-        }));
-        setNurseOptions(options);
-      })
-      .catch((error) => {
-        console.error("Error fetching nurses:", error);
-      });
-  }, []);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
-  const filteredResidents = residents.filter((resident) =>
-    resident.full_name.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const {
+    data: totalCount = 0,
+    isLoading: isCountLoading,
+    isError: isCountError,
+  } = useQuery({
+    queryKey: ["residentsCount"],
+    queryFn: () => getResidentsCount(),
+  });
+
+  const totalPages = Math.ceil(totalCount / LIMIT) || 1;
+
+  const {
+    data: residents = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["residents", currentPage, LIMIT, debouncedSearchTerm],
+    queryFn: () =>
+      getResidentsByPage(currentPage, LIMIT, undefined, debouncedSearchTerm),
+  });
+
+  const { data: nurseOptions = [] } = useQuery({
+    queryKey: ["nurses"],
+    queryFn: async () => {
+      const data = await getAllNurses();
+      return data.map((user: User) => ({
+        id: user.id,
+        name: user.name,
+      }));
+    },
+  });
+
+  const updateNurseMutation = useMutation({
+    mutationFn: ({ id, updatePayload }: { id: string; updatePayload: any }) =>
+      updateResidentNurse(id, updatePayload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["residents"] });
+    },
+  });
+
+  const createResidentMutation = useMutation({
+    mutationFn: (newResidentData: any) => createResident(newResidentData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["residentsCount"] });
+      queryClient.invalidateQueries({ queryKey: ["residents"] });
+      setIsAddModalOpen(false);
+    },
+  });
+
+  const filteredResidents = residents;
 
   const handleNurseChange = async (id: string, newNurse: string) => {
     const currentResident = residents.find((res) => res.id === id);
     if (!currentResident) return;
+
     const updatePayload = {
       full_name: currentResident.full_name,
       gender: currentResident.gender,
@@ -87,24 +113,7 @@ export default function AllResidentsPage() {
       primary_nurse: newNurse,
     };
 
-    try {
-      const updatedResident = await updateResidentNurse(id, updatePayload);
-      setResidents((prev) =>
-        prev.map((res) => (res.id === id ? updatedResident : res)),
-      );
-    } catch (error) {
-      console.error("Error updating nurse:", error);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this resident?")) return;
-    try {
-      await deleteResident(id);
-      setResidents((prev) => prev.filter((res) => res.id !== id));
-    } catch (error) {
-      console.error("Error deleting resident:", error);
-    }
+    updateNurseMutation.mutate({ id, updatePayload });
   };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,18 +125,11 @@ export default function AllResidentsPage() {
   };
 
   const handleAddResidentSave = async (newResidentData: any) => {
-    try {
-      const createdResident = await createResident(newResidentData);
-      if (currentPage === 1) {
-        setResidents((prev) => [...prev, createdResident]);
-      }
-    } catch (error) {
-      console.error("Error creating resident:", error);
-    }
-    setIsAddModalOpen(false);
+    createResidentMutation.mutate(newResidentData);
   };
 
   const goToPage = (page: number) => {
+    if (page < 1 || page > totalPages) return;
     router.push(`/dashboard/residents?page=${page}`);
   };
 
@@ -213,31 +215,36 @@ export default function AllResidentsPage() {
   };
 
   return (
-    <div className="p-8">
-      <div className="mb-6">
+    <div className="flex flex-col gap-8 p-8">
+      <div className="flex flex-row justify-between">
         <h1 className="text-2xl font-semibold text-gray-800">All Residents</h1>
-        <p className="text-sm text-gray-500">
-          Manage resident information and assigned nurses.
-        </p>
-      </div>
-
-      <div className="flex items-center justify-between mb-4">
-        <div className="relative w-full max-w-xl">
-          <Input
-            type="text"
-            placeholder="Search residents..."
-            className="pl-10 pr-4 py-2 border border-gray-300 focus:outline-none focus:border-blue-500"
-            value={searchTerm}
-            onChange={handleSearch}
-          />
-          <div className="absolute left-3 top-2 text-gray-400">
-            <Search className="h-5 w-5" />
+        <div className="flex flex-row space-x-4">
+          <div className="relative w-[400px]">
+            <Input
+              type="text"
+              placeholder="Search residents..."
+              className="pl-10 pr-4 py-2 border border-gray-300 focus:outline-none focus:border-blue-500"
+              value={searchTerm}
+              onChange={handleSearch}
+            />
+            <div className="absolute left-3 top-2 text-gray-400">
+              <Search className="h-5 w-5" />
+            </div>
           </div>
-        </div>
-        <div className="flex gap-4">
-          <Button variant="default" onClick={() => setIsAddModalOpen(true)}>
-            Add New Resident
-          </Button>
+          <div className="flex gap-4">
+            <Button
+              variant="default"
+              onClick={() => setIsAddModalOpen(true)}
+              disabled={createResidentMutation.isPending}
+            >
+              {createResidentMutation.isPending ? (
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+              ) : (
+                <Plus className="w-4 h-4 mr-1" />
+              )}
+              New Resident
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -247,42 +254,60 @@ export default function AllResidentsPage() {
         onSave={handleAddResidentSave}
       />
 
-      <div className="space-y-4">
-        {filteredResidents.length > 0 ? (
-          filteredResidents.map((resident, index) => (
-            <ResidentCard
-              key={index}
-              resident={resident}
-              onNurseChange={handleNurseChange}
-              onClick={handleCardClick}
-              onDelete={handleDelete}
-              nurseOptions={nurseOptions}
-            />
-          ))
-        ) : (
-          <p className="text-gray-500 text-center">No residents found.</p>
-        )}
-      </div>
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <Spinner />
+        </div>
+      ) : isError ? (
+        <div className="text-center text-red-500 p-4">
+          Error loading residents: {error.message}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filteredResidents.length > 0 ? (
+            filteredResidents.map((resident, index) => (
+              <ResidentCard
+                key={resident.id || index}
+                resident={resident}
+                onNurseChange={handleNurseChange}
+                onClick={handleCardClick}
+                nurseOptions={nurseOptions}
+              />
+            ))
+          ) : (
+            <p className="text-gray-500 text-center">No residents found.</p>
+          )}
+        </div>
+      )}
 
-      <div className="mt-6 flex justify-center items-center gap-2">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => goToPage(currentPage - 1)}
-          disabled={currentPage === 1}
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        {renderPageNumbers()}
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => goToPage(currentPage + 1)}
-          disabled={!hasNextPage}
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      </div>
+      {!isLoading && (
+        <div className="flex flex-col gap-4">
+          <div className="flex justify-center items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => goToPage(currentPage - 1)}
+              disabled={currentPage <= 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            {renderPageNumbers()}
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => goToPage(currentPage + 1)}
+              disabled={currentPage >= totalPages}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+
+          <div className="text-center text-sm text-gray-500">
+            Page {currentPage} of {totalPages} • Showing {residents.length} of{" "}
+            {totalCount} residents
+          </div>
+        </div>
+      )}
     </div>
   );
 }

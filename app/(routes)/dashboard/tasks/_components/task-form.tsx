@@ -317,7 +317,7 @@ export default function TaskForm({
         <DialogTrigger asChild>
           {!task && !open && (
             <Button>
-              <Plus className="w-4 h-4 mr-2" /> New Task
+              <Plus className="w-4 h-4 mr-1" /> New Task
             </Button>
           )}
         </DialogTrigger>

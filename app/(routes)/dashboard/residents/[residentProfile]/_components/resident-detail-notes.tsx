@@ -40,7 +40,7 @@ const ResidentDetailsNotesCard: React.FC<ResidentDetailsNotesCardProps> = ({
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto mt-6 p-4 bg-white border rounded-md">
+    <div className="w-full max-w-2xl mx-auto p-4 bg-white border rounded-md">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-xl font-semibold">Additional Notes</h3>
         {isEditing ? (

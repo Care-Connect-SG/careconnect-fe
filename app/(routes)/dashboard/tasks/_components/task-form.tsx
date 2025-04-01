@@ -205,6 +205,14 @@ export default function TaskForm({
     fetchData();
   }, [toast]);
 
+  const invalidateTaskQueries = () => {
+    queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    const currentDate = format(new Date(), "yyyy-MM-dd");
+    queryClient.invalidateQueries({
+      queryKey: ["tasks", "", "", "", currentDate],
+    });
+  };
+
   const onSubmit = async (data: TaskForm) => {
     try {
       const formData = {
@@ -226,6 +234,7 @@ export default function TaskForm({
         if (setTasks) {
           setTasks(updatedTask);
         }
+        invalidateTaskQueries();
         toast({
           variant: "default",
           title: "Success",
@@ -236,6 +245,7 @@ export default function TaskForm({
         if (setTasks) {
           setTasks((prevTasks) => [...newTasks, ...prevTasks]);
         }
+        invalidateTaskQueries();
         toast({
           variant: "default",
           title: "Successfully created task(s)",
@@ -244,7 +254,6 @@ export default function TaskForm({
       }
       setIsOpen(false);
       if (onClose) onClose();
-      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     } catch (error) {
       let errorMessage = task
         ? "Failed to update task. Please try again."
@@ -271,6 +280,7 @@ export default function TaskForm({
       if (setTasks) {
         setTasks(updatedTask);
       }
+      invalidateTaskQueries();
       toast({
         variant: "default",
         title: "Success",
@@ -280,7 +290,6 @@ export default function TaskForm({
       });
       setIsOpen(false);
       if (onClose) onClose();
-      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     } catch (error) {
       let errorMessage = "Failed to update task. Please try again.";
       if (error instanceof Error) {

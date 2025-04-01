@@ -17,6 +17,7 @@ import { getResidentById, updateResident } from "@/app/api/resident";
 import { getWellnessReportsForResident } from "@/app/api/wellness-report";
 
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CreateMedication from "./_components/create-medication-dialog";
 import EditCarePlan from "./_components/edit-careplan";
 import EditMedicalHistoryModal from "./_components/edit-medical-history-dialog";
@@ -194,6 +195,10 @@ export default function ResidentDashboard() {
     }
   };
 
+  const handleTabChange = (value: string) => {
+    setActiveTab(value as TabValue);
+  };
+
   if (isResidentLoading) {
     return <div className="text-center mt-10">Loading resident details...</div>;
   }
@@ -205,34 +210,30 @@ export default function ResidentDashboard() {
   }
 
   return (
-    <div className="w-full p-8">
+    <div className="w-full p-8 flex flex-col gap-8">
       <ResidentProfileHeader
         resident={resident}
         onEdit={() => openModal("editResident")}
       />
 
-      <div className="mt-6 border-b border-gray-200">
-        <div className="flex space-x-8">
+      <Tabs
+        value={activeTab}
+        onValueChange={handleTabChange}
+        className="w-full"
+      >
+        <TabsList className="mb-6">
           {TABS.map((tab) => (
-            <Button
+            <TabsTrigger
               key={tab.value}
-              onClick={() => setActiveTab(tab.value)}
-              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 bg-transparent hover:bg-transparent
-                ${
-                  activeTab === tab.value
-                    ? "text-blue-600 border-b-2 border-blue-600"
-                    : " text-gray-500"
-                }
-              `}
+              value={tab.value}
+              className="px-4 py-2"
             >
               {tab.label}
-            </Button>
+            </TabsTrigger>
           ))}
-        </div>
-      </div>
+        </TabsList>
 
-      <div className="mt-4">
-        {activeTab === "overview" && (
+        <TabsContent value="overview">
           <div className="flex flex-col sm:flex-row items-start justify-between gap-6">
             <ResidentDetailsCard
               gender={resident.gender}
@@ -249,9 +250,9 @@ export default function ResidentDashboard() {
               onSaveNotes={handleSaveAdditionalNotes}
             />
           </div>
-        )}
+        </TabsContent>
 
-        {activeTab === "history" && (
+        <TabsContent value="history">
           <div>
             <div className="flex justify-between items-center">
               <h2 className="text-lg font-semibold">Medical History</h2>
@@ -273,9 +274,9 @@ export default function ResidentDashboard() {
               )}
             </div>
           </div>
-        )}
+        </TabsContent>
 
-        {activeTab === "medication" && (
+        <TabsContent value="medication">
           <div>
             <div className="flex justify-between items-center">
               <h2 className="text-lg font-semibold">Medication List</h2>
@@ -298,9 +299,9 @@ export default function ResidentDashboard() {
               )}
             </div>
           </div>
-        )}
+        </TabsContent>
 
-        {activeTab === "careplan" && (
+        <TabsContent value="careplan">
           <div>
             {carePlans.length > 0 ? (
               <EditCarePlan
@@ -326,9 +327,9 @@ export default function ResidentDashboard() {
               </div>
             )}
           </div>
-        )}
+        </TabsContent>
 
-        {activeTab === "wellness" && (
+        <TabsContent value="wellness">
           <div>
             <WellnessReportList reports={wellnessReports} />
 
@@ -355,8 +356,8 @@ export default function ResidentDashboard() {
               )}
             </div>
           </div>
-        )}
-      </div>
+        </TabsContent>
+      </Tabs>
 
       <EditResidentDialog
         isOpen={modals.editResident}

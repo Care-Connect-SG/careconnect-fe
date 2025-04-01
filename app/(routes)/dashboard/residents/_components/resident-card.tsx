@@ -47,7 +47,7 @@ function ResidentCard({
         <Avatar className="h-16 w-16 rounded-lg cursor-pointer flex-shrink-0">
           <AvatarImage src={resident.photograph!} alt={resident.full_name} />
           <AvatarFallback className="rounded-lg">
-            {resident.full_name.charAt(0)}
+            {resident.full_name.substring(0, 2).toUpperCase()}
           </AvatarFallback>
         </Avatar>
 

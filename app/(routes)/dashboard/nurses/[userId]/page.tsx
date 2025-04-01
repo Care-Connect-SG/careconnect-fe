@@ -4,10 +4,11 @@ import { getUserById, updateUser } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBreadcrumb } from "@/context/breadcrumb-context";
 import { useToast } from "@/hooks/use-toast";
 import { User, UserEdit } from "@/types/user";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import EditProfileDialog from "../../profile/_components/edit-profile-dialog";
 
@@ -15,10 +16,17 @@ const UserProfile = () => {
   const { toast } = useToast();
   const { setPageName } = useBreadcrumb();
   const { userId } = useParams();
+  const searchParams = useSearchParams();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<string>("overview");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (searchParams.get("edit") === "true") {
+      setIsModalOpen(true);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const getUser = async () => {
@@ -36,7 +44,7 @@ const UserProfile = () => {
     if (userId) {
       getUser();
     }
-  }, [userId]);
+  }, [userId, setPageName]);
 
   if (loading) {
     return (
@@ -67,7 +75,7 @@ const UserProfile = () => {
       setIsModalOpen(false);
       toast({
         title: "Profile updated successfully!",
-        description: `${user.name}'s profile has been updated successfull`,
+        description: `${user.name}'s profile has been updated successfully`,
         variant: "default",
       });
     } catch (error: any) {
@@ -80,73 +88,75 @@ const UserProfile = () => {
     }
   };
 
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+  };
+
   return (
-    <div className="w-full max-w-4xl mx-auto mt-10">
-      <Card className="p-6 shadow-md bg-white rounded-lg flex items-center justify-between">
+    <div className="w-full p-8">
+      <Card className="p-6 bg-white rounded-lg flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">{user.name}</h1>
           <p className="text-gray-500">{user.role}</p>
         </div>
 
-        <Button
-          onClick={handleEditProfile}
-          className="bg-blue-600 hover:bg-blue-800 text-white"
-        >
+        <Button onClick={handleEditProfile} variant="outline">
           Edit Profile
         </Button>
       </Card>
 
-      <div className="mt-6 border-b border-gray-200">
-        <div className="flex space-x-8">
+      <Tabs
+        value={activeTab}
+        onValueChange={handleTabChange}
+        className="w-full mt-6"
+      >
+        <TabsList className="mb-6">
           {TABS.map((tab) => (
-            <Button
-              variant="transparentHover"
+            <TabsTrigger
               key={tab.value}
-              onClick={() => setActiveTab(tab.value)}
-              className={`py-2 px-1 text-sm font-medium bg-transparent ${
-                activeTab === tab.value
-                  ? "text-blue-600 border-b-2"
-                  : "text-gray-500 border-transparent"
-              } hover:text-gray-600 hover:border-gray-600 transition-colors duration-200`}
+              value={tab.value}
+              className="px-4 py-2"
             >
               {tab.label}
-            </Button>
+            </TabsTrigger>
           ))}
-        </div>
-      </div>
+        </TabsList>
 
-      {activeTab === "overview" && (
-        <Card className="p-6 shadow-md bg-white rounded-lg mt-6">
-          <h2 className="text-xl font-semibold mb-4">User Details</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <p className="text-gray-700">
-              <strong>Email:</strong> {user.email}
-            </p>
-            <p className="text-gray-700">
-              <strong>Contact:</strong> {user.contact_number || "N/A"}
-            </p>
-            <p className="text-gray-700">
-              <strong>Organisation Rank:</strong>{" "}
-              {user.organisation_rank || "N/A"}
-            </p>
-            <p className="text-gray-700">
-              <strong>Gender:</strong> {user.gender}
-            </p>
-          </div>
-        </Card>
-      )}
+        <TabsContent value="overview">
+          <Card className="p-6 bg-white rounded-lg">
+            <h2 className="text-xl font-semibold mb-4">User Details</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <p className="text-gray-700">
+                <strong>Email:</strong> {user.email}
+              </p>
+              <p className="text-gray-700">
+                <strong>Contact:</strong> {user.contact_number || "N/A"}
+              </p>
+              <p className="text-gray-700">
+                <strong>Organisation Rank:</strong>{" "}
+                {user.organisation_rank || "N/A"}
+              </p>
+              <p className="text-gray-700">
+                <strong>Gender:</strong> {user.gender}
+              </p>
+            </div>
+          </Card>
+        </TabsContent>
 
-      {activeTab === "history" && (
-        <div className="mt-6">
-          <h2 className="text-lg font-semibold">User History</h2>
-        </div>
-      )}
+        <TabsContent value="history">
+          <Card className="p-6 bg-white rounded-lg">
+            <h2 className="text-xl font-semibold mb-4">User History</h2>
+            <p className="text-gray-500">No history records available.</p>
+          </Card>
+        </TabsContent>
 
-      {activeTab === "permissions" && (
-        <div className="mt-6">
-          <h2 className="text-lg font-semibold">User Permissions</h2>
-        </div>
-      )}
+        <TabsContent value="permissions">
+          <Card className="p-6 bg-white rounded-lg">
+            <h2 className="text-xl font-semibold mb-4">User Permissions</h2>
+            <p className="text-gray-500">No permission settings available.</p>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       <EditProfileDialog
         open={isModalOpen}

@@ -6,13 +6,14 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Download,
   Search,
   X,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
-import { getTasks } from "@/app/api/task";
+import { downloadTasks, getTasks } from "@/app/api/task";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -30,6 +31,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Task } from "@/types/task";
 
+import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import TaskForm from "./_components/task-form";
@@ -41,6 +43,7 @@ const TaskManagement = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const [currentView, setCurrentView] = useState<"list" | "kanban">("list");
   const [selectedNurses, setSelectedNurses] = useState<string[]>([]);
@@ -230,6 +233,46 @@ const TaskManagement = () => {
     localStorage.setItem("taskView", currentView);
   }, [currentView]);
 
+  const handleDownloadTasks = async () => {
+    try {
+      const formattedDate = format(selectedDate, "yyyy-MM-dd");
+      const tasksToDownload = filteredTasks.filter(
+        (task) =>
+          format(new Date(task.due_date), "yyyy-MM-dd") === formattedDate,
+      );
+
+      if (tasksToDownload.length === 0) {
+        toast({
+          title: "No Tasks",
+          description: "There are no tasks to download for the selected date.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const blob = await downloadTasks(tasksToDownload.map((task) => task.id));
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `tasks-${formattedDate}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast({
+        title: "Tasks Downloaded",
+        description: `Successfully downloaded ${tasksToDownload.length} tasks for ${formattedDate}`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to download tasks.",
+      });
+    }
+  };
+
   return (
     <div className="flex flex-col w-full gap-8 p-8">
       <div className="flex flex-col">
@@ -284,6 +327,16 @@ const TaskManagement = () => {
               onChange={(e) => updateFilter("search", e.target.value)}
             />
           </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleDownloadTasks}
+            className="flex items-center gap-2"
+          >
+            <Download className="h-4 w-4" />
+            Download Tasks
+          </Button>
 
           <Select
             value={filters.status ?? ""}

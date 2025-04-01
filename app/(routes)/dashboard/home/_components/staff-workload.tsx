@@ -2,70 +2,20 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-<<<<<<< Updated upstream
-import { Skeleton } from "@/components/ui/skeleton";
-import { useEffect, useState } from "react";
-import { getUsers } from "@/app/api/user";
-import { getTasks } from "@/app/api/task";
-import { useRouter } from "next/navigation";
-
-const StaffWorkload = () => {
-  const [staffData, setStaffData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
-
-  useEffect(() => {
-    const fetchStaffWorkload = async () => {
-      try {
-        setLoading(true);
-        
-        // Fetch all nurses
-        const users = await getUsers();
-        const nurses = users.filter(user => user.role === "Nurse" && !user.disabled);
-        
-        // Fetch all tasks
-        const tasks = await getTasks();
-        
-        // Calculate workload for each nurse
-        const nurseWorkloads = nurses.map(nurse => {
-          const nurseId = nurse.id;
-          const nurseTasks = tasks.filter(task => task.assigned_to === nurseId && task.status !== "Completed");
-          
-          // Calculate workload percentage (based on number of tasks)
-          // A nurse with 10+ tasks is considered at 100% workload
-          const workloadPercentage = Math.min(nurseTasks.length * 10, 100);
-          
-          return {
-            id: nurseId,
-            name: nurse.name || `${nurse.first_name || ''} ${nurse.last_name || ''}`.trim() || nurse.email,
-            role: nurse.role,
-            tasks: nurseTasks.length,
-            workload: workloadPercentage
-          };
-        });
-        
-        // Sort by workload (highest first) and take top 3
-        const topNurses = nurseWorkloads
-          .sort((a, b) => b.workload - a.workload)
-          .slice(0, 3);
-        
-        setStaffData(topNurses);
-      } catch (error) {
-        console.error("Error fetching staff workload:", error);
-=======
 import { Progress } from "@/components/ui/progress";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getAllNurses } from "@/app/api/user";
 import { getTasks } from "@/app/api/task";
-import { Task, TaskStatus } from "@/types/task";
 import { User } from "@/types/user";
-import { useRouter } from "next/navigation";
+import { Task } from "@/types/task";
 
 interface NurseWorkload {
   nurse: User;
   totalTasks: number;
   pendingTasks: number;
   completedTasks: number;
+  completionRate: number;
 }
 
 const StaffWorkload = () => {
@@ -79,34 +29,34 @@ const StaffWorkload = () => {
       try {
         const [nursesData, tasksData] = await Promise.all([
           getAllNurses(),
-          getTasks()
+          getTasks(),
         ]);
         setNurses(nursesData);
         setTasks(tasksData);
       } catch (error) {
-        console.error("Error fetching data:", error);
->>>>>>> Stashed changes
+        console.error("Error fetching staff workload:", error);
       } finally {
         setLoading(false);
       }
     };
 
-<<<<<<< Updated upstream
-    fetchStaffWorkload();
-  }, []);
-
-=======
     fetchData();
   }, []);
 
   const calculateWorkload = (): NurseWorkload[] => {
-    return nurses.map(nurse => {
-      const nurseTasks = tasks.filter(task => task.assigned_to === nurse.id);
+    return nurses.slice(0, 4).map((nurse) => {
+      const nurseTasks = tasks.filter((task) => task.assigned_to === nurse.id);
+      const totalTasks = nurseTasks.length;
+      const completedTasks = nurseTasks.filter((task) => task.status === "completed").length;
+      const pendingTasks = totalTasks - completedTasks;
+      const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+
       return {
         nurse,
-        totalTasks: nurseTasks.length,
-        pendingTasks: nurseTasks.filter(task => task.status === TaskStatus.ASSIGNED).length,
-        completedTasks: nurseTasks.filter(task => task.status === TaskStatus.COMPLETED).length
+        totalTasks,
+        pendingTasks,
+        completedTasks,
+        completionRate,
       };
     });
   };
@@ -115,13 +65,19 @@ const StaffWorkload = () => {
     return (
       <Card className="p-6">
         <div className="flex items-center justify-between mb-6">
-          <div className="h-6 bg-gray-200 rounded w-1/4 animate-pulse"></div>
+          <p className="text-lg font-semibold text-gray-800">Staff Workload</p>
+          <Button variant="ghost" onClick={() => router.push("/dashboard/staff")}>
+            View All
+          </Button>
         </div>
         <div className="space-y-4">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="space-y-2">
-              <div className="h-4 bg-gray-200 rounded w-1/3 animate-pulse"></div>
-              <div className="h-2 bg-gray-200 rounded w-full animate-pulse"></div>
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg animate-pulse">
+              <div className="space-y-2">
+                <div className="h-4 bg-gray-200 rounded w-32"></div>
+                <div className="h-3 bg-gray-200 rounded w-24"></div>
+              </div>
+              <div className="h-8 bg-gray-200 rounded w-20"></div>
             </div>
           ))}
         </div>
@@ -129,107 +85,33 @@ const StaffWorkload = () => {
     );
   }
 
-  const workloads = calculateWorkload().slice(0, 4);
+  const workloads = calculateWorkload();
 
->>>>>>> Stashed changes
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between mb-6">
         <p className="text-lg font-semibold text-gray-800">Staff Workload</p>
-        <Button
-          variant="link"
-          className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-<<<<<<< Updated upstream
-          onClick={() => router.push('/dashboard/nurses')}
-=======
-          onClick={() => router.push("/dashboard/staff")}
->>>>>>> Stashed changes
-        >
+        <Button variant="ghost" onClick={() => router.push("/dashboard/staff")}>
           View All
         </Button>
       </div>
-<<<<<<< Updated upstream
       <div className="space-y-4">
-        {loading ? (
-          // Loading skeletons
-          Array(3).fill(0).map((_, i) => (
-            <Card key={i} className="p-4 bg-gray-50">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <Skeleton className="w-10 h-10 rounded-full" />
-                  <div>
-                    <Skeleton className="h-5 w-32 mb-1" />
-                    <Skeleton className="h-4 w-24" />
-                  </div>
-                </div>
-                <Skeleton className="w-32 h-2 rounded-full" />
-              </div>
-            </Card>
-          ))
-        ) : staffData.length > 0 ? (
-          staffData.map((staff, i) => (
-            <Card
-              key={i}
-              className="p-4 bg-gray-50 flex items-center justify-between hover:bg-gray-100 transition-colors cursor-pointer"
-              onClick={() => router.push(`/dashboard/nurses/${staff.id}`)}
-            >
-              <div className="flex items-center space-x-4">
-                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                  <p className="text-gray-600 font-medium">
-                    {staff.name.charAt(0)}
-                  </p>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">{staff.name}</p>
-                  <p className="text-sm text-gray-500">
-                    {staff.role} • {staff.tasks} tasks
-                  </p>
-                </div>
-              </div>
-              <div className="w-32">
-                <div className="h-2 bg-gray-200 rounded-full">
-                  <div
-                    className={`h-2 rounded-full ${
-                      staff.workload > 80
-                        ? "bg-red-500"
-                        : staff.workload > 60
-                          ? "bg-yellow-500"
-                          : "bg-green-500"
-                    }`}
-                    style={{ width: `${staff.workload}%` }}
-                  />
-                </div>
-              </div>
-            </Card>
-          ))
-        ) : (
-          <p className="text-center text-gray-500 py-4">No staff data available</p>
-        )}
-=======
-      <div className="space-y-6">
-        {workloads.map((workload) => {
-          const progress = workload.totalTasks > 0 
-            ? (workload.completedTasks / workload.totalTasks) * 100 
-            : 0;
-
-          return (
-            <div key={workload.nurse.id} className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-gray-900">{workload.nurse.name}</p>
-                  <p className="text-sm text-gray-500">
-                    {workload.pendingTasks} pending • {workload.completedTasks} completed
-                  </p>
-                </div>
-                <p className="text-sm font-medium text-gray-700">
-                  {workload.totalTasks} tasks
+        {workloads.map((workload) => (
+          <div key={workload.nurse.id} className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-gray-900">{workload.nurse.name}</p>
+                <p className="text-sm text-gray-500">
+                  {workload.completedTasks} completed • {workload.pendingTasks} pending
                 </p>
               </div>
-              <Progress value={progress} className="h-2" />
+              <span className="text-sm font-medium text-gray-700">
+                {workload.totalTasks} tasks
+              </span>
             </div>
-          );
-        })}
->>>>>>> Stashed changes
+            <Progress value={workload.completionRate} className="h-2" />
+          </div>
+        ))}
       </div>
     </Card>
   );

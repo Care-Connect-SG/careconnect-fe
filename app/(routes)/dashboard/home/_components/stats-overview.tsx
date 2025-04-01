@@ -1,34 +1,37 @@
 "use client";
 
-import { getResidents } from "@/app/api/resident";
+import { getResidentsByPage } from "@/app/api/resident";
 import { getTasks } from "@/app/api/task";
 import { getAllNurses } from "@/app/api/user";
 import { Card } from "@/components/ui/card";
-import { TaskStatus } from "@/types/task";
+import { ResidentRecord } from "@/types/resident";
+import { Task, TaskStatus } from "@/types/task";
+import { User } from "@/types/user";
+import { AlertTriangle, Clock, UserCheck, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const StatsOverview = () => {
-  const [nurses, setNurses] = useState<any[]>([]);
-  const [tasks, setTasks] = useState<any[]>([]);
-  const [residents, setResidents] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [residents, setResidents] = useState<ResidentRecord[]>([]);
+  const [nurses, setNurses] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const today = new Date();
-        const [nursesData, tasksData, residentsData] = await Promise.all([
-          getAllNurses(),
+        const [tasksData, residentsData, nursesData] = await Promise.all([
           getTasks({ date: today.toISOString().split("T")[0] }),
-          getResidents(),
+          getResidentsByPage(1),
+          getAllNurses(),
         ]);
-        setNurses(nursesData);
         setTasks(tasksData);
         setResidents(residentsData);
+        setNurses(nursesData);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
@@ -37,65 +40,70 @@ const StatsOverview = () => {
 
   const stats = [
     {
-      name: "Active Staff",
-      value: nurses.length,
-      change: "+4.75%",
-      changeType: "positive" as const,
+      title: "Active Staff",
+      value: nurses.length.toString(),
+      icon: UserCheck,
+      color: "text-blue-500",
     },
     {
-      name: "Pending Tasks",
-      value: tasks.filter((task) => task.status !== TaskStatus.COMPLETED)
-        .length,
-      change: "+54.02%",
-      changeType: "negative" as const,
+      title: "Pending Tasks",
+      value: tasks
+        .filter((task) => task.status === TaskStatus.ASSIGNED)
+        .length.toString(),
+      icon: Clock,
+      color: "text-yellow-500",
     },
     {
-      name: "Total Residents",
-      value: residents.length,
-      change: "+12.05%",
-      changeType: "positive" as const,
+      title: "Delayed Tasks",
+      value: tasks
+        .filter((task) => {
+          const now = new Date();
+          const dueDate = new Date(task.due_date);
+
+          // Check if task is past due time and not completed
+          return dueDate < now && task.status !== TaskStatus.COMPLETED;
+        })
+        .length.toString(),
+      icon: AlertTriangle,
+      color: "text-red-500",
+    },
+    {
+      title: "Total Residents",
+      value: residents.length.toString(),
+      icon: Users,
+      color: "text-green-500",
     },
   ];
 
-  if (isLoading) {
+  if (loading) {
     return (
-      <Card className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="space-y-2">
-              <div className="h-4 bg-gray-200 rounded w-1/3 animate-pulse"></div>
-              <div className="h-8 bg-gray-200 rounded w-1/4 animate-pulse"></div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {[...Array(4)].map((_, i) => (
+          <Card key={i} className="p-6">
+            <div className="animate-pulse">
+              <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+              <div className="h-8 bg-gray-200 rounded w-1/2"></div>
             </div>
-          ))}
-        </div>
-      </Card>
+          </Card>
+        ))}
+      </div>
     );
   }
 
   return (
-    <Card className="p-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {stats.map((stat) => (
-          <div key={stat.name} className="space-y-1">
-            <p className="text-sm font-medium text-gray-500">{stat.name}</p>
-            <div className="flex items-baseline gap-2">
-              <p className="text-2xl font-semibold text-gray-900">
-                {stat.value}
-              </p>
-              <span
-                className={`text-sm font-medium ${
-                  stat.changeType === "positive"
-                    ? "text-green-600"
-                    : "text-red-600"
-                }`}
-              >
-                {stat.change}
-              </span>
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {stats.map((stat, i) => (
+        <Card key={i} className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-500">{stat.title}</p>
+              <p className="text-2xl font-semibold mt-1">{stat.value}</p>
             </div>
+            <stat.icon className={`w-8 h-8 ${stat.color}`} />
           </div>
-        ))}
-      </div>
-    </Card>
+        </Card>
+      ))}
+    </div>
   );
 };
 

@@ -45,10 +45,11 @@ const StaffWorkload = () => {
     const nurse = nurses.find((n) => n.id === nurseId);
     if (!nurse) return null;
 
-    // Filter tasks that are assigned to this nurse, not completed, and due today
+    // Filter tasks that are assigned to this nurse and not completed
     const pendingTasks = tasks.filter(
-      (task) =>
-        task.assigned_to === nurseId && task.status !== TaskStatus.COMPLETED,
+      (task) => 
+        task.assigned_to === nurseId && 
+        task.status === TaskStatus.ASSIGNED
     ).length;
 
     return {

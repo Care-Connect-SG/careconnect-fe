@@ -2,40 +2,15 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-<<<<<<< Updated upstream
-import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowRight } from "lucide-react";
-import { useState, useEffect } from "react";
-import { getReports } from "@/app/api/report";
-import { useRouter } from "next/navigation";
-
-const RecentIncidents = () => {
-  const [incidents, setIncidents] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
-
-  useEffect(() => {
-    const fetchIncidents = async () => {
-      try {
-        setLoading(true);
-        const reports = await getReports();
-        // Sort by date and take most recent 3
-        const recentReports = reports
-          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-          .slice(0, 3);
-        setIncidents(recentReports);
-      } catch (error) {
-        console.error("Error fetching incidents:", error);
-=======
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getReports } from "@/app/api/report";
-import { ReportResponse } from "@/types/report";
-import { formatDistanceToNow } from "date-fns";
+import { Report } from "@/types/report";
+import { format } from "date-fns";
 
 const RecentIncidents = () => {
   const router = useRouter();
-  const [reports, setReports] = useState<ReportResponse[]>([]);
+  const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,188 +19,82 @@ const RecentIncidents = () => {
         const data = await getReports();
         setReports(data);
       } catch (error) {
-        console.error("Error fetching reports:", error);
->>>>>>> Stashed changes
+        console.error("Error fetching incidents:", error);
       } finally {
         setLoading(false);
       }
     };
 
-<<<<<<< Updated upstream
-    fetchIncidents();
-  }, []);
-
-  const getSeverityColor = (severity) => {
-    switch (severity?.toLowerCase()) {
-      case 'high':
-        return 'bg-red-100 text-red-800';
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'low':
-      default:
-        return 'bg-green-100 text-green-800';
-    }
-  };
-
-  const getStatusColor = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'resolved':
-        return 'bg-green-100 text-green-800';
-      case 'under review':
-        return 'bg-blue-100 text-blue-800';
-      case 'documented':
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const formatTime = (dateString) => {
-    if (!dateString) return 'Unknown';
-    
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInMinutes = Math.floor((now - date) / (1000 * 60));
-    
-    if (diffInMinutes < 60) {
-      return `${diffInMinutes} min ago`;
-    } else if (diffInMinutes < 1440) {
-      return `${Math.floor(diffInMinutes / 60)} hours ago`;
-    } else {
-      return `${Math.floor(diffInMinutes / 1440)} days ago`;
-    }
-  };
-=======
     fetchReports();
   }, []);
+
+  const recentReports = reports.slice(0, 4);
 
   if (loading) {
     return (
       <Card className="p-6">
         <div className="flex items-center justify-between mb-6">
-          <div className="h-6 bg-gray-200 rounded w-1/4 animate-pulse"></div>
-          <div className="h-6 bg-gray-200 rounded w-1/6 animate-pulse"></div>
+          <p className="text-lg font-semibold text-gray-800">Recent Incidents</p>
+          <Button variant="ghost" onClick={() => router.push("/dashboard/incidents")}>
+            View All
+          </Button>
         </div>
         <div className="space-y-4">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i} className="p-4 bg-gray-50">
-              <div className="animate-pulse">
-                <div className="h-4 bg-gray-200 rounded w-1/3 mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg animate-pulse">
+              <div className="space-y-2">
+                <div className="h-4 bg-gray-200 rounded w-48"></div>
+                <div className="h-3 bg-gray-200 rounded w-32"></div>
               </div>
-            </Card>
+              <div className="h-8 bg-gray-200 rounded w-20"></div>
+            </div>
           ))}
         </div>
       </Card>
     );
   }
->>>>>>> Stashed changes
 
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between mb-6">
         <p className="text-lg font-semibold text-gray-800">Recent Incidents</p>
-        <Button
-          variant="link"
-          className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-<<<<<<< Updated upstream
-          onClick={() => router.push('/dashboard/incidents')}
-=======
-          onClick={() => router.push("/dashboard/incidents")}
->>>>>>> Stashed changes
-        >
+        <Button variant="ghost" onClick={() => router.push("/dashboard/incidents")}>
           View All
         </Button>
       </div>
       <div className="space-y-4">
-<<<<<<< Updated upstream
-        {loading ? (
-          // Loading skeletons
-          Array(3).fill(0).map((_, i) => (
-            <Card key={i} className="p-4 bg-gray-50">
-              <div className="flex justify-between items-start">
-                <div>
-                  <Skeleton className="h-5 w-40 mb-2" />
-                  <Skeleton className="h-4 w-32 mb-2" />
-                  <div className="flex gap-2 mt-3">
-                    <Skeleton className="h-6 w-16" />
-                    <Skeleton className="h-6 w-20" />
-                  </div>
-                </div>
-                <Skeleton className="h-8 w-8 rounded-full" />
-              </div>
-            </Card>
-          ))
-        ) : incidents.length > 0 ? (
-          incidents.map((incident, i) => (
-            <Card
-              key={i}
-              className="p-4 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
-              onClick={() => router.push(`/dashboard/incidents/${incident.id}`)}
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="font-medium text-gray-900">{incident.title || 'Untitled Incident'}</p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {incident.resident_name || 'Unknown Resident'} • {formatTime(incident.created_at)}
-                  </p>
-                  <div className="flex gap-2 mt-3">
-                    <Badge className={getSeverityColor(incident.severity)}>
-                      {incident.severity || 'Unknown'} Severity
-                    </Badge>
-                    <Badge className={getStatusColor(incident.status)}>
-                      {incident.status || 'Pending'}
-                    </Badge>
-                  </div>
-                </div>
-                <ArrowRight className="text-gray-400" />
-              </div>
-            </Card>
-          ))
-        ) : (
-          <p className="text-center text-gray-500 py-4">No recent incidents found</p>
-        )}
-=======
-        {reports.slice(0, 4).map((report) => (
-          <Card
+        {recentReports.map((report) => (
+          <div
             key={report.id}
-            className="p-4 bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer"
+            className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer"
             onClick={() => router.push(`/dashboard/incidents/${report.id}`)}
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900">{report.form_name}</p>
-                <p className="text-sm text-gray-500">
-                  {report.primary_resident?.name || "N/A"} • {formatDistanceToNow(new Date(report.created_at), { addSuffix: true })}
-                </p>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    report.severity === "high"
-                      ? "bg-red-100 text-red-700"
-                      : report.severity === "medium"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : "bg-green-100 text-green-700"
-                  }`}
-                >
-                  {report.severity}
-                </span>
-                <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    report.status === "pending"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : report.status === "in_progress"
-                      ? "bg-blue-100 text-blue-700"
-                      : "bg-green-100 text-green-700"
-                  }`}
-                >
-                  {report.status}
-                </span>
-              </div>
+            <div className="space-y-1">
+              <p className="font-medium text-gray-900">{report.title}</p>
+              <p className="text-sm text-gray-500">
+                {report.resident?.name} • {format(new Date(report.created_at), "MMM d, yyyy")}
+              </p>
             </div>
-          </Card>
+            <div className="flex items-center gap-2">
+              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                report.severity === "high"
+                  ? "bg-red-100 text-red-800"
+                  : report.severity === "medium"
+                  ? "bg-yellow-100 text-yellow-800"
+                  : "bg-green-100 text-green-800"
+              }`}>
+                {report.severity}
+              </span>
+              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                report.status === "open"
+                  ? "bg-blue-100 text-blue-800"
+                  : "bg-gray-100 text-gray-800"
+              }`}>
+                {report.status}
+              </span>
+            </div>
+          </div>
         ))}
->>>>>>> Stashed changes
       </div>
     </Card>
   );

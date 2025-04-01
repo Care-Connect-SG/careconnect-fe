@@ -1,17 +1,18 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
+import { AlertTriangle, Clock, UserCheck, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getTasks } from "@/app/api/task";
 import { Task, TaskStatus } from "@/types/task";
 import { getResidentsByPage } from "@/app/api/resident";
+import { ResidentRecord } from "@/types/resident";
 import { getAllNurses } from "@/app/api/user";
 import { User } from "@/types/user";
-import { Resident } from "@/types/resident";
 
 const StatsOverview = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [residents, setResidents] = useState<Resident[]>([]);
+  const [residents, setResidents] = useState<ResidentRecord[]>([]);
   const [nurses, setNurses] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -20,14 +21,14 @@ const StatsOverview = () => {
       try {
         const [tasksData, residentsData, nursesData] = await Promise.all([
           getTasks(),
-          getResidentsByPage(1, 100),
-          getAllNurses(),
+          getResidentsByPage(1),
+          getAllNurses()
         ]);
         setTasks(tasksData);
         setResidents(residentsData);
         setNurses(nursesData);
       } catch (error) {
-        console.error("Error fetching stats data:", error);
+        console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
       }
@@ -39,39 +40,38 @@ const StatsOverview = () => {
   const stats = [
     {
       title: "Active Staff",
-      value: nurses.length,
-      description: "Currently working nurses",
-      icon: "👥",
-    },
-    {
-      title: "Total Residents",
-      value: residents.length,
-      description: "Registered residents",
-      icon: "🏥",
+      value: nurses.length.toString(),
+      icon: UserCheck,
+      color: "text-blue-500",
     },
     {
       title: "Pending Tasks",
-      value: tasks.filter((task) => task.status === TaskStatus.ASSIGNED).length,
-      description: "Tasks awaiting completion",
-      icon: "📋",
+      value: tasks.filter(task => task.status === TaskStatus.ASSIGNED).length.toString(),
+      icon: Clock,
+      color: "text-yellow-500",
     },
     {
-      title: "Completed Tasks",
-      value: tasks.filter((task) => task.status === TaskStatus.COMPLETED).length,
-      description: "Tasks completed today",
-      icon: "✅",
+      title: "Delayed Tasks",
+      value: tasks.filter(task => new Date(task.due_date) < new Date() && task.status !== TaskStatus.COMPLETED).length.toString(),
+      icon: AlertTriangle,
+      color: "text-red-500",
+    },
+    {
+      title: "Total Residents",
+      value: residents.length.toString(),
+      icon: Users,
+      color: "text-green-500",
     },
   ];
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[1, 2, 3, 4].map((i) => (
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {[...Array(4)].map((_, i) => (
           <Card key={i} className="p-6">
-            <div className="space-y-2">
-              <div className="h-8 w-8 bg-gray-200 rounded-full animate-pulse"></div>
-              <div className="h-6 bg-gray-200 rounded w-24 animate-pulse"></div>
-              <div className="h-4 bg-gray-200 rounded w-32 animate-pulse"></div>
+            <div className="animate-pulse">
+              <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+              <div className="h-8 bg-gray-200 rounded w-1/2"></div>
             </div>
           </Card>
         ))}
@@ -80,14 +80,15 @@ const StatsOverview = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      {stats.map((stat, index) => (
-        <Card key={index} className="p-6">
-          <div className="space-y-2">
-            <div className="text-2xl">{stat.icon}</div>
-            <h3 className="text-lg font-semibold text-gray-900">{stat.title}</h3>
-            <p className="text-2xl font-bold text-gray-800">{stat.value}</p>
-            <p className="text-sm text-gray-500">{stat.description}</p>
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {stats.map((stat, i) => (
+        <Card key={i} className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-500">{stat.title}</p>
+              <p className="text-2xl font-semibold mt-1">{stat.value}</p>
+            </div>
+            <stat.icon className={`w-8 h-8 ${stat.color}`} />
           </div>
         </Card>
       ))}

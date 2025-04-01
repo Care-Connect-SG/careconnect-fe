@@ -3,17 +3,18 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { ResidentRecord } from "@/types/resident";
 import { User } from "@/types/user";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronLeft,
   ChevronRight,
-  Loader2,
   MoreHorizontal,
   Plus,
   Search,
+  XCircle,
 } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import {
   createResident,
@@ -23,18 +24,20 @@ import {
 } from "../../../api/resident";
 import { getAllNurses } from "../../../api/user";
 import CreateResidentDialog from "./_components/create-resident-dialog";
-import ResidentCard, { NurseOption } from "./_components/resident-card";
+import ResidentCard from "./_components/resident-card";
 
 export default function AllResidentsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
   const router = useRouter();
-  const queryClient = useQueryClient();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
+
   const pageParam = searchParams.get("page");
   const currentPage = pageParam ? parseInt(pageParam, 10) : 1;
-  const LIMIT = 8;
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -49,11 +52,12 @@ export default function AllResidentsPage() {
     isLoading: isCountLoading,
     isError: isCountError,
   } = useQuery({
-    queryKey: ["residentsCount"],
-    queryFn: () => getResidentsCount(),
+    queryKey: ["residentsCount", debouncedSearchTerm],
+    queryFn: () => getResidentsCount(debouncedSearchTerm),
+    staleTime: 30000,
   });
 
-  const totalPages = Math.ceil(totalCount / LIMIT) || 1;
+  const totalPages = Math.max(Math.ceil(totalCount / 8), 1);
 
   const {
     data: residents = [],
@@ -61,9 +65,9 @@ export default function AllResidentsPage() {
     isError,
     error,
   } = useQuery({
-    queryKey: ["residents", currentPage, LIMIT, debouncedSearchTerm],
-    queryFn: () =>
-      getResidentsByPage(currentPage, LIMIT, undefined, debouncedSearchTerm),
+    queryKey: ["residents", currentPage, debouncedSearchTerm],
+    queryFn: () => getResidentsByPage(currentPage, 8, debouncedSearchTerm),
+    staleTime: 30000,
   });
 
   const { data: nurseOptions = [] } = useQuery({
@@ -75,6 +79,7 @@ export default function AllResidentsPage() {
         name: user.name,
       }));
     },
+    staleTime: 300000,
   });
 
   const updateNurseMutation = useMutation({
@@ -94,10 +99,35 @@ export default function AllResidentsPage() {
     },
   });
 
-  const filteredResidents = residents;
+  const createQueryString = (name: string, value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set(name, value);
+    return params.toString();
+  };
+
+  const goToPage = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    router.push(`${pathname}?${createQueryString("page", page.toString())}`);
+  };
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    if (currentPage !== 1) {
+      router.push(`${pathname}?page=1`);
+    }
+  };
+
+  const clearSearch = () => {
+    setSearchTerm("");
+    if (currentPage !== 1) {
+      router.push(`${pathname}?page=1`);
+    }
+  };
 
   const handleNurseChange = async (id: string, newNurse: string) => {
-    const currentResident = residents.find((res) => res.id === id);
+    const currentResident = residents.find(
+      (res: ResidentRecord) => res.id === id,
+    );
     if (!currentResident) return;
 
     const updatePayload = {
@@ -116,21 +146,12 @@ export default function AllResidentsPage() {
     updateNurseMutation.mutate({ id, updatePayload });
   };
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-  };
-
   const handleCardClick = (id: string) => {
     router.push(`/dashboard/residents/${id}`);
   };
 
   const handleAddResidentSave = async (newResidentData: any) => {
     createResidentMutation.mutate(newResidentData);
-  };
-
-  const goToPage = (page: number) => {
-    if (page < 1 || page > totalPages) return;
-    router.push(`/dashboard/residents?page=${page}`);
   };
 
   const renderPageNumbers = () => {
@@ -214,6 +235,18 @@ export default function AllResidentsPage() {
     return pages;
   };
 
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      router.push(`${pathname}?page=1`);
+    }
+  }, [totalPages, currentPage, router, pathname]);
+
+  useEffect(() => {
+    if (!searchParams.has("page")) {
+      router.push(`${pathname}?page=1`);
+    }
+  }, [pathname, router, searchParams]);
+
   return (
     <div className="flex flex-col gap-8 p-8">
       <div className="flex flex-row justify-between">
@@ -223,13 +256,21 @@ export default function AllResidentsPage() {
             <Input
               type="text"
               placeholder="Search residents..."
-              className="pl-10 pr-4 py-2 border border-gray-300 focus:outline-none focus:border-blue-500"
+              className="pl-10 pr-10 py-2"
               value={searchTerm}
               onChange={handleSearch}
             />
             <div className="absolute left-3 top-2 text-gray-400">
               <Search className="h-5 w-5" />
             </div>
+            {searchTerm && (
+              <div
+                className="absolute right-3 top-2 text-gray-400 cursor-pointer hover:text-gray-600"
+                onClick={clearSearch}
+              >
+                <XCircle className="h-5 w-5" />
+              </div>
+            )}
           </div>
           <div className="flex gap-4">
             <Button
@@ -238,7 +279,7 @@ export default function AllResidentsPage() {
               disabled={createResidentMutation.isPending}
             >
               {createResidentMutation.isPending ? (
-                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                <Spinner />
               ) : (
                 <Plus className="w-4 h-4 mr-1" />
               )}
@@ -259,13 +300,22 @@ export default function AllResidentsPage() {
           <Spinner />
         </div>
       ) : isError ? (
-        <div className="text-center text-red-500 p-4">
-          Error loading residents: {error.message}
+        <div className="text-center text-red-500 p-4 border border-red-200 rounded-lg bg-red-50">
+          <p className="font-semibold">Error loading residents</p>
+          <p className="text-sm mt-2">
+            {error instanceof Error
+              ? error.message
+              : "An unknown error occurred"}
+          </p>
+          <p className="text-sm mt-1">
+            Please try refreshing the page or contact support if the issue
+            persists.
+          </p>
         </div>
       ) : (
         <div className="space-y-4">
-          {filteredResidents.length > 0 ? (
-            filteredResidents.map((resident, index) => (
+          {residents.length > 0 ? (
+            residents.map((resident: ResidentRecord, index: number) => (
               <ResidentCard
                 key={resident.id || index}
                 resident={resident}
@@ -275,36 +325,39 @@ export default function AllResidentsPage() {
               />
             ))
           ) : (
-            <p className="text-gray-500 text-center">No residents found.</p>
+            <div className="text-gray-500 text-center p-8 border rounded-lg bg-gray-50">
+              {debouncedSearchTerm
+                ? `No residents found matching "${debouncedSearchTerm}".`
+                : "No residents found."}
+            </div>
           )}
         </div>
       )}
 
-      {!isLoading && (
+      {!isLoading && residents.length > 0 && (
         <div className="flex flex-col gap-4">
           <div className="flex justify-center items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => goToPage(currentPage - 1)}
-              disabled={currentPage <= 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
+            {currentPage > 1 && (
+              <Button
+                variant="outline"
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage <= 1}
+                className="px-1.5"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+            )}
             {renderPageNumbers()}
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => goToPage(currentPage + 1)}
-              disabled={currentPage >= totalPages}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-
-          <div className="text-center text-sm text-gray-500">
-            Page {currentPage} of {totalPages} • Showing {residents.length} of{" "}
-            {totalCount} residents
+            {currentPage < totalPages && (
+              <Button
+                variant="outline"
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage >= totalPages}
+                className="px-1.5"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </div>
       )}

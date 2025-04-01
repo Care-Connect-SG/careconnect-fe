@@ -322,7 +322,7 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                   )}
                 </div>
               </TableHead>
-              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase ">
                 Actions
               </TableHead>
             </TableRow>
@@ -331,7 +331,7 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
             {taskList.map((task) => (
               <TableRow
                 key={task.id}
-                className="hover:bg-muted hover:duration-300 ease-in-out"
+                className="hover:bg-blue-50 hover:duration-300 ease-in-out"
               >
                 <TableCell className="px-6 py-4">
                   <AlertDialog>
@@ -431,7 +431,11 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                 <TableCell className="px-6 py-4">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="hover:bg-transparent"
+                      >
                         <MoreHorizontal className="h-4 w-4" />
                         <span className="sr-only">Open menu</span>
                       </Button>

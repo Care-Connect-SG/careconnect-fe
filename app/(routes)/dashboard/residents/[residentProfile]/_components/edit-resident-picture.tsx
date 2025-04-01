@@ -46,7 +46,6 @@ const EditResidentPicture: React.FC<EditResidentPictureProps> = ({
     [],
   );
 
-  // Max file size: 5MB
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     maxFiles: 1,

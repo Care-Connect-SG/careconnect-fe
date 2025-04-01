@@ -17,10 +17,6 @@ const RoleChip: React.FC<RoleChipProps> = ({ role }) => {
       roleColor = "bg-blue-600 bg-opacity-20";
       textColor = "text-blue-900";
       break;
-    case "Family":
-      roleColor = "bg-yellow-600 bg-opacity-20";
-      textColor = "text-yellow-900";
-      break;
     default:
       roleColor = "bg-gray-300 bg-opacity-70";
       textColor = "text-gray-900";
@@ -29,7 +25,7 @@ const RoleChip: React.FC<RoleChipProps> = ({ role }) => {
 
   return (
     <span
-      className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${roleColor} ${textColor}`}
+      className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${roleColor} ${textColor}`}
     >
       {role}
     </span>

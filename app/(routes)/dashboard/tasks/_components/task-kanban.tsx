@@ -14,9 +14,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
+import { toTitleCase } from "@/lib/utils";
 import { ResidentRecord } from "@/types/resident";
 import { Task, TaskStatus } from "@/types/task";
 import { useQueryClient } from "@tanstack/react-query";
@@ -119,7 +121,7 @@ const TaskCard = ({
 
   return (
     <div
-      className="bg-white rounded-lg border border-gray-200 p-4 mb-3 hover:shadow-md transition-shadow"
+      className="bg-white rounded-lg border border-gray-200 p-4 mb-3 hover:bg-blue-50 transition-all"
       onClick={(e) => {
         if (
           e.target === e.currentTarget ||
@@ -276,15 +278,18 @@ const ResidentRow = ({
   const [showTaskForm, setShowTaskForm] = useState(false);
 
   return (
-    <div className="flex-1 w-[calc(33.333% - 1rem)] bg-gray-50 rounded-lg p-4">
+    <div className="flex-1 w-[calc(33.333% - 1rem)] bg-slate-50 rounded-lg p-4">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center">
-          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-            <User className="w-5 h-5 text-blue-600" />
-          </div>
+        <div className="flex items-center space-x-3">
+          <Avatar className="h-10 w-10 rounded-lg cursor-pointer flex-shrink-0">
+            <AvatarImage src={resident.photograph!} alt={resident.full_name} />
+            <AvatarFallback className="rounded-lg text-sm">
+              {resident.full_name.substring(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
           <div>
             <h3 className="text-sm font-medium text-gray-900">
-              {resident.full_name}
+              {toTitleCase(resident.full_name)}
             </h3>
             <p className="text-xs text-gray-500">Room {resident.room_number}</p>
           </div>

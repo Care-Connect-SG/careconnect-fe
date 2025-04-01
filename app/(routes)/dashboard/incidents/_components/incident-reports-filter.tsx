@@ -8,10 +8,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { format } from "date-fns";
-import { Search, X } from "lucide-react";
-import { CalendarIcon } from "lucide-react";
-import { CheckIcon, ChevronDownIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { format, isValid, parseISO } from "date-fns";
+import {
+  CalendarIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  Search,
+  X,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface OptionType {
@@ -39,6 +44,13 @@ export default function IncidentReportFilters({
     filterOptions.residentId === "all" ? [] : filterOptions.residentId || [],
   );
 
+  const [startDate, setStartDate] = useState<Date | undefined>(
+    filterOptions.startDate ? parseISO(filterOptions.startDate) : undefined,
+  );
+  const [endDate, setEndDate] = useState<Date | undefined>(
+    filterOptions.endDate ? parseISO(filterOptions.endDate) : undefined,
+  );
+
   useEffect(() => {
     setFilterOptions({
       ...filterOptions,
@@ -59,6 +71,22 @@ export default function IncidentReportFilters({
     );
   };
 
+  const handleStartDateChange = (date: Date | undefined) => {
+    setStartDate(date);
+    setFilterOptions({
+      ...filterOptions,
+      startDate: date ? format(date, "yyyy-MM-dd") : null,
+    });
+  };
+
+  const handleEndDateChange = (date: Date | undefined) => {
+    setEndDate(date);
+    setFilterOptions({
+      ...filterOptions,
+      endDate: date ? format(date, "yyyy-MM-dd") : null,
+    });
+  };
+
   const hasActiveFilters = () => {
     return (
       selectedReporters.length > 0 ||
@@ -72,6 +100,8 @@ export default function IncidentReportFilters({
   const handleReset = () => {
     setSelectedReporters([]);
     setSelectedResidents([]);
+    setStartDate(undefined);
+    setEndDate(undefined);
     setFilterOptions({
       search: "",
       reporterId: [],
@@ -82,7 +112,7 @@ export default function IncidentReportFilters({
   };
 
   return (
-    <div className="flex flex-row items-center gap-4">
+    <div className="flex flex-row items-center gap-4 flex-wrap">
       <div className="relative w-full md:w-1/3">
         <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
           <Search className="w-4 h-4 text-gray-400" />
@@ -177,29 +207,23 @@ export default function IncidentReportFilters({
           <PopoverTrigger asChild>
             <Button
               variant="outline"
-              className="w-full justify-start text-left font-normal"
+              className={cn(
+                "w-[180px] justify-start text-left font-normal",
+                !startDate && "text-muted-foreground",
+              )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {filterOptions.startDate
-                ? format(new Date(filterOptions.startDate), "PPP")
-                : "Select start date"}
+              {startDate && isValid(startDate)
+                ? format(startDate, "MMM d, yyyy")
+                : "Start date"}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               mode="single"
-              selected={
-                filterOptions.startDate
-                  ? new Date(filterOptions.startDate)
-                  : undefined
-              }
-              onSelect={(date) =>
-                setFilterOptions({
-                  ...filterOptions,
-                  startDate: date?.toISOString().split("T")[0] || null,
-                })
-              }
-              initialFocus
+              selected={startDate}
+              onSelect={handleStartDateChange}
+              disabled={(date) => (endDate ? date > endDate : false)}
             />
           </PopoverContent>
         </Popover>
@@ -210,41 +234,35 @@ export default function IncidentReportFilters({
           <PopoverTrigger asChild>
             <Button
               variant="outline"
-              className="w-full justify-start text-left font-normal"
+              className={cn(
+                "w-[180px] justify-start text-left font-normal",
+                !endDate && "text-muted-foreground",
+              )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {filterOptions.endDate
-                ? format(new Date(filterOptions.endDate), "PPP")
-                : "Select end date"}
+              {endDate && isValid(endDate)
+                ? format(endDate, "MMM d, yyyy")
+                : "End date"}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               mode="single"
-              selected={
-                filterOptions.endDate
-                  ? new Date(filterOptions.endDate)
-                  : undefined
-              }
-              onSelect={(date) =>
-                setFilterOptions({
-                  ...filterOptions,
-                  endDate: date?.toISOString().split("T")[0] || null,
-                })
-              }
-              initialFocus
+              selected={endDate}
+              onSelect={handleEndDateChange}
+              disabled={(date) => (startDate ? date < startDate : false)}
             />
           </PopoverContent>
         </Popover>
       </div>
 
       <Button
-        variant="outline"
+        variant="transparentHover"
         onClick={handleReset}
         disabled={!hasActiveFilters()}
+        className="px-2"
       >
-        <X className="w-4 h-4 mr-2" />
-        Clear
+        <X className="w-4 h-4" />
       </Button>
     </div>
   );

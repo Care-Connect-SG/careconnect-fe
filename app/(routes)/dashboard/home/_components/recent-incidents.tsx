@@ -31,11 +31,11 @@ const RecentIncidents = () => {
   const getSeverityClass = (report: ReportResponse) => {
     // For now, we'll determine severity based on the report content
     // You might want to adjust this logic based on your actual data structure
-    const hasUrgentContent = report.report_content.some(
-      (content) => content.input.toString().toLowerCase().includes("urgent")
+    const hasUrgentContent = report.report_content.some((content) =>
+      content.input.toString().toLowerCase().includes("urgent"),
     );
-    const hasMediumContent = report.report_content.some(
-      (content) => content.input.toString().toLowerCase().includes("moderate")
+    const hasMediumContent = report.report_content.some((content) =>
+      content.input.toString().toLowerCase().includes("moderate"),
     );
 
     if (hasUrgentContent) return "bg-red-100 text-red-700";
@@ -52,7 +52,9 @@ const RecentIncidents = () => {
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold text-gray-800">Recent Incidents</h2>
+        <h2 className="text-lg font-semibold text-gray-800">
+          Recent Incidents
+        </h2>
         <Button
           variant="outline"
           className="text-sm"
@@ -73,31 +75,33 @@ const RecentIncidents = () => {
               className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
             >
               <div className="flex flex-col gap-1">
-                <h3 className="font-medium text-gray-900">{report.form_name}</h3>
+                <h3 className="font-medium text-gray-900">
+                  {report.form_name}
+                </h3>
                 <p className="text-sm text-gray-500">
                   {report.primary_resident?.name || "No resident specified"}
                 </p>
-                <p className="text-xs text-gray-400">
-                  {formatDistanceToNow(new Date(report.created_at), {
-                    addSuffix: true,
-                  })}
-                </p>
               </div>
               <div className="flex flex-col items-end gap-2">
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getSeverityClass(report)}`}>
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${getSeverityClass(report)}`}
+                >
                   {report.report_content.some((content) =>
-                    content.input.toString().toLowerCase().includes("urgent")
+                    content.input.toString().toLowerCase().includes("urgent"),
                   )
                     ? "High"
                     : report.report_content.some((content) =>
-                        content.input.toString().toLowerCase().includes("moderate")
-                      )
-                    ? "Medium"
-                    : "Low"}
+                          content.input
+                            .toString()
+                            .toLowerCase()
+                            .includes("moderate"),
+                        )
+                      ? "Medium"
+                      : "Low"}
                 </span>
                 <span
                   className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusClass(
-                    report
+                    report,
                   )}`}
                 >
                   {report.status}

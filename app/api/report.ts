@@ -2,8 +2,11 @@ import {
   CaregiverTag,
   ReportCreate,
   ReportResponse,
+  ReportReviewCreate,
   ResidentTag,
 } from "@/types/report";
+import { User } from "@/types/user";
+
 
 export const getReports = async (
   status?: string,
@@ -222,6 +225,106 @@ export const getCaregiverTags = async (
     return data;
   } catch (error) {
     console.error("Error fetching caregiver tags: ", error);
+    throw error;
+  }
+};
+
+export const approveReport = async (
+  reportId: string,
+): Promise<string> => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/incident/reports/${reportId}/publish`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const errData = await response.json();
+      throw Error(errData.detail || "Error publishing report");
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error publishing report:", error);
+    throw error;
+  }
+};
+
+export const reviewReport = async (
+  reportId: string,
+  user: User,
+  review: string,
+): Promise<string> => {
+  const reviewer: CaregiverTag = {
+    id: user.id,
+    name: user.name,
+    role: user.role,
+  }
+
+  const reviewData: ReportReviewCreate = {
+    review_id: reportId,
+    reviewer: reviewer,
+    review: review,
+  };
+
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/incident/reports/${reportId}/review`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(reviewData),
+      },
+    );
+
+    if (!response.ok) {
+      const errData = await response.json();
+      throw Error(errData.detail || "Error adding review to report");
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error adding review to` report:", error);
+    throw error;
+  }
+};
+
+export const resolveReportReview = async (
+  reportId: string,
+  resolution: string,
+  reportData: ReportCreate,
+): Promise<string> => {
+  try {
+    await updateReport(reportId, reportData);
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/incident/reports/${reportId}/resolve`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(resolution),
+      },
+    );
+
+    if (!response.ok) {
+      const errData = await response.json();
+      throw Error(errData.detail || "Error resolving report review");
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error resolving report review:", error);
     throw error;
   }
 };

@@ -10,7 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Popover,
@@ -21,7 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { format, isValid } from "date-fns";
 import { CalendarIcon, Bot } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
 
 interface CreateWellnessReportDialogProps {
@@ -49,6 +48,21 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
     cognitive_emotional: "",
     social_engagement: "",
   });
+
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({
+        date: new Date().toISOString().split("T")[0],
+        monthly_summary: "",
+        medical_summary: "",
+        medication_update: "",
+        nutrition_hydration: "",
+        mobility_physical: "",
+        cognitive_emotional: "",
+        social_engagement: "",
+      });
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,16 +152,24 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
       <DialogContent className="max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto">
         <DialogHeader className="flex flex-row items-center justify-between">
           <DialogTitle>Create Wellness Report</DialogTitle>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={handleGenerateAI}
-            disabled={isFetchingAI}
-            title="Generate with AI"
-          >
-            <Bot className="w-5 h-5" />
-          </Button>
+          <div className="relative">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={handleGenerateAI}
+              disabled={isFetchingAI}
+              title="Generate with AI"
+            >
+              <Bot className="w-5 h-5" />
+            </Button>
+            {isFetchingAI && (
+              <div
+                className="absolute -top-1.5 -right-1.5 w-4 h-4 border-2 border-white rounded-full border-t-transparent animate-spin"
+                style={{ borderColor: "#FF7F50" }}
+              />
+            )}
+          </div>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -205,11 +227,31 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
           ))}
 
           <DialogFooter>
-            <div className="flex justify-end space-x-4">
-              <Button type="button" variant="secondary" onClick={onClose}>
-                Cancel
+            <div className="flex justify-between items-center w-full">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() =>
+                  setFormData({
+                    date: new Date().toISOString().split("T")[0],
+                    monthly_summary: "",
+                    medical_summary: "",
+                    medication_update: "",
+                    nutrition_hydration: "",
+                    mobility_physical: "",
+                    cognitive_emotional: "",
+                    social_engagement: "",
+                  })
+                }
+              >
+                Clear All
               </Button>
-              <Button type="submit">Create Report</Button>
+              <div className="space-x-2">
+                <Button type="button" variant="secondary" onClick={onClose}>
+                  Cancel
+                </Button>
+                <Button type="submit">Create Report</Button>
+              </div>
             </div>
           </DialogFooter>
         </form>

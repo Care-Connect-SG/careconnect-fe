@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { User } from "@/types/user";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 
@@ -26,6 +27,7 @@ export default function ReportReviewDialogue({
     ReportReviewDialogueProps
 ) {
     const [comments, setComments] = useState("");
+    const router = useRouter();
 
     const handleRequestChanges = async () => {
         try {
@@ -42,6 +44,7 @@ export default function ReportReviewDialogue({
                 variant: "destructive",
             });
         }
+        router.push(`/dashboard/incidents`);
     }
 
     return (

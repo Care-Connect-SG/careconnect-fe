@@ -45,21 +45,17 @@ export default function FormCard({
 
   return (
     <Card
-      className={`relative h-[11rem] overflow-hidden ${
+      className={`relative h-[12rem] overflow-hidden ${
         status === "Published"
           ? "border-l-4 border-l-green-500"
           : "border-l-4 border-l-yellow-500"
       }`}
     >
       <Link href={`/dashboard/incidents/admin/view/${id}`}>
-        <CardHeader className="max-h-24 flex flex-row items-start justify-between space-y-0 my-0">
-          <div>
+        <CardHeader className="max-h-24 space-y-0 my-0">
+          <div className="flex flex-row items-start justify-between gap-2 mb-2">
             <CardTitle className="text-base font-bold">{title}</CardTitle>
-            <p className="hidden sm:block text-xs text-muted-foreground mt-1">
-              Created at {created_at}
-            </p>
-          </div>
-          <Badge
+            <Badge
             className={
               status === "Published"
                 ? "hidden md:block text-green-800 bg-green-100 h-6 hover:bg-green-200 hover:text-green-900"
@@ -68,8 +64,12 @@ export default function FormCard({
           >
             {status}
           </Badge>
+          </div>
+          <p className="hidden sm:block text-xs text-muted-foreground mt-1">
+              Created at {created_at}
+            </p>
         </CardHeader>
-        <CardContent>
+        <CardContent className="mt-2">
           <p className="hidden h-4 md:block text-xs truncate">{description}</p>
         </CardContent>
       </Link>

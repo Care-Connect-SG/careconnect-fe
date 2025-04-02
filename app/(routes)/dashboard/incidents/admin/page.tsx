@@ -88,7 +88,7 @@ export default function IncidentReportingFormsAdmin() {
       </div>
       <hr className="border-t-1 border-gray-300 mx-8 py-2"></hr>
       <div className="w-full grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-4 px-8 py-4">
-        <Card className="border-dashed h-[11rem] hover:bg-gray-100">
+        <Card className="border-dashed h-[12rem] hover:bg-gray-100">
           <Link href="/dashboard/incidents/admin/build">
             <div className="flex flex-col justify-center items-center h-full">
               <Plus className="mb-0 h-6 w-6 text-gray-500" />

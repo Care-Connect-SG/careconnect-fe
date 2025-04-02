@@ -171,18 +171,19 @@ export default function ViewReportPage() {
               </Button>
             </div>
           )}
-        {report?.status === ReportStatus.CHANGES_REQUESTED && user?.id === report.reporter.id && (
-          <Button
-            variant={"secondary"}
-            onClick={() =>
-              router.replace(
-                `/dashboard/incidents/resolve?formId=${report.form_id}&reportId=${reportId}`,
-              )
-            }
-          >
-            Resolve Review
-          </Button>
-        )}
+        {report?.status === ReportStatus.CHANGES_REQUESTED &&
+          user?.id === report.reporter.id && (
+            <Button
+              variant={"secondary"}
+              onClick={() =>
+                router.replace(
+                  `/dashboard/incidents/resolve?formId=${report.form_id}&reportId=${reportId}`,
+                )
+              }
+            >
+              Resolve Review
+            </Button>
+          )}
       </div>
       {report?.status === ReportStatus.CHANGES_REQUESTED && (
         <div className="rounded-md border px-4 my-4">
@@ -210,22 +211,19 @@ export default function ViewReportPage() {
                     {report?.reviews![report?.reviews!.length - 1].review}
                   </CardContent>
                 </Card>
-                {
-                  user?.id === report.reporter.id &&
-                  (
-                    <Button
-                      className="my-2 mx-2"
-                      variant={"secondary"}
-                      onClick={() =>
-                        router.replace(
-                          `/dashboard/incidents/resolve?formId=${report.form_id}&reportId=${reportId}`,
-                        )
-                      }
-                    >
-                      Resolve Review
-                    </Button>
-                  )
-                }
+                {user?.id === report.reporter.id && (
+                  <Button
+                    className="my-2 mx-2"
+                    variant={"secondary"}
+                    onClick={() =>
+                      router.replace(
+                        `/dashboard/incidents/resolve?formId=${report.form_id}&reportId=${reportId}`,
+                      )
+                    }
+                  >
+                    Resolve Review
+                  </Button>
+                )}
               </AccordionContent>
             </AccordionItem>
           </Accordion>
@@ -304,60 +302,60 @@ export default function ViewReportPage() {
               {(resident ||
                 (report?.involved_residents &&
                   report?.involved_residents.length > 0)) && (
-                  <div className="w-1/2">
-                    {resident && (
-                      <div className="mb-4">
-                        <h2 className="text-gray-500 font-semibold mb-2">
-                          Primary Resident
-                        </h2>
-                        <div>
-                          <Link
-                            href={`/dashboard/residents/${resident.id}`}
-                            className="flex items-center gap-3 group hover"
-                          >
-                            <Avatar className="h-16 w-16 group-hover:ring-1 group-hover:ring-primary group-hover:ring-offset-2 transition-all">
-                              <AvatarFallback>PR</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <div className="font-medium flex items-center gap-1">
-                                <span className="border-b border-dotted border-muted-foreground group-hover:border-primary mb-1">
-                                  {resident.full_name}
-                                </span>
-                                <ChevronRight className="h-4 w-4 mb-1 opacity-0 group-hover:opacity-100 transition-opacity" />
-                              </div>
-                              <p className="text-sm text-muted-foreground">
-                                Room: {resident.room_number}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                DOB: {resident.date_of_birth}
-                              </p>
+                <div className="w-1/2">
+                  {resident && (
+                    <div className="mb-4">
+                      <h2 className="text-gray-500 font-semibold mb-2">
+                        Primary Resident
+                      </h2>
+                      <div>
+                        <Link
+                          href={`/dashboard/residents/${resident.id}`}
+                          className="flex items-center gap-3 group hover"
+                        >
+                          <Avatar className="h-16 w-16 group-hover:ring-1 group-hover:ring-primary group-hover:ring-offset-2 transition-all">
+                            <AvatarFallback>PR</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="font-medium flex items-center gap-1">
+                              <span className="border-b border-dotted border-muted-foreground group-hover:border-primary mb-1">
+                                {resident.full_name}
+                              </span>
+                              <ChevronRight className="h-4 w-4 mb-1 opacity-0 group-hover:opacity-100 transition-opacity" />
                             </div>
-                          </Link>
+                            <p className="text-sm text-muted-foreground">
+                              Room: {resident.room_number}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              DOB: {resident.date_of_birth}
+                            </p>
+                          </div>
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+                  {report?.involved_residents &&
+                    report?.involved_residents.length > 0 && (
+                      <div>
+                        <h2 className="text-gray-500">Involved residents:</h2>
+                        <div>
+                          {report.involved_residents.map((ir, index) => (
+                            <span key={ir.id}>
+                              <Link
+                                href={`/dashboard/residents/${ir.id}`}
+                                className="border-b border-dotted border-muted-foreground"
+                              >
+                                {ir.name}
+                              </Link>
+                              {index < report.involved_residents!.length - 1 &&
+                                ", "}
+                            </span>
+                          ))}
                         </div>
                       </div>
                     )}
-                    {report?.involved_residents &&
-                      report?.involved_residents.length > 0 && (
-                        <div>
-                          <h2 className="text-gray-500">Involved residents:</h2>
-                          <div>
-                            {report.involved_residents.map((ir, index) => (
-                              <span key={ir.id}>
-                                <Link
-                                  href={`/dashboard/residents/${ir.id}`}
-                                  className="border-b border-dotted border-muted-foreground"
-                                >
-                                  {ir.name}
-                                </Link>
-                                {index < report.involved_residents!.length - 1 &&
-                                  ", "}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                  </div>
-                )}
+                </div>
+              )}
               <div className="w-1/2">
                 <h2 className="text-gray-500 font-semibold mb-2">Reporter</h2>
                 <Link

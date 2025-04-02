@@ -11,7 +11,7 @@ export interface ReportSectionContent {
   input: string | string[];
 }
 
-export const enum ReportReviewStatus {
+export enum ReportReviewStatus {
   PENDING = "Pending",
   RESOLVED = "Resolved",
 }
@@ -39,6 +39,7 @@ export interface ReportCreate {
   report_content: ReportSectionContent[];
   status: ReportStatus;
   reference_report_id?: string;
+  reviews?: ReportReview[];
 }
 
 export interface ReportResponse extends ReportCreate {
@@ -47,7 +48,6 @@ export interface ReportResponse extends ReportCreate {
   submitted_at?: Date | null;
   last_updated_at: Date;
   published_at?: Date | null;
-  reviews: ReportReview[];
 }
 
 export interface ResidentTag {

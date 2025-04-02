@@ -5,10 +5,9 @@ import { useEffect, useState } from "react";
 
 import { getFormById } from "@/app/api/form";
 import {
-  createReport,
-  deleteReport,
   getReportById,
   getReports,
+  resolveReportReview,
   updateReport,
 } from "@/app/api/report";
 import { getCurrentUser } from "@/app/api/user";
@@ -16,8 +15,7 @@ import { FormElementData, FormResponse } from "@/types/form";
 import { CaregiverTag, ReportCreate, ReportStatus } from "@/types/report";
 
 import { FormHeaderView } from "../_components/form-header";
-import FormElementFill from "../_components/form-element-fill";
-import PersonSelector from "../_components/tag-personnel";
+
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -34,19 +32,24 @@ import { toast } from "@/hooks/use-toast";
 import { ReportResponse } from "@/types/report";
 import { User } from "@/types/user";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronLeft, Trash2, X } from "lucide-react";
+import { ChevronLeft, X } from "lucide-react";
 import { FormProvider, useForm } from "react-hook-form";
 import { LoadingSkeleton } from "../_components/loading-skeleton";
-import { ReportSchema, reportSchema } from "../schema";
+import { reportSchema, ReportSchema } from "../schema";
+import PersonSelector from "../_components/tag-personnel";
+import FormElementFill from "../_components/form-element-fill";
+import { report } from "process";
 
-export default function CreateReportPage() {
+
+export default function ResolveReportPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const formId = searchParams.get("formId");
   const reportId = searchParams.get("reportId");
-  const isEditing = !!reportId;
 
   const [form, setForm] = useState<FormResponse | null>(null);
+  const [report, setReport] = useState<ReportResponse | null>(null);
+  const [formTitle, setFormTitle] = useState<string>("");
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [availableReports, setAvailableReports] = useState<ReportResponse[]>(
@@ -56,6 +59,7 @@ export default function CreateReportPage() {
   const [referenceReportId, setReferenceReportId] = useState<string | null>(
     null,
   );
+  const [resolution, setResolution] = useState<string>("");
 
   const methods = useForm<ReportSchema>({
     resolver: zodResolver(reportSchema),
@@ -117,9 +121,10 @@ export default function CreateReportPage() {
           }),
         );
 
-        if (isEditing && reportId) {
+        if (reportId) {
           try {
             const reportData = await getReportById(reportId);
+            setReport(reportData);
 
             const mergedReportContent = initialReportContent.map((item) => {
               const existingContent = reportData.report_content.find(
@@ -165,9 +170,9 @@ export default function CreateReportPage() {
     }
 
     loadData();
-  }, [formId, isEditing, reportId, router, methods]);
+  }, [formId, reportId, router, methods]);
 
-  const prepareReport = (data: ReportSchema, mode: string) => {
+  const prepareReport = (data: ReportSchema) => {
     const missingRequired = form!.json_content
       .filter((element) => element.required)
       .some((element, idx) => {
@@ -193,66 +198,22 @@ export default function CreateReportPage() {
       primary_resident: data.primary_resident,
       involved_residents: data.involved_residents,
       involved_caregivers: data.involved_caregivers,
-      status: ReportStatus.DRAFT,
+      reviews: report?.reviews,
+      status: report!.status,
     };
 
     if (referenceReportId) {
       reportData.reference_report_id = referenceReportId;
     }
 
-    if (mode === "submit") {
-      reportData.status = ReportStatus.SUBMITTED;
-    }
-
     return reportData;
   };
-
-  const onSaveDraft = methods.handleSubmit(async (data) => {
-    if (!user || !form) return;
-
-    try {
-      const reportData = prepareReport(data, "draft");
-
-      if (!reportData) {
-        toast({
-          title: "Required fields missing",
-          description: "Please fill in all fields with * before saving.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (!reportId) {
-        const newReportId = await createReport(reportData);
-        toast({
-          title: "Draft report created",
-          description: "Your form response was saved successfully.",
-        });
-        router.replace(
-          `/dashboard/incidents/fill?formId=${formId}&reportId=${newReportId}`,
-        );
-      } else {
-        await updateReport(reportId, reportData);
-        toast({
-          title: "Draft report updated",
-          description: "Your edits to the report are saved successfully.",
-        });
-      }
-    } catch (error) {
-      console.error("Error saving draft:", error);
-      toast({
-        title: "Error",
-        description: "Failed to save the report. Please try again.",
-        variant: "destructive",
-      });
-    }
-  });
 
   const onSubmit = methods.handleSubmit(async (data) => {
     if (!user || !form) return;
 
     try {
-      const reportData = prepareReport(data, "submit");
+      const reportData = prepareReport(data);
 
       if (!reportData) {
         toast({
@@ -263,50 +224,23 @@ export default function CreateReportPage() {
         return;
       }
 
-      if (!reportId) {
-        await createReport(reportData);
-        toast({
-          title: "Report submitted",
-          description: "Your report has been submitted successfully.",
-        });
-        router.replace("/dashboard/incidents");
-      } else {
-        await updateReport(reportId, reportData);
-        toast({
-          title: "Report submitted",
-          description: "Your report has been submitted successfully.",
-        });
-        router.replace("/dashboard/incidents");
-      }
+      await resolveReportReview(reportId!, resolution, reportData);
+      toast({
+        title: "Resolution submitted",
+        description: "Your report has been been updated with the resolutions.",
+      });
+      router.replace("/dashboard/incidents");
+
     } catch (error) {
-      console.error("Error submitting report:", error);
+      console.error("Error submitting resolution:", error);
       toast({
         title: "Error",
-        description: "Failed to submit the report. Please try again.",
+        description: "Failed to resolve the review and update the report. Please try again.",
         variant: "destructive",
       });
     }
   });
 
-  const handleDeleteReport = async () => {
-    if (!reportId) return;
-
-    try {
-      await deleteReport(reportId);
-      toast({
-        title: "Report deleted",
-        description: "Your report has been deleted successfully.",
-      });
-      router.back();
-    } catch (error) {
-      console.error("Failed to delete report:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete the report. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
 
   if (loading || !form || !user) return <LoadingSkeleton />;
 
@@ -324,25 +258,8 @@ export default function CreateReportPage() {
               <ChevronLeft className="h-4 w-4 mx-auto" />
               Return
             </Button>
-            {reportId && (
-              <Button
-                type="button"
-                onClick={handleDeleteReport}
-                className="bg-gray-100 text-black hover:bg-gray-200"
-              >
-                <Trash2 />
-              </Button>
-            )}
           </div>
           <div className="flex gap-2 justify-end">
-            <Button
-              type="button"
-              disabled={methods.formState.isSubmitting}
-              onClick={onSaveDraft}
-              className="bg-blue-500 hover:bg-blue-600 text-white"
-            >
-              Save
-            </Button>
             <Button
               type="button"
               disabled={methods.formState.isSubmitting}

@@ -16,7 +16,7 @@ import { FormElementData, FormResponse } from "@/types/form";
 import { CaregiverTag, ReportCreate, ReportStatus } from "@/types/report";
 
 import { FormHeaderView } from "../_components/form-header";
-import FormElementFill from "./_components/form-element-fill";
+import FormElementFill from "../_components/form-element-fill";
 import PersonSelector from "./_components/tag-personnel";
 
 import { Button } from "@/components/ui/button";

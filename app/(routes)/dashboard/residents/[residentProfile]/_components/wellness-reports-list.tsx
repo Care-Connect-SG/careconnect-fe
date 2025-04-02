@@ -50,7 +50,7 @@ const WellnessReportsList: React.FC<WellnessReportsListProps> = ({
       toast({
         variant: "default",
         title: "Success",
-        description: "Wellness report deleted successfully.",
+        description: "Wellness Report Deleted Successfully!",
       });
       onReportDeleted();
     } catch (error: any) {
@@ -197,6 +197,11 @@ const WellnessReportsList: React.FC<WellnessReportsListProps> = ({
           onReportUpdated={() => {
             onReportUpdated();
             setEditingReport(null);
+            toast({
+              variant: "default",
+              title: "Success",
+              description: "Wellness Report Updated Successfully!",
+            });
           }}
         />
       )}

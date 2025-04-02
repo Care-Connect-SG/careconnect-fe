@@ -139,7 +139,7 @@ export default function ViewReportPage() {
           </Button>
         )}
         {
-          (report?.status === ReportStatus.SUBMITTED
+          ((report?.status === ReportStatus.SUBMITTED || report?.status === ReportStatus.CHANGES_MADE)
             && user?.role === "Admin") && (
             <div className="flex gap-2 justify-end">
               <Button className="bg-blue-500 hover:bg-blue-600 text-white" onClick={() => setReviewDialogOpen(true)}>

@@ -1,60 +1,111 @@
 "use client";
 
+import { getTasks } from "@/app/api/task";
+import { getAllNurses } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Task, TaskStatus } from "@/types/task";
+import { User } from "@/types/user";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-const StaffWorkload = () => (
-  <Card className="p-6">
-    <div className="flex items-center justify-between mb-6">
-      <p className="text-lg font-semibold text-gray-800">Staff Workload</p>
-      <Button
-        variant="link"
-        className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-      >
-        View All
-      </Button>
-    </div>
-    <div className="space-y-4">
-      {[
-        { name: "Emma Thompson", role: "RN", tasks: 8, workload: 75 },
-        { name: "Michael Chen", role: "LPN", tasks: 5, workload: 45 },
-        { name: "Sarah Williams", role: "CNA", tasks: 10, workload: 90 },
-      ].map((staff, i) => (
-        <Card
-          key={i}
-          className="p-4 bg-gray-50 flex items-center justify-between"
+interface NurseWorkload {
+  id: string;
+  name: string;
+  pendingTasks: number;
+}
+
+const StaffWorkload = () => {
+  const [nurses, setNurses] = useState<User[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const today = new Date();
+        const [nursesData, tasksData] = await Promise.all([
+          getAllNurses(),
+          getTasks({ date: today.toISOString().split("T")[0] }),
+        ]);
+        setNurses(nursesData);
+        setTasks(tasksData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const calculateWorkload = (nurseId: string): NurseWorkload | null => {
+    const nurse = nurses.find((n) => n.id === nurseId);
+    if (!nurse) return null;
+
+    const pendingTasks = tasks.filter(
+      (task) =>
+        task.assigned_to === nurseId && task.status === TaskStatus.ASSIGNED,
+    ).length;
+
+    return {
+      id: nurse.id,
+      name: nurse.name,
+      pendingTasks,
+    };
+  };
+
+  return (
+    <Card className="p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-lg font-semibold text-gray-800">Staff Workload</h2>
+        <Button
+          variant="outline"
+          className="text-sm"
+          onClick={() => router.push("/dashboard/nurses")}
         >
-          <div className="flex items-center space-x-4">
-            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-              <p className="text-gray-600 font-medium">
-                {staff.name.charAt(0)}
-              </p>
+          View All
+        </Button>
+      </div>
+      <div className="h-[400px] overflow-y-auto pr-2 -mr-2">
+        <div className="space-y-4">
+          {isLoading ? (
+            <div className="flex items-center justify-center h-32">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
             </div>
-            <div>
-              <p className="font-medium text-gray-900">{staff.name}</p>
-              <p className="text-sm text-gray-500">
-                {staff.role} • {staff.tasks} tasks
-              </p>
-            </div>
-          </div>
-          <div className="w-32">
-            <div className="h-2 bg-gray-200 rounded-full">
-              <div
-                className={`h-2 rounded-full ${
-                  staff.workload > 80
-                    ? "bg-red-500"
-                    : staff.workload > 60
-                      ? "bg-yellow-500"
-                      : "bg-green-500"
-                }`}
-                style={{ width: `${staff.workload}%` }}
-              />
-            </div>
-          </div>
-        </Card>
-      ))}
-    </div>
-  </Card>
-);
+          ) : (
+            nurses.map((nurse) => {
+              const workload = calculateWorkload(nurse.id);
+              if (!workload) return null;
+
+              return (
+                <div
+                  key={nurse.id}
+                  className="p-4 bg-gray-50 rounded-lg space-y-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-medium text-gray-900">{nurse.name}</h3>
+                    <span className="text-sm text-gray-500">
+                      {workload.pendingTasks} pending tasks
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <div className="space-x-4">
+                      <span>
+                        {workload.pendingTasks} Tasks to Complete Today
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+    </Card>
+  );
+};
 
 export default StaffWorkload;

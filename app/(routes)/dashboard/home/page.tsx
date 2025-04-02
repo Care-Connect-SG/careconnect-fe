@@ -1,6 +1,5 @@
 "use client";
 
-import { Separator } from "@/components/ui/separator";
 import { useSession } from "next-auth/react";
 import QuickActions from "./_components/quick-actions";
 import RecentIncidents from "./_components/recent-incidents";
@@ -8,26 +7,27 @@ import StaffWorkload from "./_components/staff-workload";
 import StatsOverview from "./_components/stats-overview";
 import UpcomingEvents from "./_components/upcoming-events";
 
-export default function Home() {
+const HomePage = () => {
   const { data: session } = useSession();
+  const username = session?.user?.name || "User";
 
   return (
     <div className="flex flex-col w-full gap-8 p-8">
-      <p className="text-2xl font-semibold text-gray-800">
-        Hello{session?.user?.email ? " " + session.user.email : ""}!
-      </p>
-      <Separator />
-
-      <QuickActions />
-      <p className="text-lg font-semibold text-gray-800">Overview</p>
-      <StatsOverview />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <StaffWorkload />
-        <RecentIncidents />
+      <div className="flex flex-col gap-2">
+        <h1 className="text-2xl font-semibold text-gray-800">Hi, {username}</h1>
+        <p className="text-gray-500">Welcome to your dashboard</p>
       </div>
-
-      <UpcomingEvents />
+      <div className="flex flex-col space-y-6">
+        <QuickActions />
+        <StatsOverview />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <StaffWorkload />
+          <RecentIncidents />
+        </div>
+        <UpcomingEvents />
+      </div>
     </div>
   );
-}
+};
+
+export default HomePage;

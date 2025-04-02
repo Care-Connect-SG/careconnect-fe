@@ -4,6 +4,7 @@ import { getTasks } from "@/app/api/task";
 import { getAllNurses } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 import { Task, TaskStatus } from "@/types/task";
 import { User } from "@/types/user";
 import { useRouter } from "next/navigation";
@@ -47,7 +48,7 @@ const StaffWorkload = () => {
 
     const pendingTasks = tasks.filter(
       (task) =>
-        task.assigned_to === nurseId && task.status === TaskStatus.ASSIGNED,
+        task.assigned_to === nurseId && task.status !== TaskStatus.COMPLETED,
     ).length;
 
     return {
@@ -62,8 +63,8 @@ const StaffWorkload = () => {
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold text-gray-800">Staff Workload</h2>
         <Button
-          variant="outline"
-          className="text-sm"
+          variant="link"
+          className="text-blue-600 hover:text-blue-700 text-sm font-medium"
           onClick={() => router.push("/dashboard/nurses")}
         >
           View All
@@ -72,8 +73,8 @@ const StaffWorkload = () => {
       <div className="h-[400px] overflow-y-auto pr-2 -mr-2">
         <div className="space-y-4">
           {isLoading ? (
-            <div className="flex items-center justify-center h-32">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+            <div className="flex items-center justify-center h-64">
+              <Spinner />
             </div>
           ) : (
             nurses.map((nurse) => {

@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { ResidentRecord } from "@/types/resident";
 import { Task, TaskStatus } from "@/types/task";
 import { User } from "@/types/user";
-import { AlertTriangle, Clock, UserCheck, Users } from "lucide-react";
+import { AlertTriangle, BookUser, Clock, UserCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const StatsOverview = () => {
@@ -69,7 +69,7 @@ const StatsOverview = () => {
     {
       title: "Total Residents",
       value: residents.length.toString(),
-      icon: Users,
+      icon: BookUser,
       color: "text-green-500",
     },
   ];

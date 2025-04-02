@@ -98,16 +98,6 @@ const UpcomingEvents = () => {
                 </div>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-gray-400 hover:text-gray-600"
-              onClick={() =>
-                router.push(`/dashboard/calendar/event/${event.id}`)
-              }
-            >
-              <MoreHorizontal className="w-5 h-5" />
-            </Button>
           </Card>
         ))}
       </div>

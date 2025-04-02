@@ -7,8 +7,6 @@ import { useEffect, useState } from "react";
 
 const TaskStats = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -16,9 +14,7 @@ const TaskStats = () => {
         const data: Task[] = await getTasks();
         setTasks(data);
       } catch (err) {
-        setError("Failed to fetch tasks");
-      } finally {
-        setLoading(false);
+        console.error("Failed to fetch tasks", err);
       }
     };
 

@@ -36,14 +36,14 @@ const RecentIncidents = () => {
     );
 
     if (hasUrgentContent) return "bg-red-100 text-red-700";
-    if (hasMediumContent) return "bg-yellow-100 text-yellow-700";
-    return "bg-green-100 text-green-700";
+    if (hasMediumContent) return "bg-orange-100 text-orange-700";
+    return "bg-gray-100 text-gray-700";
   };
 
   const getStatusClass = (report: ReportResponse) => {
     return report.status === "Published"
       ? "bg-green-100 text-green-700"
-      : "bg-gray-100 text-gray-700";
+      : "bg-yellow-100 text-yellow-700";
   };
 
   return (
@@ -53,8 +53,8 @@ const RecentIncidents = () => {
           Recent Incidents
         </h2>
         <Button
-          variant="outline"
-          className="text-sm"
+          variant="link"
+          className="text-blue-600 hover:text-blue-700 text-sm font-medium"
           onClick={() => router.push("/dashboard/incidents")}
         >
           View All

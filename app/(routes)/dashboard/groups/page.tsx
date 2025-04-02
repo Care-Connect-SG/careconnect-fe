@@ -158,7 +158,7 @@ export default function GroupDashboard() {
                               <AvatarImage
                                 src={member.profile_picture || undefined}
                                 alt={member.name}
-                                className="rounded-lg"
+                                className="rounded-lg bg-blue-100"
                               />
                               <AvatarFallback className="bg-blue-100 text-blue-800 text-sm rounded-lg">
                                 {member.name.substring(0, 2).toUpperCase()}

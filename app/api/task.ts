@@ -28,6 +28,32 @@ export const createTask = async (taskData: TaskForm): Promise<Task[]> => {
   }
 };
 
+export const getAITaskSuggestion = async (residentId: string) => {
+  try {
+    const response = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/ai-suggestion/${residentId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const errData = await response.json();
+      console.error("AI Task Suggestion Error:", errData);
+      throw Error(errData.detail || "Error getting AI task suggestion");
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error getting AI task suggestion:", error);
+    throw error;
+  }
+};
+
 export const getTasks = async (filters?: {
   search?: string;
   status?: string;

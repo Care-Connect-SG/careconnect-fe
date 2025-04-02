@@ -14,7 +14,7 @@ import { ReportResponse, ReportStatus } from "@/types/report";
 import { ResidentRecord } from "@/types/resident";
 import { pdf } from "@react-pdf/renderer";
 import { User } from "@/types/user";
-import { ChevronLeft, ChevronRight, CircleAlert } from "lucide-react";
+import { ChevronLeft, ChevronRight, CircleAlert, Info, MessageCircle, MessageCircleReply } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -183,6 +183,45 @@ export default function ViewReportPage() {
                   )}>
                     Resolve Review
                   </Button>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+        )
+      }
+      {
+        report?.status === ReportStatus.CHANGES_MADE && (
+          <div className="rounded-md border px-4 my-4">
+            <Accordion type="single" collapsible>
+              <AccordionItem value="item-1">
+                <AccordionTrigger className="text-lg font-medium">
+                  <Info className="text-purple-500 transition-none" />
+                  Changes Made
+                </AccordionTrigger>
+                <AccordionContent className="rounded">
+                  <Card className="border-none shadow-none">
+                    <CardContent className="px-2 text-sm pb-4">
+                      <div className="mt-2 mb-6">
+                        <div className="flex items-center gap-2">
+                          <MessageCircle className="text-gray-300" />
+                          <p className="text-base font-semibold">Review</p>
+                        </div>
+                        <p className="opacity-50 text-sm mt-2 pb-2">Reviewed by {report?.reviews![report?.reviews!.length - 1].reviewer.name} on {new Date(report?.reviews![report?.reviews!.length - 1].reviewed_at).toLocaleString()}</p>
+                        {report?.reviews![report?.reviews!.length - 1].review}
+                      </div>
+
+                      <div className="mt-4">
+                        <div className="flex items-center gap-2">
+                          <MessageCircleReply className="text-purple-300" />
+                          <p className="text-base font-semibold">Resolution</p>
+                        </div>
+                        <p className="opacity-50 text-sm mt-2 pb-2">Resolved on {new Date(report?.reviews![report?.reviews!.length - 1].resolved_at!).toLocaleString()}</p>
+                        {report?.reviews![report?.reviews!.length - 1].resolution}
+                      </div>
+
+
+                    </CardContent>
+                  </Card>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>

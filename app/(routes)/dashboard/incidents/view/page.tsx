@@ -1,25 +1,30 @@
 "use client";
 
 import { getFormById } from "@/app/api/form";
-import { getReportById } from "@/app/api/report";
+import { approveReport, getReportById } from "@/app/api/report";
 import { getResidentById } from "@/app/api/resident";
-import { getUserById } from "@/app/api/user";
+import { getCurrentUser, getUserById } from "@/app/api/user";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDayMonthYear } from "@/lib/utils";
 import { FormResponse } from "@/types/form";
-import { ReportResponse } from "@/types/report";
+import { ReportResponse, ReportStatus } from "@/types/report";
 import { ResidentRecord } from "@/types/resident";
-import { User } from "@/types/user";
 import { pdf } from "@react-pdf/renderer";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { User } from "@/types/user";
+import { ChevronLeft, ChevronRight, CircleAlert } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { LoadingSkeleton } from "../_components/loading-skeleton";
 import ReportPDF from "../_components/report-pdf";
+import { toast } from "@/hooks/use-toast";
+import getReportBadgeConfig from "../_components/badge-config";
+import ReportReviewDialogue from "./_components/review-dialog";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+
 
 export default function ViewReportPage() {
   const router = useRouter();
@@ -29,7 +34,9 @@ export default function ViewReportPage() {
   const [report, setReport] = useState<ReportResponse>();
   const [reporter, setReporter] = useState<User | null>();
   const [resident, setResident] = useState<ResidentRecord>();
+  const [reviewDialogOpen, setReviewDialogOpen] = useState(false)
   const [form, setForm] = useState<FormResponse>();
+  const [user, setUser] = useState<User>();
 
   const handleDownload = async () => {
     if (!report || !form || !reporter) return;
@@ -51,6 +58,33 @@ export default function ViewReportPage() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+
+  const handleApprove = async () => {
+    try {
+      await approveReport(reportId!);
+      router.replace("/dashboard/incidents");
+      toast({
+        title: "Report approved.",
+        description: "The report is now published for all users.",
+      })
+    } catch (error) {
+      console.error("Error approving report:", error);
+      toast({
+        title: "Error",
+        description: "Failed to approve report. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }
+
+  const fetchUser = async () => {
+    try {
+      const user = await getCurrentUser();
+      setUser(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+    }
   };
 
   const fetchReport = async () => {
@@ -84,6 +118,7 @@ export default function ViewReportPage() {
   };
 
   useEffect(() => {
+    fetchUser();
     if (reportId) {
       fetchReport();
     }
@@ -93,29 +128,63 @@ export default function ViewReportPage() {
 
   return (
     <div className="py-4 px-8">
-      <div className="flex justify-between">
-        <Link href="/dashboard/incidents">
-          <Button variant="outline" className="border h-10 mb-2 rounded-md">
-            <ChevronLeft className="h-4 w-4 mx-auto" />
-            Return to Incident Reports
-          </Button>
-        </Link>
-        {report?.status === "Published" && (
+      <div className="flex justify-between items-center mb-2">
+        <Button onClick={() => router.back()} variant="outline" className="border rounded-md">
+          <ChevronLeft className="h-4 w-4 mx-auto" />
+          Return to Incident Reports
+        </Button>
+        {report?.status === ReportStatus.PUBLISHED && (
           <Button className="ml-2" onClick={handleDownload}>
             Download Report
           </Button>
         )}
+        {
+          (report?.status === ReportStatus.SUBMITTED
+            && user?.role === "Admin") && (
+            <div className="flex gap-2 justify-end">
+              <Button className="bg-blue-500 hover:bg-blue-600 text-white" onClick={() => setReviewDialogOpen(true)}>
+                Request Changes
+              </Button>
+              <Button className="bg-green-500 hover:bg-green-600 text-white" onClick={handleApprove}>
+                Approve
+              </Button>
+            </div>
+          )
+        }
       </div>
+      {
+        report?.status === ReportStatus.CHANGES_REQUESTED && (
+          <div className="rounded-md border px-4 my-4">
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="item-1">
+                <AccordionTrigger className="text-lg font-medium">
+                  <CircleAlert className="text-red-500 transition-none" />
+                  Changes Requested
+                </AccordionTrigger>
+                <AccordionContent className="rounded">
+                  <Card className="border-none shadow-none">
+                    <CardContent className="px-2 text-sm pb-4">
+                      <p className="opacity-50 text-sm mt-2 pb-2">Reviewed by {report?.reviews![report?.reviews!.length - 1].reviewer.name} on {new Date(report?.reviews![report?.reviews!.length - 1].reviewed_at).toLocaleString()}</p>
+                      {report?.reviews![report?.reviews!.length - 1].review}
+                    </CardContent>
+                  </Card>
+                  <Button className="my-2 mx-2" variant={"secondary"} onClick={() => router.replace(
+                    `/dashboard/incidents/resolve?formId=${report.form_id}&reportId=${reportId}`,
+                  )}>
+                    Resolve Review
+                  </Button>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+        )
+      }
       <Card>
         <CardHeader className="pb-2">
           <div className="flex justify-between">
             <CardTitle>{form?.title}</CardTitle>
             <Badge
-              className={
-                report?.status === "Draft"
-                  ? "text-yellow-800 bg-yellow-100 h-6 px-4"
-                  : "text-green-800 bg-green-100 h-6"
-              }
+              className={getReportBadgeConfig(report?.status!)}
             >
               {report?.status}
             </Badge>
@@ -133,60 +202,60 @@ export default function ViewReportPage() {
               {(resident ||
                 (report?.involved_residents &&
                   report?.involved_residents.length > 0)) && (
-                <div className="w-1/2">
-                  {resident && (
-                    <div className="mb-4">
-                      <h2 className="text-gray-500 font-semibold mb-2">
-                        Primary Resident
-                      </h2>
-                      <div>
-                        <Link
-                          href={`/dashboard/residents/${resident.id}`}
-                          className="flex items-center gap-3 group hover"
-                        >
-                          <Avatar className="h-16 w-16 group-hover:ring-1 group-hover:ring-primary group-hover:ring-offset-2 transition-all">
-                            <AvatarFallback>PR</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="font-medium flex items-center gap-1">
-                              <span className="border-b border-dotted border-muted-foreground group-hover:border-primary mb-1">
-                                {resident.full_name}
-                              </span>
-                              <ChevronRight className="h-4 w-4 mb-1 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              Room: {resident.room_number}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              DOB: {resident.date_of_birth}
-                            </p>
-                          </div>
-                        </Link>
-                      </div>
-                    </div>
-                  )}
-                  {report?.involved_residents &&
-                    report?.involved_residents.length > 0 && (
-                      <div>
-                        <h2 className="text-gray-500">Involved residents:</h2>
+                  <div className="w-1/2">
+                    {resident && (
+                      <div className="mb-4">
+                        <h2 className="text-gray-500 font-semibold mb-2">
+                          Primary Resident
+                        </h2>
                         <div>
-                          {report.involved_residents.map((ir, index) => (
-                            <span key={ir.id}>
-                              <Link
-                                href={`/dashboard/residents/${ir.id}`}
-                                className="border-b border-dotted border-muted-foreground"
-                              >
-                                {ir.name}
-                              </Link>
-                              {index < report.involved_residents!.length - 1 &&
-                                ", "}
-                            </span>
-                          ))}
+                          <Link
+                            href={`/dashboard/residents/${resident.id}`}
+                            className="flex items-center gap-3 group hover"
+                          >
+                            <Avatar className="h-16 w-16 group-hover:ring-1 group-hover:ring-primary group-hover:ring-offset-2 transition-all">
+                              <AvatarFallback>PR</AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <div className="font-medium flex items-center gap-1">
+                                <span className="border-b border-dotted border-muted-foreground group-hover:border-primary mb-1">
+                                  {resident.full_name}
+                                </span>
+                                <ChevronRight className="h-4 w-4 mb-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                Room: {resident.room_number}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                DOB: {resident.date_of_birth}
+                              </p>
+                            </div>
+                          </Link>
                         </div>
                       </div>
                     )}
-                </div>
-              )}
+                    {report?.involved_residents &&
+                      report?.involved_residents.length > 0 && (
+                        <div>
+                          <h2 className="text-gray-500">Involved residents:</h2>
+                          <div>
+                            {report.involved_residents.map((ir, index) => (
+                              <span key={ir.id}>
+                                <Link
+                                  href={`/dashboard/residents/${ir.id}`}
+                                  className="border-b border-dotted border-muted-foreground"
+                                >
+                                  {ir.name}
+                                </Link>
+                                {index < report.involved_residents!.length - 1 &&
+                                  ", "}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                  </div>
+                )}
               <div className="w-1/2">
                 <h2 className="text-gray-500 font-semibold mb-2">Reporter</h2>
                 <Link
@@ -266,6 +335,9 @@ export default function ViewReportPage() {
           </div>
         </CardContent>
       </Card>
+      {
+        reportId && user && <ReportReviewDialogue open={reviewDialogOpen} onOpenChange={setReviewDialogOpen} reportId={reportId} user={user} />
+      }
     </div>
   );
 }

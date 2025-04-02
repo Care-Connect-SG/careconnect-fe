@@ -25,7 +25,7 @@ const RoleChip: React.FC<RoleChipProps> = ({ role }) => {
 
   return (
     <span
-      className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${roleColor} ${textColor}`}
+      className={`w-fit px-2 py-1 rounded-full text-xs ${roleColor} ${textColor}`}
     >
       {role}
     </span>

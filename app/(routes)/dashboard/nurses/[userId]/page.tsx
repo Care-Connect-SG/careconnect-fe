@@ -2,170 +2,241 @@
 
 import { getUserById, updateUser } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBreadcrumb } from "@/context/breadcrumb-context";
 import { useToast } from "@/hooks/use-toast";
-import { User, UserEdit } from "@/types/user";
-import { useParams, useSearchParams } from "next/navigation";
+import { UserEdit } from "@/types/user";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import EditProfileDialog from "../../profile/_components/edit-profile-dialog";
+import { FormProvider, useForm } from "react-hook-form";
+import { z } from "zod";
+import ProfilePictureDialog from "../../profile/_components/profile-picture-dialog";
+import RoleChip from "../_components/role-chip";
 
-const UserProfile = () => {
+const nurseProfileSchema = z.object({
+  name: z.string().min(4, "Name has to be at least 4 characters long"),
+  contact_number: z.string().optional(),
+  organisation_rank: z.string().optional(),
+  gender: z.enum(["Male", "Female"]),
+});
+
+type NurseProfileFormValues = z.infer<typeof nurseProfileSchema>;
+
+const SimplifiedNurseProfile = () => {
   const { toast } = useToast();
-  const { setPageName } = useBreadcrumb();
+  const queryClient = useQueryClient();
   const { userId } = useParams();
-  const searchParams = useSearchParams();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [activeTab, setActiveTab] = useState<string>("overview");
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const { setPageName } = useBreadcrumb();
+  const [formInitialized, setFormInitialized] = useState(false);
+
+  const {
+    data: user,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["user", userId],
+    queryFn: () => getUserById(userId as string),
+  });
+
+  // Only initialize the form after we have user data
+  const form = useForm<NurseProfileFormValues>({
+    resolver: zodResolver(nurseProfileSchema),
+    mode: "onChange",
+    defaultValues: formInitialized
+      ? {
+          name: user?.name || "",
+          contact_number: user?.contact_number || "",
+          organisation_rank: user?.organisation_rank || "",
+          gender: user?.gender === "Female" ? "Female" : "Male",
+        }
+      : undefined,
+  });
 
   useEffect(() => {
-    if (searchParams.get("edit") === "true") {
-      setIsModalOpen(true);
+    if (user && !formInitialized) {
+      const gender = user.gender === "Female" ? "Female" : "Male";
+
+      form.reset({
+        name: user.name || "",
+        contact_number: user.contact_number || "",
+        organisation_rank: user.organisation_rank || "",
+        gender: gender,
+      });
+
+      setFormInitialized(true);
+      setPageName(user.name || "User Profile");
     }
-  }, [searchParams]);
+  }, [user, form, formInitialized, setPageName]);
 
-  useEffect(() => {
-    const getUser = async () => {
-      try {
-        const data = await getUserById(userId as string);
-        setUser(data);
-        setPageName(data?.name || `${userId} User Profile`);
-      } catch (error) {
-        console.error("Error fetching user:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (userId) {
-      getUser();
-    }
-  }, [userId, setPageName]);
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <Spinner />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <p className="text-center mt-10 text-red-500">User not found</p>;
-  }
-
-  const TABS = [
-    { value: "overview", label: "Overview" },
-    { value: "history", label: "History" },
-    { value: "permissions", label: "Permissions" },
-  ];
-
-  const handleEditProfile = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleSaveChanges = async (editedUser: UserEdit) => {
-    try {
-      const updatedUser = await updateUser(userId as string, editedUser);
-      setUser(updatedUser);
-      setIsModalOpen(false);
+  const updateUserMutation = useMutation({
+    mutationFn: (updatedData: UserEdit) =>
+      updateUser(userId as string, updatedData),
+    onSuccess: (updatedUser) => {
       toast({
-        title: "Profile updated successfully!",
-        description: `${user.name}'s profile has been updated successfully`,
+        title: "Profile updated successfully",
+        description: `${updatedUser.name}'s profile has been updated successfully`,
         variant: "default",
       });
-    } catch (error: any) {
+      queryClient.invalidateQueries({ queryKey: ["user", userId] });
+    },
+    onError: (error: any) => {
       console.error("Error updating user:", error);
       toast({
         title: "Failed to update profile, please try again",
         description: error.message,
         variant: "destructive",
       });
+    },
+  });
+
+  const handleSubmit = (data: NurseProfileFormValues) => {
+    if (user) {
+      updateUserMutation.mutate({ ...user, ...data });
     }
   };
 
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-  };
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-[80vh]">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (error || !user) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p className="text-center text-red-500">User not found</p>
+      </div>
+    );
+  }
+
+  if (!formInitialized) {
+    return (
+      <div className="flex justify-center items-center h-[80vh]">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
-    <div className="w-full p-8">
-      <Card className="p-6 bg-white rounded-lg flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">{user.name}</h1>
-          <p className="text-gray-500">{user.role}</p>
-        </div>
-
-        <Button onClick={handleEditProfile} variant="outline">
-          Edit Profile
-        </Button>
-      </Card>
-
-      <Tabs
-        value={activeTab}
-        onValueChange={handleTabChange}
-        className="w-full mt-6"
-      >
-        <TabsList className="mb-6">
-          {TABS.map((tab) => (
-            <TabsTrigger
-              key={tab.value}
-              value={tab.value}
-              className="px-4 py-2"
-            >
-              {tab.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
-        <TabsContent value="overview">
-          <Card className="p-6 bg-white rounded-lg">
-            <h2 className="text-xl font-semibold mb-4">User Details</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <p className="text-gray-700">
-                <strong>Email:</strong> {user.email}
-              </p>
-              <p className="text-gray-700">
-                <strong>Contact:</strong> {user.contact_number || "N/A"}
-              </p>
-              <p className="text-gray-700">
-                <strong>Organisation Rank:</strong>{" "}
-                {user.organisation_rank || "N/A"}
-              </p>
-              <p className="text-gray-700">
-                <strong>Gender:</strong> {user.gender}
-              </p>
+    <div className="flex items-center justify-center p-8">
+      <div className="w-full max-w-2xl">
+        <div className="flex flex-col space-y-8">
+          <div className="flex items-center space-x-4">
+            <ProfilePictureDialog user={user} />
+            <div className="flex flex-col space-y-2">
+              <h1 className="text-2xl font-bold">{user.name}</h1>
+              <RoleChip role={user.role} />
             </div>
-          </Card>
-        </TabsContent>
+          </div>
 
-        <TabsContent value="history">
-          <Card className="p-6 bg-white rounded-lg">
-            <h2 className="text-xl font-semibold mb-4">User History</h2>
-            <p className="text-gray-500">No history records available.</p>
-          </Card>
-        </TabsContent>
+          <FormProvider {...form}>
+            <form
+              onSubmit={form.handleSubmit(handleSubmit)}
+              className="space-y-6"
+            >
+              <div className="space-y-2">
+                <FormLabel>Email</FormLabel>
+                <Input value={user.email} disabled className="bg-gray-50" />
+              </div>
 
-        <TabsContent value="permissions">
-          <Card className="p-6 bg-white rounded-lg">
-            <h2 className="text-xl font-semibold mb-4">User Permissions</h2>
-            <p className="text-gray-500">No permission settings available.</p>
-          </Card>
-        </TabsContent>
-      </Tabs>
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-      <EditProfileDialog
-        open={isModalOpen}
-        onOpenChange={setIsModalOpen}
-        initialData={user}
-        onSave={handleSaveChanges}
-      />
+              <FormField
+                control={form.control}
+                name="contact_number"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Contact Number</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="organisation_rank"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Organisation Rank</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="gender"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Gender</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Gender" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Male">Male</SelectItem>
+                        <SelectItem value="Female">Female</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <Button
+                type="submit"
+                className="w-32"
+                disabled={
+                  !form.formState.isDirty ||
+                  !form.formState.isValid ||
+                  updateUserMutation.isPending
+                }
+              >
+                {updateUserMutation.isPending ? <Spinner /> : "Save Changes"}
+              </Button>
+            </form>
+          </FormProvider>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default UserProfile;
+export default SimplifiedNurseProfile;

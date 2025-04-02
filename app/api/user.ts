@@ -46,7 +46,7 @@ export const createUser = async (user: UserForm): Promise<User> => {
   }
 };
 
-export const getUserById = async (id: string): Promise<User | null> => {
+export const getUserById = async (id: string): Promise<User> => {
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/users/${id}`,
@@ -58,15 +58,15 @@ export const getUserById = async (id: string): Promise<User | null> => {
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error(errorData.detail || "Failed to fetch user by ID");
-      return null;
+      throw new Error(
+        errorData.detail || `Failed to fetch user (status ${response.status})`,
+      );
     }
 
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     console.error("Error fetching user by ID:", error);
-    return null;
+    throw error;
   }
 };
 

@@ -55,19 +55,27 @@ export default function ReviewReports() {
     };
 
     return (
-        <div className="flex flex-col gap-8 p-8 ">
-            <h1 className="scroll-m-20 text-2xl font-semibold tracking-tight">
-                Review Reports
-            </h1>
+        <div className="p-8">
+            <div className="pb-4">
+                <h1 className="text-2xl font-semibold tracking-tight pb-2">
+                    Review Submitted Reports
+                </h1>
+                <p className="text-sm text-muted-foreground pb-1">
+                    Approve or request changes from submitted reports
+                </p>
+            </div>
 
-            <div className="rounded-md border px-4">
+            <hr className="border-t-1 border-gray-300 pb-8" />
+
+            <div className="flex flex-col gap-8">
+            <div className="rounded-md border px-4 bg-blue-50">
                 <Accordion type="single" collapsible className="w-full">
                     <AccordionItem value="item-1">
                         <AccordionTrigger className="text-md font-medium">
                             Pending Review From Admin {`[${submittedReports.length}]`}
                         </AccordionTrigger>
                         <AccordionContent className="rounded border mt-2 mb-4 pb-0">
-                            <Table className="text-center">
+                            <Table className="text-center bg-white">
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead className="text-center">Submitted Date</TableHead>
@@ -150,14 +158,93 @@ export default function ReviewReports() {
                 </Accordion>
             </div>
 
-            <div className="rounded-md border px-4">
+            <div className="rounded-md border px-4 bg-purple-50">
+                <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="item-1">
+                        <AccordionTrigger className="text-md font-medium">
+                            Pending Approval From Admin {`[${resolvedReports.length}]`}
+                        </AccordionTrigger>
+                        <AccordionContent className="rounded border mt-2 mb-4 pb-0">
+                            <Table className="text-center bg-white">
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="text-center">Resolved Date</TableHead>
+                                        <TableHead className="text-center">Form</TableHead>
+                                        <TableHead className="text-center">Reporter</TableHead>
+                                        <TableHead className="text-center">Resident</TableHead>
+                                        <TableHead className="text-center">Status</TableHead>
+                                        <TableHead className="text-center">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {
+                                        resolvedReports.length === 0 ? (
+                                            <TableRow className="mb-0">
+                                                <TableCell colSpan={7} className="h-10 text-center">
+                                                    No reports found.
+                                                </TableCell>
+                                            </TableRow>) :
+
+                                            resolvedReports.map((report) => (
+                                                <TableRow key={report.id} onClick={() => handleView(report)}>
+                                                    <TableCell className="font-medium">
+                                                        {new Date(report.reviews![report.reviews!.length - 1].reviewed_at).toLocaleDateString()}
+                                                    </TableCell>
+                                                    <TableCell>{report.form_name}</TableCell>
+
+                                                    <TableCell>{report.reporter.name}</TableCell>
+
+                                                    {report.primary_resident?.name ? (
+                                                        <TableCell>{report.primary_resident?.name}</TableCell>
+                                                    ) : (
+                                                        <TableCell className="text-gray-400">NA</TableCell>
+                                                    )}
+
+                                                    <TableCell>
+                                                        <Badge
+                                                            className={getReportBadgeConfig(report.status)}
+                                                        >
+                                                            {report.status}
+                                                        </Badge>
+                                                    </TableCell>
+
+                                                    {(report.status !== "Published" ||
+                                                        user?.role === Role.ADMIN) && (
+                                                            <TableCell className="text-center">
+                                                                <DropdownMenu>
+                                                                    <DropdownMenuTrigger asChild>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            className="focus:ring-0 focus:ring-offset-0"
+                                                                        >
+                                                                            <MoreHorizontal className="h-4 w-4" />
+                                                                            <span className="sr-only">Open menu</span>
+                                                                        </Button>
+                                                                    </DropdownMenuTrigger>
+                                                                    <DropdownMenuContent align="end">
+                                                                    </DropdownMenuContent>
+                                                                </DropdownMenu>
+                                                            </TableCell>
+                                                        )}
+                                                </TableRow>
+                                            ))}
+
+                                </TableBody>
+                            </Table>
+                        </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
+            </div>
+
+            <div className="rounded-md border px-4 bg-red-50">
                 <Accordion type="single" collapsible className="w-full">
                     <AccordionItem value="item-1">
                         <AccordionTrigger className="text-md font-medium">
                             Pending Updates From Reporter {`[${reviewedReports.length}]`}
                         </AccordionTrigger>
                         <AccordionContent className="rounded border mt-2 mb-4 pb-0">
-                            <Table className="text-center">
+                            <Table className="text-center bg-white">
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead className="text-center">Reviewed Date</TableHead>
@@ -228,6 +315,11 @@ export default function ReviewReports() {
                     </AccordionItem>
                 </Accordion>
             </div>
+            </div>
+
+            
+
+            
         </div>
     );
 }

@@ -8,7 +8,6 @@ import {
   getReportById,
   getReports,
   resolveReportReview,
-  updateReport,
 } from "@/app/api/report";
 import { getCurrentUser } from "@/app/api/user";
 import { FormElementData, FormResponse } from "@/types/form";
@@ -32,13 +31,16 @@ import { toast } from "@/hooks/use-toast";
 import { ReportResponse } from "@/types/report";
 import { User } from "@/types/user";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronLeft, X } from "lucide-react";
+import { ChevronLeft, CircleAlert, X } from "lucide-react";
 import { FormProvider, useForm } from "react-hook-form";
 import { LoadingSkeleton } from "../_components/loading-skeleton";
 import { reportSchema, ReportSchema } from "../schema";
 import PersonSelector from "../_components/tag-personnel";
 import FormElementFill from "../_components/form-element-fill";
-import { report } from "process";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 
 export default function ResolveReportPage() {
@@ -60,6 +62,7 @@ export default function ResolveReportPage() {
     null,
   );
   const [resolution, setResolution] = useState<string>("");
+  const [open, setOpen] = useState(false);
 
   const methods = useForm<ReportSchema>({
     resolver: zodResolver(reportSchema),
@@ -209,7 +212,7 @@ export default function ResolveReportPage() {
     return reportData;
   };
 
-  const onSubmit = methods.handleSubmit(async (data) => {
+  const submitForm = methods.handleSubmit(async (data) => {
     if (!user || !form) return;
 
     try {
@@ -241,6 +244,14 @@ export default function ResolveReportPage() {
     }
   });
 
+  const onClickSubmit = () => {
+    setOpen(true);
+  }
+
+  const onSubmitResolution = async () => {
+    setOpen(false);
+    submitForm();
+  }
 
   if (loading || !form || !user) return <LoadingSkeleton />;
 
@@ -263,13 +274,36 @@ export default function ResolveReportPage() {
             <Button
               type="button"
               disabled={methods.formState.isSubmitting}
-              onClick={onSubmit}
+              onClick={onClickSubmit}
               className="bg-green-500 hover:bg-green-600 text-white"
             >
-              Submit
+              Submit Resolution
             </Button>
           </div>
         </div>
+
+        {
+          report?.status === ReportStatus.CHANGES_REQUESTED && (
+            <div className="rounded-md border px-4 my-4">
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="item-1">
+                  <AccordionTrigger className="text-lg font-medium">
+                    <CircleAlert className="text-red-500 transition-none" />
+                    Changes Requested
+                  </AccordionTrigger>
+                  <AccordionContent className="rounded">
+                    <Card className="border-none shadow-none">
+                      <CardContent className="px-2 text-sm pb-4">
+                        <p className="opacity-50 text-sm mt-2 pb-2">Reviewed by {report?.reviews![report?.reviews!.length - 1].reviewer.name} on {new Date(report?.reviews![report?.reviews!.length - 1].reviewed_at).toLocaleString()}</p>
+                        {report?.reviews![report?.reviews!.length - 1].review}
+                      </CardContent>
+                    </Card>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </div>
+          )
+        }
 
         <div className="pt-2">
           <div className="flex justify-between gap-4">
@@ -342,6 +376,35 @@ export default function ResolveReportPage() {
           </div>
         </div>
       </div>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+              <DialogTitle className="text-xl">Resolution Comments</DialogTitle>
+            </div>
+          </DialogHeader>
+
+          <Textarea
+            id="comments"
+            placeholder="Briefly describe the changes you made to resolve the review..."
+            value={resolution}
+            onChange={(e) => setResolution(e.target.value)}
+            className="min-h-[150px]"
+          />
+
+          <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Button disabled={!resolution.trim()} onClick={onSubmitResolution} className="flex-1 sm:flex-auto">
+                Submit
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </FormProvider>
   );
 }

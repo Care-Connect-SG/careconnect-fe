@@ -2,13 +2,7 @@
 
 import { deleteWellnessReport } from "@/app/api/wellness-report";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { WellnessReportRecord } from "@/types/wellness-report";
 import { format } from "date-fns";
@@ -40,11 +34,12 @@ const WellnessReportsList: React.FC<WellnessReportsListProps> = ({
   onReportUpdated,
 }) => {
   const { toast } = useToast();
-  const [editingReport, setEditingReport] = useState<WellnessReportRecord | null>(null);
-  const [reportToDelete, setReportToDelete] = useState<WellnessReportRecord | null>(null);
+  const [editingReport, setEditingReport] =
+    useState<WellnessReportRecord | null>(null);
+  const [reportToDelete, setReportToDelete] =
+    useState<WellnessReportRecord | null>(null);
 
   const handleDelete = async (reportId: string | undefined) => {
-    console.log('Attempting to delete report with ID:', reportId); // Debug log
     if (!reportId) {
       toast({
         variant: "destructive",
@@ -97,23 +92,26 @@ const WellnessReportsList: React.FC<WellnessReportsListProps> = ({
     <div className="space-y-4">
       {reports.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground">
-          No wellness reports found for this resident. Create a new report to get started.
+          No wellness reports found for this resident. Create a new report to
+          get started.
         </div>
       ) : (
-        reports.map((report, index) => {
-          console.log('Rendering report:', report); // Debug log
-          return (
-            <Card key={report.id || `report-${index}`}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        [...reports]
+          .sort(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+          )
+          .map((report) => (
+            <Card key={report.id}>
+              <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <CardTitle className="text-lg font-medium">
+                  <h3 className="text-xl font-bold">
                     Wellness Report
-                  </CardTitle>
-                  <CardDescription>
-                    Date: {formatDate(report.date)}
-                  </CardDescription>
+                    <span className="ml-4 text-sm text-muted-foreground font-normal">
+                      {formatDate(report.date)}
+                    </span>
+                  </h3>
                 </div>
-                <div className="flex space-x-2">
+                <div className="flex gap-2">
                   <Button
                     variant="ghost"
                     size="icon"
@@ -124,78 +122,47 @@ const WellnessReportsList: React.FC<WellnessReportsListProps> = ({
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => {
-                      console.log('Delete button clicked for report:', report); // Debug log
-                      setReportToDelete(report);
-                    }}
+                    onClick={() => setReportToDelete(report)}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {report.monthly_summary && (
-                    <div>
-                      <h4 className="font-medium">Monthly Summary</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {report.monthly_summary}
-                      </p>
+              <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[
+                  { label: "Monthly Summary", value: report.monthly_summary },
+                  { label: "Medical Summary", value: report.medical_summary },
+                  {
+                    label: "Medication Update",
+                    value: report.medication_update,
+                  },
+                  {
+                    label: "Nutrition & Hydration",
+                    value: report.nutrition_hydration,
+                  },
+                  {
+                    label: "Mobility & Physical",
+                    value: report.mobility_physical,
+                  },
+                  {
+                    label: "Cognitive & Emotional",
+                    value: report.cognitive_emotional,
+                  },
+                  {
+                    label: "Social Engagement",
+                    value: report.social_engagement,
+                  },
+                ]
+                  .filter(({ value }) => !!value)
+                  .map(({ label, value }) => (
+                    <div key={label}>
+                      <h4 className="font-semibold text-gray-700">{label}</h4>
+                      <p className="text-sm text-muted-foreground">{value}</p>
                     </div>
-                  )}
-                  {report.medical_summary && (
-                    <div>
-                      <h4 className="font-medium">Medical Summary</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {report.medical_summary}
-                      </p>
-                    </div>
-                  )}
-                  {report.medication_update && (
-                    <div>
-                      <h4 className="font-medium">Medication Update</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {report.medication_update}
-                      </p>
-                    </div>
-                  )}
-                  {report.nutrition_hydration && (
-                    <div>
-                      <h4 className="font-medium">Nutrition & Hydration</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {report.nutrition_hydration}
-                      </p>
-                    </div>
-                  )}
-                  {report.mobility_physical && (
-                    <div>
-                      <h4 className="font-medium">Mobility & Physical</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {report.mobility_physical}
-                      </p>
-                    </div>
-                  )}
-                  {report.cognitive_emotional && (
-                    <div>
-                      <h4 className="font-medium">Cognitive & Emotional</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {report.cognitive_emotional}
-                      </p>
-                    </div>
-                  )}
-                  {report.social_engagement && (
-                    <div>
-                      <h4 className="font-medium">Social Engagement</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {report.social_engagement}
-                      </p>
-                    </div>
-                  )}
-                </div>
+                  ))}
               </CardContent>
             </Card>
-          );
-        })
+          ))
       )}
 
       {editingReport && (
@@ -216,19 +183,25 @@ const WellnessReportsList: React.FC<WellnessReportsListProps> = ({
         />
       )}
 
-      <AlertDialog open={!!reportToDelete} onOpenChange={() => setReportToDelete(null)}>
+      <AlertDialog
+        open={!!reportToDelete}
+        onOpenChange={() => setReportToDelete(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the wellness report
-              from {reportToDelete ? formatDate(reportToDelete.date) : ''}.
+              This action cannot be undone. This will permanently delete the
+              wellness report from{" "}
+              {reportToDelete ? formatDate(reportToDelete.date) : ""}.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => reportToDelete?.id && handleDelete(reportToDelete.id)}
+              onClick={() =>
+                reportToDelete?.id && handleDelete(reportToDelete.id)
+              }
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Delete
@@ -240,4 +213,4 @@ const WellnessReportsList: React.FC<WellnessReportsListProps> = ({
   );
 };
 
-export default WellnessReportsList; 
+export default WellnessReportsList;

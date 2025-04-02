@@ -300,10 +300,7 @@ export default function ResidentDashboard() {
               </Button>
             </div>
             {carePlans.map((carePlan) => (
-              <ResidentCarePlan
-                key={carePlan.id}
-                careplan={carePlan}
-              />
+              <ResidentCarePlan key={carePlan.id} careplan={carePlan} />
             ))}
           </div>
         )}

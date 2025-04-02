@@ -55,7 +55,6 @@ const SimplifiedNurseProfile = () => {
     queryFn: () => getUserById(userId as string),
   });
 
-  // Only initialize the form after we have user data
   const form = useForm<NurseProfileFormValues>({
     resolver: zodResolver(nurseProfileSchema),
     mode: "onChange",

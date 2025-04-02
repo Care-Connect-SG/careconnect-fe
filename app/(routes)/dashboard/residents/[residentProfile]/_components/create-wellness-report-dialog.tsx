@@ -20,8 +20,9 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { format, isValid } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Bot } from "lucide-react";
 import React, { useState } from "react";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 
 interface CreateWellnessReportDialogProps {
   isOpen: boolean;
@@ -37,6 +38,7 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
   onReportCreated,
 }) => {
   const { toast } = useToast();
+  const [isFetchingAI, setIsFetchingAI] = useState(false);
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split("T")[0],
     monthly_summary: "",
@@ -69,6 +71,50 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
     }
   };
 
+  const handleGenerateAI = async () => {
+    setIsFetchingAI(true);
+    try {
+      const response = await fetchWithAuth(
+        `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/wellness-reports/generate-suggestion`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      const aiData = await response.json();
+      setFormData({
+        date: aiData.date || new Date().toISOString().split("T")[0],
+        monthly_summary: aiData.monthly_summary || "",
+        medical_summary: aiData.medical_summary || "",
+        medication_update: aiData.medication_update || "",
+        nutrition_hydration: aiData.nutrition_hydration || "",
+        mobility_physical: aiData.mobility_physical || "",
+        cognitive_emotional: aiData.cognitive_emotional || "",
+        social_engagement: aiData.social_engagement || "",
+      });
+
+      toast({
+        variant: "default",
+        title: "AI Suggestion Applied",
+        description: "The report has been pre-filled with AI-generated data.",
+      });
+    } catch (error: any) {
+      console.error("Error fetching AI suggestion:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: `Failed to generate AI suggestion: ${error.message}`,
+      });
+    } finally {
+      setIsFetchingAI(false);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), "PPP");
@@ -90,8 +136,18 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
+        <DialogHeader className="flex flex-row items-center justify-between">
           <DialogTitle>Create Wellness Report</DialogTitle>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={handleGenerateAI}
+            disabled={isFetchingAI}
+            title="Generate with AI"
+          >
+            <Bot className="w-5 h-5" />
+          </Button>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -126,89 +182,27 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
             </Popover>
           </div>
 
-          <div>
-            <Label htmlFor="monthly_summary">Monthly Summary</Label>
-            <Textarea
-              id="monthly_summary"
-              value={formData.monthly_summary}
-              onChange={(e) =>
-                setFormData({ ...formData, monthly_summary: e.target.value })
-              }
-              rows={3}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="medical_summary">Medical Summary</Label>
-            <Textarea
-              id="medical_summary"
-              value={formData.medical_summary}
-              onChange={(e) =>
-                setFormData({ ...formData, medical_summary: e.target.value })
-              }
-              rows={3}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="medication_update">Medication Update</Label>
-            <Textarea
-              id="medication_update"
-              value={formData.medication_update}
-              onChange={(e) =>
-                setFormData({ ...formData, medication_update: e.target.value })
-              }
-              rows={3}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="nutrition_hydration">Nutrition & Hydration</Label>
-            <Textarea
-              id="nutrition_hydration"
-              value={formData.nutrition_hydration}
-              onChange={(e) =>
-                setFormData({ ...formData, nutrition_hydration: e.target.value })
-              }
-              rows={3}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="mobility_physical">Mobility & Physical</Label>
-            <Textarea
-              id="mobility_physical"
-              value={formData.mobility_physical}
-              onChange={(e) =>
-                setFormData({ ...formData, mobility_physical: e.target.value })
-              }
-              rows={3}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="cognitive_emotional">Cognitive & Emotional</Label>
-            <Textarea
-              id="cognitive_emotional"
-              value={formData.cognitive_emotional}
-              onChange={(e) =>
-                setFormData({ ...formData, cognitive_emotional: e.target.value })
-              }
-              rows={3}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="social_engagement">Social Engagement</Label>
-            <Textarea
-              id="social_engagement"
-              value={formData.social_engagement}
-              onChange={(e) =>
-                setFormData({ ...formData, social_engagement: e.target.value })
-              }
-              rows={3}
-            />
-          </div>
+          {[
+            ["monthly_summary", "Monthly Summary"],
+            ["medical_summary", "Medical Summary"],
+            ["medication_update", "Medication Update"],
+            ["nutrition_hydration", "Nutrition & Hydration"],
+            ["mobility_physical", "Mobility & Physical"],
+            ["cognitive_emotional", "Cognitive & Emotional"],
+            ["social_engagement", "Social Engagement"],
+          ].map(([field, label]) => (
+            <div key={field}>
+              <Label htmlFor={field}>{label}</Label>
+              <Textarea
+                id={field}
+                value={(formData as any)[field]}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, [field]: e.target.value }))
+                }
+                rows={3}
+              />
+            </div>
+          ))}
 
           <DialogFooter>
             <div className="flex justify-end space-x-4">
@@ -224,4 +218,4 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
   );
 };
 
-export default CreateWellnessReportDialog; 
+export default CreateWellnessReportDialog;

@@ -312,7 +312,7 @@ export const resolveReportReview = async (
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(resolution),
+        body: resolution,
       },
     );
 

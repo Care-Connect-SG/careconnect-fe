@@ -151,6 +151,16 @@ export default function ViewReportPage() {
             </div>
           )
         }
+        {
+          report?.status === ReportStatus.CHANGES_REQUESTED
+          && (
+            <Button variant={"secondary"} onClick={() => router.replace(
+              `/dashboard/incidents/resolve?formId=${report.form_id}&reportId=${reportId}`,
+            )}>
+              Resolve Review
+            </Button>
+          )
+        }
       </div>
       {
         report?.status === ReportStatus.CHANGES_REQUESTED && (

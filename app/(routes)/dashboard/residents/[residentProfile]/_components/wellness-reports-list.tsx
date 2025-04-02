@@ -15,6 +15,16 @@ import { format } from "date-fns";
 import { Edit2, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 import EditWellnessReportDialog from "./edit-wellness-report-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface WellnessReportsListProps {
   reports: WellnessReportRecord[];
@@ -30,9 +40,8 @@ const WellnessReportsList: React.FC<WellnessReportsListProps> = ({
   onReportUpdated,
 }) => {
   const { toast } = useToast();
-  const [editingReport, setEditingReport] = useState<WellnessReportRecord | null>(
-    null
-  );
+  const [editingReport, setEditingReport] = useState<WellnessReportRecord | null>(null);
+  const [reportToDelete, setReportToDelete] = useState<WellnessReportRecord | null>(null);
 
   const handleDelete = async (reportId: string | undefined) => {
     console.log('Attempting to delete report with ID:', reportId); // Debug log
@@ -53,6 +62,7 @@ const WellnessReportsList: React.FC<WellnessReportsListProps> = ({
         description: "Wellness Report Deleted Successfully!",
       });
       onReportDeleted();
+      setReportToDelete(null);
     } catch (error: any) {
       console.error("Error deleting wellness report:", error);
       toast({
@@ -116,7 +126,7 @@ const WellnessReportsList: React.FC<WellnessReportsListProps> = ({
                     size="icon"
                     onClick={() => {
                       console.log('Delete button clicked for report:', report); // Debug log
-                      handleDelete(report.id);
+                      setReportToDelete(report);
                     }}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -205,6 +215,27 @@ const WellnessReportsList: React.FC<WellnessReportsListProps> = ({
           }}
         />
       )}
+
+      <AlertDialog open={!!reportToDelete} onOpenChange={() => setReportToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the wellness report
+              from {reportToDelete ? formatDate(reportToDelete.date) : ''}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => reportToDelete?.id && handleDelete(reportToDelete.id)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -24,8 +24,8 @@ import { Role, User } from "@/types/user";
 import { pdf } from "@react-pdf/renderer";
 import { Download, Edit, MoreHorizontal, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import ReportPDF from "./report-pdf";
 import getReportBadgeConfig from "./badge-config";
+import ReportPDF from "./report-pdf";
 
 interface ReportsTableProps {
   user: User;
@@ -123,9 +123,7 @@ export default function ReportsTable({
                 )}
                 {activeTab == "my" && (
                   <TableCell>
-                    <Badge
-                      className={getReportBadgeConfig(report.status)}
-                    >
+                    <Badge className={getReportBadgeConfig(report.status)}>
                       {report.status}
                     </Badge>
                   </TableCell>
@@ -164,7 +162,7 @@ export default function ReportsTable({
                               handleDelete(report.id);
                             }}
                           >
-                          <Trash2 className="mr-2 h-4 w-4" />
+                            <Trash2 className="mr-2 h-4 w-4" />
                             Delete
                           </DropdownMenuItem>
                         )}

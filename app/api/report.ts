@@ -7,7 +7,6 @@ import {
 } from "@/types/report";
 import { User } from "@/types/user";
 
-
 export const getReports = async (
   status?: string,
 ): Promise<ReportResponse[]> => {
@@ -229,9 +228,7 @@ export const getCaregiverTags = async (
   }
 };
 
-export const approveReport = async (
-  reportId: string,
-): Promise<string> => {
+export const approveReport = async (reportId: string): Promise<string> => {
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/incident/reports/${reportId}/publish`,
@@ -265,7 +262,7 @@ export const reviewReport = async (
     id: user.id,
     name: user.name,
     role: user.role,
-  }
+  };
 
   const reviewData: ReportReviewCreate = {
     review_id: reportId,
@@ -312,7 +309,7 @@ export const resolveReportReview = async (
         headers: {
           "Content-Type": "application/json",
         },
-        body:  JSON.stringify({ resolution }),
+        body: JSON.stringify({ resolution }),
       },
     );
 

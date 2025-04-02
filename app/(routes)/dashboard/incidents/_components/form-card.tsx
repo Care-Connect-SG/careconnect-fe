@@ -56,18 +56,18 @@ export default function FormCard({
           <div className="flex flex-row items-start justify-between gap-2 mb-2">
             <CardTitle className="text-base font-bold">{title}</CardTitle>
             <Badge
-            className={
-              status === "Published"
-                ? "hidden md:block text-green-800 bg-green-100 h-6 hover:bg-green-200 hover:text-green-900"
-                : "hidden md:block text-yellow-800 bg-yellow-100 h-6 hover:bg-yellow-200 hover:text-yellow-900"
-            }
-          >
-            {status}
-          </Badge>
+              className={
+                status === "Published"
+                  ? "hidden md:block text-green-800 bg-green-100 h-6 hover:bg-green-200 hover:text-green-900"
+                  : "hidden md:block text-yellow-800 bg-yellow-100 h-6 hover:bg-yellow-200 hover:text-yellow-900"
+              }
+            >
+              {status}
+            </Badge>
           </div>
           <p className="hidden sm:block text-xs text-muted-foreground mt-1">
-              Created at {created_at}
-            </p>
+            Created at {created_at}
+          </p>
         </CardHeader>
         <CardContent className="mt-2">
           <p className="hidden h-4 md:block text-xs truncate">{description}</p>

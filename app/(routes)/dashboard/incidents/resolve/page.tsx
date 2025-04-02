@@ -15,8 +15,21 @@ import { CaregiverTag, ReportCreate, ReportStatus } from "@/types/report";
 
 import { FormHeaderView } from "../_components/form-header";
 
-
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -27,21 +40,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { ReportResponse } from "@/types/report";
 import { User } from "@/types/user";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronLeft, CircleAlert, X } from "lucide-react";
 import { FormProvider, useForm } from "react-hook-form";
-import { LoadingSkeleton } from "../_components/loading-skeleton";
-import { reportSchema, ReportSchema } from "../schema";
-import PersonSelector from "../_components/tag-personnel";
 import FormElementFill from "../_components/form-element-fill";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-
+import { LoadingSkeleton } from "../_components/loading-skeleton";
+import PersonSelector from "../_components/tag-personnel";
+import { ReportSchema, reportSchema } from "../schema";
 
 export default function ResolveReportPage() {
   const router = useRouter();
@@ -233,12 +242,12 @@ export default function ResolveReportPage() {
         description: "Your report has been been updated with the resolutions.",
       });
       router.replace("/dashboard/incidents");
-
     } catch (error) {
       console.error("Error submitting resolution:", error);
       toast({
         title: "Error",
-        description: "Failed to resolve the review and update the report. Please try again.",
+        description:
+          "Failed to resolve the review and update the report. Please try again.",
         variant: "destructive",
       });
     }
@@ -246,12 +255,12 @@ export default function ResolveReportPage() {
 
   const onClickSubmit = () => {
     setOpen(true);
-  }
+  };
 
   const onSubmitResolution = async () => {
     setOpen(false);
     submitForm();
-  }
+  };
 
   if (loading || !form || !user) return <LoadingSkeleton />;
 
@@ -282,28 +291,37 @@ export default function ResolveReportPage() {
           </div>
         </div>
 
-        {
-          report?.status === ReportStatus.CHANGES_REQUESTED && (
-            <div className="rounded-md border px-4 my-4">
-              <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="item-1">
-                  <AccordionTrigger className="text-lg font-medium">
-                    <CircleAlert className="text-red-500 transition-none" />
-                    Changes Requested
-                  </AccordionTrigger>
-                  <AccordionContent className="rounded">
-                    <Card className="border-none shadow-none">
-                      <CardContent className="px-2 text-sm pb-4">
-                        <p className="opacity-50 text-sm mt-2 pb-2">Reviewed by {report?.reviews![report?.reviews!.length - 1].reviewer.name} on {new Date(report?.reviews![report?.reviews!.length - 1].reviewed_at).toLocaleString()}</p>
-                        {report?.reviews![report?.reviews!.length - 1].review}
-                      </CardContent>
-                    </Card>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            </div>
-          )
-        }
+        {report?.status === ReportStatus.CHANGES_REQUESTED && (
+          <div className="rounded-md border px-4 my-4">
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="item-1">
+                <AccordionTrigger className="text-lg font-medium">
+                  <CircleAlert className="text-red-500 transition-none" />
+                  Changes Requested
+                </AccordionTrigger>
+                <AccordionContent className="rounded">
+                  <Card className="border-none shadow-none">
+                    <CardContent className="px-2 text-sm pb-4">
+                      <p className="opacity-50 text-sm mt-2 pb-2">
+                        Reviewed by{" "}
+                        {
+                          report?.reviews![report?.reviews!.length - 1].reviewer
+                            .name
+                        }{" "}
+                        on{" "}
+                        {new Date(
+                          report?.reviews![report?.reviews!.length - 1]
+                            .reviewed_at,
+                        ).toLocaleString()}
+                      </p>
+                      {report?.reviews![report?.reviews!.length - 1].review}
+                    </CardContent>
+                  </Card>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+        )}
 
         <div className="pt-2">
           <div className="flex justify-between gap-4">
@@ -398,7 +416,11 @@ export default function ResolveReportPage() {
               Cancel
             </Button>
             <div className="flex gap-2 w-full sm:w-auto">
-              <Button disabled={!resolution.trim()} onClick={onSubmitResolution} className="flex-1 sm:flex-auto">
+              <Button
+                disabled={!resolution.trim()}
+                onClick={onSubmitResolution}
+                className="flex-1 sm:flex-auto"
+              >
                 Submit
               </Button>
             </div>

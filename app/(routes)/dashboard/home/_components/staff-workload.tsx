@@ -4,8 +4,8 @@ import { getTasks } from "@/app/api/task";
 import { getAllNurses } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { TaskStatus } from "@/types/task";
-import { endOfDay, startOfDay } from "date-fns";
+import { Task, TaskStatus } from "@/types/task";
+import { User } from "@/types/user";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -16,8 +16,8 @@ interface NurseWorkload {
 }
 
 const StaffWorkload = () => {
-  const [nurses, setNurses] = useState<any[]>([]);
-  const [tasks, setTasks] = useState<any[]>([]);
+  const [nurses, setNurses] = useState<User[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
@@ -45,11 +45,9 @@ const StaffWorkload = () => {
     const nurse = nurses.find((n) => n.id === nurseId);
     if (!nurse) return null;
 
-    // Filter tasks that are assigned to this nurse and not completed
     const pendingTasks = tasks.filter(
-      (task) => 
-        task.assigned_to === nurseId && 
-        task.status === TaskStatus.ASSIGNED
+      (task) =>
+        task.assigned_to === nurseId && task.status === TaskStatus.ASSIGNED,
     ).length;
 
     return {

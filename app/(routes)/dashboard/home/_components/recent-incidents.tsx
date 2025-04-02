@@ -4,7 +4,6 @@ import { getReports } from "@/app/api/report";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ReportResponse } from "@/types/report";
-import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -82,7 +81,9 @@ const RecentIncidents = () => {
               </div>
               <div className="flex flex-col items-end gap-2">
                 <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${getSeverityClass(report)}`}
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${getSeverityClass(
+                    report,
+                  )}`}
                 >
                   {report.report_content.some((content) =>
                     content.input.toString().toLowerCase().includes("urgent"),

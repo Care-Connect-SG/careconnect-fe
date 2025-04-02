@@ -60,7 +60,6 @@ const StatsOverview = () => {
           const now = new Date();
           const dueDate = new Date(task.due_date);
 
-          // Check if task is past due time and not completed
           return dueDate < now && task.status !== TaskStatus.COMPLETED;
         })
         .length.toString(),

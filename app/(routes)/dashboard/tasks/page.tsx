@@ -9,7 +9,7 @@ import {
   Search,
   X,
 } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { getTasks } from "@/app/api/task";
@@ -40,6 +40,7 @@ import { TaskViewToggle } from "./_components/task-viewtoggle";
 const TaskManagement = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const queryClient = useQueryClient();
 
   const [currentView, setCurrentView] = useState<"list" | "kanban">("list");
@@ -74,11 +75,17 @@ const TaskManagement = () => {
     const open = searchParams.get("open");
     if (open === "true") {
       setIsOpen(true);
-      // Remove the query parameter from the URL
-      const newUrl = window.location.pathname + window.location.hash;
-      window.history.replaceState({}, "", newUrl);
+
+      const params = new URLSearchParams(Array.from(searchParams.entries()));
+
+      params.delete("open");
+
+      const queryString = params.toString();
+      const newPath = queryString ? `${pathname}?${queryString}` : pathname;
+
+      router.replace(newPath, { scroll: false });
     }
-  }, [searchParams]);
+  }, [searchParams, router, pathname]);
 
   const {
     data: allTasks = [],
@@ -204,9 +211,9 @@ const TaskManagement = () => {
       current.set("date", newDate);
       const search = current.toString();
       const query = search ? `?${search}` : "";
-      router.push(`/dashboard/tasks${query}`, { scroll: false });
+      router.push(`${pathname}${query}`, { scroll: false });
     }
-  }, [selectedDate, router, searchParams]);
+  }, [selectedDate, router, searchParams, pathname]);
 
   const updateFilter = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -232,14 +239,18 @@ const TaskManagement = () => {
   };
 
   useEffect(() => {
-    const savedView = localStorage.getItem("taskView") as "list" | "kanban";
-    if (savedView) {
-      setCurrentView(savedView);
+    if (typeof window !== "undefined") {
+      const savedView = localStorage.getItem("taskView") as "list" | "kanban";
+      if (savedView) {
+        setCurrentView(savedView);
+      }
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("taskView", currentView);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("taskView", currentView);
+    }
   }, [currentView]);
 
   return (

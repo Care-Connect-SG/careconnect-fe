@@ -395,9 +395,7 @@ const Nurses = () => {
                           <DropdownMenuItem
                             onClick={(e) => {
                               e.stopPropagation();
-                              router.push(
-                                `/dashboard/nurses/${user.id}?edit=true`,
-                              );
+                              router.push(`/dashboard/nurses/${user.id}`);
                             }}
                           >
                             <Edit className="mr-2 h-4 w-4" />

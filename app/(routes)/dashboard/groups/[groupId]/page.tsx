@@ -16,6 +16,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
@@ -229,11 +230,16 @@ export default function ViewGroupPage() {
                     className="flex items-center justify-between "
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center overflow-hidden">
-                        <span className="bg-blue-100 text-blue-800 text-sm">
+                      <Avatar className="h-8 w-8 rounded-lg">
+                        <AvatarImage
+                          src={user.profile_picture || undefined}
+                          alt={user.name}
+                          className="rounded-lg bg-blue-100"
+                        />
+                        <AvatarFallback className="bg-blue-100 text-blue-800 text-sm rounded-lg">
                           {user.name.substring(0, 2).toUpperCase()}
-                        </span>
-                      </div>
+                        </AvatarFallback>
+                      </Avatar>
                       <span className="text-gray-800 font-medium">
                         {user.name}
                       </span>

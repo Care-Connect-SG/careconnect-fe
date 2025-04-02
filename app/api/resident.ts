@@ -27,7 +27,7 @@ export const createResident = async (
 
 export const getResidents = async (): Promise<ResidentRecord[]> => {
   try {
-    const response = await fetch(
+    const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/getAllResidents/`,
       {
         method: "GET",
@@ -61,7 +61,7 @@ export const getResidentsByPage = async (
       params.append("search", search);
     }
 
-    const response = await fetch(
+    const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/?${params.toString()}`,
       {
         method: "GET",
@@ -93,7 +93,7 @@ export const getResidentsCount = async (
       params.append("search", search);
     }
 
-    const response = await fetch(
+    const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/count/numOfResidents${
         params.toString() ? `?${params.toString()}` : ""
       }`,
@@ -121,7 +121,7 @@ export const getResidentById = async (
   residentId: string,
 ): Promise<ResidentRecord> => {
   try {
-    const response = await fetch(
+    const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}`,
       {
         method: "GET",

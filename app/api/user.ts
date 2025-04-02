@@ -93,7 +93,7 @@ export const getUsers = async (): Promise<User[]> => {
 
 export const getAllNurses = async (): Promise<User[]> => {
   try {
-    const response = await fetch(
+    const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/users/?role=nurse`,
       {
         method: "GET",

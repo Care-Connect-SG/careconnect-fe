@@ -19,10 +19,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { toast } from "@/hooks/use-toast";
+import { toTitleCase } from "@/lib/utils";
 import { ReportResponse, ReportStatus } from "@/types/report";
 import { Role, User } from "@/types/user";
 import { pdf } from "@react-pdf/renderer";
-import { Download, Edit, MoreHorizontal, Trash2 } from "lucide-react";
+import { Download, Edit, MoreHorizontal, Share2, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import getReportBadgeConfig from "./badge-config";
 import ReportPDF from "./report-pdf";
@@ -78,6 +80,82 @@ export default function ReportsTable({
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+
+  const handleShare = async (report: ReportResponse) => {
+    try {
+      const form = await getFormById(report.form_id);
+      const reporter = await getUserById(report.reporter.id);
+      const resident = report.primary_resident?.id
+        ? await getResidentById(report.primary_resident.id)
+        : undefined;
+
+      if (!report || !form || !reporter) {
+        toast({
+          title: "Error",
+          description: "Could not load report details.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!resident?.emergency_contact_number) {
+        toast({
+          title: "Error",
+          description:
+            "No emergency contact number available for this resident.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const pdfBlob = await pdf(
+        <ReportPDF
+          form={form}
+          report={report}
+          reporter={reporter}
+          resident={resident}
+        />,
+      ).toBlob();
+
+      const formData = new FormData();
+
+      const pdfFile = new File(
+        [pdfBlob],
+        `${toTitleCase(resident.full_name)}'s ${form.title}.pdf`,
+        {
+          type: "application/pdf",
+        },
+      );
+
+      formData.append("media", pdfFile);
+
+      const whatsappNumber = `65${resident.emergency_contact_number}`;
+      formData.append("jid", `${whatsappNumber}`);
+
+      const response = await fetch("/api/whatsapp/media", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast({
+          title: "Report shared",
+          description: `The report has been shared with the next of kin via WhatsApp.`,
+        });
+      } else {
+        throw new Error(result.error || "Failed to share report");
+      }
+    } catch (error) {
+      console.error("Error sharing report:", error);
+      toast({
+        title: "Error",
+        description: "Failed to share the report. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -143,6 +221,28 @@ export default function ReportsTable({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        {report.status === "Published" && (
+                          <>
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDownload(report);
+                              }}
+                            >
+                              <Download className="mr-2 h-4 w-4" />
+                              Download
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleShare(report);
+                              }}
+                            >
+                              <Share2 className="mr-2 h-4 w-4" />
+                              Share with Guardian
+                            </DropdownMenuItem>
+                          </>
+                        )}
                         {report.status === ReportStatus.DRAFT && (
                           <DropdownMenuItem
                             onClick={(e) => {
@@ -164,17 +264,6 @@ export default function ReportsTable({
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
                             Delete
-                          </DropdownMenuItem>
-                        )}
-                        {report.status === "Published" && (
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDownload(report);
-                            }}
-                          >
-                            <Download className="mr-2 h-4 w-4" />
-                            Download
                           </DropdownMenuItem>
                         )}
                       </DropdownMenuContent>

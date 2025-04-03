@@ -5,21 +5,31 @@ import { useEffect, useState } from "react";
 
 import { getFormById } from "@/app/api/form";
 import {
-  createReport,
-  deleteReport,
   getReportById,
   getReports,
-  updateReport,
+  resolveReportReview,
 } from "@/app/api/report";
 import { getCurrentUser } from "@/app/api/user";
 import { FormElementData, FormResponse } from "@/types/form";
 import { CaregiverTag, ReportCreate, ReportStatus } from "@/types/report";
 
-import FormElementFill from "../_components/form-element-fill";
 import { FormHeaderView } from "../_components/form-header";
-import PersonSelector from "../_components/tag-personnel";
 
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -30,23 +40,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { ReportResponse } from "@/types/report";
 import { User } from "@/types/user";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronLeft, Trash2, X } from "lucide-react";
+import { ChevronLeft, CircleAlert, X } from "lucide-react";
 import { FormProvider, useForm } from "react-hook-form";
+import FormElementFill from "../_components/form-element-fill";
 import { LoadingSkeleton } from "../_components/loading-skeleton";
+import PersonSelector from "../_components/tag-personnel";
 import { ReportSchema, reportSchema } from "../schema";
 
-export default function CreateReportPage() {
+export default function ResolveReportPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const formId = searchParams.get("formId");
   const reportId = searchParams.get("reportId");
-  const isEditing = !!reportId;
 
   const [form, setForm] = useState<FormResponse | null>(null);
+  const [report, setReport] = useState<ReportResponse | null>(null);
+  const [formTitle, setFormTitle] = useState<string>("");
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [availableReports, setAvailableReports] = useState<ReportResponse[]>(
@@ -56,6 +70,8 @@ export default function CreateReportPage() {
   const [referenceReportId, setReferenceReportId] = useState<string | null>(
     null,
   );
+  const [resolution, setResolution] = useState<string>("");
+  const [open, setOpen] = useState(false);
 
   const methods = useForm<ReportSchema>({
     resolver: zodResolver(reportSchema),
@@ -117,9 +133,10 @@ export default function CreateReportPage() {
           }),
         );
 
-        if (isEditing && reportId) {
+        if (reportId) {
           try {
             const reportData = await getReportById(reportId);
+            setReport(reportData);
 
             const mergedReportContent = initialReportContent.map((item) => {
               const existingContent = reportData.report_content.find(
@@ -165,9 +182,9 @@ export default function CreateReportPage() {
     }
 
     loadData();
-  }, [formId, isEditing, reportId, router, methods]);
+  }, [formId, reportId, router, methods]);
 
-  const prepareReport = (data: ReportSchema, mode: string) => {
+  const prepareReport = (data: ReportSchema) => {
     const missingRequired = form!.json_content
       .filter((element) => element.required)
       .some((element, idx) => {
@@ -193,66 +210,22 @@ export default function CreateReportPage() {
       primary_resident: data.primary_resident,
       involved_residents: data.involved_residents,
       involved_caregivers: data.involved_caregivers,
-      status: ReportStatus.DRAFT,
+      reviews: report?.reviews,
+      status: report!.status,
     };
 
     if (referenceReportId) {
       reportData.reference_report_id = referenceReportId;
     }
 
-    if (mode === "submit") {
-      reportData.status = ReportStatus.SUBMITTED;
-    }
-
     return reportData;
   };
 
-  const onSaveDraft = methods.handleSubmit(async (data) => {
+  const submitForm = methods.handleSubmit(async (data) => {
     if (!user || !form) return;
 
     try {
-      const reportData = prepareReport(data, "draft");
-
-      if (!reportData) {
-        toast({
-          title: "Required fields missing",
-          description: "Please fill in all fields with * before saving.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (!reportId) {
-        const newReportId = await createReport(reportData);
-        toast({
-          title: "Draft report created",
-          description: "Your form response was saved successfully.",
-        });
-        router.replace(
-          `/dashboard/incidents/fill?formId=${formId}&reportId=${newReportId}`,
-        );
-      } else {
-        await updateReport(reportId, reportData);
-        toast({
-          title: "Draft report updated",
-          description: "Your edits to the report are saved successfully.",
-        });
-      }
-    } catch (error) {
-      console.error("Error saving draft:", error);
-      toast({
-        title: "Error",
-        description: "Failed to save the report. Please try again.",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const onSubmit = methods.handleSubmit(async (data) => {
-    if (!user || !form) return;
-
-    try {
-      const reportData = prepareReport(data, "submit");
+      const reportData = prepareReport(data);
 
       if (!reportData) {
         toast({
@@ -263,49 +236,30 @@ export default function CreateReportPage() {
         return;
       }
 
-      if (!reportId) {
-        await createReport(reportData);
-        toast({
-          title: "Report submitted",
-          description: "Your report has been submitted successfully.",
-        });
-        router.replace("/dashboard/incidents");
-      } else {
-        await updateReport(reportId, reportData);
-        toast({
-          title: "Report submitted",
-          description: "Your report has been submitted successfully.",
-        });
-        router.replace("/dashboard/incidents");
-      }
+      await resolveReportReview(reportId!, resolution, reportData);
+      toast({
+        title: "Resolution submitted",
+        description: "Your report has been been updated with the resolutions.",
+      });
+      router.replace("/dashboard/incidents");
     } catch (error) {
-      console.error("Error submitting report:", error);
+      console.error("Error submitting resolution:", error);
       toast({
         title: "Error",
-        description: "Failed to submit the report. Please try again.",
+        description:
+          "Failed to resolve the review and update the report. Please try again.",
         variant: "destructive",
       });
     }
   });
 
-  const handleDeleteReport = async () => {
-    if (!reportId) return;
+  const onClickSubmit = () => {
+    setOpen(true);
+  };
 
-    try {
-      await deleteReport(reportId);
-      toast({
-        title: "Report deleted",
-        description: "Your report has been deleted successfully.",
-      });
-      router.back();
-    } catch (error) {
-      console.error("Failed to delete report:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete the report. Please try again.",
-        variant: "destructive",
-      });
-    }
+  const onSubmitResolution = async () => {
+    setOpen(false);
+    submitForm();
   };
 
   if (loading || !form || !user) return <LoadingSkeleton />;
@@ -324,35 +278,50 @@ export default function CreateReportPage() {
               <ChevronLeft className="h-4 w-4 mx-auto" />
               Return
             </Button>
-            {reportId && (
-              <Button
-                type="button"
-                onClick={handleDeleteReport}
-                className="bg-gray-100 text-black hover:bg-gray-200"
-              >
-                <Trash2 />
-              </Button>
-            )}
           </div>
           <div className="flex gap-2 justify-end">
             <Button
               type="button"
               disabled={methods.formState.isSubmitting}
-              onClick={onSaveDraft}
-              className="bg-blue-500 hover:bg-blue-600 text-white"
-            >
-              Save
-            </Button>
-            <Button
-              type="button"
-              disabled={methods.formState.isSubmitting}
-              onClick={onSubmit}
+              onClick={onClickSubmit}
               className="bg-green-500 hover:bg-green-600 text-white"
             >
-              Submit
+              Submit Resolution
             </Button>
           </div>
         </div>
+
+        {report?.status === ReportStatus.CHANGES_REQUESTED && (
+          <div className="rounded-md border px-4 my-4">
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="item-1">
+                <AccordionTrigger className="text-lg font-medium">
+                  <CircleAlert className="text-red-500 transition-none" />
+                  Changes Requested
+                </AccordionTrigger>
+                <AccordionContent className="rounded">
+                  <Card className="border-none shadow-none">
+                    <CardContent className="px-2 text-sm pb-4">
+                      <p className="opacity-50 text-sm mt-2 pb-2">
+                        Reviewed by{" "}
+                        {
+                          report?.reviews![report?.reviews!.length - 1].reviewer
+                            .name
+                        }{" "}
+                        on{" "}
+                        {new Date(
+                          report?.reviews![report?.reviews!.length - 1]
+                            .reviewed_at,
+                        ).toLocaleString()}
+                      </p>
+                      {report?.reviews![report?.reviews!.length - 1].review}
+                    </CardContent>
+                  </Card>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+        )}
 
         <div className="pt-2">
           <div className="flex justify-between gap-4">
@@ -425,6 +394,39 @@ export default function CreateReportPage() {
           </div>
         </div>
       </div>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+              <DialogTitle className="text-xl">Resolution Comments</DialogTitle>
+            </div>
+          </DialogHeader>
+
+          <Textarea
+            id="comments"
+            placeholder="Briefly describe the changes you made to resolve the review..."
+            value={resolution}
+            onChange={(e) => setResolution(e.target.value)}
+            className="min-h-[150px]"
+          />
+
+          <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Button
+                disabled={!resolution.trim()}
+                onClick={onSubmitResolution}
+                className="flex-1 sm:flex-auto"
+              >
+                Submit
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </FormProvider>
   );
 }

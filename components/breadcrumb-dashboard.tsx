@@ -66,6 +66,9 @@ function BreadCrumbDashboard() {
     if (index === 2 && segment === "view") {
       label = "Preview Form";
     }
+    if (index === 2 && segment === "review") {
+      label = "Review Reports";
+    }
 
     if (isLast && pageName) {
       label = pageName;

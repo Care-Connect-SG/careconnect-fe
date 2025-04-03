@@ -20,7 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { format, isValid } from "date-fns";
-import { Bot, CalendarIcon } from "lucide-react";
+import { Bot, CalendarIcon, Loader2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
 interface CreateWellnessReportDialogProps {
@@ -93,7 +93,7 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
 
       if (!response.ok) {
@@ -152,23 +152,26 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
       <DialogContent className="max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto">
         <DialogHeader className="flex flex-row items-center justify-between">
           <DialogTitle>Create Wellness Report</DialogTitle>
-          <div className="relative">
+          <div>
             <Button
               type="button"
               variant="ghost"
-              size="icon"
               onClick={handleGenerateAI}
               disabled={isFetchingAI}
-              title="Generate with AI"
+              className="flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-blue-500 hover:text-green-500 transition-all hover:duration-300"
             >
-              <Bot className="w-5 h-5" />
+              {isFetchingAI ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-green-500" />
+                  Getting Suggestion...
+                </>
+              ) : (
+                <>
+                  <Bot className="h-4 w-4 text-green-500" />
+                  Get AI Suggestion
+                </>
+              )}
             </Button>
-            {isFetchingAI && (
-              <div
-                className="absolute -top-1.5 -right-1.5 w-4 h-4 border-2 border-white rounded-full border-t-transparent animate-spin"
-                style={{ borderColor: "#FF7F50" }}
-              />
-            )}
           </div>
         </DialogHeader>
 

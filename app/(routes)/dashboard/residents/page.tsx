@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { useToast } from "@/hooks/use-toast";
 import { ResidentRecord } from "@/types/resident";
 import { User } from "@/types/user";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -25,7 +26,6 @@ import {
 import { getAllNurses } from "../../../api/user";
 import CreateResidentDialog from "./_components/create-resident-dialog";
 import ResidentCard from "./_components/resident-card";
-import { useToast } from "@/hooks/use-toast";
 
 export default function AllResidentsPage() {
   const [searchTerm, setSearchTerm] = useState("");

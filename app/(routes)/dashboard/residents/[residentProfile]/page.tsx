@@ -33,13 +33,13 @@ import ResidentProfileHeader from "./_components/resident-profile-header";
 import WellnessReportList from "./_components/wellness-report-list";
 
 import { useBreadcrumb } from "@/context/breadcrumb-context";
+import { useToast } from "@/hooks/use-toast";
 import { toTitleCase } from "@/lib/utils";
 import { CarePlanRecord } from "@/types/careplan";
 import { MedicalHistory, inferTemplateType } from "@/types/medical-history";
 import { MedicationRecord } from "@/types/medication";
 import { ResidentRecord } from "@/types/resident";
 import { WellnessReportRecord } from "@/types/wellness-report";
-import { useToast } from "@/hooks/use-toast";
 
 const TABS = [
   { label: "Overview", value: "overview" },

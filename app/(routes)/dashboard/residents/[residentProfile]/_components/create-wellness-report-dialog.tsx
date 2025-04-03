@@ -18,10 +18,10 @@ import {
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { format, isValid } from "date-fns";
-import { CalendarIcon, Bot } from "lucide-react";
-import React, { useEffect, useState } from "react";
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
+import { format, isValid } from "date-fns";
+import { Bot, CalendarIcon } from "lucide-react";
+import React, { useEffect, useState } from "react";
 
 interface CreateWellnessReportDialogProps {
   isOpen: boolean;
@@ -93,7 +93,7 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
 
       if (!response.ok) {

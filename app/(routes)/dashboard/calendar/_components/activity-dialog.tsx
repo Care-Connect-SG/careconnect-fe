@@ -47,6 +47,7 @@ interface ActivityDialogProps {
   onDelete: (id: string) => void;
   onDuplicate: (activity: Activity) => void;
   canUserEditActivity?: (activity: Activity) => boolean;
+  isAdmin: boolean;
 }
 
 export default function ActivityDialog({
@@ -59,17 +60,16 @@ export default function ActivityDialog({
   onDelete,
   onDuplicate,
   canUserEditActivity,
+  isAdmin,
 }: ActivityDialogProps) {
   const { toast } = useToast();
   const { data: session } = useSession();
   const userId = session?.user?.id;
-  const userRole = (session?.user as any)?.role;
 
   const canEdit =
     !activity ||
     (activity &&
-      (userRole === "admin" ||
-        userRole === "Admin" ||
+      (isAdmin ||
         (canUserEditActivity
           ? canUserEditActivity(activity)
           : activity.created_by === userId)));

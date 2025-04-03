@@ -15,9 +15,9 @@ import { getCurrentUser } from "@/app/api/user";
 import { FormElementData, FormResponse } from "@/types/form";
 import { CaregiverTag, ReportCreate, ReportStatus } from "@/types/report";
 
+import FormElementFill from "../_components/form-element-fill";
 import { FormHeaderView } from "../_components/form-header";
-import FormElementFill from "./_components/form-element-fill";
-import PersonSelector from "./_components/tag-personnel";
+import PersonSelector from "../_components/tag-personnel";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -37,7 +37,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronLeft, Trash2, X } from "lucide-react";
 import { FormProvider, useForm } from "react-hook-form";
 import { LoadingSkeleton } from "../_components/loading-skeleton";
-import { ReportSchema, reportSchema } from "./schema";
+import { ReportSchema, reportSchema } from "../schema";
 
 export default function CreateReportPage() {
   const router = useRouter();
@@ -200,8 +200,8 @@ export default function CreateReportPage() {
       reportData.reference_report_id = referenceReportId;
     }
 
-    if (mode === "publish") {
-      reportData.status = ReportStatus.PUBLISHED;
+    if (mode === "submit") {
+      reportData.status = ReportStatus.SUBMITTED;
     }
 
     return reportData;
@@ -248,16 +248,16 @@ export default function CreateReportPage() {
     }
   });
 
-  const onPublish = methods.handleSubmit(async (data) => {
+  const onSubmit = methods.handleSubmit(async (data) => {
     if (!user || !form) return;
 
     try {
-      const reportData = prepareReport(data, "publish");
+      const reportData = prepareReport(data, "submit");
 
       if (!reportData) {
         toast({
           title: "Required fields missing",
-          description: "Please fill in all fields with * before publishing.",
+          description: "Please fill in all fields with * before submitting.",
           variant: "destructive",
         });
         return;
@@ -266,23 +266,23 @@ export default function CreateReportPage() {
       if (!reportId) {
         await createReport(reportData);
         toast({
-          title: "Report published",
-          description: "Your report has been published successfully.",
+          title: "Report submitted",
+          description: "Your report has been submitted successfully.",
         });
         router.replace("/dashboard/incidents");
       } else {
         await updateReport(reportId, reportData);
         toast({
-          title: "Report published",
-          description: "Your report has been published successfully.",
+          title: "Report submitted",
+          description: "Your report has been submitted successfully.",
         });
         router.replace("/dashboard/incidents");
       }
     } catch (error) {
-      console.error("Error publishing report:", error);
+      console.error("Error submitting report:", error);
       toast({
         title: "Error",
-        description: "Failed to publish the report. Please try again.",
+        description: "Failed to submit the report. Please try again.",
         variant: "destructive",
       });
     }
@@ -346,10 +346,10 @@ export default function CreateReportPage() {
             <Button
               type="button"
               disabled={methods.formState.isSubmitting}
-              onClick={onPublish}
+              onClick={onSubmit}
               className="bg-green-500 hover:bg-green-600 text-white"
             >
-              Publish
+              Submit
             </Button>
           </div>
         </div>

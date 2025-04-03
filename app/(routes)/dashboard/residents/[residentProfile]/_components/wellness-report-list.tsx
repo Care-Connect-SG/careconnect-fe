@@ -1,14 +1,6 @@
 "use client";
 
 import { deleteWellnessReport } from "@/app/api/wellness-report";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { WellnessReportRecord } from "@/types/wellness-report";
-import { format } from "date-fns";
-import { Edit2, Trash2 } from "lucide-react";
-import React, { useState } from "react";
-import EditWellnessReportDialog from "./edit-wellness-report-dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,15 +11,23 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { WellnessReportRecord } from "@/types/wellness-report";
+import { format } from "date-fns";
+import { Edit2, Trash2 } from "lucide-react";
+import React, { useState } from "react";
+import EditWellnessReportDialog from "./edit-wellness-report-dialog";
 
-interface WellnessReportsListProps {
+interface WellnessReportListProps {
   reports: WellnessReportRecord[];
   residentId: string;
   onReportDeleted: () => void;
   onReportUpdated: () => void;
 }
 
-const WellnessReportsList: React.FC<WellnessReportsListProps> = ({
+const WellnessReportList: React.FC<WellnessReportListProps> = ({
   reports,
   residentId,
   onReportDeleted,
@@ -98,7 +98,7 @@ const WellnessReportsList: React.FC<WellnessReportsListProps> = ({
       ) : (
         [...reports]
           .sort(
-            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
           )
           .map((report) => (
             <Card key={report.id}>
@@ -213,4 +213,4 @@ const WellnessReportsList: React.FC<WellnessReportsListProps> = ({
   );
 };
 
-export default WellnessReportsList;
+export default WellnessReportList;

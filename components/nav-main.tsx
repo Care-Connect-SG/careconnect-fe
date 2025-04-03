@@ -42,7 +42,9 @@ export function NavMain({ items, currentUser }: NavMainProps) {
       return {
         ...item,
         submenu: item.submenu.filter(
-          (sub) => sub.title !== "Manage Report Forms",
+          (sub) =>
+            sub.title !== "Manage Report Forms" &&
+            sub.title !== "Review Reports",
         ),
       };
     }

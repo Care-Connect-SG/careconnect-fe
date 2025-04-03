@@ -22,12 +22,14 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowDownUpIcon } from "lucide-react";
 import { useState } from "react";
 
 interface TaskReassignmentFormProps {
   taskId: string;
   currentNurseId: string;
   currentNurseName: string;
+  type: "default" | "icon";
 }
 
 interface Nurse {
@@ -39,6 +41,7 @@ export function TaskReassignmentForm({
   taskId,
   currentNurseId,
   currentNurseName,
+  type,
 }: TaskReassignmentFormProps) {
   const [open, setOpen] = useState(false);
   const [selectedNurseId, setSelectedNurseId] = useState<string>("");
@@ -107,15 +110,20 @@ export function TaskReassignmentForm({
       <div onClick={(e) => e.stopPropagation()}>
         <DialogTrigger asChild>
           <Button
-            variant="outline"
+            variant={type === "default" ? "outline" : "ghost"}
             size="sm"
+            className={`${type === "default" ? "" : "w-8 h-8"}`}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               setOpen(true);
             }}
           >
-            Request Reassignment
+            {type === "default" ? (
+              "Request Reassignment"
+            ) : (
+              <ArrowDownUpIcon className="h-4 w-4" />
+            )}
           </Button>
         </DialogTrigger>
         <DialogContent

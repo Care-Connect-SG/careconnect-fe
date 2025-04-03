@@ -194,7 +194,10 @@ const EditWellnessReportDialog: React.FC<EditWellnessReportDialogProps> = ({
               id="nutrition_hydration"
               value={formData.nutrition_hydration}
               onChange={(e) =>
-                setFormData({ ...formData, nutrition_hydration: e.target.value })
+                setFormData({
+                  ...formData,
+                  nutrition_hydration: e.target.value,
+                })
               }
               rows={3}
             />
@@ -218,7 +221,10 @@ const EditWellnessReportDialog: React.FC<EditWellnessReportDialogProps> = ({
               id="cognitive_emotional"
               value={formData.cognitive_emotional}
               onChange={(e) =>
-                setFormData({ ...formData, cognitive_emotional: e.target.value })
+                setFormData({
+                  ...formData,
+                  cognitive_emotional: e.target.value,
+                })
               }
               rows={3}
             />
@@ -250,4 +256,4 @@ const EditWellnessReportDialog: React.FC<EditWellnessReportDialogProps> = ({
   );
 };
 
-export default EditWellnessReportDialog; 
+export default EditWellnessReportDialog;

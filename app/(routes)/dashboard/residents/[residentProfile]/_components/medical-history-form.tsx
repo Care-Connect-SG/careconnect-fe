@@ -361,7 +361,6 @@ const CreateMedicalHistoryDialog: React.FC<{
                                         : "",
                                     );
                                   }}
-                                  initialFocus
                                 />
                               </PopoverContent>
                             </Popover>

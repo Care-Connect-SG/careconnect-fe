@@ -14,11 +14,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
+import { toTitleCase } from "@/lib/utils";
 import { ResidentRecord } from "@/types/resident";
 import { Task, TaskStatus } from "@/types/task";
+import { useQueryClient } from "@tanstack/react-query";
 import { Clock, Copy, Download, Plus, Trash, User } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -34,6 +37,7 @@ const TaskCard = ({
 }) => {
   const { toast } = useToast();
   const { data: session } = useSession();
+  const queryClient = useQueryClient();
   const router = useRouter();
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const getPriorityColor = (priority: string) => {
@@ -55,6 +59,7 @@ const TaskCard = ({
         title: "Task Duplicated",
         description: "The task has been successfully duplicated.",
       });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     } catch (error) {
       toast({
         variant: "destructive",
@@ -102,6 +107,7 @@ const TaskCard = ({
           deleteSeries ? " along with its series" : ""
         }`,
       });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     } catch (error) {
       toast({
         variant: "destructive",
@@ -115,7 +121,7 @@ const TaskCard = ({
 
   return (
     <div
-      className="bg-white rounded-lg border border-gray-200 p-4 mb-3 hover:shadow-md transition-shadow"
+      className="bg-white rounded-lg border border-gray-200 p-4 mb-3 hover:bg-blue-50 transition-all"
       onClick={(e) => {
         if (
           e.target === e.currentTarget ||
@@ -163,6 +169,7 @@ const TaskCard = ({
                   taskId={task.id}
                   currentNurseId={task.assigned_to}
                   currentNurseName={task.assigned_to_name || ""}
+                  type="icon"
                 />
               </div>
             )}
@@ -271,15 +278,18 @@ const ResidentRow = ({
   const [showTaskForm, setShowTaskForm] = useState(false);
 
   return (
-    <div className="flex-none w-96 bg-gray-50 rounded-lg p-4">
+    <div className="flex-1 w-[calc(33.333% - 1rem)] bg-slate-50 rounded-lg p-4">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center">
-          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-            <User className="w-5 h-5 text-blue-600" />
-          </div>
+        <div className="flex items-center space-x-3">
+          <Avatar className="h-10 w-10 rounded-lg cursor-pointer flex-shrink-0">
+            <AvatarImage src={resident.photograph!} alt={resident.full_name} />
+            <AvatarFallback className="rounded-lg text-sm">
+              {resident.full_name.substring(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
           <div>
             <h3 className="text-sm font-medium text-gray-900">
-              {resident.full_name}
+              {toTitleCase(resident.full_name)}
             </h3>
             <p className="text-xs text-gray-500">Room {resident.room_number}</p>
           </div>
@@ -319,10 +329,14 @@ const ResidentRow = ({
 };
 
 export default function TaskKanbanView({ tasks }: { tasks: Task[] }) {
+  const { toast } = useToast();
   const [residents, setResidents] = useState<ResidentRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
   const [taskList, setTaskList] = useState<Task[]>(tasks);
+
+  useEffect(() => {
+    setTaskList(tasks);
+  }, [tasks]);
 
   useEffect(() => {
     const fetchResidents = async () => {
@@ -330,7 +344,11 @@ export default function TaskKanbanView({ tasks }: { tasks: Task[] }) {
         const data = await getResidents();
         setResidents(data);
       } catch (err) {
-        setError("Failed to fetch residents");
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to fetch residents",
+        });
       } finally {
         setLoading(false);
       }
@@ -344,7 +362,14 @@ export default function TaskKanbanView({ tasks }: { tasks: Task[] }) {
         <Spinner />
       </div>
     );
-  if (error) return <p className="text-red-500">{error}</p>;
+
+  if (tasks.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        No tasks found for the selected date
+      </div>
+    );
+  }
 
   const residentRows = [];
   for (let i = 0; i < residents.length; i += 3) {

@@ -38,8 +38,8 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { toTitleCase } from "@/lib/utils";
 import { Task, TaskStatus } from "@/types/task";
+import { useQueryClient } from "@tanstack/react-query";
 import {
-  AlertCircle,
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
@@ -49,7 +49,6 @@ import {
   Download,
   Edit,
   MoreHorizontal,
-  Sparkles,
   Trash,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -60,6 +59,7 @@ import TaskForm from "./task-form";
 export default function TaskListView({ tasks }: { tasks: Task[] }) {
   const router = useRouter();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const { data: session } = useSession();
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [taskList, setTaskList] = useState<Task[]>(tasks);
@@ -108,6 +108,7 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
             : task,
         ),
       );
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     } catch (error) {
       console.error("Error toggling task status:", error);
     }
@@ -122,6 +123,7 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
         title: "Task Duplicated",
         description: "The task has been successfully duplicated.",
       });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     } catch (error) {
       toast({
         variant: "destructive",
@@ -131,20 +133,23 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
     }
   };
 
-  const handleDownload = async (task: Task) => {
+  const handleDownload = async (
+    task: Task,
+    format: "text" | "pdf" = "text",
+  ) => {
     try {
-      const blob = await downloadTask(task.id);
+      const blob = await downloadTask(task.id, format);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `task-${task.id}.txt`;
+      a.download = `task-${task.id}.${format === "text" ? "txt" : "pdf"}`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
       toast({
         title: "Task Downloaded",
-        description: "The task has been successfully downloaded.",
+        description: `The task has been successfully downloaded as ${format.toUpperCase()}.`,
       });
     } catch (error) {
       toast({
@@ -172,6 +177,7 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
           deleteSeries ? " along with its series" : ""
         }`,
       });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     } catch (error) {
       toast({
         variant: "destructive",
@@ -242,56 +248,16 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
     setTaskList(sortedTasks);
   };
 
-  const getSortIcon = (key: keyof Task | null) => {
-    if (!key) return <ArrowUpDown className="h-4 w-4" />;
-    if (sortConfig.key !== key) return <ArrowUpDown className="h-4 w-4" />;
-    return sortConfig.direction === "asc" ? (
-      <ArrowUp className="h-4 w-4" />
-    ) : (
-      <ArrowDown className="h-4 w-4" />
-    );
-  };
-
-  const getSortLabel = (key: keyof Task) => {
-    switch (key) {
-      case "due_date":
-        return "Due Date";
-      case "priority":
-        return "Priority";
-      case "status":
-        return "Status";
-      default:
-        return key;
-    }
-  };
-
   if (!taskList.length) {
-    return <p className="text-center text-gray-500 p-8">No available tasks</p>;
+    return (
+      <p className="text-center text-gray-500 p-8">
+        No tasks found for the selected date
+      </p>
+    );
   }
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-      <div className="mb-4 p-4 bg-gray-50 border-b border-gray-200">
-        <h3 className="text-sm font-medium text-gray-700 mb-2">
-          AI Features Guide:
-        </h3>
-        <div className="flex flex-wrap gap-4 text-xs">
-          <div className="flex items-center">
-            <span className="inline-flex items-center px-2 py-0.5 rounded font-medium bg-amber-100 text-amber-800 mr-2">
-              <Sparkles className="w-3 h-3 mr-1" />
-              AI
-            </span>
-            <span>AI-suggested task based on care patterns</span>
-          </div>
-          <div className="flex items-center">
-            <span className="inline-flex items-center px-2 py-0.5 rounded font-medium bg-red-100 text-red-800 mr-2">
-              <AlertCircle className="w-3 h-3 mr-1" />
-              Urgent
-            </span>
-            <span>High-priority task requiring immediate attention</span>
-          </div>
-        </div>
-      </div>
       <div className="overflow-x-auto">
         <Table className="w-full">
           <TableHeader className="bg-gray-50">
@@ -359,7 +325,7 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                   )}
                 </div>
               </TableHead>
-              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase ">
                 Actions
               </TableHead>
             </TableRow>
@@ -368,9 +334,7 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
             {taskList.map((task) => (
               <TableRow
                 key={task.id}
-                className={`hover:bg-muted hover:duration-300 ease-in-out ${
-                  task.is_urgent ? "bg-red-50" : ""
-                }`}
+                className="hover:bg-blue-50 hover:duration-300 ease-in-out"
               >
                 <TableCell className="px-6 py-4">
                   <AlertDialog>
@@ -419,26 +383,7 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                   className="px-6 py-4 font-medium text-gray-900"
                   onClick={() => router.push(`/dashboard/tasks/${task.id}`)}
                 >
-                  <div className="flex items-center">
-                    {task.task_title}
-                    {task.is_ai_generated && (
-                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
-                        <Sparkles className="w-3 h-3 mr-1" />
-                        AI
-                      </span>
-                    )}
-                    {task.is_urgent && (
-                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                        <AlertCircle className="w-3 h-3 mr-1" />
-                        Urgent
-                      </span>
-                    )}
-                  </div>
-                  {task.ai_recommendation_reason && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      {task.ai_recommendation_reason}
-                    </p>
-                  )}
+                  {task.task_title}
                 </TableCell>
                 <TableCell
                   className="px-6 py-4 text-gray-900"
@@ -489,25 +434,21 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                 <TableCell className="px-6 py-4">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="hover:bg-transparent"
+                      >
                         <MoreHorizontal className="h-4 w-4" />
                         <span className="sr-only">Open menu</span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingTask(task);
-                        }}
-                      >
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit
-                      </DropdownMenuItem>
                       {task.assigned_to &&
                         session?.user?.id &&
                         task.assigned_to === session.user.id &&
-                        task.assigned_to_name && (
+                        task.assigned_to_name &&
+                        task.status !== TaskStatus.COMPLETED && (
                           <DropdownMenuItem
                             onClick={(e) => {
                               e.stopPropagation();
@@ -517,9 +458,20 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                               taskId={task.id}
                               currentNurseId={task.assigned_to}
                               currentNurseName={task.assigned_to_name}
+                              type="default"
                             />
                           </DropdownMenuItem>
                         )}
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingTask(task);
+                        }}
+                      >
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit
+                      </DropdownMenuItem>
+
                       {task.status === TaskStatus.REASSIGNMENT_REQUESTED &&
                         task.reassignment_requested_to &&
                         session?.user?.id &&
@@ -555,11 +507,20 @@ export default function TaskListView({ tasks }: { tasks: Task[] }) {
                       <DropdownMenuItem
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDownload(task);
+                          handleDownload(task, "text");
                         }}
                       >
                         <Download className="mr-2 h-4 w-4" />
-                        Download
+                        Download as Text
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownload(task, "pdf");
+                        }}
+                      >
+                        <Download className="mr-2 h-4 w-4" />
+                        Download as PDF
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="text-red-600"

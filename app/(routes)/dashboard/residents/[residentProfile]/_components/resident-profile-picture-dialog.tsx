@@ -30,7 +30,7 @@ const ResidentProfilePictureDialog: React.FC<
           <Pencil className="absolute transition-all ease-in-out hover:duration-300 bottom-0.5 right-0.5 w-6 h-6 text-blue-300  bg-white/20 p-1 rounded-full" />
           <AvatarImage src={resident.photograph!} alt={resident.full_name} />
           <AvatarFallback className="rounded-lg">
-            {resident.full_name.charAt(0)}
+            {resident.full_name.substring(0, 2).toUpperCase()}
           </AvatarFallback>
         </Avatar>
       </DialogTrigger>

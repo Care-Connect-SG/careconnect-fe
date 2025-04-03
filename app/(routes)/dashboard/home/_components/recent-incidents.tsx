@@ -1,76 +1,117 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
+import { getReports } from "@/app/api/report";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowRight } from "lucide-react";
+import { ReportResponse } from "@/types/report";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-const RecentIncidents = () => (
-  <Card className="p-6">
-    <div className="flex items-center justify-between mb-6">
-      <p className="text-lg font-semibold text-gray-800">Recent Incidents</p>
-      <Button
-        variant="link"
-        className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-      >
-        View All
-      </Button>
-    </div>
-    <div className="space-y-4">
-      {[
-        {
-          title: "Fall Incident",
-          resident: "John Smith",
-          time: "30 min ago",
-          severity: "High",
-          status: "Under Review",
-        },
-        {
-          title: "Medication Error",
-          resident: "Mary Johnson",
-          time: "2 hours ago",
-          severity: "Medium",
-          status: "Resolved",
-        },
-        {
-          title: "Behavioral Issue",
-          resident: "Robert Davis",
-          time: "4 hours ago",
-          severity: "Low",
-          status: "Documented",
-        },
-      ].map((incident, i) => (
-        <Card
-          key={i}
-          className="p-4 bg-gray-50 flex items-center justify-between"
+const RecentIncidents = () => {
+  const [reports, setReports] = useState<ReportResponse[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const data = await getReports();
+        setReports(data.slice(0, 4));
+      } catch (error) {
+        console.error("Error fetching reports:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchReports();
+  }, []);
+
+  const getSeverityClass = (report: ReportResponse) => {
+    const hasUrgentContent = report.report_content.some((content) =>
+      content.input.toString().toLowerCase().includes("urgent"),
+    );
+    const hasMediumContent = report.report_content.some((content) =>
+      content.input.toString().toLowerCase().includes("moderate"),
+    );
+
+    if (hasUrgentContent) return "bg-red-100 text-red-700";
+    if (hasMediumContent) return "bg-orange-100 text-orange-700";
+    return "bg-gray-100 text-gray-700";
+  };
+
+  const getStatusClass = (report: ReportResponse) => {
+    return report.status === "Published"
+      ? "bg-green-100 text-green-700"
+      : "bg-yellow-100 text-yellow-700";
+  };
+
+  return (
+    <Card className="p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-lg font-semibold text-gray-800">
+          Recent Incidents
+        </h2>
+        <Button
+          variant="link"
+          className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+          onClick={() => router.push("/dashboard/incidents")}
         >
-          <div>
-            <div className="flex items-center space-x-2">
-              <p className="font-medium text-gray-900">{incident.title}</p>
-              <Badge
-                className={`${
-                  incident.severity === "High"
-                    ? "bg-red-100 text-red-800"
-                    : incident.severity === "Medium"
-                      ? "bg-yellow-100 text-yellow-800"
-                      : "bg-green-100 text-green-800"
-                } px-2 py-1 text-xs rounded-full`}
-              >
-                {incident.severity}
-              </Badge>
+          View All
+        </Button>
+      </div>
+      <div className="space-y-4">
+        {isLoading ? (
+          <div className="flex items-center justify-center h-32">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+          </div>
+        ) : (
+          reports.map((report) => (
+            <div
+              key={report.id}
+              className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+            >
+              <div className="flex flex-col gap-1">
+                <h3 className="font-medium text-gray-900">
+                  {report.form_name}
+                </h3>
+                <p className="text-sm text-gray-500">
+                  {report.primary_resident?.name || "No resident specified"}
+                </p>
+              </div>
+              <div className="flex flex-col items-end gap-2">
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${getSeverityClass(
+                    report,
+                  )}`}
+                >
+                  {report.report_content.some((content) =>
+                    content.input.toString().toLowerCase().includes("urgent"),
+                  )
+                    ? "High"
+                    : report.report_content.some((content) =>
+                          content.input
+                            .toString()
+                            .toLowerCase()
+                            .includes("moderate"),
+                        )
+                      ? "Medium"
+                      : "Low"}
+                </span>
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusClass(
+                    report,
+                  )}`}
+                >
+                  {report.status}
+                </span>
+              </div>
             </div>
-            <p className="text-sm text-gray-500 mt-1">
-              {incident.resident} • {incident.time}
-            </p>
-          </div>
-          <div className="flex items-center space-x-3">
-            <p className="text-sm text-gray-500">{incident.status}</p>
-            <ArrowRight className="w-4 h-4 text-gray-400" />
-          </div>
-        </Card>
-      ))}
-    </div>
-  </Card>
-);
+          ))
+        )}
+      </div>
+    </Card>
+  );
+};
 
 export default RecentIncidents;

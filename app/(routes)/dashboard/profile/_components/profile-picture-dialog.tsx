@@ -29,8 +29,8 @@ const ProfilePictureDialog: React.FC<ProfilePictureDialogProps> = ({
         <Avatar className="h-16 w-16 rounded-lg cursor-pointer">
           <Pencil className="absolute transition-all ease-in-out hover:duration-300 bottom-0.5 right-0.5 w-6 h-6 text-blue-300  bg-white/20 p-1 rounded-full" />
           <AvatarImage src={user.profile_picture!} alt={user.name} />
-          <AvatarFallback className="rounded-lg">
-            {user.email.charAt(0)}
+          <AvatarFallback className="rounded-lg bg-blue-100 text-blue-800">
+            {user.name.substring(0, 2).toUpperCase()}
           </AvatarFallback>
         </Avatar>
       </DialogTrigger>

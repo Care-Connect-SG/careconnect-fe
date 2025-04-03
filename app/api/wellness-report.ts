@@ -1,21 +1,23 @@
-import { WellnessReportRecord } from "@/types/wellness-report";
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
+import { WellnessReportRecord } from "@/types/wellness-report";
 
-export async function getWellnessReportsForResident(residentId: string): Promise<WellnessReportRecord[]> {
+export async function getWellnessReportsForResident(
+  residentId: string,
+): Promise<WellnessReportRecord[]> {
   try {
     const url = `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/wellness-reports/`;
     const response = await fetchWithAuth(url);
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`Failed to fetch wellness reports: ${errorText}`);
     }
 
     const data = await response.json();
-    console.log('Wellness reports response:', JSON.stringify(data, null, 2));
+    console.log("Wellness reports response:", JSON.stringify(data, null, 2));
     return data;
   } catch (error) {
-    console.error('Error in getWellnessReportsForResident:', error);
+    console.error("Error in getWellnessReportsForResident:", error);
     throw error;
   }
 }
@@ -43,18 +45,18 @@ export const getWellnessReportById = async (
 
 export async function createWellnessReport(
   residentId: string,
-  reportData: Omit<WellnessReportRecord, '_id' | 'resident_id'>
+  reportData: Omit<WellnessReportRecord, "_id" | "resident_id">,
 ): Promise<WellnessReportRecord> {
   try {
     const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/wellness-reports/`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(reportData)
-      }
+        body: JSON.stringify(reportData),
+      },
     );
 
     if (!response.ok) {
@@ -64,7 +66,7 @@ export async function createWellnessReport(
 
     return await response.json();
   } catch (error) {
-    console.error('Error in createWellnessReport:', error);
+    console.error("Error in createWellnessReport:", error);
     throw error;
   }
 }
@@ -72,18 +74,18 @@ export async function createWellnessReport(
 export async function updateWellnessReport(
   residentId: string,
   reportId: string,
-  updateData: Partial<WellnessReportRecord>
+  updateData: Partial<WellnessReportRecord>,
 ): Promise<WellnessReportRecord> {
   try {
     const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/wellness-reports/${reportId}`,
       {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(updateData)
-      }
+        body: JSON.stringify(updateData),
+      },
     );
 
     if (!response.ok) {
@@ -93,21 +95,21 @@ export async function updateWellnessReport(
 
     return await response.json();
   } catch (error) {
-    console.error('Error in updateWellnessReport:', error);
+    console.error("Error in updateWellnessReport:", error);
     throw error;
   }
 }
 
 export async function deleteWellnessReport(
   residentId: string,
-  reportId: string
+  reportId: string,
 ): Promise<void> {
   try {
     const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/wellness-reports/${reportId}`,
       {
-        method: 'DELETE'
-      }
+        method: "DELETE",
+      },
     );
 
     if (!response.ok) {
@@ -115,20 +117,20 @@ export async function deleteWellnessReport(
       throw new Error(`Failed to delete wellness report: ${errorText}`);
     }
   } catch (error) {
-    console.error('Error in deleteWellnessReport:', error);
+    console.error("Error in deleteWellnessReport:", error);
     throw error;
   }
 }
 
 export async function generateAIWellnessReport(
-  residentId: string
+  residentId: string,
 ): Promise<WellnessReportRecord> {
   try {
     const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/wellness-reports/generate-ai`,
       {
-        method: 'POST'
-      }
+        method: "POST",
+      },
     );
 
     if (!response.ok) {
@@ -138,7 +140,7 @@ export async function generateAIWellnessReport(
 
     return await response.json();
   } catch (error) {
-    console.error('Error in generateAIWellnessReport:', error);
+    console.error("Error in generateAIWellnessReport:", error);
     throw error;
   }
 }

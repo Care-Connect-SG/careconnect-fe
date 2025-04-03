@@ -16,6 +16,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
@@ -195,7 +196,7 @@ export default function ViewGroupPage() {
         )}
       </div>
 
-      <div className="flex flex-col md:flex-row gap-8 w-full">
+      <div className="flex flex-col space-y-16 space-x-0 md:flex-row md:space-y-0 md:space-x-16 w-full">
         <EditGroupForm
           group={group}
           groupId={groupId}
@@ -205,7 +206,7 @@ export default function ViewGroupPage() {
 
         <div className="flex-1 space-y-5">
           <Label className="block text-sm font-medium text-gray-600">
-            <span className="text-blue-500 rounded-lg bg-blue-100 font-semibold mr-1.5 w-full px-2 py-0.5">
+            <span className="text-black rounded-full bg-blue-100 font-semibold mr-1.5 w-full px-2 py-0.5">
               {group.members.length}
             </span>
             members in this group
@@ -229,11 +230,16 @@ export default function ViewGroupPage() {
                     className="flex items-center justify-between "
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                        <span className="text-gray-700 font-semibold">
-                          {user.name.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
+                      <Avatar className="h-8 w-8 rounded-lg">
+                        <AvatarImage
+                          src={user.profile_picture || undefined}
+                          alt={user.name}
+                          className="rounded-lg bg-blue-100"
+                        />
+                        <AvatarFallback className="bg-blue-100 text-blue-800 text-sm rounded-lg">
+                          {user.name.substring(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
                       <span className="text-gray-800 font-medium">
                         {user.name}
                       </span>
@@ -241,7 +247,8 @@ export default function ViewGroupPage() {
                     {isAdmin && (
                       <Button
                         onClick={() => handleRemoveUser(user.id)}
-                        className="text-red-500 text-sm hover:underline"
+                        variant="ghost"
+                        className="text-red-500 text-sm hover:underline hover:text-red-500"
                       >
                         Remove
                       </Button>

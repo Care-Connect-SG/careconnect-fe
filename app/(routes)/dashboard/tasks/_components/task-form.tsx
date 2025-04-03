@@ -1,11 +1,10 @@
 "use client";
 
 import { getResidents } from "@/app/api/resident";
-import { createTask, updateTask, getAiTaskSuggestion, getEnhancedAiTaskSuggestion } from "@/app/api/task";
+import { createTask, getAITaskSuggestion, updateTask } from "@/app/api/task";
 import { getAllNurses } from "@/app/api/user";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -14,10 +13,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { DateTimePicker } from "@/components/ui/datetime-picker";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -28,17 +27,41 @@ import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
-import { Task, TaskStatus } from "@/types/task";
+import { cn } from "@/lib/utils";
+import { Task, TaskCategory, TaskPriority, TaskStatus } from "@/types/task";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, Plus, Sparkles } from "lucide-react";
+import { DialogClose } from "@radix-ui/react-dialog";
+import { useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
+import {
+  AlertTriangle,
+  CalendarIcon,
+  ChevronsDown,
+  InfoIcon,
+  Loader2,
+  Plus,
+  Sparkles,
+} from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -54,7 +77,9 @@ const taskSchema = z
     notes: z.string().optional(),
     status: z.nativeEnum(TaskStatus).default(TaskStatus.ASSIGNED),
     priority: z.enum(["High", "Medium", "Low"]).optional(),
-    category: z.enum(["Meals", "Medication", "Therapy", "Outing"]).optional(),
+    category: z
+      .enum(["Meals", "Medication", "Therapy", "Outing", "Others"])
+      .optional(),
     residents: z.array(z.string()).min(1, "At least one resident is required"),
     start_date: z.date({
       required_error: "Start date is required",
@@ -71,9 +96,6 @@ const taskSchema = z
     end_recurring_date: z.date().nullable().optional(),
     remind_prior: z.number().nullable().optional(),
     is_ai_generated: z.boolean().default(false),
-    is_urgent: z.boolean().default(false),
-    needs_attention: z.boolean().default(false),
-    ai_recommendation_reason: z.string().optional(),
     assigned_to: z.string().nonempty("Assignee is required"),
     update_series: z.boolean().optional(),
   })
@@ -94,9 +116,7 @@ const taskSchema = z
     },
   );
 
-export type TaskForm = z.infer<typeof taskSchema> & {
-  recommended_nurse_id?: string;
-};
+export type TaskForm = z.infer<typeof taskSchema>;
 
 export default function TaskForm({
   task,
@@ -113,38 +133,49 @@ export default function TaskForm({
 }) {
   const [isOpen, setIsOpen] = useState(!!task || !!open);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isAILoading, setIsAILoading] = useState(false);
   const [nurses, setNurses] = useState<any[]>([]);
   const [residents, setResidents] = useState<any[]>([]);
   const [showRecurringDialog, setShowRecurringDialog] = useState(false);
   const [formData, setFormData] = useState<TaskForm | null>(null);
-  const [isAiSuggestionEnabled, setIsAiSuggestionEnabled] = useState(false);
-  const [isAiGenerating, setIsAiGenerating] = useState(false);
-  const [recommendedNurse, setRecommendedNurse] = useState<string | null>(null);
-  const [isAdvancedAi, setIsAdvancedAi] = useState(false);
+  const [prefilledFields, setPrefilledFields] = useState<
+    Record<string, string>
+  >({});
+
+  const defaultFormValues = {
+    task_title: "",
+    task_details: "",
+    media: [],
+    notes: "",
+    status: TaskStatus.ASSIGNED,
+    priority: undefined,
+    category: undefined,
+    residents: defaultResident ? [defaultResident] : [],
+    start_date: new Date(),
+    due_date: new Date(),
+    recurring: undefined,
+    end_recurring_date: undefined,
+    remind_prior: undefined,
+    is_ai_generated: false,
+    assigned_to: "",
+  };
 
   const form = useForm<TaskForm>({
     resolver: zodResolver(taskSchema),
-    defaultValues: {
-      task_title: "",
-      task_details: "",
-      media: [],
-      notes: "",
-      status: TaskStatus.ASSIGNED,
-      priority: undefined,
-      category: undefined,
-      residents: defaultResident ? [defaultResident] : [],
-      start_date: new Date(),
-      due_date: new Date(),
-      recurring: undefined,
-      end_recurring_date: undefined,
-      remind_prior: undefined,
-      is_ai_generated: false,
-      is_urgent: false,
-      needs_attention: false,
-      ai_recommendation_reason: "",
-      assigned_to: "",
-    },
+    defaultValues: defaultFormValues,
   });
+
+  const canProceed =
+    !!form.watch("residents")?.[0] && !!form.watch("assigned_to");
+
+  useEffect(() => {
+    if (!isOpen) {
+      form.reset(defaultFormValues);
+      setPrefilledFields({});
+    }
+  }, [isOpen, form]);
 
   useEffect(() => {
     if (task) {
@@ -154,8 +185,8 @@ export default function TaskForm({
         media: task.media || [],
         notes: task.notes || "",
         status: task.status,
-        priority: task.priority,
-        category: task.category,
+        priority: task.priority || TaskPriority.LOW,
+        category: task.category || TaskCategory.OTHERS,
         residents: task.resident ? [task.resident] : [],
         start_date: new Date(task.start_date + "Z"),
         due_date: new Date(task.due_date + "Z"),
@@ -165,9 +196,6 @@ export default function TaskForm({
           : undefined,
         remind_prior: task.remind_prior,
         is_ai_generated: task.is_ai_generated,
-        is_urgent: task.is_urgent || false,
-        needs_attention: task.needs_attention || false,
-        ai_recommendation_reason: task.ai_recommendation_reason || "",
         assigned_to: task.assigned_to,
       });
       setIsOpen(true);
@@ -182,23 +210,22 @@ export default function TaskForm({
     }
   }, [open]);
 
-  const handleOpenChange = (newOpen: boolean) => {
-    setIsOpen(newOpen);
-    if (!newOpen && onClose) {
-      onClose();
-    }
-  };
-
   useEffect(() => {
-    const fetchData = async () => {
+    const loadData = async () => {
       try {
         const [nursesData, residentsData] = await Promise.all([
           getAllNurses(),
           getResidents(),
         ]);
-        setNurses(nursesData);
-        setResidents(residentsData);
+
+        if (nursesData) {
+          setNurses(nursesData);
+        }
+        if (residentsData) {
+          setResidents(residentsData);
+        }
       } catch (error) {
+        console.error("Error loading data:", error);
         toast({
           variant: "destructive",
           title: "Error",
@@ -206,11 +233,32 @@ export default function TaskForm({
         });
       }
     };
-    fetchData();
+
+    loadData();
   }, [toast]);
+
+  const handleOpenChange = (newOpen: boolean) => {
+    setIsOpen(newOpen);
+    if (!newOpen) {
+      form.reset(defaultFormValues);
+      setPrefilledFields({});
+      if (onClose) {
+        onClose();
+      }
+    }
+  };
+
+  const invalidateTaskQueries = () => {
+    queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    const currentDate = format(new Date(), "yyyy-MM-dd");
+    queryClient.invalidateQueries({
+      queryKey: ["tasks", "", "", "", currentDate],
+    });
+  };
 
   const onSubmit = async (data: TaskForm) => {
     try {
+      setIsLoading(true);
       const formData = {
         ...data,
         start_date: new Date(data.start_date),
@@ -230,6 +278,7 @@ export default function TaskForm({
         if (setTasks) {
           setTasks(updatedTask);
         }
+        invalidateTaskQueries();
         toast({
           variant: "default",
           title: "Success",
@@ -240,6 +289,7 @@ export default function TaskForm({
         if (setTasks) {
           setTasks((prevTasks) => [...newTasks, ...prevTasks]);
         }
+        invalidateTaskQueries();
         toast({
           variant: "default",
           title: "Successfully created task(s)",
@@ -260,6 +310,8 @@ export default function TaskForm({
         title: "An error occurred, please try again",
         description: errorMessage,
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -267,6 +319,7 @@ export default function TaskForm({
     if (!formData || !task) return;
 
     try {
+      setIsLoading(true);
       const updatedTask = await updateTask(task.id, {
         ...formData,
         update_series: updateSeries,
@@ -274,6 +327,7 @@ export default function TaskForm({
       if (setTasks) {
         setTasks(updatedTask);
       }
+      invalidateTaskQueries();
       toast({
         variant: "default",
         title: "Success",
@@ -290,12 +344,13 @@ export default function TaskForm({
       }
       toast({
         variant: "destructive",
-        title: "An error occured, please try again",
+        title: "An error occurred, please try again",
         description: errorMessage,
       });
     } finally {
       setShowRecurringDialog(false);
       setFormData(null);
+      setIsLoading(false);
     }
   };
 
@@ -313,52 +368,72 @@ export default function TaskForm({
     },
   );
 
-  const handleAiSuggestion = async () => {
-    setIsAiGenerating(true);
-    try {
-      const residentId = form.getValues("residents")?.[0];
-      if (!residentId) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Please select a resident first",
-        });
-        return;
-      }
-
-      // Use either enhanced or basic AI suggestion based on user selection
-      const suggestion = isAdvancedAi 
-        ? await getEnhancedAiTaskSuggestion(residentId)
-        : await getAiTaskSuggestion(residentId);
-      
-      // Set recommended nurse if available from enhanced AI
-      if (suggestion.recommended_nurse_id) {
-        setRecommendedNurse(suggestion.recommended_nurse_id);
-      }
-      
-      // Update form with AI suggestion
-      form.reset({
-        ...form.getValues(),
-        ...suggestion,
-        residents: [residentId],
-      });
-
-      setIsAiSuggestionEnabled(true);
-      toast({
-        variant: "default",
-        title: isAdvancedAi ? "Enhanced AI Suggestion Generated" : "AI Suggestion Generated",
-        description: isAdvancedAi 
-          ? "GPT-4o Mini has analyzed resident data and suggested personalized task details." 
-          : "AI has suggested task details based on resident needs and caregiver workload.",
-      });
-    } catch (error) {
+  const handleAISuggestion = async () => {
+    const residentId = form.getValues("residents")[0];
+    if (!residentId) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to generate AI suggestion. Please try again.",
+        description: "Please select a resident first",
+      });
+      return;
+    }
+
+    try {
+      setIsAILoading(true);
+      const suggestion = await getAITaskSuggestion(residentId);
+
+      const newPrefilledFields: Record<string, string> = {};
+
+      if (suggestion.task_title) {
+        form.setValue("task_title", suggestion.task_title);
+        newPrefilledFields.task_title =
+          "AI suggested based on resident's history";
+      }
+
+      if (suggestion.task_details) {
+        form.setValue("task_details", suggestion.task_details);
+        newPrefilledFields.task_details =
+          "AI suggested based on resident's medical history";
+      }
+
+      if (suggestion.category) {
+        form.setValue("category", suggestion.category);
+        newPrefilledFields.category =
+          "AI suggested based on task type analysis";
+      }
+
+      if (suggestion.priority) {
+        form.setValue("priority", suggestion.priority);
+        newPrefilledFields.priority =
+          "AI suggested based on urgency assessment";
+      }
+
+      if (suggestion.start_date) {
+        form.setValue("start_date", new Date(suggestion.start_date));
+        newPrefilledFields.start_date = "AI suggested based on optimal timing";
+      }
+
+      if (suggestion.due_date) {
+        form.setValue("due_date", new Date(suggestion.due_date));
+        newPrefilledFields.due_date = "AI suggested based on task duration";
+      }
+
+      setPrefilledFields(newPrefilledFields);
+
+      toast({
+        title: "Success",
+        description: "AI suggestion applied!",
+      });
+    } catch (error) {
+      console.error("Error getting AI suggestion:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to get AI suggestion",
       });
     } finally {
-      setIsAiGenerating(false);
+      setIsAILoading(false);
     }
   };
 
@@ -368,480 +443,663 @@ export default function TaskForm({
         <DialogTrigger asChild>
           {!task && !open && (
             <Button>
-              <Plus className="w-4 h-4 mr-2" /> New Task
+              <Plus className="w-4 h-4 mr-1" /> New Task
             </Button>
           )}
         </DialogTrigger>
-        <DialogContent className="max-h-[90vh] flex flex-col p-0">
+        <DialogContent className="min-h-fit max-h-[90vh] flex flex-col p-0">
           <DialogHeader className="px-6 pt-6">
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <DialogTitle>
                 {task ? "Edit Task" : "Create New Task"}
               </DialogTitle>
-              <div className="flex items-center">
-                {!task && (
-                  <>
-                    <div className="mr-4">
-                      <label className="flex items-center text-xs cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={isAdvancedAi}
-                          onChange={() => setIsAdvancedAi(!isAdvancedAi)}
-                          className="mr-1"
-                        />
-                        Use Enhanced AI
-                      </label>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant={isAiSuggestionEnabled ? "default" : "outline"}
-                      className={`mr-8 ${isAiSuggestionEnabled ? "bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border-emerald-300" : ""}`}
-                      onClick={handleAiSuggestion}
-                      disabled={isAiGenerating}
-                      title={isAdvancedAi 
-                        ? "GPT-4o Mini will analyze resident history for personalized suggestions"
-                        : "AI will suggest tasks based on care needs, urgency, and caregiver workload"
-                      }
-                    >
-                      {isAiGenerating ? (
-                        <>
-                          <div className="animate-spin mr-2 h-4 w-4">
-                            <div className="h-full w-full rounded-full border-2 border-t-transparent border-emerald-700"></div>
-                          </div>
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="w-4 h-4 mr-2" />
-                          {isAdvancedAi ? "Enhanced AI" : "AI Suggest"}
-                        </>
-                      )}
-                    </Button>
-                  </>
-                )}
-                <DialogClose className="absolute right-4 top-4"></DialogClose>
-              </div>
+              {!task && (
+                <div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={handleAISuggestion}
+                    disabled={isAILoading || !canProceed}
+                    className="flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-blue-500 hover:text-green-500 transition-all hover:duration-300"
+                  >
+                    {isAILoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin text-green-500" />
+                        Getting Suggestion...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4 text-green-500" />
+                        Get AI Suggestion
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
             </div>
-            <DialogDescription>
-              {task
-                ? "Edit the details of your task below."
-                : "Fill in the details below to create a new task."}
-            </DialogDescription>
-            {isAiSuggestionEnabled && (
-              <div className="mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded-md text-sm flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-emerald-500" />
-                <span className="text-emerald-800">
-                  AI has suggested task details based on care needs and workload
-                  analysis.
-                </span>
-              </div>
-            )}
           </DialogHeader>
           <Form {...form}>
-            <form
-              onSubmit={handleSubmit}
-              className="flex flex-col h-[calc(90vh-8rem)]"
-            >
-              <div className="flex-1 overflow-y-auto px-6 space-y-4">
-                <FormField
-                  control={form.control}
-                  name="task_title"
-                  render={({ field, fieldState }) => (
-                    <FormItem>
-                      <Label>Task Title</Label>
-                      <FormControl>
-                        <Input
-                          id="task_title"
-                          placeholder="Task Title"
-                          {...field}
-                          className={
-                            fieldState.invalid
-                              ? "border-destructive focus-visible:ring-destructive"
-                              : form.watch("is_ai_generated")
-                                ? "border-emerald-200 bg-emerald-50"
-                                : ""
-                          }
-                        />
-                      </FormControl>
-                      {fieldState.error && (
-                        <p className="text-sm text-destructive">
-                          {fieldState.error.message}
-                        </p>
-                      )}
-                      {form.watch("is_ai_generated") && (
-                        <p className="text-xs flex items-center gap-1 text-emerald-700 mt-1">
-                          <Sparkles className="h-3 w-3" />
-                          AI suggested based on resident care patterns
-                        </p>
-                      )}
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="task_details"
-                  render={({ field, fieldState }) => (
-                    <FormItem>
-                      <Label>Task Details</Label>
-                      <FormControl>
-                        <Textarea
-                          id="task_details"
-                          placeholder="Task Details"
-                          {...field}
-                          className={
-                            fieldState.invalid
-                              ? "border-destructive focus-visible:ring-destructive"
-                              : form.watch("is_ai_generated")
-                                ? "border-emerald-200 bg-emerald-50"
-                                : ""
-                          }
-                        />
-                      </FormControl>
-                      {fieldState.error && (
-                        <p className="text-sm text-destructive">
-                          {fieldState.error.message}
-                        </p>
-                      )}
-                      {form.watch("is_ai_generated") && (
-                        <p className="text-xs flex items-center gap-1 text-emerald-700 mt-1">
-                          <Sparkles className="h-3 w-3" />
-                          AI suggested based on care requirements
-                        </p>
-                      )}
-                    </FormItem>
-                  )}
-                />
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="priority"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <Label>Priority</Label>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value || ""}
-                        >
-                          <SelectTrigger
-                            className={
-                              fieldState.invalid
-                                ? "border-destructive focus-visible:ring-destructive"
-                                : form.watch("is_ai_generated")
-                                  ? "border-emerald-200 bg-emerald-50"
-                                  : ""
-                            }
+            <form onSubmit={handleSubmit} className="flex flex-col h-fit">
+              {!task && (
+                <div className="bg-slate-50 px-6 py-3 border-y">
+                  <div className="flex flex-row gap-4">
+                    <FormField
+                      control={form.control}
+                      name="residents"
+                      render={({ field, fieldState }) => (
+                        <FormItem className="w-full">
+                          <Label className="font-semibold">
+                            Select Resident *
+                          </Label>
+                          <Select
+                            onValueChange={(value) => field.onChange([value])}
+                            defaultValue={field.value?.[0]}
+                            disabled={!!defaultResident}
                           >
-                            <SelectValue placeholder="Select priority" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="High">High</SelectItem>
-                            <SelectItem value="Medium">Medium</SelectItem>
-                            <SelectItem value="Low">Low</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {form.watch("is_ai_generated") && (
-                          <p className="text-xs flex items-center gap-1 text-emerald-700 mt-1">
-                            <Sparkles className="h-3 w-3" />
-                            Suggested priority based on task impact
-                          </p>
-                        )}
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="category"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <Label>Category</Label>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value || ""}
-                        >
-                          <SelectTrigger
-                            className={
-                              fieldState.invalid
-                                ? "border-destructive focus-visible:ring-destructive"
-                                : form.watch("is_ai_generated")
-                                  ? "border-emerald-200 bg-emerald-50"
-                                  : ""
-                            }
+                            <FormControl>
+                              <SelectTrigger
+                                className={cn(
+                                  fieldState.invalid
+                                    ? "border-destructive focus-visible:ring-destructive"
+                                    : "",
+                                )}
+                              >
+                                <SelectValue placeholder="Select a resident" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {residents.map((resident) => (
+                                <SelectItem
+                                  key={resident.id}
+                                  value={resident.id}
+                                >
+                                  {resident.full_name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {fieldState.error && (
+                            <p className="text-sm text-destructive">
+                              {fieldState.error.message}
+                            </p>
+                          )}
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="assigned_to"
+                      render={({ field, fieldState }) => (
+                        <FormItem className="w-full">
+                          <Label className="font-semibold">Assigned To *</Label>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
                           >
-                            <SelectValue placeholder="Select category" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Meals">Meals</SelectItem>
-                            <SelectItem value="Medication">
-                              Medication
-                            </SelectItem>
-                            <SelectItem value="Therapy">Therapy</SelectItem>
-                            <SelectItem value="Outing">Outing</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {form.watch("is_ai_generated") && (
-                          <p className="text-xs flex items-center gap-1 text-emerald-700 mt-1">
-                            <Sparkles className="h-3 w-3" />
-                            Selected based on resident's care plan needs
-                          </p>
-                        )}
-                      </FormItem>
-                    )}
-                  />
+                            <FormControl>
+                              <SelectTrigger
+                                className={cn(
+                                  fieldState.invalid
+                                    ? "border-destructive focus-visible:ring-destructive"
+                                    : "",
+                                )}
+                              >
+                                <SelectValue placeholder="Select a nurse" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {nurses.map((nurse) => (
+                                <SelectItem key={nurse.id} value={nurse.id}>
+                                  {nurse.name} ({nurse.email})
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {fieldState.error && (
+                            <p className="text-sm text-destructive">
+                              {fieldState.error.message}
+                            </p>
+                          )}
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
-                <FormField
-                  control={form.control}
-                  name="assigned_to"
-                  render={({ field, fieldState }) => (
-                    <FormItem>
-                      <Label>Assigned To</Label>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger
-                            className={
-                              fieldState.invalid
-                                ? "border-destructive focus-visible:ring-destructive"
-                                : field.value && field.value === recommendedNurse
-                                  ? "border-emerald-200 bg-emerald-50"
-                                  : ""
-                            }
-                          >
-                            <SelectValue placeholder="Select a nurse" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {nurses.map((nurse) => (
-                            <SelectItem
-                              key={nurse.id}
-                              value={nurse.id}
-                              style={
-                                recommendedNurse === nurse.id
-                                  ? { background: "#ecfdf5", fontWeight: 500 }
-                                  : {}
-                              }
-                            >
-                              {nurse.name} ({nurse.email})
-                              {recommendedNurse === nurse.id &&
-                                " ✓ Recommended"}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {fieldState.error && (
-                        <p className="text-sm text-destructive">
-                          {fieldState.error.message}
-                        </p>
-                      )}
-                      {form.watch("is_ai_generated") &&
-                        recommendedNurse === field.value && (
-                          <p className="text-xs flex items-center gap-1 text-emerald-700 mt-1">
-                            <Sparkles className="h-3 w-3" />
-                            Recommended based on current workload
-                          </p>
-                        )}
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="residents"
-                  render={({ field, fieldState }) => (
-                    <FormItem>
-                      <Label>Residents</Label>
-                      <Select
-                        onValueChange={(value) => field.onChange([value])}
-                        defaultValue={field.value?.[0]}
-                      >
-                        <FormControl>
-                          <SelectTrigger
-                            className={
-                              fieldState.invalid
-                                ? "border-destructive focus-visible:ring-destructive"
-                                : form.watch("is_ai_generated")
-                                  ? "border-emerald-200 bg-emerald-50"
-                                  : ""
-                            }
-                          >
-                            <SelectValue placeholder="Select a resident" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {residents.map((resident) => (
-                            <SelectItem key={resident.id} value={resident.id}>
-                              {resident.full_name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {fieldState.error && (
-                        <p className="text-sm text-destructive">
-                          {fieldState.error.message}
-                        </p>
-                      )}
-                      {form.watch("is_ai_generated") && (
-                        <p className="text-xs flex items-center gap-1 text-emerald-700 mt-1">
-                          <Sparkles className="h-3 w-3" />
-                          Pre-filled based on care schedule analysis
-                        </p>
-                      )}
-                    </FormItem>
-                  )}
-                />
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="start_date"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <Label>Start Date</Label>
-                        <FormControl>
-                          <DateTimePicker
-                            value={field.value}
-                            onChange={field.onChange}
-                          />
-                        </FormControl>
-                        {fieldState.error && (
-                          <p className="text-sm text-destructive">
-                            {fieldState.error.message}
-                          </p>
-                        )}
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="due_date"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <Label>Due Date</Label>
-                        <FormControl>
-                          <DateTimePicker
-                            value={field.value}
-                            onChange={field.onChange}
-                          />
-                        </FormControl>
-                        {fieldState.error && (
-                          <p className="text-sm text-destructive">
-                            {fieldState.error.message}
-                          </p>
-                        )}
-                      </FormItem>
-                    )}
-                  />
+              )}
+
+              {!task && !canProceed && (
+                <div className="flex flex-col items-center justify-center bg-slate-50 p-6">
+                  <div className="bg-amber-50 border border-amber-200 p-6 rounded-lg max-w-md text-center">
+                    <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium mb-2">
+                      Select Required Fields
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      Please select both a resident and a nurse to continue
+                      creating a task.
+                    </p>
+                    <ChevronsDown className="h-6 w-6 text-amber-500 mx-auto animate-bounce" />
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="recurring"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <Label>Recurring</Label>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value || ""}
-                        >
-                          <SelectTrigger
-                            className={
-                              fieldState.invalid
-                                ? "border-destructive focus-visible:ring-destructive"
-                                : ""
-                            }
-                          >
-                            <SelectValue placeholder="Select recurrence" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Daily">Daily</SelectItem>
-                            <SelectItem value="Weekly">Weekly</SelectItem>
-                            <SelectItem value="Monthly">Monthly</SelectItem>
-                            <SelectItem value="Annually">Annually</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="end_recurring_date"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <Label>End Recurring Date</Label>
-                        <FormControl>
-                          <Input
-                            type="date"
-                            onChange={(e) =>
-                              field.onChange(new Date(e.target.value))
-                            }
-                            value={
-                              field.value
-                                ? new Date(field.value)
-                                    .toISOString()
-                                    .split("T")[0]
-                                : ""
-                            }
-                            className={
-                              fieldState.invalid
-                                ? "border-destructive focus-visible:ring-destructive"
-                                : ""
-                            }
-                          />
-                        </FormControl>
-                        {fieldState.error && (
-                          <p className="text-sm text-destructive">
-                            {fieldState.error.message}
-                          </p>
-                        )}
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <FormField
-                  control={form.control}
-                  name="remind_prior"
-                  render={({ field, fieldState }) => (
-                    <FormItem>
-                      <Label>Remind Prior (minutes)</Label>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          onChange={(e) =>
-                            field.onChange(Number(e.target.value))
-                          }
-                          value={field.value || ""}
-                          className={
-                            fieldState.invalid
-                              ? "border-destructive focus-visible:ring-destructive"
-                              : ""
-                          }
-                        />
-                      </FormControl>
-                      {fieldState.error && (
-                        <p className="text-sm text-destructive">
-                          {fieldState.error.message}
-                        </p>
+              )}
+
+              {(task || canProceed) && (
+                <>
+                  <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="task_title"
+                      render={({ field, fieldState }) => (
+                        <FormItem>
+                          <Label>Task Title</Label>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="relative">
+                                  <Input
+                                    id="task_title"
+                                    placeholder="Task Title"
+                                    {...field}
+                                    className={cn(
+                                      fieldState.invalid
+                                        ? "border-destructive focus-visible:ring-destructive"
+                                        : "",
+                                      prefilledFields.task_title
+                                        ? "border-green-500 bg-green-50"
+                                        : "",
+                                    )}
+                                  />
+                                </div>
+                              </TooltipTrigger>
+                              {prefilledFields.task_title && (
+                                <TooltipContent>
+                                  <p>✶ {prefilledFields.task_title}</p>
+                                </TooltipContent>
+                              )}
+                            </Tooltip>
+                          </TooltipProvider>
+                          {fieldState.error && (
+                            <p className="text-sm text-destructive">
+                              {fieldState.error.message}
+                            </p>
+                          )}
+                        </FormItem>
                       )}
-                    </FormItem>
-                  )}
-                />
-                {form.watch("is_ai_generated") &&
-                  form.watch("ai_recommendation_reason") && (
-                    <div className="bg-emerald-50 border border-emerald-200 rounded-md p-3 text-sm">
-                      <div className="font-medium flex items-center gap-2 text-emerald-800 mb-1">
-                        <Sparkles className="h-4 w-4" />
-                        AI Recommendation Summary
-                      </div>
-                      <p className="text-emerald-700">
-                        {form.watch("ai_recommendation_reason")}
-                      </p>
+                    />
+                    <FormField
+                      control={form.control}
+                      name="task_details"
+                      render={({ field, fieldState }) => (
+                        <FormItem>
+                          <Label>Task Details</Label>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="relative">
+                                  <Textarea
+                                    id="task_details"
+                                    placeholder="Task Details"
+                                    {...field}
+                                    className={cn(
+                                      fieldState.invalid
+                                        ? "border-destructive focus-visible:ring-destructive"
+                                        : "",
+                                      prefilledFields.task_details
+                                        ? "border-green-500 bg-green-50"
+                                        : "",
+                                    )}
+                                  />
+                                </div>
+                              </TooltipTrigger>
+                              {prefilledFields.task_details && (
+                                <TooltipContent>
+                                  <p>✶ {prefilledFields.task_details}</p>
+                                </TooltipContent>
+                              )}
+                            </Tooltip>
+                          </TooltipProvider>
+                          {fieldState.error && (
+                            <p className="text-sm text-destructive">
+                              {fieldState.error.message}
+                            </p>
+                          )}
+                        </FormItem>
+                      )}
+                    />
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="priority"
+                        render={({ field, fieldState }) => (
+                          <FormItem>
+                            <Label>Priority</Label>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="relative">
+                                    <Select
+                                      onValueChange={field.onChange}
+                                      value={field.value || ""}
+                                    >
+                                      <SelectTrigger
+                                        className={cn(
+                                          fieldState.invalid
+                                            ? "border-destructive focus-visible:ring-destructive"
+                                            : "",
+                                          prefilledFields.priority
+                                            ? "border-green-500 bg-green-50"
+                                            : "",
+                                        )}
+                                      >
+                                        <SelectValue placeholder="Select priority" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="High">
+                                          High
+                                        </SelectItem>
+                                        <SelectItem value="Medium">
+                                          Medium
+                                        </SelectItem>
+                                        <SelectItem value="Low">Low</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                </TooltipTrigger>
+                                {prefilledFields.priority && (
+                                  <TooltipContent>
+                                    <p>✶ {prefilledFields.priority}</p>
+                                  </TooltipContent>
+                                )}
+                              </Tooltip>
+                            </TooltipProvider>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="category"
+                        render={({ field, fieldState }) => (
+                          <FormItem>
+                            <Label>Category</Label>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="relative">
+                                    <Select
+                                      onValueChange={field.onChange}
+                                      value={field.value || ""}
+                                    >
+                                      <SelectTrigger
+                                        className={cn(
+                                          fieldState.invalid
+                                            ? "border-destructive focus-visible:ring-destructive"
+                                            : "",
+                                          prefilledFields.category
+                                            ? "border-green-500 bg-green-50"
+                                            : "",
+                                        )}
+                                      >
+                                        <SelectValue placeholder="Select category" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="Meals">
+                                          Meals
+                                        </SelectItem>
+                                        <SelectItem value="Medication">
+                                          Medication
+                                        </SelectItem>
+                                        <SelectItem value="Therapy">
+                                          Therapy
+                                        </SelectItem>
+                                        <SelectItem value="Outing">
+                                          Outing
+                                        </SelectItem>
+                                        <SelectItem value="Others">
+                                          Others
+                                        </SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                </TooltipTrigger>
+                                {prefilledFields.category && (
+                                  <TooltipContent>
+                                    <p>✶ {prefilledFields.category}</p>
+                                  </TooltipContent>
+                                )}
+                              </Tooltip>
+                            </TooltipProvider>
+                          </FormItem>
+                        )}
+                      />
                     </div>
-                  )}
-              </div>
-              <div className="flex justify-end px-6 py-4 border-t bg-background">
-                <Button type="submit">
-                  {task ? "Update Task" : "Create Task"}
-                </Button>
-              </div>
+
+                    {task && (
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="residents"
+                          render={({ field, fieldState }) => (
+                            <FormItem>
+                              <Label>Residents</Label>
+                              <Select
+                                onValueChange={(value) =>
+                                  field.onChange([value])
+                                }
+                                defaultValue={field.value?.[0]}
+                                disabled={!!defaultResident}
+                              >
+                                <FormControl>
+                                  <SelectTrigger
+                                    className={cn(
+                                      fieldState.invalid
+                                        ? "border-destructive focus-visible:ring-destructive"
+                                        : "",
+                                    )}
+                                  >
+                                    <SelectValue placeholder="Select a resident" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {residents.map((resident) => (
+                                    <SelectItem
+                                      key={resident.id}
+                                      value={resident.id}
+                                    >
+                                      {resident.full_name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              {fieldState.error && (
+                                <p className="text-sm text-destructive">
+                                  {fieldState.error.message}
+                                </p>
+                              )}
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="assigned_to"
+                          render={({ field, fieldState }) => (
+                            <FormItem>
+                              <Label>Assigned To</Label>
+                              <Select
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger
+                                    className={cn(
+                                      fieldState.invalid
+                                        ? "border-destructive focus-visible:ring-destructive"
+                                        : "",
+                                    )}
+                                  >
+                                    <SelectValue placeholder="Select a nurse" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {nurses.map((nurse) => (
+                                    <SelectItem key={nurse.id} value={nurse.id}>
+                                      {nurse.name} ({nurse.email})
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              {fieldState.error && (
+                                <p className="text-sm text-destructive">
+                                  {fieldState.error.message}
+                                </p>
+                              )}
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="start_date"
+                        render={({ field, fieldState }) => (
+                          <FormItem>
+                            <Label>Start Date</Label>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div
+                                    className={cn(
+                                      "rounded-md relative",
+                                      prefilledFields.start_date
+                                        ? "border border-green-500 bg-green-50"
+                                        : "",
+                                    )}
+                                  >
+                                    <DateTimePicker
+                                      value={field.value}
+                                      onChange={(date) => {
+                                        if (date) {
+                                          const newDate = new Date(date);
+                                          if (field.value) {
+                                            newDate.setHours(
+                                              field.value.getHours(),
+                                            );
+                                            newDate.setMinutes(
+                                              field.value.getMinutes(),
+                                            );
+                                          }
+                                          field.onChange(newDate);
+                                        }
+                                      }}
+                                    />
+                                  </div>
+                                </TooltipTrigger>
+                                {prefilledFields.start_date && (
+                                  <TooltipContent>
+                                    <p>✶ {prefilledFields.start_date}</p>
+                                  </TooltipContent>
+                                )}
+                              </Tooltip>
+                            </TooltipProvider>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="due_date"
+                        render={({ field, fieldState }) => (
+                          <FormItem>
+                            <Label>Due Date</Label>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div
+                                    className={cn(
+                                      "rounded-md relative",
+                                      prefilledFields.due_date
+                                        ? "border border-green-500 bg-green-50"
+                                        : "",
+                                    )}
+                                  >
+                                    <DateTimePicker
+                                      value={field.value}
+                                      onChange={(date) => {
+                                        if (date) {
+                                          const newDate = new Date(date);
+                                          if (field.value) {
+                                            newDate.setHours(
+                                              field.value.getHours(),
+                                            );
+                                            newDate.setMinutes(
+                                              field.value.getMinutes(),
+                                            );
+                                          }
+                                          field.onChange(newDate);
+                                        }
+                                      }}
+                                    />
+                                  </div>
+                                </TooltipTrigger>
+                                {prefilledFields.due_date && (
+                                  <TooltipContent>
+                                    <p>✶ {prefilledFields.due_date}</p>
+                                  </TooltipContent>
+                                )}
+                              </Tooltip>
+                            </TooltipProvider>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="recurring"
+                        render={({ field, fieldState }) => (
+                          <FormItem>
+                            <Label>Recurring</Label>
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value || ""}
+                            >
+                              <SelectTrigger
+                                className={
+                                  fieldState.invalid
+                                    ? "border-destructive focus-visible:ring-destructive"
+                                    : ""
+                                }
+                              >
+                                <SelectValue placeholder="Select recurrence" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Daily">Daily</SelectItem>
+                                <SelectItem value="Weekly">Weekly</SelectItem>
+                                <SelectItem value="Monthly">Monthly</SelectItem>
+                                <SelectItem value="Annually">
+                                  Annually
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="end_recurring_date"
+                        render={({ field, fieldState }) => (
+                          <FormItem>
+                            <Label>End Recurring Date</Label>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                      "w-full pl-3 text-left font-normal",
+                                      !field.value && "text-muted-foreground",
+                                      fieldState.invalid &&
+                                        "border-destructive focus-visible:ring-destructive",
+                                    )}
+                                    disabled={!form.watch("recurring")}
+                                  >
+                                    {field.value ? (
+                                      format(field.value, "MMMM do, yyyy")
+                                    ) : (
+                                      <span>Pick a date</span>
+                                    )}
+                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent
+                                className="w-auto p-0"
+                                align="start"
+                              >
+                                <Calendar
+                                  mode="single"
+                                  selected={field.value || undefined}
+                                  onSelect={(date) => {
+                                    if (!date) {
+                                      field.onChange(null);
+                                      return;
+                                    }
+
+                                    const selectedDate = new Date(
+                                      date.getFullYear(),
+                                      date.getMonth(),
+                                      date.getDate(),
+                                      8,
+                                      0,
+                                      0,
+                                    );
+
+                                    field.onChange(selectedDate);
+                                  }}
+                                  disabled={(date) =>
+                                    form.getValues("due_date")
+                                      ? date < form.getValues("due_date")
+                                      : false
+                                  }
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            {fieldState.error && (
+                              <p className="text-sm text-destructive">
+                                {fieldState.error.message}
+                              </p>
+                            )}
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name="remind_prior"
+                      render={({ field, fieldState }) => (
+                        <FormItem>
+                          <Label>Remind Prior (minutes)</Label>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              onChange={(e) =>
+                                field.onChange(Number(e.target.value))
+                              }
+                              value={field.value || ""}
+                              className={
+                                fieldState.invalid
+                                  ? "border-destructive focus-visible:ring-destructive"
+                                  : ""
+                              }
+                            />
+                          </FormControl>
+                          {fieldState.error && (
+                            <p className="text-sm text-destructive">
+                              {fieldState.error.message}
+                            </p>
+                          )}
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="flex justify-end px-6 py-4 bg-background">
+                    <Button type="submit" disabled={isLoading || isAILoading}>
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          {task ? "Updating..." : "Creating..."}
+                        </>
+                      ) : (
+                        <>{task ? "Update Task" : "Create Task"}</>
+                      )}
+                    </Button>
+                  </div>
+                </>
+              )}
             </form>
           </Form>
         </DialogContent>

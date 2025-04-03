@@ -9,6 +9,14 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  if (
+    token?.exp &&
+    typeof token.exp === "number" &&
+    token.exp * 1000 < Date.now()
+  ) {
+    return NextResponse.redirect(new URL("/auth/login", req.url));
+  }
+
   if (!token || !token.accessToken) {
     return NextResponse.redirect(new URL("/auth/login", req.url));
   }

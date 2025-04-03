@@ -41,6 +41,7 @@ const config = {
       icon: AlertTriangle,
       submenu: [
         { title: "View All Reports", url: "/dashboard/incidents" },
+        { title: "Review Reports", url: "/dashboard/incidents/admin/review" },
         { title: "Create A Report", url: "/dashboard/incidents/form" },
         { title: "Manage Report Forms", url: "/dashboard/incidents/admin" },
       ],

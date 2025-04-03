@@ -25,6 +25,7 @@ import {
 import { getAllNurses } from "../../../api/user";
 import CreateResidentDialog from "./_components/create-resident-dialog";
 import ResidentCard from "./_components/resident-card";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AllResidentsPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -35,6 +36,7 @@ export default function AllResidentsPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const pageParam = searchParams.get("page");
   const currentPage = pageParam ? parseInt(pageParam, 10) : 1;
@@ -96,6 +98,18 @@ export default function AllResidentsPage() {
       queryClient.invalidateQueries({ queryKey: ["residentsCount"] });
       queryClient.invalidateQueries({ queryKey: ["residents"] });
       setIsAddModalOpen(false);
+      toast({
+        variant: "default",
+        title: "Resident created",
+        description: "New resident has been created successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: "destructive",
+        title: "Error creating resident",
+        description: error.message,
+      });
     },
   });
 

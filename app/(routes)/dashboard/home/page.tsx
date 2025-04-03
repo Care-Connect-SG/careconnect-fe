@@ -1,12 +1,12 @@
 "use client";
 
+import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "next-auth/react";
 import QuickActions from "./_components/quick-actions";
 import RecentIncidents from "./_components/recent-incidents";
 import StaffWorkload from "./_components/staff-workload";
 import StatsOverview from "./_components/stats-overview";
 import UpcomingEvents from "./_components/upcoming-events";
-import { Skeleton } from "@/components/ui/skeleton";
 
 const HomePage = () => {
   const { data: session } = useSession();

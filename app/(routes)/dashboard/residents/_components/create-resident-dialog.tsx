@@ -1,5 +1,4 @@
 "use client";
-import ExtractIDCard from "./extract-id-ocr";
 import { getAllNurses } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,7 +20,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { User } from "@/types/user";
 import React, { useState, useEffect } from "react";
-
+import ExtractIDCard, { ExtractedIDData } from "./extract-id-ocr";
 
 interface CreateResidentDialogProps {
   isOpen: boolean;
@@ -67,15 +66,12 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
     }
   }, [isOpen]);
 
-  const handleIDCardExtract = (data: {
-    fullName?: string;
-    dateOfBirth?: string;
-    nricNumber?: string;
-  }) => {
+  const handleIDCardExtract = (data: ExtractedIDData) => {
     if (data.fullName) setFullName(data.fullName);
     if (data.dateOfBirth) setDateOfBirth(data.dateOfBirth);
     if (data.nricNumber) setNricNumber(data.nricNumber);
-  };  
+    if (data.gender) setGender(data.gender);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,7 +91,6 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
   };
 
   return (
-    
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
@@ -107,7 +102,6 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
         </DialogHeader>
         <ExtractIDCard onExtract={handleIDCardExtract} />
         <form onSubmit={handleSubmit} className="space-y-6">
-          
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="fullName">Full Name</Label>

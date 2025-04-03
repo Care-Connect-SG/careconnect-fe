@@ -1,22 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
-import {
-  DocumentAnalysisClient,
-  AzureKeyCredential,
-} from "@azure/ai-form-recognizer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-const endpoint = "https://careconnectsg.cognitiveservices.azure.com/";
-const apiKey =
-  "7EdcbifiVfvY3Ehn6cRUvSuBdrlYCHecgYKYIZatYFF9vJzBlqKZJQQJ99BDACqBBLyXJ3w3AAALACOG5e8J";
-const modelId = "prebuilt-idDocument";
+import { Spinner } from "@/components/ui/spinner";
+import React, { useState } from "react";
 
 export interface ExtractedIDData {
   fullName?: string;
   dateOfBirth?: string;
   nricNumber?: string;
+  gender?: "Male" | "Female";
 }
 
 interface ExtractIDCardProps {
@@ -35,23 +28,6 @@ const ExtractIDCard: React.FC<ExtractIDCardProps> = ({ onExtract }) => {
     }
   };
 
-  const formatDateToInput = (isoDate: string | Date): string => {
-    const date = typeof isoDate === "string" ? new Date(isoDate) : isoDate;
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, "0");
-    const dd = String(date.getDate()).padStart(2, "0");
-    return `${yyyy}-${mm}-${dd}`;
-  };
-
-  const cleanName = (raw: string): string => {
-    const noiseWords = ["K", "SINGAPURA", "REPUBLIC", "OF", "THE"];
-    return raw
-      .split(" ")
-      .filter((word) => !noiseWords.includes(word.toUpperCase()))
-      .join(" ")
-      .trim();
-  };
-
   const handleExtract = async () => {
     if (!file) {
       setError("Please select a file first.");
@@ -60,59 +36,20 @@ const ExtractIDCard: React.FC<ExtractIDCardProps> = ({ onExtract }) => {
 
     setLoading(true);
     try {
-      const client = new DocumentAnalysisClient(endpoint, new AzureKeyCredential(apiKey));
-      const fileBuffer = await file.arrayBuffer();
-      const poller = await client.beginAnalyzeDocument(modelId, fileBuffer);
-      const result = await poller.pollUntilDone();
+      const formData = new FormData();
+      formData.append("idCard", file);
 
-      const extracted: ExtractedIDData = {};
-      const doc = result.documents?.[0];
+      const response = await fetch("/api/extract-id", {
+        method: "POST",
+        body: formData,
+      });
 
-      if (doc?.fields) {
-        const fields = doc.fields;
-
-        // NRIC
-        const idField = fields["DocumentNumber"] ?? fields["IDNumber"];
-        if (idField?.kind === "string") {
-          extracted.nricNumber = idField.value;
-        }
-
-        // DOB
-        const dobField = fields["DateOfBirth"] ?? fields["BirthDate"];
-        if (dobField?.kind === "date" && dobField.value) {
-          extracted.dateOfBirth = formatDateToInput(dobField.value);
-        }
-
-        // Full Name: Prioritize FirstName + LastName
-        const first = fields["FirstName"];
-        const last = fields["LastName"];
-        if (first?.kind === "string" && last?.kind === "string") {
-          extracted.fullName = `${first.value} ${last.value}`;
-        } else {
-          // Fallback: Name or FullName field
-          const nameField = fields["Name"] ?? fields["FullName"];
-          if (nameField?.kind === "string" && nameField.value) {
-            extracted.fullName = cleanName(nameField.value);
-          }
-        }
-
-        // Debug log
-        console.log("Fields returned:");
-        for (const [key, field] of Object.entries(fields)) {
-          console.log(`${key}:`, field.content);
-        }
-
-        // Fallback regex from raw text
-        if (!extracted.fullName && result.content) {
-          const match = result.content.match(/Name\s+([A-Z\s]+?)\s+Race/i);
-          if (match?.[1]) {
-            extracted.fullName = cleanName(match[1]);
-          }
-        }
-      } else {
-        setError("No document fields found in analysis result.");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error extracting data");
       }
 
+      const extracted: ExtractedIDData = await response.json();
       onExtract(extracted);
     } catch (err: any) {
       console.error("Error extracting data:", err);
@@ -124,23 +61,22 @@ const ExtractIDCard: React.FC<ExtractIDCardProps> = ({ onExtract }) => {
 
   return (
     <div className="mb-6">
-      <h3 className="font-semibold mb-2">Upload ID Card</h3>
+      <h3 className="font-semibold mb-2">Upload IC</h3>
       <Input type="file" accept="image/*" onChange={handleFileChange} />
-  
+
       {error && <p className="text-red-500 mt-2">{error}</p>}
-  
+
       <Button
         onClick={handleExtract}
         disabled={loading}
         className="mt-3 w-full"
       >
-        {loading ? "Extracting..." : "Extract Details"}
+        {loading ? <Spinner /> : "Extract Details"}
       </Button>
-  
+
       <div className="mt-6 border-t border-dotted border-gray-300"></div>
     </div>
   );
-  
 };
 
 export default ExtractIDCard;

@@ -1,11 +1,11 @@
 "use client";
-
 import { getAllNurses } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -20,9 +20,8 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { User } from "@/types/user";
-import { Paperclip } from "lucide-react";
-import React, { useState, useEffect, useCallback } from "react";
-import { FileRejection, useDropzone } from "react-dropzone";
+import React, { useState, useEffect } from "react";
+import ExtractIDCard, { ExtractedIDData } from "./extract-id-ocr";
 
 interface CreateResidentDialogProps {
   isOpen: boolean;
@@ -57,7 +56,18 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
   const [additionalNotes, setAdditionalNotes] = useState("");
   const [primaryNurse, setPrimaryNurse] = useState("");
   const [nurseOptions, setNurseOptions] = useState<User[]>([]);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+
+  const [filledByExtractor, setFilledByExtractor] = useState<{
+    fullName: boolean;
+    gender: boolean;
+    dateOfBirth: boolean;
+    nricNumber: boolean;
+  }>({
+    fullName: false,
+    gender: false,
+    dateOfBirth: false,
+    nricNumber: false,
+  });
 
   useEffect(() => {
     if (isOpen) {
@@ -69,21 +79,45 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
     }
   }, [isOpen]);
 
-  const onDrop = useCallback(
-    (acceptedFiles: File[], _rejectedFiles: FileRejection[]) => {
-      if (acceptedFiles.length > 0) {
-        setSelectedImage(acceptedFiles[0]);
-      }
-    },
-    [],
-  );
+  const handleIDCardExtract = (data: ExtractedIDData) => {
+    const updatedFields = { ...filledByExtractor };
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    maxFiles: 1,
-    maxSize: 5242880,
-    multiple: false,
-  });
+    if (data.fullName) {
+      setFullName(data.fullName);
+      updatedFields.fullName = true;
+    }
+
+    if (data.dateOfBirth) {
+      setDateOfBirth(data.dateOfBirth);
+      updatedFields.dateOfBirth = true;
+    }
+
+    if (data.nricNumber) {
+      setNricNumber(data.nricNumber);
+      updatedFields.nricNumber = true;
+    }
+
+    if (data.gender) {
+      const normalizedGender = data.gender.trim();
+      if (
+        normalizedGender === "Male" ||
+        normalizedGender === "Female" ||
+        normalizedGender === "M" ||
+        normalizedGender === "F"
+      ) {
+        const fullGender =
+          normalizedGender === "M"
+            ? "Male"
+            : normalizedGender === "F"
+              ? "Female"
+              : normalizedGender;
+        setGender(fullGender);
+        updatedFields.gender = true;
+      }
+    }
+
+    setFilledByExtractor(updatedFields);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,12 +133,57 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
       additional_notes: additionalNotes,
       primary_nurse: primaryNurse,
     });
+    resetForm();
     onClose();
   };
 
+  const resetForm = () => {
+    setFullName("");
+    setGender("");
+    setDateOfBirth("");
+    setNricNumber("");
+    setEmergencyContactName("");
+    setEmergencyContactNumber("");
+    setRelationship("");
+    setRoomNumber("");
+    setAdditionalNotes("");
+    setPrimaryNurse("");
+
+    setFilledByExtractor({
+      fullName: false,
+      gender: false,
+      dateOfBirth: false,
+      nricNumber: false,
+    });
+  };
+
+  const getInputClassName = (field: keyof typeof filledByExtractor) => {
+    return `mt-1 block w-full ${
+      filledByExtractor[field]
+        ? "bg-blue-50 border-blue-500 ring-blue-200 ring-1"
+        : ""
+    }`;
+  };
+
+  const getSelectClassName = (field: keyof typeof filledByExtractor) => {
+    return `mt-1 w-full ${
+      filledByExtractor[field]
+        ? "bg-blue-50 border-blue-500 ring-blue-200 ring-1"
+        : ""
+    }`;
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-lg">
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          resetForm();
+          onClose();
+        }
+      }}
+    >
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>New Resident</DialogTitle>
           <DialogClose
@@ -112,37 +191,7 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
             className="absolute right-4 top-4"
           ></DialogClose>
         </DialogHeader>
-
-        <div>
-          <Label htmlFor="documentScan" className="block mb-2">
-            ID Document Scan
-          </Label>
-          <div className="cursor-pointer text-sm">
-            <Input {...getInputProps()} id="documentScan" />
-            <div
-              className={`flex items-center justify-center py-2 px-3 border-2 border-dotted rounded-md transition-all duration-300 ease-in-out bg-gray-50
-                ${
-                  isDragActive
-                    ? "border-gray-400 bg-blue-100"
-                    : "border-gray-400 bg-transparent cursor-pointer hover:border-gray-500"
-                }`}
-              {...getRootProps()}
-            >
-              <Paperclip className="mr-2 h-4 w-4 text-gray-600" />
-              <p className="text-sm font-semibold text-gray-600">
-                {selectedImage
-                  ? `Selected: ${selectedImage.name}`
-                  : "Drag and drop ID document here, or click to select a file"}
-              </p>
-            </div>
-            {selectedImage && (
-              <p className="mt-2 text-xs text-green-600">
-                File selected: {selectedImage.name}
-              </p>
-            )}
-          </div>
-        </div>
-
+        <ExtractIDCard onExtract={handleIDCardExtract} />
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -151,18 +200,37 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
                 id="fullName"
                 type="text"
                 value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                onChange={(e) => {
+                  setFullName(e.target.value);
+                  if (filledByExtractor.fullName) {
+                    setFilledByExtractor({
+                      ...filledByExtractor,
+                      fullName: false,
+                    });
+                  }
+                }}
                 required
-                className="mt-1 block w-full"
+                className={getInputClassName("fullName")}
               />
             </div>
             <div>
               <Label htmlFor="gender">Gender</Label>
               <Select
                 value={gender}
-                onValueChange={(value) => setGender(value)}
+                onValueChange={(value) => {
+                  setGender(value);
+                  if (filledByExtractor.gender) {
+                    setFilledByExtractor({
+                      ...filledByExtractor,
+                      gender: false,
+                    });
+                  }
+                }}
               >
-                <SelectTrigger id="gender" className="mt-1 w-full">
+                <SelectTrigger
+                  id="gender"
+                  className={getSelectClassName("gender")}
+                >
                   <SelectValue placeholder="Select gender" />
                 </SelectTrigger>
                 <SelectContent>
@@ -180,9 +248,17 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
                 id="dateOfBirth"
                 type="date"
                 value={dateOfBirth}
-                onChange={(e) => setDateOfBirth(e.target.value)}
+                onChange={(e) => {
+                  setDateOfBirth(e.target.value);
+                  if (filledByExtractor.dateOfBirth) {
+                    setFilledByExtractor({
+                      ...filledByExtractor,
+                      dateOfBirth: false,
+                    });
+                  }
+                }}
                 required
-                className="mt-1 block w-full"
+                className={getInputClassName("dateOfBirth")}
               />
             </div>
             <div>
@@ -191,9 +267,17 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
                 id="nricNumber"
                 type="text"
                 value={nricNumber}
-                onChange={(e) => setNricNumber(e.target.value)}
+                onChange={(e) => {
+                  setNricNumber(e.target.value);
+                  if (filledByExtractor.nricNumber) {
+                    setFilledByExtractor({
+                      ...filledByExtractor,
+                      nricNumber: false,
+                    });
+                  }
+                }}
                 required
-                className="mt-1 block w-full"
+                className={getInputClassName("nricNumber")}
               />
             </div>
           </div>
@@ -291,14 +375,13 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
               </SelectContent>
             </Select>
           </div>
-
-          <div className="flex justify-end space-x-4">
-            <Button variant="outline" type="button" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit">Save</Button>
-          </div>
         </form>
+        <DialogFooter>
+          <Button variant="outline" type="button" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit">Save</Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

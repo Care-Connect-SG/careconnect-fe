@@ -35,6 +35,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
     }
 
+    if (!formData.get("caption")) {
+      return NextResponse.json(
+        { success: false, error: "caption is required" },
+        { status: 400 },
+      );
+    }
+
     const response = await fetch(apiUrl, {
       method: "POST",
       headers: {

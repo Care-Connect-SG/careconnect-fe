@@ -132,6 +132,10 @@ export default function ReportsTable({
 
       const whatsappNumber = `65${resident.emergency_contact_number}`;
       formData.append("jid", `${whatsappNumber}`);
+      formData.append(
+        "caption",
+        `🚨 URGENT: Incident Report for ${toTitleCase(resident.full_name)}`,
+      );
 
       const response = await fetch("/api/whatsapp/media", {
         method: "POST",

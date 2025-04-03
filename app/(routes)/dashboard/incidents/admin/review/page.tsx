@@ -154,19 +154,7 @@ export default function ReviewReports() {
                                     <span className="sr-only">Open menu</span>
                                   </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  {/* {report.status !== "Published" && (
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEdit(report);
-                            }}
-                          >
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                          </DropdownMenuItem>
-                        )} */}
-                                </DropdownMenuContent>
+                                <DropdownMenuContent align="end"></DropdownMenuContent>
                               </DropdownMenu>
                             </TableCell>
                           )}

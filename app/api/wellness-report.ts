@@ -1,10 +1,11 @@
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { WellnessReportRecord } from "@/types/wellness-report";
 
 export const getWellnessReportsForResident = async (
   residentId: string,
 ): Promise<WellnessReportRecord[]> => {
   try {
-    const response = await fetch(
+    const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/wellness-reports`,
       {
         method: "GET",

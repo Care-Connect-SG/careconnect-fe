@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { useToast } from "@/hooks/use-toast";
 import { ResidentRecord } from "@/types/resident";
 import { User } from "@/types/user";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -35,6 +36,7 @@ export default function AllResidentsPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const pageParam = searchParams.get("page");
   const currentPage = pageParam ? parseInt(pageParam, 10) : 1;
@@ -96,6 +98,18 @@ export default function AllResidentsPage() {
       queryClient.invalidateQueries({ queryKey: ["residentsCount"] });
       queryClient.invalidateQueries({ queryKey: ["residents"] });
       setIsAddModalOpen(false);
+      toast({
+        variant: "default",
+        title: "Resident created",
+        description: "New resident has been created successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: "destructive",
+        title: "Error creating resident",
+        description: error.message,
+      });
     },
   });
 

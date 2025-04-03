@@ -5,6 +5,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -55,23 +56,67 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
   const [additionalNotes, setAdditionalNotes] = useState("");
   const [primaryNurse, setPrimaryNurse] = useState("");
   const [nurseOptions, setNurseOptions] = useState<User[]>([]);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+
+  const [filledByExtractor, setFilledByExtractor] = useState<{
+    fullName: boolean;
+    gender: boolean;
+    dateOfBirth: boolean;
+    nricNumber: boolean;
+  }>({
+    fullName: false,
+    gender: false,
+    dateOfBirth: false,
+    nricNumber: false,
+  });
 
   useEffect(() => {
     if (isOpen) {
       getAllNurses()
         .then((data) => setNurseOptions(data))
         .catch((error) =>
-          console.error("Error fetching nurse options:", error)
+          console.error("Error fetching nurse options:", error),
         );
     }
   }, [isOpen]);
 
   const handleIDCardExtract = (data: ExtractedIDData) => {
-    if (data.fullName) setFullName(data.fullName);
-    if (data.dateOfBirth) setDateOfBirth(data.dateOfBirth);
-    if (data.nricNumber) setNricNumber(data.nricNumber);
-    if (data.gender) setGender(data.gender);
+    const updatedFields = { ...filledByExtractor };
+
+    if (data.fullName) {
+      setFullName(data.fullName);
+      updatedFields.fullName = true;
+    }
+
+    if (data.dateOfBirth) {
+      setDateOfBirth(data.dateOfBirth);
+      updatedFields.dateOfBirth = true;
+    }
+
+    if (data.nricNumber) {
+      setNricNumber(data.nricNumber);
+      updatedFields.nricNumber = true;
+    }
+
+    if (data.gender) {
+      const normalizedGender = data.gender.trim();
+      if (
+        normalizedGender === "Male" ||
+        normalizedGender === "Female" ||
+        normalizedGender === "M" ||
+        normalizedGender === "F"
+      ) {
+        const fullGender =
+          normalizedGender === "M"
+            ? "Male"
+            : normalizedGender === "F"
+              ? "Female"
+              : normalizedGender;
+        setGender(fullGender);
+        updatedFields.gender = true;
+      }
+    }
+
+    setFilledByExtractor(updatedFields);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -88,12 +133,57 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
       additional_notes: additionalNotes,
       primary_nurse: primaryNurse,
     });
+    resetForm();
     onClose();
   };
 
+  const resetForm = () => {
+    setFullName("");
+    setGender("");
+    setDateOfBirth("");
+    setNricNumber("");
+    setEmergencyContactName("");
+    setEmergencyContactNumber("");
+    setRelationship("");
+    setRoomNumber("");
+    setAdditionalNotes("");
+    setPrimaryNurse("");
+
+    setFilledByExtractor({
+      fullName: false,
+      gender: false,
+      dateOfBirth: false,
+      nricNumber: false,
+    });
+  };
+
+  const getInputClassName = (field: keyof typeof filledByExtractor) => {
+    return `mt-1 block w-full ${
+      filledByExtractor[field]
+        ? "bg-blue-50 border-blue-500 ring-blue-200 ring-1"
+        : ""
+    }`;
+  };
+
+  const getSelectClassName = (field: keyof typeof filledByExtractor) => {
+    return `mt-1 w-full ${
+      filledByExtractor[field]
+        ? "bg-blue-50 border-blue-500 ring-blue-200 ring-1"
+        : ""
+    }`;
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-lg">
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          resetForm();
+          onClose();
+        }
+      }}
+    >
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>New Resident</DialogTitle>
           <DialogClose
@@ -110,18 +200,37 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
                 id="fullName"
                 type="text"
                 value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                onChange={(e) => {
+                  setFullName(e.target.value);
+                  if (filledByExtractor.fullName) {
+                    setFilledByExtractor({
+                      ...filledByExtractor,
+                      fullName: false,
+                    });
+                  }
+                }}
                 required
-                className="mt-1 block w-full"
+                className={getInputClassName("fullName")}
               />
             </div>
             <div>
               <Label htmlFor="gender">Gender</Label>
               <Select
                 value={gender}
-                onValueChange={(value) => setGender(value)}
+                onValueChange={(value) => {
+                  setGender(value);
+                  if (filledByExtractor.gender) {
+                    setFilledByExtractor({
+                      ...filledByExtractor,
+                      gender: false,
+                    });
+                  }
+                }}
               >
-                <SelectTrigger id="gender" className="mt-1 w-full">
+                <SelectTrigger
+                  id="gender"
+                  className={getSelectClassName("gender")}
+                >
                   <SelectValue placeholder="Select gender" />
                 </SelectTrigger>
                 <SelectContent>
@@ -139,9 +248,17 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
                 id="dateOfBirth"
                 type="date"
                 value={dateOfBirth}
-                onChange={(e) => setDateOfBirth(e.target.value)}
+                onChange={(e) => {
+                  setDateOfBirth(e.target.value);
+                  if (filledByExtractor.dateOfBirth) {
+                    setFilledByExtractor({
+                      ...filledByExtractor,
+                      dateOfBirth: false,
+                    });
+                  }
+                }}
                 required
-                className="mt-1 block w-full"
+                className={getInputClassName("dateOfBirth")}
               />
             </div>
             <div>
@@ -150,9 +267,17 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
                 id="nricNumber"
                 type="text"
                 value={nricNumber}
-                onChange={(e) => setNricNumber(e.target.value)}
+                onChange={(e) => {
+                  setNricNumber(e.target.value);
+                  if (filledByExtractor.nricNumber) {
+                    setFilledByExtractor({
+                      ...filledByExtractor,
+                      nricNumber: false,
+                    });
+                  }
+                }}
                 required
-                className="mt-1 block w-full"
+                className={getInputClassName("nricNumber")}
               />
             </div>
           </div>
@@ -250,14 +375,13 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
               </SelectContent>
             </Select>
           </div>
-
-          <div className="flex justify-end space-x-4">
-            <Button variant="outline" type="button" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit">Save</Button>
-          </div>
         </form>
+        <DialogFooter>
+          <Button variant="outline" type="button" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit">Save</Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

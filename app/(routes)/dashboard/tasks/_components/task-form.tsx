@@ -1086,7 +1086,7 @@ export default function TaskForm({
                       )}
                     />
                   </div>
-                  <div className="flex justify-end px-6 py-4 border-t bg-background">
+                  <div className="flex justify-end px-6 py-4 bg-background">
                     <Button type="submit" disabled={isLoading || isAILoading}>
                       {isLoading ? (
                         <>

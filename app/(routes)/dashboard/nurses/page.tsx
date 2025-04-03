@@ -205,6 +205,13 @@ const Nurses = () => {
     );
   }
 
+  const renderCellContent = (value: string | null | undefined) => {
+    if (!value) {
+      return <span className="text-gray-400">N/A</span>;
+    }
+    return value;
+  };
+
   return (
     <div className="p-8 flex flex-col gap-8">
       <div className="flex flex-row items-center justify-between">
@@ -367,16 +374,16 @@ const Nurses = () => {
                       {user.email}
                     </TableCell>
                     <TableCell className="px-6 py-4 text-gray-900">
-                      {user.contact_number || "N/A"}
+                      {renderCellContent(user.contact_number)}
                     </TableCell>
                     <TableCell className="px-6 py-4">
                       <RoleChip role={user.role} />
                     </TableCell>
                     <TableCell className="px-6 py-4 text-gray-900">
-                      {user.organisation_rank || "N/A"}
+                      {renderCellContent(user.organisation_rank)}
                     </TableCell>
                     <TableCell className="px-6 py-4 text-gray-900">
-                      {user.gender || "N/A"}
+                      {renderCellContent(user.gender)}
                     </TableCell>
                     <TableCell className="px-6 py-4">
                       <DropdownMenu>

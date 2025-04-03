@@ -196,7 +196,7 @@ export default function ViewGroupPage() {
         )}
       </div>
 
-      <div className="flex flex-col md:flex-row gap-8 w-full">
+      <div className="flex flex-col space-y-16 space-x-0 md:flex-row md:space-y-0 md:space-x-16 w-full">
         <EditGroupForm
           group={group}
           groupId={groupId}

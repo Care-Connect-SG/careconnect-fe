@@ -1,6 +1,7 @@
 "use client";
 
 import CreateUserDialog from "@/app/(routes)/dashboard/nurses/_components/create-user-dialog";
+import RoleChip from "@/app/(routes)/dashboard/nurses/_components/role-chip";
 import { deleteUser, getUsers } from "@/app/api/user";
 import {
   AlertDialog,
@@ -13,8 +14,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import RoleChip from "@/components/ui/roleChip";
 import {
   Select,
   SelectContent,
@@ -33,8 +39,16 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "@/types/user";
-import { AlertDialogTrigger } from "@radix-ui/react-alert-dialog";
-import { PlusIcon, TrashIcon } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  Edit,
+  MoreHorizontal,
+  Plus,
+  Search,
+  Trash,
+} from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -53,11 +67,18 @@ const Nurses = () => {
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const router = useRouter();
 
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof User | null;
+    direction: "asc" | "desc";
+  }>({ key: "name", direction: "asc" });
+
   const fetchUsers = async () => {
     try {
       const data = await getUsers();
       setUsers(data);
-      setFilteredUsers(data);
+
+      const sorted = [...data].sort((a, b) => a.name.localeCompare(b.name));
+      setFilteredUsers(sorted);
     } catch (error: any) {
       console.error("Error fetching users:", error);
       toast({
@@ -70,6 +91,44 @@ const Nurses = () => {
     }
   };
 
+  const handleSort = (key: keyof User) => {
+    let direction: "asc" | "desc" = "asc";
+
+    if (sortConfig.key === key) {
+      direction = sortConfig.direction === "asc" ? "desc" : "asc";
+    }
+
+    setSortConfig({ key, direction });
+
+    const sortedUsers = [...filteredUsers].sort((a, b) => {
+      if (
+        key === "name" ||
+        key === "email" ||
+        key === "gender" ||
+        key === "organisation_rank"
+      ) {
+        const aValue = a[key] || "";
+        const bValue = b[key] || "";
+        return direction === "asc"
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
+
+      if (key === "role") {
+        const roleOrder = { Admin: 1, Nurse: 2 };
+        const aRole = a.role as keyof typeof roleOrder;
+        const bRole = b.role as keyof typeof roleOrder;
+        return direction === "asc"
+          ? roleOrder[aRole] - roleOrder[bRole]
+          : roleOrder[bRole] - roleOrder[aRole];
+      }
+
+      return 0;
+    });
+
+    setFilteredUsers(sortedUsers);
+  };
+
   const handleDeleteUser = async () => {
     if (userToDelete) {
       try {
@@ -78,14 +137,14 @@ const Nurses = () => {
         setIsConfirmationModalOpen(false);
         setUserToDelete(null);
         toast({
-          title: "User deleted successfully",
-          description: `${userToDelete.name} has been deleted`,
+          title: "Success",
+          description: `${userToDelete.name} has been deleted successfully.`,
         });
       } catch (error: any) {
         console.error("Error deleting user:", error);
         toast({
-          title: "Error deleting user, please try again",
-          description: error.message,
+          title: "An error occurred",
+          description: `Failed to delete user: ${error.message}`,
           variant: "destructive",
         });
       }
@@ -107,104 +166,262 @@ const Nurses = () => {
       filtered = filtered.filter((user) => user.role === filter);
     }
 
+    if (sortConfig.key) {
+      filtered = [...filtered].sort((a, b) => {
+        if (
+          sortConfig.key === "name" ||
+          sortConfig.key === "email" ||
+          sortConfig.key === "gender" ||
+          sortConfig.key === "organisation_rank"
+        ) {
+          const aValue = a[sortConfig.key] || "";
+          const bValue = b[sortConfig.key] || "";
+          return sortConfig.direction === "asc"
+            ? aValue.localeCompare(bValue)
+            : bValue.localeCompare(aValue);
+        }
+
+        if (sortConfig.key === "role") {
+          const roleOrder = { Admin: 1, Nurse: 2 };
+          const aRole = a.role as keyof typeof roleOrder;
+          const bRole = b.role as keyof typeof roleOrder;
+          return sortConfig.direction === "asc"
+            ? roleOrder[aRole] - roleOrder[bRole]
+            : roleOrder[bRole] - roleOrder[aRole];
+        }
+
+        return 0;
+      });
+    }
+
     setFilteredUsers(filtered);
-  }, [searchQuery, filter, users]);
+  }, [searchQuery, filter, users, sortConfig]);
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex justify-center items-center h-64">
         <Spinner />
       </div>
     );
   }
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">User Management</h1>
+    <div className="p-8 flex flex-col gap-8">
+      <div className="flex flex-row items-center justify-between">
+        <h1 className="text-2xl font-semibold text-gray-800">
+          User Management
+        </h1>
 
-      <div className="flex flex-wrap gap-4 mb-6">
-        <Select value={filter} onValueChange={(value) => setFilter(value)}>
-          <SelectTrigger className="w-60 p-3 border rounded-lg shadow-sm bg-white text-gray-700">
-            <SelectValue placeholder="Filter Users" />
-          </SelectTrigger>
-          <SelectContent className="bg-white shadow-lg rounded-lg">
-            <SelectItem value="All Users">All Users</SelectItem>
-            <SelectItem value="Admin">Admins</SelectItem>
-            <SelectItem value="Nurse">Nurses</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Input
-          type="text"
-          placeholder="Search by name or email"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full max-w-md p-3 border rounded-lg shadow-sm bg-white text-gray-700"
-        />
+        <div className="flex flex-row space-x-4">
+          <div className="relative w-[400px]">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+              <Search className="w-4 h-4 text-gray-400" />
+            </div>
+            <Input
+              type="text"
+              placeholder="Search by name or email..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Select value={filter} onValueChange={(value) => setFilter(value)}>
+            <SelectTrigger className="w-60">
+              <SelectValue placeholder="Filter Users" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All Users">All Users</SelectItem>
+              <SelectItem value="Admin">Admins</SelectItem>
+              <SelectItem value="Nurse">Nurses</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button onClick={() => setIsModalOpen(true)}>
+            <Plus className="w-4 h-4 mr-1" />
+            <span className="font-medium">Add User</span>
+          </Button>
+        </div>
       </div>
 
-      <div className="flex mx-auto">
-        <Table className="w-full max-w-5xl shadow-lg rounded-lg overflow-hidden">
-          <TableHeader>
-            <TableRow className="bg-gray-900 text-white">
-              <TableHead className="p-4 text-left">Email</TableHead>
-              <TableHead className="p-4 text-left">Name</TableHead>
-              <TableHead className="p-4 text-left">Contact Number</TableHead>
-              <TableHead className="p-4 text-left">Role</TableHead>
-              <TableHead className="p-4 text-left">Organisation Rank</TableHead>
-              <TableHead className="p-4 text-left">Gender</TableHead>
-              <TableHead className="p-4 text-left">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredUsers.map((user, index) => (
-              <TableRow
-                key={user.id}
-                className={`border-b ${
-                  index % 2 === 0 ? "bg-gray-50" : "bg-white"
-                } hover:bg-gray-100 transition cursor-pointer`}
-                onClick={() =>
-                  router.push(
-                    session?.user.id === user.id
-                      ? "/dashboard/profile"
-                      : `/dashboard/nurses/${user.id}`,
-                  )
-                }
-              >
-                <TableCell className="p-4">{user.email}</TableCell>
-                <TableCell className="p-4">{user.name}</TableCell>
-                <TableCell className="p-4">
-                  {user.contact_number || "N/A"}
-                </TableCell>
-                <TableCell className="p-4">
-                  <RoleChip role={user.role} />
-                </TableCell>
-                <TableCell className="p-4">
-                  {user.organisation_rank || "N/A"}
-                </TableCell>
-                <TableCell className="p-4">{user.gender}</TableCell>
-                <TableCell className="p-4 flex gap-3">
-                  <TrashIcon
-                    className="h-5 w-5 text-red-600 cursor-pointer hover:text-red-800 transition"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setUserToDelete(user);
-                      setIsConfirmationModalOpen(true);
-                    }}
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      <Button
-        className="fixed bottom-8 right-8 bg-black text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg hover:bg-gray-800 transition"
-        onClick={() => setIsModalOpen(true)}
-      >
-        <PlusIcon className="h-6 w-6" />
-      </Button>
+      {filteredUsers.length === 0 ? (
+        <div className="text-center text-gray-500 p-8 border rounded-lg bg-gray-50">
+          {searchQuery || filter !== "All Users"
+            ? "No users found matching your search criteria."
+            : "No users found."}
+        </div>
+      ) : (
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table className="w-full">
+              <TableHeader className="bg-gray-50">
+                <TableRow>
+                  <TableHead
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:text-blue-600"
+                    onClick={() => handleSort("name")}
+                  >
+                    <div className="flex items-center gap-1">
+                      Name{" "}
+                      {sortConfig.key === "name" ? (
+                        sortConfig.direction === "asc" ? (
+                          <ArrowUp className="h-4 w-4" />
+                        ) : (
+                          <ArrowDown className="h-4 w-4" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="h-4 w-4" />
+                      )}
+                    </div>
+                  </TableHead>
+                  <TableHead
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:text-blue-600"
+                    onClick={() => handleSort("email")}
+                  >
+                    <div className="flex items-center gap-1">
+                      Email{" "}
+                      {sortConfig.key === "email" ? (
+                        sortConfig.direction === "asc" ? (
+                          <ArrowUp className="h-4 w-4" />
+                        ) : (
+                          <ArrowDown className="h-4 w-4" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="h-4 w-4" />
+                      )}
+                    </div>
+                  </TableHead>
+                  <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    Contact Number
+                  </TableHead>
+                  <TableHead
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:text-blue-600"
+                    onClick={() => handleSort("role")}
+                  >
+                    <div className="flex items-center gap-1">
+                      Role{" "}
+                      {sortConfig.key === "role" ? (
+                        sortConfig.direction === "asc" ? (
+                          <ArrowUp className="h-4 w-4" />
+                        ) : (
+                          <ArrowDown className="h-4 w-4" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="h-4 w-4" />
+                      )}
+                    </div>
+                  </TableHead>
+                  <TableHead
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:text-blue-600"
+                    onClick={() => handleSort("organisation_rank")}
+                  >
+                    <div className="flex items-center gap-1">
+                      Organisation Rank{" "}
+                      {sortConfig.key === "organisation_rank" ? (
+                        sortConfig.direction === "asc" ? (
+                          <ArrowUp className="h-4 w-4" />
+                        ) : (
+                          <ArrowDown className="h-4 w-4" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="h-4 w-4" />
+                      )}
+                    </div>
+                  </TableHead>
+                  <TableHead
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:text-blue-600"
+                    onClick={() => handleSort("gender")}
+                  >
+                    <div className="flex items-center gap-1">
+                      Gender{" "}
+                      {sortConfig.key === "gender" ? (
+                        sortConfig.direction === "asc" ? (
+                          <ArrowUp className="h-4 w-4" />
+                        ) : (
+                          <ArrowDown className="h-4 w-4" />
+                        )
+                      ) : (
+                        <ArrowUpDown className="h-4 w-4" />
+                      )}
+                    </div>
+                  </TableHead>
+                  <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    Actions
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody className="divide-y divide-gray-200">
+                {filteredUsers.map((user) => (
+                  <TableRow
+                    key={user.id}
+                    className="hover:bg-blue-50 hover:duration-300 ease-in-out"
+                    onClick={() =>
+                      router.push(
+                        session?.user.id === user.id
+                          ? "/dashboard/profile"
+                          : `/dashboard/nurses/${user.id}`,
+                      )
+                    }
+                  >
+                    <TableCell className="px-6 py-4 font-medium text-gray-900">
+                      {user.name}
+                    </TableCell>
+                    <TableCell className="px-6 py-4 text-gray-900">
+                      {user.email}
+                    </TableCell>
+                    <TableCell className="px-6 py-4 text-gray-900">
+                      {user.contact_number || "N/A"}
+                    </TableCell>
+                    <TableCell className="px-6 py-4">
+                      <RoleChip role={user.role} />
+                    </TableCell>
+                    <TableCell className="px-6 py-4 text-gray-900">
+                      {user.organisation_rank || "N/A"}
+                    </TableCell>
+                    <TableCell className="px-6 py-4 text-gray-900">
+                      {user.gender || "N/A"}
+                    </TableCell>
+                    <TableCell className="px-6 py-4">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="hover:bg-transparent"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Open menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/dashboard/nurses/${user.id}`);
+                            }}
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-red-600"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setUserToDelete(user);
+                              setIsConfirmationModalOpen(true);
+                            }}
+                          >
+                            <Trash className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      )}
 
       {isModalOpen && (
         <CreateUserDialog
@@ -218,10 +435,9 @@ const Nurses = () => {
         open={isConfirmationModalOpen}
         onOpenChange={setIsConfirmationModalOpen}
       >
-        <AlertDialogTrigger asChild></AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+            <AlertDialogTitle>Delete User</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete this user? This action cannot be
               undone.
@@ -229,8 +445,11 @@ const Nurses = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteUser}>
-              Delete
+            <AlertDialogAction
+              onClick={handleDeleteUser}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Confirm Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

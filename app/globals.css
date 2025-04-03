@@ -100,8 +100,30 @@ body {
   }
 }
 
+.rbc-toolbar .rbc-btn-group:nth-child(1) button {
+  background-color: #fff !important;
+  transition: all 0.2s ease-in-out !important;
+  color: #000 !important;
+}
+
+.rbc-btn-group button {
+  background-color: #e5e7eb !important;
+  transition: all 0.2s ease-in-out !important;
+  color: #000 !important;
+}
+
+.rbc-btn-group button:hover:not(.rbc-active) {
+  background-color: #eff6ff !important;
+  color: #3b82f6 !important;
+}
+
+.rbc-btn-group button.rbc-active {
+  box-shadow: none !important;
+  background-color: #fff !important;
+}
+
 .rbc-toolbar-label {
-  font-size: 1.25rem;
+  font-size: 1rem;
   font-weight: bold;
 }
 

@@ -6,13 +6,14 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Download,
   Search,
   X,
 } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
-import { getTasks } from "@/app/api/task";
+import { downloadTasks, getTasks } from "@/app/api/task";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -30,6 +31,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Task } from "@/types/task";
 
+import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import TaskForm from "./_components/task-form";
@@ -40,7 +42,9 @@ import { TaskViewToggle } from "./_components/task-viewtoggle";
 const TaskManagement = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const [currentView, setCurrentView] = useState<"list" | "kanban">("list");
   const [selectedNurses, setSelectedNurses] = useState<string[]>([]);
@@ -67,6 +71,24 @@ const TaskManagement = () => {
     priority: "",
     date: format(initDate(), "yyyy-MM-dd"),
   });
+
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const open = searchParams.get("open");
+    if (open === "true") {
+      setIsOpen(true);
+
+      const params = new URLSearchParams(Array.from(searchParams.entries()));
+
+      params.delete("open");
+
+      const queryString = params.toString();
+      const newPath = queryString ? `${pathname}?${queryString}` : pathname;
+
+      router.replace(newPath, { scroll: false });
+    }
+  }, [searchParams, router, pathname]);
 
   const {
     data: allTasks = [],
@@ -192,9 +214,9 @@ const TaskManagement = () => {
       current.set("date", newDate);
       const search = current.toString();
       const query = search ? `?${search}` : "";
-      router.push(`/dashboard/tasks${query}`, { scroll: false });
+      router.push(`${pathname}${query}`, { scroll: false });
     }
-  }, [selectedDate, router, searchParams]);
+  }, [selectedDate, router, searchParams, pathname]);
 
   const updateFilter = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -220,15 +242,59 @@ const TaskManagement = () => {
   };
 
   useEffect(() => {
-    const savedView = localStorage.getItem("taskView") as "list" | "kanban";
-    if (savedView) {
-      setCurrentView(savedView);
+    if (typeof window !== "undefined") {
+      const savedView = localStorage.getItem("taskView") as "list" | "kanban";
+      if (savedView) {
+        setCurrentView(savedView);
+      }
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("taskView", currentView);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("taskView", currentView);
+    }
   }, [currentView]);
+
+  const handleDownloadTasks = async () => {
+    try {
+      const formattedDate = format(selectedDate, "yyyy-MM-dd");
+      const tasksToDownload = filteredTasks.filter(
+        (task) =>
+          format(new Date(task.due_date), "yyyy-MM-dd") === formattedDate,
+      );
+
+      if (tasksToDownload.length === 0) {
+        toast({
+          title: "No Tasks",
+          description: "There are no tasks to download for the selected date.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const blob = await downloadTasks(tasksToDownload.map((task) => task.id));
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `tasks-${formattedDate}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast({
+        title: "Tasks Downloaded",
+        description: `Successfully downloaded ${tasksToDownload.length} tasks for ${formattedDate}`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to download tasks.",
+      });
+    }
+  };
 
   return (
     <div className="flex flex-col w-full gap-8 p-8">
@@ -244,7 +310,7 @@ const TaskManagement = () => {
               view={currentView}
               onChange={(view) => setCurrentView(view)}
             />
-            <TaskForm />
+            <TaskForm open={isOpen} onClose={() => setIsOpen(false)} />
           </div>
         </div>
       </div>
@@ -284,6 +350,16 @@ const TaskManagement = () => {
               onChange={(e) => updateFilter("search", e.target.value)}
             />
           </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleDownloadTasks}
+            className="flex items-center gap-2"
+          >
+            <Download className="h-4 w-4" />
+            Download Tasks
+          </Button>
 
           <Select
             value={filters.status ?? ""}

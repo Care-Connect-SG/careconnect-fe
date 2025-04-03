@@ -28,6 +28,32 @@ export const createTask = async (taskData: TaskForm): Promise<Task[]> => {
   }
 };
 
+export const getAITaskSuggestion = async (residentId: string) => {
+  try {
+    const response = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/ai-suggestion/${residentId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const errData = await response.json();
+      console.error("AI Task Suggestion Error:", errData);
+      throw Error(errData.detail || "Error getting AI task suggestion");
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error getting AI task suggestion:", error);
+    throw error;
+  }
+};
+
 export const getTasks = async (filters?: {
   search?: string;
   status?: string;
@@ -296,15 +322,15 @@ export const duplicateTask = async (taskId: string): Promise<Task> => {
   }
 };
 
-export const downloadTask = async (taskId: string): Promise<Blob> => {
+export const downloadTask = async (
+  taskId: string,
+  format: "text" | "pdf" = "text",
+): Promise<Blob> => {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/download`,
+    const response = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${taskId}/download?format=${format}`,
       {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
       },
     );
 
@@ -398,6 +424,31 @@ export const rejectReassignment = async (
     return data;
   } catch (error) {
     console.error("Error rejecting reassignment:", error);
+    throw error;
+  }
+};
+
+export const downloadTasks = async (taskIds: string[]): Promise<Blob> => {
+  try {
+    const response = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/download`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(taskIds),
+      },
+    );
+
+    if (!response.ok) {
+      const errData = await response.json();
+      throw Error(errData.detail || "Failed to download tasks");
+    }
+
+    return await response.blob();
+  } catch (error) {
+    console.error("Error downloading tasks:", error);
     throw error;
   }
 };

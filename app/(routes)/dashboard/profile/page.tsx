@@ -2,20 +2,45 @@
 
 import { getCurrentUser, updateUser } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
 import { User, UserEdit } from "@/types/user";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import EditProfileDialog from "./_components/edit-profile-dialog";
+import { useEffect, useState } from "react";
+import { FormProvider, useForm } from "react-hook-form";
+import { z } from "zod";
+import RoleChip from "../nurses/_components/role-chip";
 import ProfilePictureDialog from "./_components/profile-picture-dialog";
+
+const profileSchema = z.object({
+  name: z.string().min(4, "Name has to be at least 4 characters long"),
+  contact_number: z.string().optional(),
+  organisation_rank: z.string().optional(),
+  gender: z.enum(["Male", "Female"]),
+});
+
+type ProfileFormValues = z.infer<typeof profileSchema>;
 
 const MyProfile = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<string>("overview");
-  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const [formInitialized, setFormInitialized] = useState(false);
 
   const {
     data: user,
@@ -25,6 +50,34 @@ const MyProfile = () => {
     queryKey: ["user"],
     queryFn: getCurrentUser,
   });
+
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileSchema),
+    mode: "onChange",
+    defaultValues: formInitialized
+      ? {
+          name: user?.name || "",
+          contact_number: user?.contact_number || "",
+          organisation_rank: user?.organisation_rank || "",
+          gender: user?.gender === "Female" ? "Female" : "Male",
+        }
+      : undefined,
+  });
+
+  useEffect(() => {
+    if (user && !formInitialized) {
+      const gender = user.gender === "Female" ? "Female" : "Male";
+
+      form.reset({
+        name: user.name || "",
+        contact_number: user.contact_number || "",
+        organisation_rank: user.organisation_rank || "",
+        gender: gender,
+      });
+
+      setFormInitialized(true);
+    }
+  }, [user, form, formInitialized]);
 
   const updateUserMutation = useMutation({
     mutationFn: async (updatedData: UserEdit) => {
@@ -36,7 +89,6 @@ const MyProfile = () => {
         description: "Your profile has been updated successfully",
         variant: "default",
       });
-      setIsDialogOpen(false);
       queryClient.invalidateQueries({ queryKey: ["user"] });
     },
     onError: (error: any) => {
@@ -49,101 +101,131 @@ const MyProfile = () => {
     },
   });
 
+  const handleSubmit = (data: ProfileFormValues) => {
+    if (user) {
+      updateUserMutation.mutate({ ...user, ...data });
+    }
+  };
+
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex justify-center items-center h-[80vh]">
         <Spinner />
       </div>
     );
   }
+
   if (error || !user) {
     return <p className="text-center mt-10 text-red-500">User not found</p>;
   }
 
-  const TABS = [
-    { value: "overview", label: "Overview" },
-    { value: "history", label: "History" },
-    { value: "permissions", label: "Permissions" },
-  ];
-
-  const handleEditProfile = () => setIsDialogOpen(true);
-  const handleSave = (updatedData: UserEdit) => {
-    updateUserMutation.mutate(updatedData);
-  };
+  if (!formInitialized) {
+    return (
+      <div className="flex justify-center items-center h-[80vh]">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
-    <div className="w-full max-w-4xl mx-auto mt-10">
-      <Card className="p-6 shadow-md bg-white rounded-lg flex items-center justify-between">
-        <div className="flex flex-row space-x-4 items-center">
-          <ProfilePictureDialog user={user} />
-          <div className="flex flex-col space-y-2 items-start justify-center">
-            <h1 className="text-2xl font-bold">{user.name}</h1>
-            <p className="text-gray-500">{user.role}</p>
+    <div className="flex items-center justify-center p-8">
+      <div className="w-full max-w-2xl">
+        <div className="flex flex-col space-y-8 ">
+          <div className="flex items-center space-x-4">
+            <ProfilePictureDialog user={user} />
+            <div className="flex flex-col space-y-2">
+              <h1 className="text-2xl font-bold">{user.name}</h1>
+              <RoleChip role={user.role} />
+            </div>
           </div>
-        </div>
-        <Button
-          onClick={handleEditProfile}
-          className="bg-blue-600 hover:bg-blue-800 text-white"
-        >
-          Edit Profile
-        </Button>
-      </Card>
 
-      <div className="mt-6 border-b border-gray-200">
-        <div className="flex space-x-8">
-          {TABS.map((tab) => (
-            <Button
-              key={tab.value}
-              variant="transparentHover"
-              onClick={() => setActiveTab(tab.value)}
-              className={`py-2 px-1 text-sm font-medium ${
-                activeTab === tab.value
-                  ? "text-blue-600 border-b-2"
-                  : "text-gray-500 border-transparent"
-              } hover:text-gray-600 hover:border-gray-600 transition-colors duration-200`}
+          <FormProvider {...form}>
+            <form
+              onSubmit={form.handleSubmit(handleSubmit)}
+              className="space-y-6"
             >
-              {tab.label}
-            </Button>
-          ))}
+              <div className="space-y-2">
+                <FormLabel>Email</FormLabel>
+                <Input value={user.email} disabled className="bg-gray-50" />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="contact_number"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Contact Number</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="organisation_rank"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Organisation Rank</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="gender"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Gender</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Gender" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Male">Male</SelectItem>
+                        <SelectItem value="Female">Female</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <Button
+                type="submit"
+                className="w-32"
+                disabled={
+                  !form.formState.isDirty ||
+                  !form.formState.isValid ||
+                  updateUserMutation.isPending
+                }
+              >
+                {updateUserMutation.isPending ? <Spinner /> : "Save Changes"}
+              </Button>
+            </form>
+          </FormProvider>
         </div>
       </div>
-
-      {activeTab === "overview" && (
-        <Card className="p-6 shadow-md bg-white rounded-lg mt-6">
-          <h2 className="text-xl font-semibold mb-4">User Details</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <p className="text-gray-700">
-              <strong>Email:</strong> {user.email}
-            </p>
-            <p className="text-gray-700">
-              <strong>Contact:</strong> {user.contact_number || "N/A"}
-            </p>
-            <p className="text-gray-700">
-              <strong>Organisation Rank:</strong>{" "}
-              {user.organisation_rank || "N/A"}
-            </p>
-            <p className="text-gray-700">
-              <strong>Gender:</strong> {user.gender}
-            </p>
-          </div>
-        </Card>
-      )}
-      {activeTab === "history" && (
-        <div className="mt-6">
-          <h2 className="text-lg font-semibold">User History</h2>
-        </div>
-      )}
-      {activeTab === "permissions" && (
-        <div className="mt-6">
-          <h2 className="text-lg font-semibold">User Permissions</h2>
-        </div>
-      )}
-      <EditProfileDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        initialData={user}
-        onSave={handleSave}
-      />
     </div>
   );
 };

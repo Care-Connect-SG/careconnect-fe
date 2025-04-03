@@ -323,7 +323,6 @@ const EditMedicalHistoryDialog: React.FC<EditMedicalHistoryDialogProps> = ({
                             : "",
                         });
                       }}
-                      initialFocus
                     />
                   </PopoverContent>
                 </Popover>

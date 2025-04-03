@@ -7,7 +7,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { User } from "@/types/user";
-import { UserIcon } from "lucide-react";
+import { UserCheck } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 import Link from "next/link";
 
@@ -27,7 +27,7 @@ export function NavTeam({ items, currentUser }: NavTeamProps) {
     currentUser?.role === "Admin"
       ? [
           ...items,
-          { title: "Nurses", url: "/dashboard/nurses", icon: UserIcon },
+          { title: "Nurses", url: "/dashboard/nurses", icon: UserCheck },
         ]
       : items;
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { getAllNurses } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,7 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import React, { useState } from "react";
+import { Spinner } from "@/components/ui/spinner";
+import { User } from "@/types/user";
+import React, { useState, useEffect } from "react";
 
 interface EditResidentDialogProps {
   isOpen: boolean;
@@ -58,21 +61,38 @@ const EditResidentDialog: React.FC<EditResidentDialogProps> = ({
   const [roomNumber, setRoomNumber] = useState(initialData.room_number || "");
   const [gender, setGender] = useState(initialData.gender || "");
   const [dateOfBirth, setDateOfBirth] = useState(
-    initialData.date_of_birth || "",
+    initialData.date_of_birth || ""
   );
   const [nricNumber, setNricNumber] = useState(initialData.nric_number || "");
   const [relationship, setRelationship] = useState(
-    initialData.relationship || "",
+    initialData.relationship || ""
   );
   const [emergencyContactName, setEmergencyContactName] = useState(
-    initialData.emergency_contact_name || "",
+    initialData.emergency_contact_name || ""
   );
   const [emergencyContactNumber, setEmergencyContactNumber] = useState(
-    initialData.emergency_contact_number || "",
+    initialData.emergency_contact_number || ""
   );
   const [primaryNurse, setPrimaryNurse] = useState(
-    initialData.primary_nurse || "",
+    initialData.primary_nurse || ""
   );
+  const [nurseOptions, setNurseOptions] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsLoading(true);
+      getAllNurses()
+        .then((data) => {
+          setNurseOptions(data);
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          console.error("Error fetching nurse options:", error);
+          setIsLoading(false);
+        });
+    }
+  }, [isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,10 +144,7 @@ const EditResidentDialog: React.FC<EditResidentDialogProps> = ({
           <div>
             <Label htmlFor="gender">Gender</Label>
             <Select value={gender} onValueChange={(value) => setGender(value)}>
-              <SelectTrigger
-                id="gender"
-                className="mt-1  w-full border border-gray-300 rounded-md p-2"
-              >
+              <SelectTrigger id="gender" className="mt-1 w-full">
                 <SelectValue placeholder="Select a gender" />
               </SelectTrigger>
               <SelectContent>
@@ -158,12 +175,24 @@ const EditResidentDialog: React.FC<EditResidentDialogProps> = ({
           </div>
           <div>
             <Label htmlFor="relationship">Relationship</Label>
-            <Input
-              id="relationship"
+            <Select
               value={relationship}
-              onChange={(e) => setRelationship(e.target.value)}
-              required
-            />
+              onValueChange={(value) => setRelationship(value)}
+            >
+              <SelectTrigger id="relationship" className="mt-1 w-full">
+                <SelectValue placeholder="Select relationship" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Mother">Mother</SelectItem>
+                <SelectItem value="Father">Father</SelectItem>
+                <SelectItem value="Daughter">Daughter</SelectItem>
+                <SelectItem value="Son">Son</SelectItem>
+                <SelectItem value="Spouse">Spouse</SelectItem>
+                <SelectItem value="Sibling">Sibling</SelectItem>
+                <SelectItem value="Friend">Friend</SelectItem>
+                <SelectItem value="Other">Other</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <Label htmlFor="emergencyContactName">Emergency Contact</Label>
@@ -185,12 +214,24 @@ const EditResidentDialog: React.FC<EditResidentDialogProps> = ({
           </div>
           <div>
             <Label htmlFor="primaryNurse">Primary Nurse</Label>
-            <Input
-              id="primaryNurse"
+            <Select
               value={primaryNurse}
-              onChange={(e) => setPrimaryNurse(e.target.value)}
-              required
-            />
+              onValueChange={(value) => setPrimaryNurse(value)}
+              disabled={isLoading}
+            >
+              <SelectTrigger id="primaryNurse" className="mt-1 w-full">
+                <SelectValue
+                  placeholder={isLoading ? <Spinner /> : "Select primary nurse"}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {nurseOptions.map((nurse) => (
+                  <SelectItem key={nurse.id} value={nurse.name}>
+                    {nurse.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex justify-end space-x-4">
             <Button type="button" onClick={onClose} variant={"secondary"}>

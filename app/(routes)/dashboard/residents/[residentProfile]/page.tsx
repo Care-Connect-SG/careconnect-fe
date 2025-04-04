@@ -31,6 +31,7 @@ import ResidentDetailsNotesCard from "./_components/resident-detail-notes";
 import ResidentMedication from "./_components/resident-medication";
 import ResidentProfileHeader from "./_components/resident-profile-header";
 import WellnessReportList from "./_components/wellness-report-list";
+import MedicationLogList from "./_components/medication-log-list";
 
 import { useBreadcrumb } from "@/context/breadcrumb-context";
 import { toTitleCase } from "@/lib/utils";
@@ -39,6 +40,15 @@ import { MedicalHistory, inferTemplateType } from "@/types/medical-history";
 import { MedicationRecord } from "@/types/medication";
 import { ResidentRecord } from "@/types/resident";
 import { WellnessReportRecord } from "@/types/wellness-report";
+import BCMA_Scanner from "./_components/bcma-scanner";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const TABS = [
   { label: "Overview", value: "overview" },
@@ -46,6 +56,7 @@ const TABS = [
   { label: "Medication", value: "medication" },
   { label: "Care Plan", value: "careplan" },
   { label: "Wellness Report", value: "wellness" },
+  { label: "Administer Medication", value: "logs" },
 ] as const;
 
 type TabValue = (typeof TABS)[number]["value"];
@@ -357,6 +368,34 @@ export default function ResidentDashboard() {
             </div>
           </div>
         </TabsContent>
+        <TabsContent value="logs">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Medication Logs</h2>
+
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="bg-primary text-white">
+                  💉 Administer Medication
+                </Button>
+              </DialogTrigger>
+
+
+              <DialogContent className="max-w-3xl sm:max-w-2xl p-0">
+                <DialogHeader className="px-6 pt-6">
+                  <DialogTitle className="text-lg">Medication Administration</DialogTitle>
+                </DialogHeader>
+
+                <ScrollArea className="h-[75vh] px-6 pb-6">
+                  <BCMA_Scanner onSuccess={() => queryClient.invalidateQueries({ queryKey: ["medicationLogs", residentProfile] })} />
+                </ScrollArea>
+              </DialogContent>
+
+            </Dialog>
+          </div>
+
+          <MedicationLogList residentId={residentProfile} />
+        </TabsContent>
+
       </Tabs>
 
       <EditResidentDialog

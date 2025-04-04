@@ -93,7 +93,7 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
 
       if (!response.ok) {

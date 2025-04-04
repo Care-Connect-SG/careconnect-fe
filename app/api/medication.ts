@@ -88,3 +88,32 @@ export const updateMedication = async (
     return null;
   }
 };
+
+export const deleteMedication = async (
+  residentId: string,
+  medicationId: string,
+): Promise<boolean> => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/medications/${medicationId}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const errData = await response.json();
+      throw Error(
+        errData.detail || "Error deleting medication for the resident",
+      );
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error deleting medication for the resident:", error);
+    return false;
+  }
+};

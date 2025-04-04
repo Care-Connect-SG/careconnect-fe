@@ -1,7 +1,12 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
+import {
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 import {
@@ -26,13 +31,13 @@ import EditMedication from "./_components/edit-medication";
 import EditResidentDialog from "./_components/edit-resident-dialog";
 import MedicalHistoryCard from "./_components/medical-history-card";
 import CreateMedicalHistoryDialog from "./_components/medical-history-form";
-import ResidentCarePlan from "./_components/resident-careplan";
 import ResidentDetailsCard from "./_components/resident-detail-card";
 import ResidentDetailsNotesCard from "./_components/resident-detail-notes";
 import ResidentMedication from "./_components/resident-medication";
 import ResidentProfileHeader from "./_components/resident-profile-header";
 import WellnessReportList from "./_components/wellness-report-list";
 
+import { Spinner } from "@/components/ui/spinner";
 import { useBreadcrumb } from "@/context/breadcrumb-context";
 import { useToast } from "@/hooks/use-toast";
 import { toTitleCase } from "@/lib/utils";
@@ -41,6 +46,7 @@ import { MedicalHistory, inferTemplateType } from "@/types/medical-history";
 import { MedicationRecord } from "@/types/medication";
 import { ResidentRecord } from "@/types/resident";
 import { WellnessReportRecord } from "@/types/wellness-report";
+import { Plus } from "lucide-react";
 
 const TABS = [
   { label: "Overview", value: "overview" },
@@ -54,10 +60,22 @@ type TabValue = (typeof TABS)[number]["value"];
 
 export default function ResidentDashboard() {
   const { residentProfile } = useParams() as { residentProfile: string };
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const { setPageName } = useBreadcrumb();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<TabValue>("overview");
+
+  const tabParam = searchParams.get("tab");
+  const isValidTab = (tab: string | null): tab is TabValue => {
+    return !!tab && TABS.some((t) => t.value === tab);
+  };
+
+  const [activeTab, setActiveTab] = useState<TabValue>(
+    isValidTab(tabParam) ? tabParam : "overview",
+  );
+
   const [modals, setModals] = useState({
     editResident: false,
     createMedication: false,
@@ -72,6 +90,29 @@ export default function ResidentDashboard() {
     useState<MedicalHistory | null>(null);
   const [isCreatingCarePlan, setIsCreatingCarePlan] = useState(false);
 
+  useEffect(() => {
+    const newParams = new URLSearchParams(searchParams);
+    if (activeTab === "overview") {
+      newParams.delete("tab");
+    } else {
+      newParams.set("tab", activeTab);
+    }
+
+    const newSearch = newParams.toString();
+    const query = newSearch ? `?${newSearch}` : "";
+
+    router.replace(`${pathname}${query}`, { scroll: false });
+  }, [activeTab, pathname, router, searchParams]);
+
+  useEffect(() => {
+    const tabFromUrl = searchParams.get("tab");
+    if (isValidTab(tabFromUrl)) {
+      setActiveTab(tabFromUrl);
+    } else if (tabFromUrl === null && activeTab !== "overview") {
+      setActiveTab("overview");
+    }
+  }, [searchParams]);
+
   const { data: resident, isLoading: isResidentLoading } =
     useQuery<ResidentRecord>({
       queryKey: ["resident", residentProfile],
@@ -84,34 +125,42 @@ export default function ResidentDashboard() {
     }
   }, [resident, setPageName]);
 
-  const { data: medicalHistory = [] } = useQuery<MedicalHistory[]>({
-    queryKey: ["medicalHistory", residentProfile],
-    queryFn: () => getMedicalHistoryByResident(residentProfile),
-    enabled: activeTab === "history" && !!residentProfile,
-  });
+  const { data: medicalHistory = [], isLoading: isMedicalHistoryLoading } =
+    useQuery<MedicalHistory[]>({
+      queryKey: ["medicalHistory", residentProfile],
+      queryFn: () => getMedicalHistoryByResident(residentProfile),
+      enabled: activeTab === "history" || !!residentProfile,
+    });
 
-  const { data: medications = [], refetch: refetchMedications } = useQuery<
-    MedicationRecord[]
-  >({
+  const {
+    data: medications = [],
+    isLoading: isMedicationsLoading,
+    refetch: refetchMedications,
+  } = useQuery<MedicationRecord[]>({
     queryKey: ["medications", residentProfile],
     queryFn: () => getMedicationsForResident(residentProfile),
-    enabled: activeTab === "medication" && !!residentProfile,
+    enabled: activeTab === "medication" || !!residentProfile,
   });
 
-  const { data: carePlans = [], refetch: refetchCarePlans } = useQuery<
-    CarePlanRecord[]
-  >({
+  const {
+    data: carePlans = [],
+    isLoading: isCarePlansLoading,
+    refetch: refetchCarePlans,
+  } = useQuery<CarePlanRecord[]>({
     queryKey: ["carePlans", residentProfile],
     queryFn: () => getCarePlansForResident(residentProfile),
-    enabled: activeTab === "careplan" && !!residentProfile,
+    enabled: activeTab === "careplan" || !!residentProfile,
   });
 
-  const { data: wellnessReports = [], refetch: refetchWellnessReports } =
-    useQuery<WellnessReportRecord[]>({
-      queryKey: ["wellnessReports", residentProfile],
-      queryFn: () => getWellnessReportsForResident(residentProfile),
-      enabled: activeTab === "wellness" && !!residentProfile,
-    });
+  const {
+    data: wellnessReports = [],
+    isLoading: isWellnessReportsLoading,
+    refetch: refetchWellnessReports,
+  } = useQuery<WellnessReportRecord[]>({
+    queryKey: ["wellnessReports", residentProfile],
+    queryFn: () => getWellnessReportsForResident(residentProfile),
+    enabled: activeTab === "wellness" || !!residentProfile,
+  });
 
   const updateResidentMutation = useMutation({
     mutationFn: (updatedData: Partial<ResidentRecord>) =>
@@ -215,13 +264,25 @@ export default function ResidentDashboard() {
     setActiveTab(value as TabValue);
   };
 
+  const LoadingSpinner = () => (
+    <div className="flex justify-center items-center py-12">
+      <Spinner />
+    </div>
+  );
+
   if (isResidentLoading) {
-    return <div className="text-center mt-10">Loading resident details...</div>;
+    return (
+      <div className="h-screen justify-center items-center flex">
+        <Spinner />
+      </div>
+    );
   }
 
   if (!resident) {
     return (
-      <div className="text-center mt-10 text-red-500">Resident not found</div>
+      <div className="h-screen justify-center items-center flex">
+        Resident not found
+      </div>
     );
   }
 
@@ -269,96 +330,132 @@ export default function ResidentDashboard() {
         </TabsContent>
 
         <TabsContent value="history">
-          <div>
+          <div className="p-6 border rounded-lg">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-semibold">Medical History</h2>
+              <h2 className="text-lg font-semibold">Medical Record</h2>
               <Button onClick={() => openModal("createMedicalHistory")}>
-                Add Medical Record
-              </Button>
-            </div>
-            <div className="mt-4 space-y-4">
-              {medicalHistory.length > 0 ? (
-                medicalHistory.map((record, index) => (
-                  <MedicalHistoryCard
-                    key={index}
-                    record={record}
-                    onEdit={() => openModal("editMedicalHistory", record)}
-                  />
-                ))
-              ) : (
-                <p className="text-gray-500">No medical records found.</p>
-              )}
-            </div>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="medication">
-          <div>
-            <div className="flex justify-between items-center">
-              <h2 className="text-lg font-semibold">Medication List</h2>
-              <Button onClick={() => openModal("createMedication")}>
-                Add Medication
+                <Plus className="h-4 w-4 mr-1" />
+                Medical Record
               </Button>
             </div>
 
-            <div className="space-y-4 mt-4">
-              {medications.length > 0 ? (
-                medications.map((medication, index) => (
-                  <ResidentMedication
-                    key={medication.id || index}
-                    medication={medication}
-                    onEdit={() => openModal("editMedication", medication)}
-                  />
-                ))
-              ) : (
-                <p className="text-gray-500">No medications found.</p>
-              )}
-            </div>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="careplan">
-          <div>
-            {carePlans.length > 0 ? (
-              <EditCarePlan
-                careplan={carePlans[0]}
-                residentId={residentProfile}
-                onCarePlanUpdated={() => {
-                  queryClient.invalidateQueries({
-                    queryKey: ["carePlans", residentProfile],
-                  });
-                }}
-              />
+            {isMedicalHistoryLoading ? (
+              <LoadingSpinner />
             ) : (
-              <div className="flex flex-col items-center mt-4">
-                <p className="text-gray-500">No care plan found.</p>
-                <Button
-                  onClick={handleCreateCarePlan}
-                  variant="default"
-                  className="mt-2"
-                  disabled={isCreatingCarePlan}
-                >
-                  {isCreatingCarePlan ? "Creating..." : "Create Care Plan"}
-                </Button>
+              <div className="mt-4 space-y-4">
+                {medicalHistory.length > 0 ? (
+                  medicalHistory.map((record, index) => (
+                    <MedicalHistoryCard
+                      key={index}
+                      record={record}
+                      onEdit={() => openModal("editMedicalHistory", record)}
+                    />
+                  ))
+                ) : (
+                  <div className="text-center text-gray-500 p-8 border rounded-lg bg-gray-50">
+                    No medical records found for this resident.
+                  </div>
+                )}
               </div>
             )}
           </div>
         </TabsContent>
 
-        <TabsContent value="wellness">
-          <div className="space-y-4">
+        <TabsContent value="medication">
+          <div className="p-6 border rounded-lg">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Wellness Reports</h2>
+              <h2 className="text-lg font-semibold">Medication List</h2>
+              <Button onClick={() => openModal("createMedication")}>
+                <Plus className="h-4 w-4 mr-1" />
+                Add Medication
+              </Button>
+            </div>
+
+            {isMedicationsLoading ? (
+              <LoadingSpinner />
+            ) : (
+              <div className="space-y-4 mt-4">
+                {medications.length > 0 ? (
+                  medications.map((medication, index) => (
+                    <ResidentMedication
+                      key={medication.id || index}
+                      medication={medication}
+                      onEdit={() => openModal("editMedication", medication)}
+                    />
+                  ))
+                ) : (
+                  <div className="text-center text-gray-500 p-8 border rounded-lg bg-gray-50">
+                    No medications found for this resident.
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="careplan">
+          {isCarePlansLoading ? (
+            <LoadingSpinner />
+          ) : (
+            <div>
+              {carePlans.length > 0 ? (
+                <EditCarePlan
+                  careplan={carePlans[0]}
+                  residentId={residentProfile}
+                  onCarePlanUpdated={() => {
+                    queryClient.invalidateQueries({
+                      queryKey: ["carePlans", residentProfile],
+                    });
+                  }}
+                />
+              ) : (
+                <div className="flex flex-col items-center mt-4 p-8 border rounded-lg bg-gray-50">
+                  <p className="text-gray-500 mb-4">
+                    No care plan found for this resident.
+                  </p>
+                  <Button
+                    onClick={handleCreateCarePlan}
+                    variant="default"
+                    disabled={isCreatingCarePlan}
+                  >
+                    {isCreatingCarePlan ? (
+                      <>
+                        <Spinner />
+                        Creating...
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="mr-1 h-4 w-4" />
+                        Create Care Plan
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="wellness">
+          <div className="space-y-4 p-6 border rounded-lg">
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-semibold">Wellness Reports</h2>
               <Button onClick={() => openModal("createWellnessReport")}>
+                <Plus className="h-4 w-4 mr-1" />
                 Create Wellness Report
               </Button>
             </div>
-            <WellnessReportList
-              reports={wellnessReports}
-              residentId={residentProfile}
-              onReportDeleted={refetchWellnessReports}
-              onReportUpdated={refetchWellnessReports}
-            />
+
+            {isWellnessReportsLoading ? (
+              <LoadingSpinner />
+            ) : (
+              <WellnessReportList
+                reports={wellnessReports}
+                residentId={residentProfile}
+                onReportDeleted={refetchWellnessReports}
+                onReportUpdated={refetchWellnessReports}
+              />
+            )}
           </div>
         </TabsContent>
       </Tabs>

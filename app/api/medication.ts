@@ -89,6 +89,35 @@ export const updateMedication = async (
   }
 };
 
+export const deleteMedication = async (
+  residentId: string,
+  medicationId: string,
+): Promise<boolean> => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/medications/${medicationId}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const errData = await response.json();
+      throw Error(
+        errData.detail || "Error deleting medication for the resident",
+      );
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error deleting medication for the resident:", error);
+    return false;
+  }
+};
+
 export const getMedicationById = async (
   residentId: string,
   medicationId: string,
@@ -120,34 +149,6 @@ export const getMedicationById = async (
       console.error("getMedicationById error:", error);
     }
     return null;
-  }
-};
-
-
-export const deleteMedication = async (
-  residentId: string,
-  medicationId: string
-): Promise<void> => {
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/medications/${medicationId}`,
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (!response.ok) {
-      const errData = await response.json();
-      throw Error(
-        errData.detail || "Error deleting medication"
-      );
-    }
-  } catch (error) {
-    console.error("Error deleting medication:", error);
-    throw error;
   }
 };
 

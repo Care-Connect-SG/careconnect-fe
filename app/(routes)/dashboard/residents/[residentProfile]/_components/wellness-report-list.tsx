@@ -1,99 +1,227 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
+import { deleteWellnessReport } from "@/app/api/wellness-report";
 import {
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useToast } from "@/hooks/use-toast";
 import { WellnessReportRecord } from "@/types/wellness-report";
 import { format } from "date-fns";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { Edit, MoreHorizontal, Trash } from "lucide-react";
+import React, { useState } from "react";
+import EditWellnessReportDialog from "./edit-wellness-report-dialog";
 
-interface Props {
+interface WellnessReportListProps {
   reports: WellnessReportRecord[];
+  residentId: string;
+  onReportDeleted: () => void;
+  onReportUpdated: () => void;
 }
 
-const WellnessReportList: React.FC<Props> = ({ reports }) => {
-  const router = useRouter();
-  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
+const WellnessReportList: React.FC<WellnessReportListProps> = ({
+  reports,
+  residentId,
+  onReportDeleted,
+  onReportUpdated,
+}) => {
+  const { toast } = useToast();
+  const [editingReport, setEditingReport] =
+    useState<WellnessReportRecord | null>(null);
+  const [reportToDelete, setReportToDelete] =
+    useState<WellnessReportRecord | null>(null);
 
-  const handleViewReport = (reportId: string) => {
-    router.push(`wellness/${reportId}`);
+  const handleDelete = async (reportId: string | undefined) => {
+    if (!reportId) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Cannot delete report: Missing report ID",
+      });
+      return;
+    }
+
+    try {
+      await deleteWellnessReport(residentId, reportId);
+      toast({
+        variant: "default",
+        title: "Success",
+        description: "Wellness Report Deleted Successfully!",
+      });
+      onReportDeleted();
+      setReportToDelete(null);
+    } catch (error: any) {
+      console.error("Error deleting wellness report:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: `Error: ${error.message}`,
+      });
+    }
   };
 
-  const sortedReports = [...reports].sort((a, b) => {
-    const dateA = new Date(a.date).getTime();
-    const dateB = new Date(b.date).getTime();
-    return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
-  });
+  const handleEdit = (report: WellnessReportRecord) => {
+    if (!report.id) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Cannot edit report: Missing report ID",
+      });
+      return;
+    }
+    setEditingReport(report);
+  };
+
+  const formatDate = (dateString: string) => {
+    try {
+      return format(new Date(dateString), "PPP");
+    } catch (error) {
+      return dateString;
+    }
+  };
 
   return (
-    <div className="mt-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold">Wellness Reports</h2>
-
-        <div className="flex items-center gap-2">
-          <Label className="text-sm text-gray-700">Sort by:</Label>
-          <Select
-            onValueChange={(value) =>
-              setSortOrder(value as "newest" | "oldest")
-            }
-            defaultValue="newest"
-          >
-            <SelectTrigger className="w-36">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="newest">Most Recent</SelectItem>
-              <SelectItem value="oldest">Oldest</SelectItem>
-            </SelectContent>
-          </Select>
+    <div className="space-y-4">
+      {reports.length === 0 ? (
+        <div className="text-center text-gray-500 p-8 border rounded-lg bg-gray-50">
+          No wellness reports found for this resident. Create a new report to
+          get started.
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6">
-        {sortedReports.length === 0 ? (
-          <p className="text-gray-500 text-sm">No wellness reports found.</p>
-        ) : (
-          sortedReports.map((report, index) => (
-            <Card
-              key={index}
-              className="p-6 border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition"
-            >
-              <div className="flex flex-col gap-2">
-                <div className="text-sm font-semibold text-blue-700">
-                  {format(new Date(report.date), "dd/MM/yyyy")} Monthly Report
+      ) : (
+        [...reports]
+          .sort(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+          )
+          .map((report) => (
+            <Card key={report.id} className="rounded-xl bg-gray-50">
+              <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h3 className=" font-bold tracking-tight">
+                    <span className="text-xl text-muted-foreground font-normal">
+                      {formatDate(report.date)}
+                    </span>
+                  </h3>
                 </div>
-
-                <p className="text-gray-500 text-sm">
-                  <span className="font-medium">Resident ID:</span>{" "}
-                  {report.resident_id}
-                </p>
-
-                <p className="text-gray-800 text-sm">
-                  {report.monthly_summary.slice(0, 200)}...
-                </p>
-
-                <div className="flex justify-end pt-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => handleViewReport(report.id)}
-                    className="text-blue-600 border-blue-600 hover:bg-blue-50"
-                  >
-                    View Report
-                  </Button>
-                </div>
-              </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <MoreHorizontal className="h-5 w-5" />
+                      <span className="sr-only">Open menu</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={() => handleEdit(report)}
+                      className="cursor-pointer"
+                    >
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setReportToDelete(report)}
+                      className="cursor-pointer text-red-600 focus:text-red-600"
+                    >
+                      <Trash className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </CardHeader>
+              <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {[
+                  { label: "Summary", value: report.monthly_summary },
+                  { label: "Medical Summary", value: report.medical_summary },
+                  {
+                    label: "Medication Update",
+                    value: report.medication_update,
+                  },
+                  {
+                    label: "Nutrition & Hydration",
+                    value: report.nutrition_hydration,
+                  },
+                  {
+                    label: "Mobility & Physical",
+                    value: report.mobility_physical,
+                  },
+                  {
+                    label: "Cognitive & Emotional",
+                    value: report.cognitive_emotional,
+                  },
+                  {
+                    label: "Social Engagement",
+                    value: report.social_engagement,
+                  },
+                ]
+                  .filter(({ value }) => !!value)
+                  .map(({ label, value }) => (
+                    <div key={label} className="space-y-2">
+                      <h4 className="font-semibold text-gray-500">{label}</h4>
+                      <p className="text-sm text-gray-800">{value}</p>
+                    </div>
+                  ))}
+              </CardContent>
             </Card>
           ))
-        )}
-      </div>
+      )}
+
+      {editingReport && (
+        <EditWellnessReportDialog
+          isOpen={!!editingReport}
+          onClose={() => setEditingReport(null)}
+          residentId={residentId}
+          initialData={editingReport}
+          onReportUpdated={() => {
+            onReportUpdated();
+            setEditingReport(null);
+            toast({
+              variant: "default",
+              title: "Success",
+              description: "Wellness Report Updated Successfully!",
+            });
+          }}
+        />
+      )}
+
+      <AlertDialog
+        open={!!reportToDelete}
+        onOpenChange={() => setReportToDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              wellness report from{" "}
+              {reportToDelete ? formatDate(reportToDelete.date) : ""}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() =>
+                reportToDelete?.id && handleDelete(reportToDelete.id)
+              }
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

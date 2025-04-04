@@ -3,6 +3,7 @@
 import { getForms } from "@/app/api/form";
 import { deleteReport, getReports } from "@/app/api/report";
 import { getCurrentUser } from "@/app/api/user";
+import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import { FormResponse } from "@/types/form";
@@ -24,6 +25,7 @@ export default function IncidentReports() {
   const [activeTab, setActiveTab] = useState("all");
   const [reports, setReports] = useState<ReportResponse[]>([]);
   const [forms, setForms] = useState<FormResponse[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     search: "",
     reporterId: [],
@@ -45,15 +47,30 @@ export default function IncidentReports() {
       setUser(user);
     } catch (error) {
       console.error("Error fetching user:", error);
+      toast({
+        title: "Error fetching user data",
+        description: "Failed to load user information.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchReports = async () => {
     try {
+      setLoading(true);
       const data = await getReports();
       setReports(data);
     } catch (error) {
-      console.error("Failed to fetch reports");
+      console.error("Failed to fetch reports", error);
+      toast({
+        title: "Error fetching reports",
+        description: "Failed to load reports data.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -66,7 +83,12 @@ export default function IncidentReports() {
         description: "Your report has been deleted successfully.",
       });
     } catch (error) {
-      console.error("Failed to delete report");
+      console.error("Failed to delete report", error);
+      toast({
+        title: "Error deleting report",
+        description: "Failed to delete the report.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -75,7 +97,7 @@ export default function IncidentReports() {
       const data = await getForms("Published");
       setForms(data);
     } catch (error) {
-      console.error("Failed to fetch forms");
+      console.error("Failed to fetch forms", error);
     }
   };
 
@@ -143,17 +165,27 @@ export default function IncidentReports() {
     });
   }, [activeTab, filterOptions, reports, user]);
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Spinner />
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col gap-8 p-8 ">
-      <h1 className="scroll-m-20 text-2xl font-semibold tracking-tight">
-        Incident Reports
-      </h1>
-      <IncidentReportFilters
-        uniqueReporters={uniqueReporters}
-        uniqueResidents={uniqueResidents}
-        filterOptions={filterOptions}
-        setFilterOptions={setFilterOptions}
-      />
+    <div className="p-8 flex flex-col gap-8">
+      <div className="flex flex-row items-center justify-between">
+        <h1 className="text-2xl font-semibold text-gray-800">
+          Incident Reports
+        </h1>
+        <IncidentReportFilters
+          uniqueReporters={uniqueReporters}
+          uniqueResidents={uniqueResidents}
+          filterOptions={filterOptions}
+          setFilterOptions={setFilterOptions}
+        />
+      </div>
 
       <div>
         <Tabs defaultValue="all" onValueChange={setActiveTab}>
@@ -161,7 +193,7 @@ export default function IncidentReports() {
             <TabsTrigger value="all">All Reports</TabsTrigger>
             <TabsTrigger value="my">My Reports</TabsTrigger>
           </TabsList>
-          <TabsContent value="all" className="mt-2">
+          <TabsContent value="all" className="mt-4">
             <ReportsTable
               user={user!}
               reports={filteredReports}
@@ -169,7 +201,7 @@ export default function IncidentReports() {
               handleDelete={handleDeleteReport}
             />
           </TabsContent>
-          <TabsContent value="my" className="mt-2">
+          <TabsContent value="my" className="mt-4">
             <ReportsTable
               user={user!}
               reports={filteredReports}

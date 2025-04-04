@@ -310,6 +310,14 @@ const TaskManagement = () => {
               view={currentView}
               onChange={(view) => setCurrentView(view)}
             />
+            <Button
+              variant="outline"
+              onClick={handleDownloadTasks}
+              className="rounded-lg py-5"
+            >
+              <Download className="h-4 w-4 mr-1" />
+              Download Tasks
+            </Button>
             <TaskForm open={isOpen} onClose={() => setIsOpen(false)} />
           </div>
         </div>
@@ -350,16 +358,6 @@ const TaskManagement = () => {
               onChange={(e) => updateFilter("search", e.target.value)}
             />
           </div>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleDownloadTasks}
-            className="flex items-center gap-2"
-          >
-            <Download className="h-4 w-4" />
-            Download Tasks
-          </Button>
 
           <Select
             value={filters.status ?? ""}

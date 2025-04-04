@@ -79,7 +79,7 @@ const UpcomingEvents = () => {
         {upcomingEvents.map((event) => (
           <Card
             key={event.id}
-            className="p-4 bg-gray-50 flex items-center justify-between"
+            className="p-4 bg-gray-50 flex items-center justify-between border-xl"
           >
             <div>
               <p className="font-medium text-gray-900">{event.title}</p>

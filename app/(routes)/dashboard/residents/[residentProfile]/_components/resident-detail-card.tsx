@@ -1,5 +1,6 @@
 "use client";
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import React from "react";
 
 interface ResidentDetailsCardProps {
@@ -13,13 +14,6 @@ interface ResidentDetailsCardProps {
   primaryNurse: string;
 }
 
-const nurseOptions = [
-  { value: "", label: "Select Primary Nurse" },
-  { value: "nurse_a", label: "Nurse A" },
-  { value: "nurse_b", label: "Nurse B" },
-  { value: "nurse_c", label: "Nurse C" },
-];
-
 const ResidentDetailsCard: React.FC<ResidentDetailsCardProps> = ({
   gender,
   dateOfBirth,
@@ -27,52 +21,66 @@ const ResidentDetailsCard: React.FC<ResidentDetailsCardProps> = ({
   emergencyContactName,
   emergencyContactNumber,
   relationship,
+  additionalNotes,
   primaryNurse,
 }) => {
-  return (
-    <div className="w-full max-w-4xl mx-auto p-4 bg-white border rounded-md">
-      <h3 className="text-xl font-semibold mb-4">Resident Details</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <p className="text-sm text-gray-600">
-            <span className="font-medium">Gender:</span> {gender}
-          </p>
-        </div>
-        <div>
-          <p className="text-sm text-gray-600">
-            <span className="font-medium">Date of Birth:</span> {dateOfBirth}
-          </p>
-        </div>
-        <div>
-          <p className="text-sm text-gray-600">
-            <span className="font-medium">NRIC Number:</span> {nricNumber}
-          </p>
-        </div>
-        <div>
-          <p className="text-sm text-gray-600">
-            <span className="font-medium">Relationship:</span> {relationship}
-          </p>
-        </div>
-        <div>
-          <p className="text-sm text-gray-600">
-            <span className="font-medium">Emergency Contact:</span>{" "}
-            {emergencyContactName}
-          </p>
-        </div>
-        <div>
-          <p className="text-sm text-gray-600">
-            <span className="font-medium">Contact Number:</span>{" "}
-            {emergencyContactNumber}
-          </p>
-        </div>
+  const renderCellContent = (value: string | undefined) => {
+    if (!value) {
+      return <p className="text-sm text-gray-400">N/A</p>;
+    }
+    return <p className="text-sm">{value}</p>;
+  };
 
-        <div>
-          <p className="text-sm text-gray-600">
-            <span className="font-medium">Nurse:</span> {primaryNurse}
-          </p>
+  return (
+    <Card className="w-full">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0">
+        <CardTitle className="text-lg font-semibold">
+          Resident Details
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 gap-6">
+          <div>
+            <p className="text-sm font-medium text-gray-500">Gender</p>
+            {renderCellContent(gender)}
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-500">Date of Birth</p>
+            {renderCellContent(dateOfBirth)}
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-500">NRIC Number</p>
+            {renderCellContent(nricNumber)}
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-500">Relationship</p>
+            {renderCellContent(relationship)}
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-500">
+              Emergency Contact
+            </p>
+            {renderCellContent(emergencyContactName)}
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-500">Contact Number</p>
+            {renderCellContent(emergencyContactNumber)}
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-500">Primary Nurse</p>
+            {renderCellContent(primaryNurse)}
+          </div>
         </div>
-      </div>
-    </div>
+        {additionalNotes && (
+          <div className="mt-4">
+            <p className="text-sm font-medium text-gray-500">
+              Additional Notes
+            </p>
+            {renderCellContent(additionalNotes)}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 

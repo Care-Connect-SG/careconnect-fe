@@ -84,7 +84,7 @@ const StaffWorkload = () => {
               return (
                 <div
                   key={nurse.id}
-                  className="p-4 bg-gray-50 rounded-lg space-y-3"
+                  className="p-4 bg-gray-50 rounded-xl space-y-3 border"
                 >
                   <div className="flex items-center justify-between">
                     <h3 className="font-medium text-gray-900">{nurse.name}</h3>

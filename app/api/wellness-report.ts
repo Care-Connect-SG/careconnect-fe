@@ -1,9 +1,9 @@
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { WellnessReportRecord } from "@/types/wellness-report";
 
-export const getWellnessReportsForResident = async (
+export async function getWellnessReportsForResident(
   residentId: string,
-): Promise<WellnessReportRecord[]> => {
+): Promise<WellnessReportRecord[]> {
   try {
     const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/wellness-reports`,
@@ -14,28 +14,26 @@ export const getWellnessReportsForResident = async (
     );
 
     if (!response.ok) {
-      const errData = await response.json();
-      throw Error(errData.detail || "Error fetching wellness reports");
+      const errorText = await response.text();
+      throw new Error(`Failed to fetch wellness reports: ${errorText}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    console.log("Wellness reports response:", JSON.stringify(data, null, 2));
+    return data;
   } catch (error) {
-    console.error("Error fetching wellness reports:", error);
-    return [];
+    console.error("Error in getWellnessReportsForResident:", error);
+    throw error;
   }
-};
+}
 
 export const getWellnessReportById = async (
   residentId: string,
   reportId: string,
 ): Promise<WellnessReportRecord | null> => {
   try {
-    const response = await fetch(
+    const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/wellness-reports/${reportId}`,
-      {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      },
     );
 
     if (!response.ok) {
@@ -50,80 +48,104 @@ export const getWellnessReportById = async (
   }
 };
 
-export const createWellnessReport = async (
+export async function createWellnessReport(
   residentId: string,
-  reportData: Partial<WellnessReportRecord>,
-): Promise<WellnessReportRecord | null> => {
+  reportData: Omit<WellnessReportRecord, "_id" | "resident_id">,
+): Promise<WellnessReportRecord> {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/wellness-reports`,
+    const response = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/wellness-reports/`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(reportData),
       },
     );
 
     if (!response.ok) {
-      const errData = await response.json();
-      throw Error(errData.detail || "Error creating wellness report");
+      const errorText = await response.text();
+      throw new Error(`Failed to create wellness report: ${errorText}`);
     }
 
     return await response.json();
   } catch (error) {
-    console.error("Error creating wellness report:", error);
-    return null;
+    console.error("Error in createWellnessReport:", error);
+    throw error;
   }
-};
+}
 
-export const updateWellnessReport = async (
+export async function updateWellnessReport(
   residentId: string,
   reportId: string,
-  updatedData: Partial<WellnessReportRecord>,
-): Promise<WellnessReportRecord | null> => {
+  updateData: Partial<WellnessReportRecord>,
+): Promise<WellnessReportRecord> {
   try {
-    const response = await fetch(
+    const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/wellness-reports/${reportId}`,
       {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedData),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updateData),
       },
     );
 
     if (!response.ok) {
-      const errData = await response.json();
-      throw Error(errData.detail || "Error updating wellness report");
+      const errorText = await response.text();
+      throw new Error(`Failed to update wellness report: ${errorText}`);
     }
 
     return await response.json();
   } catch (error) {
-    console.error("Error updating wellness report:", error);
-    return null;
+    console.error("Error in updateWellnessReport:", error);
+    throw error;
   }
-};
+}
 
-export const deleteWellnessReport = async (
+export async function deleteWellnessReport(
   residentId: string,
   reportId: string,
-): Promise<boolean> => {
+): Promise<void> {
   try {
-    const response = await fetch(
+    const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/wellness-reports/${reportId}`,
       {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
       },
     );
 
     if (!response.ok) {
-      const errData = await response.json();
-      throw Error(errData.detail || "Error deleting wellness report");
+      const errorText = await response.text();
+      throw new Error(`Failed to delete wellness report: ${errorText}`);
+    }
+  } catch (error) {
+    console.error("Error in deleteWellnessReport:", error);
+    throw error;
+  }
+}
+
+export async function generateAIWellnessReport(
+  residentId: string,
+): Promise<WellnessReportRecord> {
+  try {
+    const response = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/wellness-reports/generate-ai`,
+      {
+        method: "POST",
+      },
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to generate AI wellness report: ${errorText}`);
     }
 
-    return true;
+    return await response.json();
   } catch (error) {
-    console.error("Error deleting wellness report:", error);
-    return false;
+    console.error("Error in generateAIWellnessReport:", error);
+    throw error;
   }
-};
+}

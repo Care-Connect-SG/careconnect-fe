@@ -59,12 +59,18 @@ const BCMA_Scanner = () => {
                     try {
                         const med = await getMedicationById(residentId, scannedText);
 
-                        setMedicationId(med.id);
-                        setMedicationInfo({
-                            medication_name: med.medication_name,
-                            dosage: med.dosage,
-                            frequency: med.frequency,
-                        });
+                        if (med) {
+                            setMedicationId(med.id);
+                            setMedicationInfo({
+                                medication_name: med.medication_name,
+                                dosage: med.dosage,
+                                frequency: med.frequency,
+                            });
+                            setError("");
+                        } else {
+                            setError("❌ This resident is not prescribed this medication.");
+                        }
+
                         setError("");
                     } catch {
                         setError("❌ This resident is not prescribed this medication.");
@@ -86,8 +92,9 @@ const BCMA_Scanner = () => {
         if (!residentId || !medicationId) return;
 
         try {
-            const med = await getMedicationById(residentId, medicationId, true);
-            if (med.resident_id === residentId) {
+            const med = await getMedicationById(residentId, medicationId);
+
+            if (med && med.resident_id === residentId) {
                 setMatchStatus("matched");
             } else {
                 setMatchStatus("mismatch");

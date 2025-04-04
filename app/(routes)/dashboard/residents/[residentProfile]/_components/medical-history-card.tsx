@@ -3,6 +3,12 @@
 import { deleteMedicalHistory } from "@/app/api/medical-history";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import {
   MedicalHistory,
@@ -11,9 +17,9 @@ import {
 } from "@/types/medical-history";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Pencil, Trash2 } from "lucide-react";
+import { Edit, MoreHorizontal, Trash } from "lucide-react";
 import { useParams } from "next/navigation";
-import React from "react";
+import React, { useState } from "react";
 
 interface MedicalHistoryCardProps {
   record: MedicalHistory;
@@ -27,9 +33,11 @@ const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { residentProfile } = useParams() as { residentProfile: string };
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
     try {
+      setIsDeleting(true);
       const recordType = inferTemplateType(record) as MedicalHistoryType;
       await deleteMedicalHistory(record.id, recordType, residentProfile);
       toast({
@@ -47,6 +55,8 @@ const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({
         title: "Error",
         description: `Error deleting record: ${error.message}`,
       });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -65,7 +75,7 @@ const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({
       case MedicalHistoryType.CONDITION:
         return (
           <>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-6">
               <div>
                 <p className="text-sm font-medium text-gray-500">Condition</p>
                 <p className="text-sm">
@@ -97,7 +107,7 @@ const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({
                 </p>
               </div>
             </div>
-            <div className="mt-4">
+            <div className="mt-6">
               <p className="text-sm font-medium text-gray-500">
                 Treatment Details
               </p>
@@ -110,7 +120,7 @@ const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({
       case MedicalHistoryType.ALLERGY:
         return (
           <>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-6">
               <div>
                 <p className="text-sm font-medium text-gray-500">Allergen</p>
                 <p className="text-sm">{(record as any).allergen || "N/A"}</p>
@@ -127,7 +137,7 @@ const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({
               </div>
             </div>
             {(record as any).management_notes && (
-              <div className="mt-4">
+              <div className="mt-6">
                 <p className="text-sm font-medium text-gray-500">
                   Management Notes
                 </p>
@@ -139,7 +149,7 @@ const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({
       case MedicalHistoryType.CHRONIC_ILLNESS:
         return (
           <>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-6">
               <div>
                 <p className="text-sm font-medium text-gray-500">Illness</p>
                 <p className="text-sm">
@@ -169,7 +179,7 @@ const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({
                 </p>
               </div>
             </div>
-            <div className="mt-4">
+            <div className="mt-6">
               <p className="text-sm font-medium text-gray-500">
                 Treatment Plan
               </p>
@@ -182,7 +192,7 @@ const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({
       case MedicalHistoryType.SURGICAL:
         return (
           <>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-6">
               <div>
                 <p className="text-sm font-medium text-gray-500">Procedure</p>
                 <p className="text-sm">{(record as any).procedure || "N/A"}</p>
@@ -205,7 +215,7 @@ const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({
               </div>
             </div>
             {(record as any).complications && (
-              <div className="mt-4">
+              <div className="mt-6">
                 <p className="text-sm font-medium text-gray-500">
                   Complications
                 </p>
@@ -217,7 +227,7 @@ const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({
       case MedicalHistoryType.IMMUNIZATION:
         return (
           <>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-6">
               <div>
                 <p className="text-sm font-medium text-gray-500">Vaccine</p>
                 <p className="text-sm">{(record as any).vaccine || "N/A"}</p>
@@ -255,28 +265,36 @@ const MedicalHistoryCard: React.FC<MedicalHistoryCardProps> = ({
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">
+    <Card className="w-full border bg-gray-50 rounded-xl">
+      <CardHeader className="flex flex-row items-center justify-between py-3">
+        <CardTitle className="text-sm font-bold">
           {inferTemplateType(record).toUpperCase()}
         </CardTitle>
-        <div className="flex space-x-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onEdit && onEdit(record)}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleDelete}
-            className="text-red-500 hover:text-red-700"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <MoreHorizontal className="h-5 w-5" />
+              <span className="sr-only">Open menu</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              onClick={() => onEdit && onEdit(record)}
+              className="cursor-pointer"
+            >
+              <Edit className="mr-2 h-4 w-4" />
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={handleDelete}
+              className="cursor-pointer text-red-600 focus:text-red-600"
+              disabled={isDeleting}
+            >
+              <Trash className="mr-2 h-4 w-4" />
+              {isDeleting ? "Deleting..." : "Delete"}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </CardHeader>
       <CardContent>{renderRecordDetails()}</CardContent>
     </Card>

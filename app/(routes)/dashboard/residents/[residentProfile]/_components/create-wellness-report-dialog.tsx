@@ -19,7 +19,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
-import { format, isValid } from "date-fns";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 import { Bot, CalendarIcon, Loader2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
@@ -39,6 +40,11 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
   const { toast } = useToast();
   const [isFetchingAI, setIsFetchingAI] = useState(false);
   const [aiGenerated, setAiGenerated] = useState(false);
+
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    new Date(),
+  );
+
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split("T")[0],
     monthly_summary: "",
@@ -52,8 +58,10 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
 
   useEffect(() => {
     if (isOpen) {
+      const today = new Date();
+      setSelectedDate(today);
       setFormData({
-        date: new Date().toISOString().split("T")[0],
+        date: format(today, "yyyy-MM-dd"),
         monthly_summary: "",
         medical_summary: "",
         medication_update: "",
@@ -65,6 +73,23 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
       setAiGenerated(false);
     }
   }, [isOpen]);
+
+  const handleDateChange = (date: Date | undefined) => {
+    setSelectedDate(date);
+    if (date) {
+      setFormData({
+        ...formData,
+        date: format(date, "yyyy-MM-dd"),
+      });
+    } else {
+      const today = new Date();
+      setSelectedDate(today);
+      setFormData({
+        ...formData,
+        date: format(today, "yyyy-MM-dd"),
+      });
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,8 +128,25 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
       }
 
       const aiData = await response.json();
+
+      let reportDate: Date;
+      try {
+        if (aiData.date) {
+          reportDate = new Date(aiData.date);
+          if (isNaN(reportDate.getTime())) {
+            reportDate = new Date();
+          }
+        } else {
+          reportDate = new Date();
+        }
+      } catch (error) {
+        reportDate = new Date();
+      }
+
+      setSelectedDate(reportDate);
+
       setFormData({
-        date: aiData.date || new Date().toISOString().split("T")[0],
+        date: format(reportDate, "yyyy-MM-dd"),
         monthly_summary: aiData.monthly_summary || "",
         medical_summary: aiData.medical_summary || "",
         medication_update: aiData.medication_update || "",
@@ -132,22 +174,20 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
     }
   };
 
-  const formatDate = (dateString: string) => {
-    try {
-      return format(new Date(dateString), "PPP");
-    } catch (error) {
-      return dateString;
-    }
-  };
-
-  const isValidDate = (dateString: string | undefined) => {
-    if (!dateString) return false;
-    try {
-      const date = new Date(dateString);
-      return isValid(date);
-    } catch (error) {
-      return false;
-    }
+  const handleClearAll = () => {
+    const today = new Date();
+    setSelectedDate(today);
+    setFormData({
+      date: format(today, "yyyy-MM-dd"),
+      monthly_summary: "",
+      medical_summary: "",
+      medication_update: "",
+      nutrition_hydration: "",
+      mobility_physical: "",
+      cognitive_emotional: "",
+      social_engagement: "",
+    });
+    setAiGenerated(false);
   };
 
   return (
@@ -179,31 +219,31 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
+          <div className="space-y-1.5">
             <Label htmlFor="date">Date</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className="w-full justify-start text-left font-normal"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !selectedDate && "text-muted-foreground",
+                  )}
                   type="button"
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.date && isValidDate(formData.date)
-                    ? formatDate(formData.date)
-                    : "Select date"}
+                  {selectedDate ? (
+                    format(selectedDate, "MMMM d, yyyy")
+                  ) : (
+                    <span>Select date</span>
+                  )}
+                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
-                  selected={formData.date ? new Date(formData.date) : undefined}
-                  onSelect={(date) => {
-                    setFormData({
-                      ...formData,
-                      date: date ? date.toISOString().split("T")[0] : "",
-                    });
-                  }}
+                  selected={selectedDate}
+                  onSelect={handleDateChange}
                   initialFocus
                 />
               </PopoverContent>
@@ -219,7 +259,7 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
             ["cognitive_emotional", "Cognitive & Emotional"],
             ["social_engagement", "Social Engagement"],
           ].map(([field, label]) => (
-            <div key={field}>
+            <div key={field} className="space-y-1.5">
               <Label htmlFor={field}>{label}</Label>
               <Textarea
                 id={field}
@@ -235,23 +275,7 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
 
           <DialogFooter>
             <div className="flex justify-between items-center w-full">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setFormData({
-                    date: new Date().toISOString().split("T")[0],
-                    monthly_summary: "",
-                    medical_summary: "",
-                    medication_update: "",
-                    nutrition_hydration: "",
-                    mobility_physical: "",
-                    cognitive_emotional: "",
-                    social_engagement: "",
-                  });
-                  setAiGenerated(false);
-                }}
-              >
+              <Button type="button" variant="outline" onClick={handleClearAll}>
                 Clear All
               </Button>
               <div className="space-x-2">

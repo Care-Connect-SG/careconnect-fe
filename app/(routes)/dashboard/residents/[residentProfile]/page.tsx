@@ -23,19 +23,19 @@ import { getWellnessReportsForResident } from "@/app/api/wellness-report";
 
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import CreateMedicalHistoryDialog from "./_components/create-medical-history";
 import CreateMedication from "./_components/create-medication-dialog";
 import CreateWellnessReportDialog from "./_components/create-wellness-report-dialog";
 import EditCarePlan from "./_components/edit-careplan";
 import EditMedicalHistoryModal from "./_components/edit-medical-history-dialog";
 import EditMedication from "./_components/edit-medication";
 import EditResidentDialog from "./_components/edit-resident-dialog";
-import MedicalHistoryCard from "./_components/medical-history-card";
-import CreateMedicalHistoryDialog from "./_components/medical-history-form";
 import ResidentDetailsCard from "./_components/resident-detail-card";
 import ResidentDetailsNotesCard from "./_components/resident-detail-notes";
+import MedicalHistoryCard from "./_components/resident-medical-history";
 import ResidentMedication from "./_components/resident-medication";
 import ResidentProfileHeader from "./_components/resident-profile-header";
-import WellnessReportList from "./_components/wellness-report-list";
+import WellnessReportList from "./_components/resident-wellness-report";
 
 import { Spinner } from "@/components/ui/spinner";
 import { useBreadcrumb } from "@/context/breadcrumb-context";

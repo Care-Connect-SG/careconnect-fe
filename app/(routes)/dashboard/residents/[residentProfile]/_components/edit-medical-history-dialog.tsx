@@ -20,9 +20,10 @@ import {
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 import { MedicalHistory, MedicalHistoryType } from "@/types/medical-history";
 import { DialogDescription } from "@radix-ui/react-dialog";
-import { format, isValid } from "date-fns";
+import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -160,12 +161,6 @@ const templateConfig: Record<MedicalHistoryType, TemplateConfig> = {
   },
 };
 
-const formSchema = z.object({
-  formData: z.record(z.string().optional()),
-});
-
-type FormValues = z.infer<typeof formSchema>;
-
 interface EditMedicalHistoryDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -190,22 +185,59 @@ const EditMedicalHistoryDialog: React.FC<EditMedicalHistoryDialogProps> = ({
 
   const [formValues, setFormValues] = useState<Record<string, string>>({});
 
+  const [selectedDates, setSelectedDates] = useState<
+    Record<string, Date | undefined>
+  >({});
+
   useEffect(() => {
     if (isOpen && initialData && currentTemplate) {
       const values: Record<string, string> = {};
+      const dates: Record<string, Date | undefined> = {};
+
       currentTemplate.fields.forEach((field: FieldConfig) => {
         const value = (initialData as any)[field.name];
         values[field.name] = value ?? "";
+
+        if (field.type === "date" && value) {
+          try {
+            const dateObj = new Date(value);
+            if (dateObj instanceof Date && !isNaN(dateObj.getTime())) {
+              dates[field.name] = dateObj;
+            }
+          } catch (error) {}
+        }
       });
+
       setFormValues(values);
+      setSelectedDates(dates);
     }
   }, [isOpen, initialData, currentTemplate]);
 
   useEffect(() => {
     if (!isOpen) {
       setFormValues({});
+      setSelectedDates({});
     }
   }, [isOpen]);
+
+  const handleDateSelect = (fieldName: string, date: Date | undefined) => {
+    setSelectedDates((prev) => ({
+      ...prev,
+      [fieldName]: date,
+    }));
+
+    if (date) {
+      setFormValues((prev) => ({
+        ...prev,
+        [fieldName]: format(date, "yyyy-MM-dd"),
+      }));
+    } else {
+      setFormValues((prev) => ({
+        ...prev,
+        [fieldName]: "",
+      }));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -248,24 +280,6 @@ const EditMedicalHistoryDialog: React.FC<EditMedicalHistoryDialogProps> = ({
 
   if (!isOpen || !currentTemplate) return null;
 
-  const formatDate = (dateString: string) => {
-    try {
-      return format(new Date(dateString), "PPP");
-    } catch (error) {
-      return dateString;
-    }
-  };
-
-  const isValidDate = (dateString: string | undefined) => {
-    if (!dateString) return false;
-    try {
-      const date = new Date(dateString);
-      return isValid(date);
-    } catch (error) {
-      return false;
-    }
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md w-full p-6 max-h-[80vh] overflow-y-auto">
@@ -278,7 +292,7 @@ const EditMedicalHistoryDialog: React.FC<EditMedicalHistoryDialogProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {currentTemplate?.fields.map((field: FieldConfig) => (
-            <div key={field.name}>
+            <div key={field.name} className="space-y-1.5">
               <Label htmlFor={field.name}>{field.label}</Label>
               {field.type === "textarea" ? (
                 <Textarea
@@ -296,33 +310,29 @@ const EditMedicalHistoryDialog: React.FC<EditMedicalHistoryDialogProps> = ({
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
-                      className="w-full justify-start text-left font-normal"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !selectedDates[field.name] && "text-muted-foreground",
+                      )}
                       type="button"
                     >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formValues[field.name] &&
-                      isValidDate(formValues[field.name])
-                        ? formatDate(formValues[field.name])
-                        : `Select ${field.label}`}
+                      {selectedDates[field.name] ? (
+                        format(
+                          selectedDates[field.name] as Date,
+                          "MMMM d, yyyy",
+                        )
+                      ) : (
+                        <span>{`Select ${field.label.toLowerCase()}`}</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
-                      selected={
-                        formValues[field.name] &&
-                        isValidDate(formValues[field.name])
-                          ? new Date(formValues[field.name])
-                          : undefined
-                      }
-                      onSelect={(date) => {
-                        setFormValues({
-                          ...formValues,
-                          [field.name]: date
-                            ? date.toISOString().split("T")[0]
-                            : "",
-                        });
-                      }}
+                      selected={selectedDates[field.name]}
+                      onSelect={(date) => handleDateSelect(field.name, date)}
+                      initialFocus
                     />
                   </PopoverContent>
                 </Popover>

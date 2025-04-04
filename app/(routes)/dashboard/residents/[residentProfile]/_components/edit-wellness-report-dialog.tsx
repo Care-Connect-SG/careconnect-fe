@@ -18,8 +18,9 @@ import {
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 import { WellnessReportRecord } from "@/types/wellness-report";
-import { format, isValid } from "date-fns";
+import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
@@ -39,6 +40,9 @@ const EditWellnessReportDialog: React.FC<EditWellnessReportDialogProps> = ({
   onReportUpdated,
 }) => {
   const { toast } = useToast();
+
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+
   const [formData, setFormData] = useState<Partial<WellnessReportRecord>>({
     date: "",
     monthly_summary: "",
@@ -62,8 +66,40 @@ const EditWellnessReportDialog: React.FC<EditWellnessReportDialogProps> = ({
         cognitive_emotional: initialData.cognitive_emotional || "",
         social_engagement: initialData.social_engagement || "",
       });
+
+      try {
+        if (initialData.date) {
+          const dateObj = new Date(initialData.date);
+          if (dateObj instanceof Date && !isNaN(dateObj.getTime())) {
+            setSelectedDate(dateObj);
+          }
+        }
+      } catch (error) {
+        console.error("Error parsing date:", error);
+      }
     }
   }, [isOpen, initialData]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedDate(undefined);
+    }
+  }, [isOpen]);
+
+  const handleDateChange = (date: Date | undefined) => {
+    setSelectedDate(date);
+    if (date) {
+      setFormData({
+        ...formData,
+        date: format(date, "yyyy-MM-dd"),
+      });
+    } else {
+      setFormData({
+        ...formData,
+        date: "",
+      });
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,24 +131,6 @@ const EditWellnessReportDialog: React.FC<EditWellnessReportDialogProps> = ({
     }
   };
 
-  const formatDate = (dateString: string) => {
-    try {
-      return format(new Date(dateString), "PPP");
-    } catch (error) {
-      return dateString;
-    }
-  };
-
-  const isValidDate = (dateString: string | undefined) => {
-    if (!dateString) return false;
-    try {
-      const date = new Date(dateString);
-      return isValid(date);
-    } catch (error) {
-      return false;
-    }
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto">
@@ -121,126 +139,58 @@ const EditWellnessReportDialog: React.FC<EditWellnessReportDialogProps> = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
+          <div className="space-y-1.5">
             <Label htmlFor="date">Date</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className="w-full justify-start text-left font-normal"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !selectedDate && "text-muted-foreground",
+                  )}
                   type="button"
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.date && isValidDate(formData.date)
-                    ? formatDate(formData.date)
-                    : "Select date"}
+                  {selectedDate ? (
+                    format(selectedDate, "MMMM d, yyyy")
+                  ) : (
+                    <span>Select date</span>
+                  )}
+                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
-                  selected={formData.date ? new Date(formData.date) : undefined}
-                  onSelect={(date) => {
-                    setFormData({
-                      ...formData,
-                      date: date ? date.toISOString().split("T")[0] : "",
-                    });
-                  }}
+                  selected={selectedDate}
+                  onSelect={handleDateChange}
                   initialFocus
                 />
               </PopoverContent>
             </Popover>
           </div>
 
-          <div>
-            <Label htmlFor="monthly_summary">Monthly Summary</Label>
-            <Textarea
-              id="monthly_summary"
-              value={formData.monthly_summary}
-              onChange={(e) =>
-                setFormData({ ...formData, monthly_summary: e.target.value })
-              }
-              rows={3}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="medical_summary">Medical Summary</Label>
-            <Textarea
-              id="medical_summary"
-              value={formData.medical_summary}
-              onChange={(e) =>
-                setFormData({ ...formData, medical_summary: e.target.value })
-              }
-              rows={3}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="medication_update">Medication Update</Label>
-            <Textarea
-              id="medication_update"
-              value={formData.medication_update}
-              onChange={(e) =>
-                setFormData({ ...formData, medication_update: e.target.value })
-              }
-              rows={3}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="nutrition_hydration">Nutrition & Hydration</Label>
-            <Textarea
-              id="nutrition_hydration"
-              value={formData.nutrition_hydration}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  nutrition_hydration: e.target.value,
-                })
-              }
-              rows={3}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="mobility_physical">Mobility & Physical</Label>
-            <Textarea
-              id="mobility_physical"
-              value={formData.mobility_physical}
-              onChange={(e) =>
-                setFormData({ ...formData, mobility_physical: e.target.value })
-              }
-              rows={3}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="cognitive_emotional">Cognitive & Emotional</Label>
-            <Textarea
-              id="cognitive_emotional"
-              value={formData.cognitive_emotional}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  cognitive_emotional: e.target.value,
-                })
-              }
-              rows={3}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="social_engagement">Social Engagement</Label>
-            <Textarea
-              id="social_engagement"
-              value={formData.social_engagement}
-              onChange={(e) =>
-                setFormData({ ...formData, social_engagement: e.target.value })
-              }
-              rows={3}
-            />
-          </div>
+          {[
+            ["monthly_summary", "Summary"],
+            ["medical_summary", "Medical Summary"],
+            ["medication_update", "Medication Update"],
+            ["nutrition_hydration", "Nutrition & Hydration"],
+            ["mobility_physical", "Mobility & Physical"],
+            ["cognitive_emotional", "Cognitive & Emotional"],
+            ["social_engagement", "Social Engagement"],
+          ].map(([field, label]) => (
+            <div key={field} className="space-y-1.5">
+              <Label htmlFor={field}>{label}</Label>
+              <Textarea
+                id={field}
+                value={(formData as any)[field] || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, [field]: e.target.value }))
+                }
+                rows={3}
+              />
+            </div>
+          ))}
 
           <DialogFooter>
             <div className="flex justify-end space-x-4">

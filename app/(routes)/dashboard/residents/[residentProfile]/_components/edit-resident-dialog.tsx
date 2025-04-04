@@ -193,7 +193,7 @@ const EditResidentDialog: React.FC<EditResidentDialogProps> = ({
             />
           </div>
           <div className="flex justify-end space-x-4">
-            <Button type="button" onClick={onClose}>
+            <Button type="button" onClick={onClose} variant={"secondary"}>
               Cancel
             </Button>
             <Button type="submit">Save</Button>

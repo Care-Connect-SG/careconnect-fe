@@ -24,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -323,17 +324,10 @@ const EditableCarePlan: React.FC<CarePlanProps> = ({
                 <Button
                   onClick={handleSave}
                   variant="default"
-                  className="gap-2"
+                  className="gap-2 w-36"
                   disabled={isSaving}
                 >
-                  {isSaving ? (
-                    <>Saving...</>
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4" />
-                      Save Changes
-                    </>
-                  )}
+                  {isSaving ? <Spinner /> : "Save Changes"}
                 </Button>
               </div>
             )}

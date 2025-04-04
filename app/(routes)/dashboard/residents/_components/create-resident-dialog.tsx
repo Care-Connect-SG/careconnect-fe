@@ -376,13 +376,13 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
               </SelectContent>
             </Select>
           </div>
+          <DialogFooter>
+            <Button variant="outline" type="button" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit">Save</Button>
+          </DialogFooter>
         </form>
-        <DialogFooter>
-          <Button variant="outline" type="button" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit">Save</Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

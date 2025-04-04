@@ -13,7 +13,7 @@ import {
   MoreHorizontal,
   Plus,
   Search,
-  XCircle,
+  X,
 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { useState, useEffect } from "react";
@@ -28,10 +28,6 @@ import CreateResidentDialog from "./_components/create-resident-dialog";
 import ResidentCard from "./_components/resident-card";
 
 export default function AllResidentsPage() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -39,23 +35,20 @@ export default function AllResidentsPage() {
   const { toast } = useToast();
 
   const pageParam = searchParams.get("page");
+  const searchParam = searchParams.get("search") || "";
   const currentPage = pageParam ? parseInt(pageParam, 10) : 1;
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
+  const [searchTerm, setSearchTerm] = useState(searchParam);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [debouncedSearchUpdate, setDebouncedSearchUpdate] = useState(false);
 
   const {
     data: totalCount = 0,
     isLoading: isCountLoading,
     isError: isCountError,
   } = useQuery({
-    queryKey: ["residentsCount", debouncedSearchTerm],
-    queryFn: () => getResidentsCount(debouncedSearchTerm),
+    queryKey: ["residentsCount", searchParam],
+    queryFn: () => getResidentsCount(searchParam),
     staleTime: 30000,
   });
 
@@ -67,8 +60,8 @@ export default function AllResidentsPage() {
     isError,
     error,
   } = useQuery({
-    queryKey: ["residents", currentPage, debouncedSearchTerm],
-    queryFn: () => getResidentsByPage(currentPage, 8, debouncedSearchTerm),
+    queryKey: ["residents", currentPage, searchParam],
+    queryFn: () => getResidentsByPage(currentPage, 8, searchParam),
     staleTime: 30000,
   });
 
@@ -113,29 +106,39 @@ export default function AllResidentsPage() {
     },
   });
 
-  const createQueryString = (name: string, value: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set(name, value);
-    return params.toString();
+  const createQueryString = (params: { [key: string]: string }) => {
+    const newParams = new URLSearchParams(searchParams.toString());
+
+    Object.entries(params).forEach(([name, value]) => {
+      if (value) {
+        newParams.set(name, value);
+      } else {
+        newParams.delete(name);
+      }
+    });
+
+    return newParams.toString();
   };
 
   const goToPage = (page: number) => {
     if (page < 1 || page > totalPages) return;
-    router.push(`${pathname}?${createQueryString("page", page.toString())}`);
+    router.push(`${pathname}?${createQueryString({ page: page.toString() })}`);
   };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    if (currentPage !== 1) {
-      router.push(`${pathname}?page=1`);
-    }
+    const newSearchTerm = e.target.value;
+    setSearchTerm(newSearchTerm);
+    setDebouncedSearchUpdate(true);
   };
 
   const clearSearch = () => {
     setSearchTerm("");
-    if (currentPage !== 1) {
-      router.push(`${pathname}?page=1`);
-    }
+    router.push(
+      `${pathname}?${createQueryString({
+        page: "1",
+        search: "",
+      })}`,
+    );
   };
 
   const handleNurseChange = async (id: string, newNurse: string) => {
@@ -251,15 +254,35 @@ export default function AllResidentsPage() {
 
   useEffect(() => {
     if (totalPages > 0 && currentPage > totalPages) {
-      router.push(`${pathname}?page=1`);
+      router.push(`${pathname}?${createQueryString({ page: "1" })}`);
     }
-  }, [totalPages, currentPage, router, pathname]);
+  }, [totalPages, currentPage]);
 
   useEffect(() => {
     if (!searchParams.has("page")) {
-      router.push(`${pathname}?page=1`);
+      const newQueryString = createQueryString({
+        page: "1",
+        search: searchParams.get("search") || "",
+      });
+      router.push(`${pathname}?${newQueryString}`);
     }
-  }, [pathname, router, searchParams]);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (debouncedSearchUpdate) {
+      const timer = setTimeout(() => {
+        router.push(
+          `${pathname}?${createQueryString({
+            page: "1",
+            search: searchTerm,
+          })}`,
+        );
+        setDebouncedSearchUpdate(false);
+      }, 300);
+
+      return () => clearTimeout(timer);
+    }
+  }, [searchTerm, debouncedSearchUpdate]);
 
   return (
     <div className="flex flex-col gap-8 p-8">
@@ -274,15 +297,15 @@ export default function AllResidentsPage() {
               value={searchTerm}
               onChange={handleSearch}
             />
-            <div className="absolute left-3 top-2 text-gray-400">
+            <div className="absolute left-3 top-2 text-gray-400 cursor-pointer hover:text-gray-600">
               <Search className="h-5 w-5" />
             </div>
             {searchTerm && (
               <div
-                className="absolute right-3 top-2 text-gray-400 cursor-pointer hover:text-gray-600"
+                className="absolute right-3 top-2.5 text-gray-400 cursor-pointer hover:text-gray-600"
                 onClick={clearSearch}
               >
-                <XCircle className="h-5 w-5" />
+                <X className="h-5 w-5" />
               </div>
             )}
           </div>
@@ -340,8 +363,8 @@ export default function AllResidentsPage() {
             ))
           ) : (
             <div className="text-gray-500 text-center p-8 border rounded-lg bg-gray-50">
-              {debouncedSearchTerm
-                ? `No residents found matching "${debouncedSearchTerm}".`
+              {searchParam
+                ? `No residents found matching "${searchParam}".`
                 : "No residents found."}
             </div>
           )}

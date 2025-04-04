@@ -34,6 +34,7 @@ import ResidentProfileHeader from "./_components/resident-profile-header";
 import WellnessReportList from "./_components/wellness-report-list";
 
 import { useBreadcrumb } from "@/context/breadcrumb-context";
+import { useToast } from "@/hooks/use-toast";
 import { toTitleCase } from "@/lib/utils";
 import { CarePlanRecord } from "@/types/careplan";
 import { MedicalHistory, inferTemplateType } from "@/types/medical-history";
@@ -55,6 +56,7 @@ export default function ResidentDashboard() {
   const { residentProfile } = useParams() as { residentProfile: string };
   const { setPageName } = useBreadcrumb();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<TabValue>("overview");
   const [modals, setModals] = useState({
     editResident: false,
@@ -119,6 +121,18 @@ export default function ResidentDashboard() {
         queryKey: ["resident", residentProfile],
       });
       closeModal("editResident");
+      toast({
+        variant: "default",
+        title: "Profile updated",
+        description: "Resident profile has been updated successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: "destructive",
+        title: "Error updating profile",
+        description: error.message,
+      });
     },
   });
 

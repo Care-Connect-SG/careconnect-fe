@@ -5,8 +5,13 @@ export async function getWellnessReportsForResident(
   residentId: string,
 ): Promise<WellnessReportRecord[]> {
   try {
-    const url = `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/wellness-reports/`;
-    const response = await fetchWithAuth(url);
+    const response = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/wellness-reports`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      },
+    );
 
     if (!response.ok) {
       const errorText = await response.text();

@@ -14,8 +14,10 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/hooks/use-toast";
 import { formatDayMonthYear } from "@/lib/utils";
+import { toTitleCase } from "@/lib/utils";
 import { FormResponse } from "@/types/form";
 import { ReportResponse, ReportStatus } from "@/types/report";
 import { ResidentRecord } from "@/types/resident";
@@ -28,6 +30,7 @@ import {
   Info,
   MessageCircle,
   MessageCircleReply,
+  Share2,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -48,6 +51,75 @@ export default function ViewReportPage() {
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [form, setForm] = useState<FormResponse>();
   const [user, setUser] = useState<User>();
+  const [isSharing, setIsSharing] = useState(false);
+
+  const handleShareWithNextOfKin = async () => {
+    if (!report || !form || !reporter || !resident?.emergency_contact_number) {
+      toast({
+        title: "Error",
+        description: "Missing information needed to share the report.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsSharing(true);
+
+      const pdfBlob = await pdf(
+        <ReportPDF
+          form={form}
+          report={report}
+          reporter={reporter}
+          resident={resident}
+        />,
+      ).toBlob();
+
+      const formData = new FormData();
+
+      const pdfFile = new File(
+        [pdfBlob],
+        `${toTitleCase(resident.full_name)}'s ${form.title}.pdf`,
+        {
+          type: "application/pdf",
+        },
+      );
+
+      formData.append("media", pdfFile);
+
+      const whatsappNumber = `65${resident.emergency_contact_number}`;
+      formData.append("jid", `${whatsappNumber}`);
+      formData.append(
+        "caption",
+        `🚨 URGENT: Incident Report for ${toTitleCase(resident.full_name)}`,
+      );
+
+      const response = await fetch("/api/whatsapp/media", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast({
+          title: "Report shared",
+          description: `The report has been shared with the next of kin via WhatsApp.`,
+        });
+      } else {
+        throw new Error(result.error || "Failed to share report");
+      }
+    } catch (error) {
+      console.error("Error sharing report:", error);
+      toast({
+        title: "Error",
+        description: "Failed to share the report. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSharing(false);
+    }
+  };
 
   const handleDownload = async () => {
     if (!report || !form || !reporter) return;
@@ -149,9 +221,32 @@ export default function ViewReportPage() {
           Return to Incident Reports
         </Button>
         {report?.status === ReportStatus.PUBLISHED && (
-          <Button className="ml-2" onClick={handleDownload}>
-            Download Report
-          </Button>
+          <div className="flex flex-row space-x-4">
+            <Button
+              variant={"outline"}
+              onClick={handleShareWithNextOfKin}
+              disabled={!resident?.emergency_contact_number || isSharing}
+              title={
+                !resident?.emergency_contact_number
+                  ? "No emergency contact number available"
+                  : ""
+              }
+              className="w-48"
+            >
+              {isSharing ? (
+                <>
+                  <Spinner />
+                  Sharing...
+                </>
+              ) : (
+                <>
+                  <Share2 className="mr-1 h-4 w-4" />
+                  Share with Guardian
+                </>
+              )}
+            </Button>
+            <Button onClick={handleDownload}>Download Report</Button>
+          </div>
         )}
         {(report?.status === ReportStatus.SUBMITTED ||
           report?.status === ReportStatus.CHANGES_MADE) &&
@@ -185,6 +280,7 @@ export default function ViewReportPage() {
             </Button>
           )}
       </div>
+
       {report?.status === ReportStatus.CHANGES_REQUESTED && (
         <div className="rounded-md border px-4 my-4">
           <Accordion type="single" collapsible className="w-full">

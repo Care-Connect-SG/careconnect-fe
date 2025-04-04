@@ -1,10 +1,31 @@
 "use client";
 
+import { deleteMedication } from "@/app/api/medication";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Clipboard, Pencil, Pill, Trash2 } from "lucide-react";
-import React from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useToast } from "@/hooks/use-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { format, parseISO } from "date-fns";
+import { Edit, MoreHorizontal, Trash } from "lucide-react";
+import { useParams } from "next/navigation";
+import React, { useState } from "react";
 
 interface MedicationProps {
   medication: {
@@ -15,6 +36,7 @@ interface MedicationProps {
     start_date: string;
     end_date?: string;
     instructions?: string;
+    prescriber?: string;
   };
   onEdit: (medication: any) => void;
 }
@@ -23,72 +45,154 @@ const ResidentMedication: React.FC<MedicationProps> = ({
   medication,
   onEdit,
 }) => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const { residentProfile } = useParams() as { residentProfile: string };
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return "N/A";
+    try {
+      const date = parseISO(dateString);
+      return format(date, "MMMM do, yyyy");
+    } catch (error) {
+      return dateString;
+    }
+  };
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteMedication(residentProfile, medication.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["medications", residentProfile],
+      });
+      toast({
+        variant: "default",
+        title: "Medication Deleted",
+        description: `${medication.medication_name} has been removed successfully.`,
+      });
+      setIsDeleteDialogOpen(false);
+    },
+    onError: (error: any) => {
+      toast({
+        variant: "destructive",
+        title: "Error Deleting Medication",
+        description:
+          error.message || "Failed to delete medication. Please try again.",
+      });
+      setIsDeleteDialogOpen(false);
+    },
+  });
+
+  const handleDeleteConfirm = () => {
+    deleteMutation.mutate();
+  };
+
   return (
-    <Card className="w-full border border-gray-200 shadow-md rounded-lg bg-white p-3">
-      <CardHeader className="flex items-right justify-between px-4 py-2">
-        <div className="flex-1 flex items-center space-x-2">
-          <CardTitle className="text-base font-semibold text-gray-800">
-            {medication.medication_name}
-          </CardTitle>
-          <Badge variant="outline" className="text-xs font-medium px-2 py-1">
-            {medication.frequency}
-          </Badge>
-          <Button
-            type="button"
-            aria-label="Edit medication"
-            className="bg-blue-500 text-white hover:text-white-600 transition"
-            onClick={() => onEdit(medication)}
-          >
-            <Pencil size={18} />
-          </Button>
-          <Button
-            type="button"
-            aria-label="Delete medication"
-            className="bg-white-500 text-red-500 hover:bg-white transition"
-          >
-            <Trash2 size={18} />
-          </Button>
-        </div>
-      </CardHeader>
-
-      <CardContent className="space-y-3 mt-1 text-sm text-gray-700 px-4">
-        <div className="flex items-center space-x-2">
-          <Pill size={16} className="text-gray-500" />
-          <p>
-            <strong>Dosage:</strong> {medication.dosage}
-          </p>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <Calendar size={16} className="text-gray-500" />
-          <p>
-            <strong>Start Date:</strong> {medication.start_date}
-          </p>
-        </div>
-
-        {medication.end_date && (
-          <div className="flex items-center space-x-2">
-            <Calendar size={16} className="text-gray-500" />
-            <p>
-              <strong>End Date:</strong> {medication.end_date}
-            </p>
+    <>
+      <Card className="w-full border bg-gray-50 rounded-xl">
+        <CardHeader className="flex flex-row items-center justify-between py-3">
+          <div className="flex flex-row items-center gap-4">
+            <CardTitle className="tracking-tight text-sm font-bold">
+              {medication.medication_name.toUpperCase()}
+            </CardTitle>
+            <Badge variant="outline" className="text-xs font-medium bg-gray-50">
+              {medication.frequency}
+            </Badge>
           </div>
-        )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreHorizontal className="h-5 w-5" />
+                <span className="sr-only">Open menu</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => onEdit(medication)}
+                className="cursor-pointer"
+              >
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
+              </DropdownMenuItem>
 
-        {medication.instructions && (
-          <div className="flex items-center space-x-2">
-            <Clipboard size={16} className="text-gray-500" />
-            <p>
-              <strong>Instructions:</strong> {medication.instructions}
-            </p>
+              <DropdownMenuItem
+                onClick={() => setIsDeleteDialogOpen(true)}
+                className="cursor-pointer text-red-600 focus:text-red-600"
+                disabled={deleteMutation.isPending}
+              >
+                <Trash className="mr-2 h-4 w-4" />
+                {deleteMutation.isPending ? "Deleting..." : "Delete"}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </CardHeader>
+        <CardContent className="p-6 pt-0">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="mb-3">
+              <p className="text-sm font-semibold text-gray-500">Dosage</p>
+              <p className="text-sm">{medication.dosage || "N/A"}</p>
+            </div>
+
+            <div className="mb-3">
+              <p className="text-sm font-semibold text-gray-500">Start Date</p>
+              <p className="text-sm">
+                {formatDate(medication.start_date) || "N/A"}
+              </p>
+            </div>
+
+            <div className="mb-3">
+              <p className="text-sm font-semibold text-gray-500">
+                Prescribed by
+              </p>
+              <p className="text-sm">
+                {medication.prescriber || "Doctor David Lim"}
+              </p>
+            </div>
+            {medication.end_date && (
+              <div className="mb-3">
+                <p className="text-sm font-semibold text-gray-500">End Date</p>
+                <p className="text-sm">{formatDate(medication.end_date)}</p>
+              </div>
+            )}
           </div>
-        )}
 
-        <div className="border-t border-gray-200 pt-3 text-gray-600 text-sm">
-          <strong>Prescribed by:</strong> Doctor David Lim
-        </div>
-      </CardContent>
-    </Card>
+          {medication.instructions && (
+            <div className="mt-2 border-t border-gray-100 pt-3">
+              <p className="text-sm font-semibold text-gray-500">
+                Instructions
+              </p>
+              <p className="text-sm">{medication.instructions}</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Medication</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {medication.medication_name}? This
+              action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-red-600 hover:bg-red-700 text-white"
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 

@@ -162,123 +162,156 @@ export default function ReportsTable({
     }
   };
 
+  const renderCellContent = (value: string | null | undefined) => {
+    if (!value) {
+      return <span className="text-gray-400">N/A</span>;
+    }
+    return value;
+  };
+
   return (
-    <div className="rounded-md border">
-      <Table className="text-center">
-        <TableHeader>
-          <TableRow>
-            <TableHead className="text-center">Created Date</TableHead>
-            <TableHead className="text-center">Form</TableHead>
-            {activeTab === "all" && (
-              <TableHead className="text-center">Reporter</TableHead>
-            )}
-            <TableHead className="text-center">Resident</TableHead>
-            {activeTab === "my" && (
-              <TableHead className="text-center">Status</TableHead>
-            )}
-            {(user?.role === Role.ADMIN || activeTab === "my") && (
-              <TableHead className="text-center">Actions</TableHead>
-            )}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {reports.length === 0 ? (
+    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="overflow-x-auto">
+        <Table className="w-full">
+          <TableHeader className="bg-gray-50">
             <TableRow>
-              <TableCell colSpan={7} className="h-24 text-center">
-                No reports found.
-              </TableCell>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Created Date
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Form
+              </TableHead>
+              {activeTab === "all" && (
+                <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Reporter
+                </TableHead>
+              )}
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                Resident
+              </TableHead>
+              {activeTab === "my" && (
+                <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Status
+                </TableHead>
+              )}
+              {(user?.role === Role.ADMIN || activeTab === "my") && (
+                <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Actions
+                </TableHead>
+              )}
             </TableRow>
-          ) : (
-            reports.map((report) => (
-              <TableRow key={report.id} onClick={() => handleView(report)}>
-                <TableCell className="font-medium">
-                  {new Date(report.created_at).toLocaleDateString()}
+          </TableHeader>
+          <TableBody className="divide-y divide-gray-200">
+            {reports.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={7}
+                  className="px-6 py-8 text-center text-gray-500 bg-gray-50"
+                >
+                  {activeTab === "my"
+                    ? "You have not created any reports yet."
+                    : "No reports found matching your search criteria."}
                 </TableCell>
-                <TableCell>{report.form_name}</TableCell>
-                {activeTab == "all" && (
-                  <TableCell>{report.reporter.name}</TableCell>
-                )}
-                {report.primary_resident?.name ? (
-                  <TableCell>{report.primary_resident?.name}</TableCell>
-                ) : (
-                  <TableCell className="text-gray-400">NA</TableCell>
-                )}
-                {activeTab == "my" && (
-                  <TableCell>
-                    <Badge className={getReportBadgeConfig(report.status)}>
-                      {report.status}
-                    </Badge>
-                  </TableCell>
-                )}
-                {(report.status !== "Published" ||
-                  user?.role === Role.ADMIN) && (
-                  <TableCell className="text-center">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="focus:ring-0 focus:ring-offset-0"
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Open menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {report.status === "Published" && (
-                          <>
-                            <DropdownMenuItem
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDownload(report);
-                              }}
-                            >
-                              <Download className="mr-2 h-4 w-4" />
-                              Download
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleShare(report);
-                              }}
-                            >
-                              <Share2 className="mr-2 h-4 w-4" />
-                              Share with Guardian
-                            </DropdownMenuItem>
-                          </>
-                        )}
-                        {report.status === ReportStatus.DRAFT && (
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEdit(report);
-                            }}
-                          >
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                          </DropdownMenuItem>
-                        )}
-                        {(report.status === ReportStatus.DRAFT ||
-                          user?.role === Role.ADMIN) && (
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete(report.id);
-                            }}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                )}
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+            ) : (
+              reports.map((report) => (
+                <TableRow
+                  key={report.id}
+                  className="hover:bg-blue-50 hover:duration-300 ease-in-out"
+                  onClick={() => handleView(report)}
+                >
+                  <TableCell className="px-6 py-4 font-medium text-gray-900">
+                    {new Date(report.created_at).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell className="px-6 py-4 text-gray-900">
+                    {report.form_name}
+                  </TableCell>
+                  {activeTab === "all" && (
+                    <TableCell className="px-6 py-4 text-gray-900">
+                      {report.reporter.name}
+                    </TableCell>
+                  )}
+                  <TableCell className="px-6 py-4 text-gray-900">
+                    {renderCellContent(report.primary_resident?.name)}
+                  </TableCell>
+                  {activeTab === "my" && (
+                    <TableCell className="px-6 py-4">
+                      <Badge className={getReportBadgeConfig(report.status)}>
+                        {report.status}
+                      </Badge>
+                    </TableCell>
+                  )}
+                  {(report.status !== "Published" ||
+                    user?.role === Role.ADMIN) && (
+                    <TableCell className="px-6 py-4">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="hover:bg-transparent"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Open menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {report.status === "Published" && (
+                            <>
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDownload(report);
+                                }}
+                              >
+                                <Download className="mr-2 h-4 w-4" />
+                                Download
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleShare(report);
+                                }}
+                              >
+                                <Share2 className="mr-2 h-4 w-4" />
+                                Share with Guardian
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                          {report.status === ReportStatus.DRAFT && (
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEdit(report);
+                              }}
+                            >
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit
+                            </DropdownMenuItem>
+                          )}
+                          {(report.status === ReportStatus.DRAFT ||
+                            user?.role === Role.ADMIN) && (
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(report.id);
+                              }}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  )}
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

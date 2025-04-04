@@ -3,6 +3,7 @@
 import { getReports } from "@/app/api/report";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 import { ReportResponse } from "@/types/report";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -62,14 +63,14 @@ const RecentIncidents = () => {
       </div>
       <div className="space-y-4">
         {isLoading ? (
-          <div className="flex items-center justify-center h-32">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+          <div className="flex items-center justify-center h-64">
+            <Spinner />
           </div>
         ) : (
           reports.map((report) => (
             <div
               key={report.id}
-              className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+              className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border"
             >
               <div className="flex flex-col gap-1">
                 <h3 className="font-medium text-gray-900">

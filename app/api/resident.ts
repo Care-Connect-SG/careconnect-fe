@@ -189,7 +189,7 @@ export const updateResidentNurse = async (
   },
 ): Promise<ResidentRecord> => {
   try {
-    const response = await fetch(
+    const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}`,
       {
         method: "PUT",

@@ -489,7 +489,7 @@ export default function TaskForm({
                       render={({ field, fieldState }) => (
                         <FormItem className="w-full">
                           <Label className="font-semibold">
-                            Select Resident *
+                            Select Resident
                           </Label>
                           <Select
                             onValueChange={(value) => field.onChange([value])}
@@ -532,7 +532,7 @@ export default function TaskForm({
                       name="assigned_to"
                       render={({ field, fieldState }) => (
                         <FormItem className="w-full">
-                          <Label className="font-semibold">Assigned To *</Label>
+                          <Label className="font-semibold">Assigned To</Label>
                           <Select
                             onValueChange={field.onChange}
                             defaultValue={field.value}

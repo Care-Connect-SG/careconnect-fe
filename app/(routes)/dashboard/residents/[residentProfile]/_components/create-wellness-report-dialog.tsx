@@ -38,6 +38,7 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
 }) => {
   const { toast } = useToast();
   const [isFetchingAI, setIsFetchingAI] = useState(false);
+  const [aiGenerated, setAiGenerated] = useState(false);
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split("T")[0],
     monthly_summary: "",
@@ -61,6 +62,7 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
         cognitive_emotional: "",
         social_engagement: "",
       });
+      setAiGenerated(false);
     }
   }, [isOpen]);
 
@@ -111,6 +113,7 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
         cognitive_emotional: aiData.cognitive_emotional || "",
         social_engagement: aiData.social_engagement || "",
       });
+      setAiGenerated(true);
 
       toast({
         variant: "default",
@@ -225,6 +228,7 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
                   setFormData((prev) => ({ ...prev, [field]: e.target.value }))
                 }
                 rows={3}
+                className={aiGenerated ? "bg-green-50 border-green-500" : ""}
               />
             </div>
           ))}
@@ -234,7 +238,7 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() =>
+                onClick={() => {
                   setFormData({
                     date: new Date().toISOString().split("T")[0],
                     monthly_summary: "",
@@ -244,8 +248,9 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
                     mobility_physical: "",
                     cognitive_emotional: "",
                     social_engagement: "",
-                  })
-                }
+                  });
+                  setAiGenerated(false);
+                }}
               >
                 Clear All
               </Button>

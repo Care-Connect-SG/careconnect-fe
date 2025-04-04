@@ -9,7 +9,11 @@ import { logMedicationAdministration } from "@/app/api/medication-log";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
-const BCMA_Scanner = () => {
+interface BCMA_ScannerProps {
+    onSuccess?: () => void;
+}
+
+const BCMA_Scanner: React.FC<BCMA_ScannerProps> = ({ onSuccess }) => {
     const [residentId, setResidentId] = useState("");
     const [residentName, setResidentName] = useState("");
     const [medicationId, setMedicationId] = useState("");

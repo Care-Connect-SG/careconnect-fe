@@ -33,13 +33,14 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 import { MedicalHistoryType } from "@/types/medical-history";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DialogDescription } from "@radix-ui/react-dialog";
-import { format, isValid } from "date-fns";
+import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { useParams } from "next/navigation";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -169,28 +170,6 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-const formatDate = (dateString: string) => {
-  try {
-    const date = new Date(dateString);
-    if (!isValid(date)) return "";
-
-    return format(date, "PPP");
-  } catch (error) {
-    return "";
-  }
-};
-
-const isValidDate = (dateString: string | undefined) => {
-  if (!dateString) return false;
-
-  try {
-    const date = new Date(dateString);
-    return isValid(date);
-  } catch (error) {
-    return false;
-  }
-};
-
 const CreateMedicalHistoryDialog: React.FC<{
   isOpen: boolean;
   onClose: () => void;
@@ -198,6 +177,10 @@ const CreateMedicalHistoryDialog: React.FC<{
 }> = ({ isOpen, onClose, onRecordCreated }) => {
   const { residentProfile } = useParams() as { residentProfile: string };
   const { toast } = useToast();
+
+  const [selectedDates, setSelectedDates] = useState<
+    Record<string, Date | undefined>
+  >({});
 
   const getDefaultFormData = (templateType: MedicalHistoryType) => {
     const template = templateConfig[templateType];
@@ -224,6 +207,7 @@ const CreateMedicalHistoryDialog: React.FC<{
   useEffect(() => {
     if (templateType) {
       form.setValue("formData", getDefaultFormData(templateType));
+      setSelectedDates({});
     }
   }, [templateType, form]);
 
@@ -233,8 +217,22 @@ const CreateMedicalHistoryDialog: React.FC<{
         templateType: "" as MedicalHistoryType,
         formData: {},
       });
+      setSelectedDates({});
     }
   }, [isOpen, form]);
+
+  const handleDateSelect = (fieldName: string, date: Date | undefined) => {
+    setSelectedDates((prev) => ({
+      ...prev,
+      [fieldName]: date,
+    }));
+
+    if (date) {
+      form.setValue(`formData.${fieldName}`, format(date, "yyyy-MM-dd"));
+    } else {
+      form.setValue(`formData.${fieldName}`, "");
+    }
+  };
 
   const onSubmit = async (data: FormValues) => {
     try {
@@ -292,6 +290,7 @@ const CreateMedicalHistoryDialog: React.FC<{
               name="templateType"
               render={({ field }) => (
                 <FormItem>
+                  <FormLabel>Record Type</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -332,14 +331,24 @@ const CreateMedicalHistoryDialog: React.FC<{
                               <PopoverTrigger asChild>
                                 <Button
                                   variant="outline"
-                                  className="w-full justify-start text-left font-normal"
+                                  className={cn(
+                                    "w-full justify-start text-left font-normal",
+                                    !selectedDates[field.name] &&
+                                      "text-muted-foreground",
+                                  )}
                                   type="button"
                                 >
-                                  <CalendarIcon className="mr-2 h-4 w-4" />
-                                  {formField.value &&
-                                  isValidDate(formField.value)
-                                    ? formatDate(formField.value)
-                                    : `Select ${field.label}`}
+                                  {selectedDates[field.name] ? (
+                                    format(
+                                      selectedDates[field.name] as Date,
+                                      "MMMM d, yyyy",
+                                    )
+                                  ) : (
+                                    <span>
+                                      Select {field.label.toLowerCase()}
+                                    </span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                 </Button>
                               </PopoverTrigger>
                               <PopoverContent
@@ -348,19 +357,11 @@ const CreateMedicalHistoryDialog: React.FC<{
                               >
                                 <Calendar
                                   mode="single"
-                                  selected={
-                                    formField.value &&
-                                    isValidDate(formField.value)
-                                      ? new Date(formField.value as string)
-                                      : undefined
+                                  selected={selectedDates[field.name]}
+                                  onSelect={(date) =>
+                                    handleDateSelect(field.name, date)
                                   }
-                                  onSelect={(date) => {
-                                    formField.onChange(
-                                      date
-                                        ? date.toISOString().split("T")[0]
-                                        : "",
-                                    );
-                                  }}
+                                  initialFocus
                                 />
                               </PopoverContent>
                             </Popover>

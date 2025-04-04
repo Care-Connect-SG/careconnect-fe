@@ -19,6 +19,7 @@ import { getWellnessReportsForResident } from "@/app/api/wellness-report";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CreateMedication from "./_components/create-medication-dialog";
+import CreateWellnessReportDialog from "./_components/create-wellness-report-dialog";
 import EditCarePlan from "./_components/edit-careplan";
 import EditMedicalHistoryModal from "./_components/edit-medical-history-dialog";
 import EditMedication from "./_components/edit-medication";
@@ -63,6 +64,7 @@ export default function ResidentDashboard() {
     editMedication: false,
     createMedicalHistory: false,
     editMedicalHistory: false,
+    createWellnessReport: false,
   });
   const [selectedMedication, setSelectedMedication] =
     useState<MedicationRecord | null>(null);
@@ -344,31 +346,19 @@ export default function ResidentDashboard() {
         </TabsContent>
 
         <TabsContent value="wellness">
-          <div>
-            <WellnessReportList reports={wellnessReports} />
-
-            <div className="flex justify-between items-center mt-6">
-              <h2 className="text-lg font-semibold">Care Plans</h2>
-              <Button
-                onClick={handleCreateCarePlan}
-                disabled={isCreatingCarePlan}
-              >
-                {isCreatingCarePlan ? "Creating..." : "Add Care Plan"}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Wellness Reports</h2>
+              <Button onClick={() => openModal("createWellnessReport")}>
+                Create Wellness Report
               </Button>
             </div>
-
-            <div className="space-y-4 mt-4">
-              {carePlans.length > 0 ? (
-                carePlans.map((carePlan, index) => (
-                  <ResidentCarePlan
-                    key={carePlan.id || index}
-                    careplan={carePlan}
-                  />
-                ))
-              ) : (
-                <p className="text-gray-500">No care plans found.</p>
-              )}
-            </div>
+            <WellnessReportList
+              reports={wellnessReports}
+              residentId={residentProfile}
+              onReportDeleted={refetchWellnessReports}
+              onReportUpdated={refetchWellnessReports}
+            />
           </div>
         </TabsContent>
       </Tabs>
@@ -424,6 +414,16 @@ export default function ResidentDashboard() {
           onSave={handleSaveMedicalHistory}
         />
       )}
+
+      <CreateWellnessReportDialog
+        isOpen={modals.createWellnessReport}
+        onClose={() => closeModal("createWellnessReport")}
+        residentId={residentProfile}
+        onReportCreated={() => {
+          refetchWellnessReports();
+          closeModal("createWellnessReport");
+        }}
+      />
     </div>
   );
 }

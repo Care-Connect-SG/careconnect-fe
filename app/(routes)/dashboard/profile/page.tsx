@@ -27,6 +27,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
 import RoleChip from "../nurses/_components/role-chip";
 import ProfilePictureDialog from "./_components/profile-picture-dialog";
+import ChangePasswordDialog from "./_components/change-password-dialog";
 
 const profileSchema = z.object({
   name: z.string().min(4, "Name has to be at least 4 characters long"),
@@ -41,6 +42,7 @@ const MyProfile = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [formInitialized, setFormInitialized] = useState(false);
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
 
   const {
     data: user,
@@ -211,17 +213,34 @@ const MyProfile = () => {
                 )}
               />
 
-              <Button
-                type="submit"
-                className="w-32"
-                disabled={
-                  !form.formState.isDirty ||
-                  !form.formState.isValid ||
-                  updateUserMutation.isPending
-                }
-              >
-                {updateUserMutation.isPending ? <Spinner /> : "Save Changes"}
-              </Button>
+              <div className="flex flex-col gap-4">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="w-48"
+                  onClick={() => setIsPasswordDialogOpen(true)}
+                >
+                  Change Password
+                </Button>
+
+                <Button
+                  type="submit"
+                  className="w-32"
+                  disabled={
+                    !form.formState.isDirty ||
+                    !form.formState.isValid ||
+                    updateUserMutation.isPending
+                  }
+                >
+                  {updateUserMutation.isPending ? <Spinner /> : "Save Changes"}
+                </Button>
+              </div>
+
+              <ChangePasswordDialog
+                isOpen={isPasswordDialogOpen}
+                onClose={() => setIsPasswordDialogOpen(false)}
+                userId={user.id}
+              />
             </form>
           </FormProvider>
         </div>

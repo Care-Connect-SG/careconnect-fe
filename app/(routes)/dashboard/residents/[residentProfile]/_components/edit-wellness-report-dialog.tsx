@@ -45,7 +45,7 @@ const EditWellnessReportDialog: React.FC<EditWellnessReportDialogProps> = ({
 
   const [formData, setFormData] = useState<Partial<WellnessReportRecord>>({
     date: "",
-    monthly_summary: "",
+    summary: "",
     medical_summary: "",
     medication_update: "",
     nutrition_hydration: "",
@@ -58,7 +58,7 @@ const EditWellnessReportDialog: React.FC<EditWellnessReportDialogProps> = ({
     if (isOpen && initialData) {
       setFormData({
         date: initialData.date,
-        monthly_summary: initialData.monthly_summary || "",
+        summary: initialData.summary || "",
         medical_summary: initialData.medical_summary || "",
         medication_update: initialData.medication_update || "",
         nutrition_hydration: initialData.nutrition_hydration || "",
@@ -171,7 +171,7 @@ const EditWellnessReportDialog: React.FC<EditWellnessReportDialogProps> = ({
           </div>
 
           {[
-            ["monthly_summary", "Summary"],
+            ["summary", "Summary"],
             ["medical_summary", "Medical Summary"],
             ["medication_update", "Medication Update"],
             ["nutrition_hydration", "Nutrition & Hydration"],

@@ -111,7 +111,6 @@ const TaskManagement = () => {
       if (filters.search) queryParams.search = filters.search;
       if (filters.status) queryParams.status = filters.status;
       if (filters.priority) queryParams.priority = filters.priority;
-      console.log(queryParams);
 
       return getTasks(queryParams);
     },

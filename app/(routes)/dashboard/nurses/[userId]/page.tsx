@@ -218,18 +218,19 @@ const SimplifiedNurseProfile = () => {
                   </FormItem>
                 )}
               />
-
-              <Button
-                type="submit"
-                className="w-32"
-                disabled={
-                  !form.formState.isDirty ||
-                  !form.formState.isValid ||
-                  updateUserMutation.isPending
-                }
-              >
-                {updateUserMutation.isPending ? <Spinner /> : "Save Changes"}
-              </Button>
+              <div className="flex justify-end">
+                <Button
+                  type="submit"
+                  className="w-32"
+                  disabled={
+                    !form.formState.isDirty ||
+                    !form.formState.isValid ||
+                    updateUserMutation.isPending
+                  }
+                >
+                  {updateUserMutation.isPending ? <Spinner /> : "Save Changes"}
+                </Button>
+              </div>
             </form>
           </FormProvider>
         </div>

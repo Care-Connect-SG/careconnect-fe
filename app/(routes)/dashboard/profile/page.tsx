@@ -26,6 +26,7 @@ import { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
 import RoleChip from "../nurses/_components/role-chip";
+import ChangePasswordDialog from "./_components/change-password-dialog";
 import ProfilePictureDialog from "./_components/profile-picture-dialog";
 
 const profileSchema = z.object({
@@ -41,6 +42,7 @@ const MyProfile = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [formInitialized, setFormInitialized] = useState(false);
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
 
   const {
     data: user,
@@ -94,7 +96,7 @@ const MyProfile = () => {
     onError: (error: any) => {
       console.error("Error updating user:", error);
       toast({
-        title: "Failed to update profile, please try again",
+        title: "Failed to update profile",
         description: error.message,
         variant: "destructive",
       });
@@ -107,7 +109,10 @@ const MyProfile = () => {
     }
   };
 
-  if (isLoading) {
+  const handlePasswordDialogOpen = () => setIsPasswordDialogOpen(true);
+  const handlePasswordDialogClose = () => setIsPasswordDialogOpen(false);
+
+  if (isLoading || (!formInitialized && user)) {
     return (
       <div className="flex justify-center items-center h-[80vh]">
         <Spinner />
@@ -119,24 +124,25 @@ const MyProfile = () => {
     return <p className="text-center mt-10 text-red-500">User not found</p>;
   }
 
-  if (!formInitialized) {
-    return (
-      <div className="flex justify-center items-center h-[80vh]">
-        <Spinner />
-      </div>
-    );
-  }
-
   return (
     <div className="flex items-center justify-center p-8">
       <div className="w-full max-w-2xl">
         <div className="flex flex-col space-y-8 ">
-          <div className="flex items-center space-x-4">
-            <ProfilePictureDialog user={user} />
-            <div className="flex flex-col space-y-2">
-              <h1 className="text-2xl font-bold">{user.name}</h1>
-              <RoleChip role={user.role} />
+          <div className="flex flex-row justify-between items-center">
+            <div className="flex items-center space-x-4">
+              <ProfilePictureDialog user={user} />
+              <div className="flex flex-col space-y-2">
+                <h1 className="text-2xl font-bold">{user.name}</h1>
+                <RoleChip role={user.role} />
+              </div>
             </div>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handlePasswordDialogOpen}
+            >
+              Change Password
+            </Button>
           </div>
 
           <FormProvider {...form}>
@@ -211,19 +217,29 @@ const MyProfile = () => {
                 )}
               />
 
-              <Button
-                type="submit"
-                className="w-32"
-                disabled={
-                  !form.formState.isDirty ||
-                  !form.formState.isValid ||
-                  updateUserMutation.isPending
-                }
-              >
-                {updateUserMutation.isPending ? <Spinner /> : "Save Changes"}
-              </Button>
+              <div className="flex justify-end">
+                <Button
+                  type="submit"
+                  className="w-32"
+                  disabled={
+                    !form.formState.isDirty ||
+                    !form.formState.isValid ||
+                    updateUserMutation.isPending
+                  }
+                >
+                  {updateUserMutation.isPending ? <Spinner /> : "Save Changes"}
+                </Button>
+              </div>
             </form>
           </FormProvider>
+
+          {user && (
+            <ChangePasswordDialog
+              isOpen={isPasswordDialogOpen}
+              onClose={handlePasswordDialogClose}
+              userId={user.id}
+            />
+          )}
         </div>
       </div>
     </div>

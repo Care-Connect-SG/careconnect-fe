@@ -20,6 +20,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
@@ -28,7 +33,7 @@ import { Edit, MoreHorizontal, Trash } from "lucide-react";
 import { QrCodeIcon } from "lucide-react";
 import { useParams } from "next/navigation";
 import { QRCodeCanvas } from "qrcode.react";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 
 interface MedicationProps {
   medication: {
@@ -52,16 +57,32 @@ const ResidentMedication: React.FC<MedicationProps> = ({
   const queryClient = useQueryClient();
   const { residentProfile } = useParams() as { residentProfile: string };
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [showQR, setShowQR] = useState(false);
-  const qrRef = React.useRef<HTMLDivElement>(null);
+  const [openQR, setOpenQR] = useState(false);
+  const qrRef = useRef<HTMLDivElement>(null);
 
   const handleDownloadQR = async () => {
     if (!qrRef.current) return;
-    const canvas = await html2canvas(qrRef.current);
-    const link = document.createElement("a");
-    link.download = `${medication.medication_name}_qr.png`;
-    link.href = canvas.toDataURL("image/png");
-    link.click();
+    try {
+      const canvas = await html2canvas(qrRef.current);
+      const link = document.createElement("a");
+      link.download = `${medication.medication_name.replace(
+        /\s+/g,
+        "_",
+      )}_qr.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+      toast({
+        title: "QR Code Downloaded",
+        description: "The QR code has been downloaded successfully.",
+      });
+    } catch (err) {
+      console.error("QR download failed:", err);
+      toast({
+        variant: "destructive",
+        title: "Download Failed",
+        description: "Failed to download QR code. Please try again.",
+      });
+    }
   };
 
   const formatDate = (dateString: string | undefined) => {
@@ -179,31 +200,29 @@ const ResidentMedication: React.FC<MedicationProps> = ({
               <p className="text-sm">{medication.instructions}</p>
             </div>
           )}
-          <div className="mt-6">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowQR(!showQR)}
-              title="Generate QR"
-            >
-              <QrCodeIcon className="h-10 w-10 text-gray-500" />
-            </Button>
-          </div>
 
-          {showQR && (
-            <div className="mt-4 space-y-2">
-              <div ref={qrRef} className="inline-block bg-white p-4 rounded">
-                <QRCodeCanvas value={medication.id} size={150} />
-              </div>
-              <Button
-                onClick={handleDownloadQR}
-                variant="outline"
-                className="text-sm"
-              >
-                Download QR Code
-              </Button>
-            </div>
-          )}
+          <div className="mt-4 flex justify-end">
+            <Popover open={openQR} onOpenChange={setOpenQR}>
+              <PopoverTrigger asChild>
+                <div className="flex items-center cursor-pointer text-blue-500 hover:text-blue-600">
+                  <QrCodeIcon className="h-5 w-5 mr-2" />
+                  <span className="text-sm font-medium">QR Code</span>
+                </div>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-4 flex flex-col items-center space-y-3 bg-white shadow-lg">
+                <div ref={qrRef} className="bg-white p-4 rounded border">
+                  <QRCodeCanvas value={medication.id} size={150} level="H" />
+                </div>
+                <Button
+                  onClick={handleDownloadQR}
+                  variant="outline"
+                  className="h-8 text-xs w-full bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100"
+                >
+                  Download QR Code
+                </Button>
+              </PopoverContent>
+            </Popover>
+          </div>
         </CardContent>
       </Card>
 

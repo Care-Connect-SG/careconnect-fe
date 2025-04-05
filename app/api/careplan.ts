@@ -54,7 +54,7 @@ export const createCarePlan = async (residentId: string, carePlanData: any) => {
 
 export const updateCarePlan = async (residentId: string, carePlanData: any) => {
   try {
-    const { id, ...payload } = carePlanData; // ✅ Remove `id` from the request body
+    const { id, ...payload } = carePlanData;
 
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/careplan/${id}`,
@@ -63,7 +63,7 @@ export const updateCarePlan = async (residentId: string, carePlanData: any) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload), // ✅ Send only the fields expected by backend
+        body: JSON.stringify(payload),
       },
     );
 

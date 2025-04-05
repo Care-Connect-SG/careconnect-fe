@@ -12,6 +12,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { toTitleCase } from "@/lib/utils";
 import { ResidentRecord } from "@/types/resident";
@@ -34,7 +39,7 @@ const ResidentProfileHeader: React.FC<ResidentProfileHeaderProps> = ({
   const { toast } = useToast();
   const router = useRouter();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [showQR, setShowQR] = useState(false);
+  const [openQR, setOpenQR] = useState(false);
   const qrRef = useRef<HTMLDivElement>(null);
 
   const age =
@@ -91,6 +96,24 @@ const ResidentProfileHeader: React.FC<ResidentProfileHeaderProps> = ({
               </span>
             </div>
           </div>
+          <Popover open={openQR} onOpenChange={setOpenQR}>
+            <PopoverTrigger asChild>
+              <QrCodeIcon className="w-8 h-8 text-blue-500 ml-4 cursor-pointer" />
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-3 flex flex-col items-center space-y-2">
+              <div ref={qrRef} className="bg-white p-4 rounded inline-block">
+                <QRCodeCanvas value={resident.id} size={150} level="H" />
+              </div>
+
+              <Button
+                onClick={handleDownloadQR}
+                variant="outline"
+                className="text-xs h-8 px-3"
+              >
+                Download Resident QR
+              </Button>
+            </PopoverContent>
+          </Popover>
         </div>
 
         <div className="flex flex-row gap-4">
@@ -108,34 +131,6 @@ const ResidentProfileHeader: React.FC<ResidentProfileHeaderProps> = ({
           >
             <Trash className="w-4 h-4 text-red-500" />
           </Button>
-          {/* QR Icon */}
-          <div className="relative">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowQR(!showQR)}
-              title="Generate QR Code"
-            >
-              <QrCodeIcon className="h-6 w-6 text-gray-500" />
-            </Button>
-
-            {/* QR Popout */}
-            {showQR && (
-              <div className="absolute right-0 mt-2 z-50 bg-white border rounded shadow-lg p-3 flex flex-col items-center space-y-2">
-                <div ref={qrRef} className="bg-white p-4 rounded inline-block">
-                  <QRCodeCanvas value={resident.id} size={150} level="H" />
-                </div>
-
-                <Button
-                  onClick={handleDownloadQR}
-                  variant="outline"
-                  className="text-xs h-8 px-3"
-                >
-                  Download
-                </Button>
-              </div>
-            )}
-          </div>
         </div>
       </div>
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

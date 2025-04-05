@@ -111,7 +111,7 @@ const MedicationLogList: React.FC<Props> = ({ residentId, selectedDate }) => {
                   const administeredTimeUTC = new Date(log.administered_at);
                   const administeredTimeSGT = new Date(
                     administeredTimeUTC.getTime() + 8 * 60 * 60 * 1000,
-                  ); // Add 8 hours
+                  );
 
                   return (
                     <li

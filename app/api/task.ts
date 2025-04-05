@@ -58,16 +58,25 @@ export const getTasks = async (filters?: {
   search?: string;
   status?: string;
   priority?: string;
-  // Format: YYYY-MM-DD
   date?: string;
+  nurses?: string[];
 }): Promise<Task[]> => {
   try {
-    const queryParams = filters
-      ? new URLSearchParams(filters as Record<string, string>).toString()
-      : "";
+    const queryParams: Record<string, string> = {};
+
+    if (filters?.search) queryParams.search = filters.search;
+    if (filters?.status) queryParams.status = filters.status;
+    if (filters?.priority) queryParams.priority = filters.priority;
+    if (filters?.date) queryParams.date = filters.date;
+
+    if (filters?.nurses && filters.nurses.length > 0) {
+      queryParams.nurses = filters.nurses.join(",");
+    }
+
+    const urlParams = new URLSearchParams(queryParams).toString();
 
     const url = `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/${
-      queryParams ? `?${queryParams}` : ""
+      urlParams ? `?${urlParams}` : ""
     }`;
 
     const response = await fetchWithAuth(url, {

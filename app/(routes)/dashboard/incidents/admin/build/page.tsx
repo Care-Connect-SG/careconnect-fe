@@ -9,12 +9,11 @@ import {
 import { getCurrentUser } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import { useBreadcrumb } from "@/context/breadcrumb-context";
-import { FormState, useFormReducer } from "@/hooks/use-form-reducer";
 import { toast } from "@/hooks/use-toast";
 import { FormCreate } from "@/types/form";
 import { User } from "@/types/user";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronLeft, Trash2 } from "lucide-react";
+import { ChevronLeft, Trash } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -182,56 +181,53 @@ export default function CreateFormPage() {
   };
 
   return (
-    <>
-      <div className="px-8 py-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight py-2">
-            Incident Reporting Form Builder
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Design, edit, and publish your incident reporting forms
-          </p>
+    <div className="px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex items-center  mb-8 flex-row justify-between">
+        <div className="flex flex-row space-x-6">
+          <Link href="/dashboard/incidents/admin">
+            <Button variant="outline" className="px-2 h-14">
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900">
+              Incident Reporting Form Builder
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Design, edit, and publish your incident reporting forms
+            </p>
+          </div>
+        </div>
+
+        <div className="flex justify-start gap-2">
+          {formId && (
+            <Button
+              onClick={() => handleDeleteDraft(formId)}
+              className="bg-gray-100 text-black hover:bg-gray-200"
+            >
+              <Trash />
+            </Button>
+          )}
+        </div>
+        <div className="flex justify-end gap-2 ">
+          <Button
+            onClick={handleSubmit(handleSaveDraft)}
+            className="bg-blue-500 hover:bg-blue-600 text-white"
+          >
+            Save
+          </Button>
+          <Button
+            onClick={handleSubmit(handlePublishDraft)}
+            className="bg-green-500 hover:bg-green-600 text-white"
+          >
+            Publish
+          </Button>
         </div>
       </div>
 
-      <hr className="border-t-1 border-gray-300 mx-8 py-2" />
-
       <FormProvider {...methods}>
-        <div className="flex items-center justify-between pb-2">
-          <div className="flex justify-start gap-2 px-8">
-            <Link href="/dashboard/incidents/admin">
-              <Button variant="outline" className="border h-10 mb-2 rounded-md">
-                <ChevronLeft className="h-4 w-4 mx-auto" />
-                Return to Manage Forms
-              </Button>
-            </Link>
-
-            {formId && (
-              <Button
-                onClick={() => handleDeleteDraft(formId)}
-                className="bg-gray-100 text-black hover:bg-gray-200"
-              >
-                <Trash2 />
-              </Button>
-            )}
-          </div>
-          <div className="flex justify-end gap-2 px-8 pb-2">
-            <Button
-              onClick={handleSubmit(handleSaveDraft)}
-              className="bg-blue-500 hover:bg-blue-600 text-white"
-            >
-              Save
-            </Button>
-            <Button
-              onClick={handleSubmit(handlePublishDraft)}
-              className="bg-green-500 hover:bg-green-600 text-white"
-            >
-              Publish
-            </Button>
-          </div>
-        </div>
-
-        <div className="mx-8 pb-4">
+        <div className="pb-4">
           <FormHeaderEdit />
 
           <div className="py-4 space-y-4">
@@ -249,6 +245,6 @@ export default function CreateFormPage() {
           <FormElementBar onAddElement={handleAddElement} />
         </div>
       </FormProvider>
-    </>
+    </div>
   );
 }

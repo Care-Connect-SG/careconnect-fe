@@ -101,16 +101,21 @@ const TaskManagement = () => {
       filters.status,
       filters.priority,
       format(selectedDate, "yyyy-MM-dd"),
+      selectedNurses,
     ],
     queryFn: () => {
       const formattedDate = format(selectedDate, "yyyy-MM-dd");
-      const queryParams: Record<string, string> = {
+      const queryParams: Record<string, any> = {
         date: formattedDate,
       };
 
       if (filters.search) queryParams.search = filters.search;
       if (filters.status) queryParams.status = filters.status;
       if (filters.priority) queryParams.priority = filters.priority;
+
+      if (selectedNurses.length > 0 && !allSelected) {
+        queryParams.nurses = selectedNurses;
+      }
 
       return getTasks(queryParams);
     },
@@ -141,6 +146,14 @@ const TaskManagement = () => {
   const filteredTasks = useMemo(() => {
     if (!allTasks || allTasks.length === 0) return [];
 
+    if (!allSelected) {
+      return allTasks;
+    }
+
+    if (allSelected) {
+      return allTasks;
+    }
+
     if (selectedNurses.length === 0) {
       return [];
     }
@@ -148,7 +161,7 @@ const TaskManagement = () => {
     return allTasks.filter(
       (task) => task.assigned_to && selectedNurses.includes(task.assigned_to),
     );
-  }, [allTasks, selectedNurses]);
+  }, [allTasks, selectedNurses, allSelected]);
 
   const uniqueNurses = useMemo(() => {
     return allTasks
@@ -259,10 +272,7 @@ const TaskManagement = () => {
   const handleDownloadTasks = async () => {
     try {
       const formattedDate = format(selectedDate, "yyyy-MM-dd");
-      const tasksToDownload = filteredTasks.filter(
-        (task) =>
-          format(new Date(task.due_date), "yyyy-MM-dd") === formattedDate,
-      );
+      const tasksToDownload = filteredTasks;
 
       if (tasksToDownload.length === 0) {
         toast({
@@ -287,11 +297,11 @@ const TaskManagement = () => {
         title: "Tasks Downloaded",
         description: `Successfully downloaded ${tasksToDownload.length} tasks for ${formattedDate}`,
       });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to download tasks.",
+        title: "Failed to download tasks",
+        description: error.message,
       });
     }
   };

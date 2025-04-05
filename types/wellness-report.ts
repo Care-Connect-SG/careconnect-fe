@@ -2,7 +2,7 @@ export interface WellnessReportRecord {
   id?: string;
   resident_id: string;
   date: string;
-  monthly_summary?: string;
+  summary?: string;
   medical_summary?: string;
   medication_update?: string;
   nutrition_hydration?: string;

@@ -121,7 +121,7 @@ export const deleteMedication = async (
 export const getMedicationById = async (
   residentId: string,
   medicationId: string,
-  suppressError?: boolean
+  suppressError?: boolean,
 ): Promise<MedicationRecord | null> => {
   try {
     const response = await fetch(
@@ -131,14 +131,13 @@ export const getMedicationById = async (
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!response.ok) {
-      // 👇 Only log error if suppressError is NOT set
       if (!suppressError) {
         const errData = await response.json();
-        console.error("Error fetching medication:", errData.detail);
+        throw Error(errData.detail || "Error fetching medication by ID");
       }
       return null;
     }
@@ -151,4 +150,3 @@ export const getMedicationById = async (
     return null;
   }
 };
-

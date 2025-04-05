@@ -143,7 +143,7 @@ const WellnessReportList: React.FC<WellnessReportListProps> = ({
               </CardHeader>
               <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {[
-                  { label: "Summary", value: report.monthly_summary },
+                  { label: "Summary", value: report.summary },
                   { label: "Medical Summary", value: report.medical_summary },
                   {
                     label: "Medication Update",

@@ -77,17 +77,19 @@ export default function IncidentReportingFormsAdmin() {
   };
 
   return (
-    <>
-      <div className="px-8 py-4">
-        <h1 className="scroll-m-20 text-2xl font-semibold tracking-tight py-2">
-          Incident Reporting Form Studio
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Create, review and publish your incident reporting forms.
-        </p>
+    <div className="px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex items-center gap-3 mb-8">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">
+            Incident Reporting Form Studio
+          </h1>
+          <p className="text-gray-500 mt-1">
+            Create, review and publish your incident reporting forms.
+          </p>
+        </div>
       </div>
-      <hr className="border-t-1 border-gray-300 mx-8 py-2"></hr>
-      <div className="w-full grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-4 px-8 py-4">
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         <Card className="border-dashed h-[12rem] hover:bg-gray-100">
           <Link href="/dashboard/incidents/admin/build">
             <div className="flex flex-col justify-center items-center h-full">
@@ -111,6 +113,6 @@ export default function IncidentReportingFormsAdmin() {
           </div>
         ))}
       </div>
-    </>
+    </div>
   );
 }

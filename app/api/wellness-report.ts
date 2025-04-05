@@ -14,12 +14,13 @@ export async function getWellnessReportsForResident(
     );
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Failed to fetch wellness reports: ${errorText}`);
+      const errData = await response.json();
+      throw Error(
+        errData.detail || "Error fetching wellness report by resident",
+      );
     }
 
     const data = await response.json();
-    console.log("Wellness reports response:", JSON.stringify(data, null, 2));
     return data;
   } catch (error) {
     console.error("Error in getWellnessReportsForResident:", error);
@@ -48,6 +49,34 @@ export const getWellnessReportById = async (
   }
 };
 
+export async function generateAIWellnessReport(
+  residentId: string,
+  options?: { context?: string },
+): Promise<WellnessReportRecord> {
+  try {
+    const response = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/wellness-reports/generate-suggestion`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          context: options?.context || "",
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      const errData = await response.json();
+      throw new Error(errData.detail || "Error generating AI wellness report");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error in generateAIWellnessReport:", error);
+    throw error;
+  }
+}
+
 export async function createWellnessReport(
   residentId: string,
   reportData: Omit<WellnessReportRecord, "_id" | "resident_id">,
@@ -65,8 +94,8 @@ export async function createWellnessReport(
     );
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Failed to create wellness report: ${errorText}`);
+      const errData = await response.json();
+      throw new Error(errData.detail || "Error creating wellness report");
     }
 
     return await response.json();
@@ -94,8 +123,8 @@ export async function updateWellnessReport(
     );
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Failed to update wellness report: ${errorText}`);
+      const errData = await response.json();
+      throw new Error(errData.detail || "Error updating wellness report");
     }
 
     return await response.json();
@@ -118,34 +147,11 @@ export async function deleteWellnessReport(
     );
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Failed to delete wellness report: ${errorText}`);
+      const errData = await response.json();
+      throw new Error(errData.detail || "Error deleting wellness report");
     }
   } catch (error) {
     console.error("Error in deleteWellnessReport:", error);
-    throw error;
-  }
-}
-
-export async function generateAIWellnessReport(
-  residentId: string,
-): Promise<WellnessReportRecord> {
-  try {
-    const response = await fetchWithAuth(
-      `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/wellness-reports/generate-ai`,
-      {
-        method: "POST",
-      },
-    );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Failed to generate AI wellness report: ${errorText}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error in generateAIWellnessReport:", error);
     throw error;
   }
 }

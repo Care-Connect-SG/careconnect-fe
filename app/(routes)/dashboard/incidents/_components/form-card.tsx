@@ -16,7 +16,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { BookPlus, Copy, FilePenLine, Trash2 } from "lucide-react";
+import { BookPlus, Copy, FilePenLine, Trash } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -54,12 +54,12 @@ export default function FormCard({
       <Link href={`/dashboard/incidents/admin/view/${id}`}>
         <CardHeader className="max-h-24 space-y-0 my-0">
           <div className="flex flex-row items-start justify-between gap-2 mb-2">
-            <CardTitle className="text-base font-bold">{title}</CardTitle>
+            <CardTitle className="text-base font-semibold">{title}</CardTitle>
             <Badge
               className={
                 status === "Published"
-                  ? "hidden md:block text-green-800 bg-green-100 h-6 hover:bg-green-200 hover:text-green-900"
-                  : "hidden md:block text-yellow-800 bg-yellow-100 h-6 hover:bg-yellow-200 hover:text-yellow-900"
+                  ? "hidden md:block text-green-800 bg-green-100 h-6 hover:bg-green-100 hover:text-green-900"
+                  : "hidden md:block text-yellow-800 bg-yellow-100 h-6 hover:bg-yellow-100 hover:text-yellow-900"
               }
             >
               {status}
@@ -152,7 +152,7 @@ export default function FormCard({
                     onDelete(id);
                   }}
                 >
-                  <Trash2 className="h-4 w-4 hover:text-gray-600" />
+                  <Trash className="h-4 w-4 hover:text-gray-600" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>

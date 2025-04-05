@@ -332,15 +332,11 @@ export default function ActivityCalendar({
     try {
       setIsUpdating(true);
 
-      // Log the ID being deleted
-      console.log(`Calendar component: deleting activity with ID: ${id}`);
-
       // Find the activity to check if it exists and who created it
       const activityToDelete = activities.find(
         (activity) => activity.id === id,
       );
       if (!activityToDelete) {
-        console.error(`Activity with ID ${id} not found in local state`);
         toast({
           variant: "destructive",
           title: "Error",
@@ -348,8 +344,6 @@ export default function ActivityCalendar({
         });
         return;
       }
-
-      console.log(`Activity to delete:`, activityToDelete);
 
       // Optimistically update UI
       setActivities((prevActivities) =>
@@ -364,8 +358,6 @@ export default function ActivityCalendar({
       });
       setIsDialogOpen(false);
     } catch (error) {
-      console.error("Error in handleDeleteActivity:", error);
-
       // Restore activities from server
       await loadActivities();
 

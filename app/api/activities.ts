@@ -3,7 +3,6 @@ import { Activity, ActivityCreate } from "@/types/activity";
 
 export async function fetchActivities(): Promise<Activity[]> {
   try {
-    console.log("Attempting to fetch activities...");
     const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/activities`,
       {
@@ -16,15 +15,11 @@ export async function fetchActivities(): Promise<Activity[]> {
       const errorData = await response
         .json()
         .catch(() => ({ detail: "Could not parse error response" }));
-      console.error("Error response from server:", errorData);
       throw Error(errorData.detail || "Failed to fetch activities");
     }
 
-    const data = await response.json();
-    console.log(`Successfully fetched ${data.length} activities`);
-    return data;
+    return await response.json();
   } catch (error) {
-    console.error("Error fetching activities:", error);
     // Handle different types of errors
     if (
       error instanceof TypeError &&
@@ -68,7 +63,6 @@ export async function createActivity(
 
     return await response.json();
   } catch (error) {
-    console.error("Error creating activity:", error);
     throw error;
   }
 }
@@ -104,7 +98,6 @@ export async function updateActivity(
 
     return await response.json();
   } catch (error) {
-    console.error("Error updating activity:", error);
     throw error;
   }
 }
@@ -115,7 +108,6 @@ export async function deleteActivity(id: string): Promise<void> {
   }
 
   try {
-    console.log(`Attempting to delete activity with ID: ${id}`);
     const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/activities/${id}`,
       {
@@ -133,20 +125,15 @@ export async function deleteActivity(id: string): Promise<void> {
           const errorData = await response.json();
           errorDetail = errorData.detail || errorDetail;
         } else {
-          const errorText = await response.text();
-          console.error("Non-JSON error response:", errorText);
+          await response.text();
         }
       } catch (parseError) {
-        console.error("Error parsing error response:", parseError);
+        // Silently handle parse errors
       }
 
-      console.error(`Delete activity error (${response.status}):`, errorDetail);
       throw new Error(errorDetail);
     }
-
-    console.log(`Successfully deleted activity with ID: ${id}`);
   } catch (error) {
-    console.error("Error deleting activity:", error);
     throw error;
   }
 }

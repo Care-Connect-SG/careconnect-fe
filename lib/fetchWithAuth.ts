@@ -6,16 +6,6 @@ export async function fetchWithAuth(
 ): Promise<Response> {
   try {
     const session = await getSession();
-    console.log(
-      "Session in fetchWithAuth:",
-      session
-        ? {
-            userId: session.user?.id,
-            userEmail: session.user?.email,
-            hasToken: !!session.accessToken,
-          }
-        : "No session",
-    );
 
     if (!session) {
       // If no session, redirect to sign in
@@ -24,7 +14,6 @@ export async function fetchWithAuth(
     }
 
     if (!session.accessToken) {
-      console.error("No access token in session");
       // Perform the fetch without auth if there's no token
       return fetch(url, options);
     }
@@ -43,13 +32,11 @@ export async function fetchWithAuth(
       const response = await fetch(url, authOptions);
       return response;
     } catch (error) {
-      console.error(`Network error fetching ${url}:`, error);
       throw new Error(
         `Network error: Failed to connect to the server. Please check your connection and try again.`,
       );
     }
   } catch (error) {
-    console.error("Error in fetchWithAuth:", error);
     if (error instanceof Error) {
       throw error;
     } else {

@@ -125,7 +125,6 @@ const ResidentProfileHeader: React.FC<ResidentProfileHeaderProps> = ({
                 <div
                   ref={qrRef}
                   className="bg-white p-4 rounded inline-block"
-                  style={{ background: "#fff" }}
                 >
                   <QRCodeCanvas
                     value={resident.id}

@@ -272,10 +272,7 @@ const TaskManagement = () => {
   const handleDownloadTasks = async () => {
     try {
       const formattedDate = format(selectedDate, "yyyy-MM-dd");
-      const tasksToDownload = filteredTasks.filter(
-        (task) =>
-          format(new Date(task.due_date), "yyyy-MM-dd") === formattedDate,
-      );
+      const tasksToDownload = filteredTasks;
 
       if (tasksToDownload.length === 0) {
         toast({
@@ -286,6 +283,7 @@ const TaskManagement = () => {
         return;
       }
 
+      console.log("Tasks to download:", tasksToDownload);
       const blob = await downloadTasks(tasksToDownload.map((task) => task.id));
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -300,11 +298,11 @@ const TaskManagement = () => {
         title: "Tasks Downloaded",
         description: `Successfully downloaded ${tasksToDownload.length} tasks for ${formattedDate}`,
       });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to download tasks.",
+        title: "Failed to download tasks",
+        description: error.message,
       });
     }
   };

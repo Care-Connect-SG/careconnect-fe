@@ -4,21 +4,28 @@ import { createGroup } from "@/app/api/group";
 import { getUsers } from "@/app/api/user";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { useBreadcrumb } from "@/context/breadcrumb-context";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 import { User } from "@/types/user";
-import { X } from "lucide-react";
+import { Check, CirclePlus, UsersRound, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -53,8 +60,7 @@ export default function CreateGroupPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
-  const [selectValue, setSelectValue] = useState<string>("");
-  const [creating, setCreating] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
 
   const form = useForm<CreateGroupFormValues>({
     resolver: zodResolver(createGroupSchema),
@@ -88,21 +94,7 @@ export default function CreateGroupPage() {
     fetchUsers();
   }, []);
 
-  const handleSelectChange = (value: string) => {
-    if (!selectedMembers.includes(value)) {
-      setSelectedMembers((prev) => [...prev, value]);
-    }
-    setSelectValue("");
-  };
-
-  const handleRemoveMember = (userId: string) => {
-    setSelectedMembers((prev) =>
-      prev.filter((memberId) => memberId !== userId),
-    );
-  };
-
   const handleCreateGroup = async (values: CreateGroupFormValues) => {
-    setCreating(true);
     try {
       await createGroup({
         name: values.groupName,
@@ -124,9 +116,13 @@ export default function CreateGroupPage() {
         description: err.message,
         variant: "destructive",
       });
-    } finally {
-      setCreating(false);
     }
+  };
+
+  const handleRemoveMember = (userId: string) => {
+    setSelectedMembers((prev) =>
+      prev.filter((memberId) => memberId !== userId),
+    );
   };
 
   const availableUsers = users.filter(
@@ -179,57 +175,102 @@ export default function CreateGroupPage() {
             )}
           />
           <div className="space-y-4">
-            <Label className="block font-medium mb-1">Members</Label>
-            {loadingUsers ? (
-              <div className="py-2">
-                <Spinner />
-              </div>
-            ) : (
-              <Select
-                value={selectValue}
-                onValueChange={(value) => {
-                  setSelectValue(value);
-                  handleSelectChange(value);
-                }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select a user to add" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableUsers.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.name} ({user.email})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-            {selectedMembers.length > 0 && (
-              <div className="flex flex-wrap !mt-2 gap-2">
-                {selectedMembers.map((userId) => {
+            <div className="flex items-center gap-2 mb-2">
+              <UsersRound className="h-4 w-4 text-blue-500" />
+              <Label className="text-sm font-medium text-gray-700">
+                Group Members
+              </Label>
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="ml-auto flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 rounded-full py-1 px-2 transition-colors">
+                    <CirclePlus className="w-3 h-3" />
+                    <span>Add</span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="p-0 w-[280px]">
+                  <Command>
+                    <CommandInput
+                      placeholder="Search users..."
+                      value={searchValue}
+                      onValueChange={setSearchValue}
+                    />
+                    <CommandList>
+                      <CommandEmpty>No user found.</CommandEmpty>
+                      <CommandGroup>
+                        {availableUsers
+                          .filter(
+                            (user) =>
+                              user.name
+                                .toLowerCase()
+                                .includes(searchValue.toLowerCase()) ||
+                              user.email
+                                .toLowerCase()
+                                .includes(searchValue.toLowerCase()),
+                          )
+                          .map((user) => (
+                            <CommandItem
+                              key={user.id}
+                              onSelect={() => {
+                                setSelectedMembers((prev) =>
+                                  prev.includes(user.id)
+                                    ? prev
+                                    : [...prev, user.id],
+                                );
+                                setSearchValue("");
+                              }}
+                              className="cursor-pointer"
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4 text-blue-600",
+                                  selectedMembers.includes(user.id)
+                                    ? "opacity-100"
+                                    : "opacity-0",
+                                )}
+                              />
+                              {user.name} ({user.email})
+                            </CommandItem>
+                          ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {selectedMembers.length > 0 ? (
+                selectedMembers.map((userId) => {
                   const user = users.find((u) => u.id === userId);
-                  return (
+                  return user ? (
                     <Badge
                       key={userId}
-                      className="bg-blue-100 text-blue-800 flex items-center gap-1 hover:bg-blue-100 rounded-xl py-2"
+                      variant="secondary"
+                      className="font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200"
                     >
-                      {user ? user.name : userId}
-                      <Button
-                        variant="ghost"
+                      {user.name}
+                      <X
+                        className="h-3 w-3 ml-1 cursor-pointer text-blue-600 hover:text-blue-800"
                         onClick={() => handleRemoveMember(userId)}
-                        className="p-0 hover:bg-transparent h-fit"
-                      >
-                        <X className="ml-1 w-4 h-4" />
-                      </Button>
+                      />
                     </Badge>
-                  );
-                })}
-              </div>
-            )}
+                  ) : null;
+                })
+              ) : (
+                <span className="text-xs text-gray-500 italic">
+                  No members added
+                </span>
+              )}
+            </div>
           </div>
 
-          <Button type="submit" disabled={creating} className="w-full">
-            {creating ? <Spinner /> : "Create Group"}
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={!selectedMembers.length}
+          >
+            Create Group
           </Button>
         </form>
       </Form>

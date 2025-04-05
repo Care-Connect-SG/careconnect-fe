@@ -95,7 +95,7 @@ export default function PersonSelector({ user }: PersonSelectorProps) {
   };
 
   return (
-    <div className="w-full lg:w-2/3">
+    <div className="w-full">
       <Card className="p-5 border bg-white shadow-sm">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">
           People Involved

@@ -51,7 +51,7 @@ export default function FormView({
 
   return (
     <div className="py-4 px-8">
-      <div className="flex justify-between items-center pb-2">
+      <div className="flex justify-between items-center mb-8">
         <div className="flex justify-start gap-2">
           <Link href="/dashboard/incidents/admin">
             <Button variant="outline" className="border h-10 mb-2 rounded-md">
@@ -64,13 +64,13 @@ export default function FormView({
           <Badge
             className={
               form.status === "Draft"
-                ? "text-yellow-800 bg-yellow-100 h-6"
-                : "text-green-800 bg-green-100 h-6"
+                ? "text-yellow-800 bg-yellow-100 h-6 hover:bg-yellow-100"
+                : "text-green-800 bg-green-100 h-6 hover:bg-green-100"
             }
           >
             {form.status}
           </Badge>
-          <Badge className="h-6 ml-2 bg-blue-100 text-blue-600">
+          <Badge className="h-6 ml-2 bg-blue-100 text-blue-600 hover:bg-blue-100">
             <Eye className="mr-2 h-4 w-4" />
             Preview
           </Badge>
@@ -86,9 +86,11 @@ export default function FormView({
         </div>
       </div>
 
-      <Button disabled className="bg-gray-300 text-gray-700">
-        Submit Form
-      </Button>
+      <div className="flex justify-end items-center mt-6">
+        <Button disabled className=" bg-gray-300 text-gray-700">
+          Submit Form
+        </Button>
+      </div>
     </div>
   );
 }

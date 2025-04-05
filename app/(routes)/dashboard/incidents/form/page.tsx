@@ -1,6 +1,7 @@
 "use client";
 
 import { getForms } from "@/app/api/form";
+import { Spinner } from "@/components/ui/spinner";
 import { FormResponse } from "@/types/form";
 import { ClipboardList, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -42,7 +43,7 @@ export default function IncidentReportingForms() {
       {isLoading ? (
         <div className="flex justify-center items-center h-64">
           <div className="flex flex-col items-center">
-            <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
+            <Spinner />
             <p className="mt-4 text-gray-500">Loading available forms...</p>
           </div>
         </div>

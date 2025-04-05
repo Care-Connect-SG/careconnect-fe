@@ -14,7 +14,6 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -73,10 +72,8 @@ function FormHeaderView({
   referenceReportId = null,
   onReferenceReportChange,
 }: FormHeaderViewProps) {
-  // Handle selection from the dropdown
   const handleReferenceReportChange = (reportId: string) => {
     if (onReferenceReportChange) {
-      // If "none" is selected, treat it as null
       if (reportId === "none") {
         onReferenceReportChange(null);
       } else {
@@ -85,7 +82,6 @@ function FormHeaderView({
     }
   };
 
-  // Handle clicking the clear button
   const handleClearReference = () => {
     if (onReferenceReportChange) {
       onReferenceReportChange(null);
@@ -93,7 +89,7 @@ function FormHeaderView({
   };
 
   return (
-    <Card className="border bg-white w-full lg:w-1/2 flex flex-col">
+    <Card className="border bg-white w-full  flex flex-col">
       <CardHeader className="flex flex-col h-full justify-between space-y-6">
         <div>
           <CardTitle>
@@ -136,7 +132,6 @@ function FormHeaderView({
                 </SelectTrigger>
                 <SelectContent className="max-h-[300px]">
                   <SelectGroup>
-                    {/* Option to clear the selection */}
                     <SelectItem value="none" className="text-gray-500 italic">
                       No reference report
                     </SelectItem>

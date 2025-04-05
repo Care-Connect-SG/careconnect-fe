@@ -23,12 +23,12 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
-import { Edit, MoreHorizontal, Trash } from "lucide-react";
-import { useParams } from "next/navigation";
-import React, { useState } from "react";
-import { QRCodeCanvas } from "qrcode.react";
 import html2canvas from "html2canvas";
+import { Edit, MoreHorizontal, Trash } from "lucide-react";
 import { QrCodeIcon } from "lucide-react";
+import { useParams } from "next/navigation";
+import { QRCodeCanvas } from "qrcode.react";
+import React, { useState } from "react";
 
 interface MedicationProps {
   medication: {
@@ -195,12 +195,15 @@ const ResidentMedication: React.FC<MedicationProps> = ({
               <div ref={qrRef} className="inline-block bg-white p-4 rounded">
                 <QRCodeCanvas value={medication.id} size={150} />
               </div>
-              <Button onClick={handleDownloadQR} variant="outline" className="text-sm">
+              <Button
+                onClick={handleDownloadQR}
+                variant="outline"
+                className="text-sm"
+              >
                 Download QR Code
               </Button>
             </div>
           )}
-
         </CardContent>
       </Card>
 

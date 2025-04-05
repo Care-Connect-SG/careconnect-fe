@@ -79,7 +79,6 @@ export const updateCarePlan = async (residentId: string, carePlanData: any) => {
   }
 };
 
-
 export const deleteCarePlan = async (
   residentId: string,
   carePlanId: string,

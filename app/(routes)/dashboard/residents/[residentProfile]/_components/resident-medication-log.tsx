@@ -89,9 +89,9 @@ const MedicationLogList: React.FC<Props> = ({ residentId, selectedDate }) => {
           <p className="text-gray-500">
             {selectedDate
               ? `No medication logs found for ${format(
-                selectedDate,
-                "MMMM d, yyyy",
-              )}.`
+                  selectedDate,
+                  "MMMM d, yyyy",
+                )}.`
               : "No medication logs found."}
           </p>
         </div>
@@ -109,8 +109,9 @@ const MedicationLogList: React.FC<Props> = ({ residentId, selectedDate }) => {
                 {dateLogs.map((log, index) => {
                   const med = medicationDetailsMap[log.medication_id];
                   const administeredTimeUTC = new Date(log.administered_at);
-                  const administeredTimeSGT = new Date(administeredTimeUTC.getTime() + 8 * 60 * 60 * 1000); // Add 8 hours
-
+                  const administeredTimeSGT = new Date(
+                    administeredTimeUTC.getTime() + 8 * 60 * 60 * 1000,
+                  ); // Add 8 hours
 
                   return (
                     <li

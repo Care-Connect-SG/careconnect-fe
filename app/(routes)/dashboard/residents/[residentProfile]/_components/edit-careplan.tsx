@@ -154,7 +154,6 @@ const EditableCarePlan: React.FC<CarePlanProps> = ({
     }
   };
 
-
   const formatDietaryRestrictions = (restrictions: string | undefined) => {
     if (!restrictions || restrictions.trim() === "") return "None";
     return restrictions.split(",").map((item, index) => (

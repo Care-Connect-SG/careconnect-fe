@@ -15,9 +15,9 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { toTitleCase } from "@/lib/utils";
 import { ResidentRecord } from "@/types/resident";
-import { Trash, QrCodeIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
 import html2canvas from "html2canvas";
+import { QrCodeIcon, Trash } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { QRCodeCanvas } from "qrcode.react";
 import React, { useRef, useState } from "react";
 import ResidentProfilePictureDialog from "./resident-profile-picture-dialog";
@@ -122,15 +122,8 @@ const ResidentProfileHeader: React.FC<ResidentProfileHeaderProps> = ({
             {/* QR Popout */}
             {showQR && (
               <div className="absolute right-0 mt-2 z-50 bg-white border rounded shadow-lg p-3 flex flex-col items-center space-y-2">
-                <div
-                  ref={qrRef}
-                  className="bg-white p-4 rounded inline-block"
-                >
-                  <QRCodeCanvas
-                    value={resident.id}
-                    size={150}
-                    level="H"
-                  />
+                <div ref={qrRef} className="bg-white p-4 rounded inline-block">
+                  <QRCodeCanvas value={resident.id} size={150} level="H" />
                 </div>
 
                 <Button
@@ -143,8 +136,6 @@ const ResidentProfileHeader: React.FC<ResidentProfileHeaderProps> = ({
               </div>
             )}
           </div>
-
-
         </div>
       </div>
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

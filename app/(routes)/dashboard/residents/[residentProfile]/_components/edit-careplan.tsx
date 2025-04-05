@@ -29,7 +29,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { CarePlanRecord } from "@/types/careplan";
-import { Edit, MoreHorizontal, PlusCircle, Save, Trash } from "lucide-react";
+import { Edit, MoreHorizontal, PlusCircle, Trash } from "lucide-react";
 import { useState } from "react";
 
 interface CarePlanProps {

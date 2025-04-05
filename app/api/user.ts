@@ -242,3 +242,30 @@ export const deleteUser = async (userId: string): Promise<void> => {
     throw error;
   }
 };
+
+export const changePassword = async (
+  currentPassword: string,
+  newPassword: string,
+): Promise<void> => {
+  try {
+    const response = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/users/me/password`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          current_password: currentPassword,
+          new_password: newPassword,
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw Error(errorData.detail || "Failed to update password");
+    }
+  } catch (error) {
+    console.error("Error changing password:", error);
+    throw error;
+  }
+};

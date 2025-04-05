@@ -1,5 +1,7 @@
 "use client";
 
+import { changePassword } from "@/app/api/user";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -15,13 +17,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button";
-import * as z from "zod";
+import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
-import { fetchWithAuth } from "@/lib/fetchWithAuth";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 
+// Password validation schema
 const passwordSchema = z
   .object({
     current_password: z.string().min(1, "Current password is required"),
@@ -37,73 +40,76 @@ const passwordSchema = z
 
 type PasswordFormValues = z.infer<typeof passwordSchema>;
 
+interface ChangePasswordDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  userId: string;
+}
+
 const ChangePasswordDialog = ({
   isOpen,
   onClose,
   userId,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  userId: string;
-}) => {
+}: ChangePasswordDialogProps) => {
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Setup form with validation
   const form = useForm<PasswordFormValues>({
     resolver: zodResolver(passwordSchema),
+    defaultValues: {
+      current_password: "",
+      new_password: "",
+      confirm_new_password: "",
+    },
+    mode: "onChange",
   });
 
+  // Reset form when dialog opens or closes
+  const handleDialogChange = (open: boolean) => {
+    if (!open) {
+      form.reset({
+        current_password: "",
+        new_password: "",
+        confirm_new_password: "",
+      });
+      onClose();
+    }
+  };
+
+  // Handle form submission
   const onSubmit = async (data: PasswordFormValues) => {
+    setIsSubmitting(true);
+
     try {
-      const response = await fetchWithAuth(
-        `${process.env.NEXT_PUBLIC_BE_API_URL}/users/me/password`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            current_password: data.current_password,
-            new_password: data.new_password,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const err = await response.json();
-
-        if (err.detail === "Current password is incorrect") {
-          form.setError("current_password", {
-            type: "manual",
-            message: "Current password is incorrect",
-          });
-          return;
-        }
-
-        throw new Error(err.detail || "Failed to update password");
-      }
+      await changePassword(data.current_password, data.new_password);
 
       toast({
         title: "Password updated successfully",
-        description: "You may now use your new password.",
+        description: "Your password has been changed",
+        variant: "default",
       });
 
       form.reset();
       onClose();
     } catch (err: any) {
-      if (err.message !== "Current password is incorrect") {
-        toast({
-          title: "Failed to update password",
-          description: err.message,
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Failed to update password",
+        description: err.message || "An error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+    <Dialog open={isOpen} onOpenChange={handleDialogChange}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Change Password</DialogTitle>
         </DialogHeader>
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -116,13 +122,14 @@ const ChangePasswordDialog = ({
                     <Input
                       type="password"
                       {...field}
-                      value={field.value ?? ""}
+                      autoComplete="current-password"
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="new_password"
@@ -133,13 +140,14 @@ const ChangePasswordDialog = ({
                     <Input
                       type="password"
                       {...field}
-                      value={field.value ?? ""}
+                      autoComplete="new-password"
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="confirm_new_password"
@@ -150,15 +158,20 @@ const ChangePasswordDialog = ({
                     <Input
                       type="password"
                       {...field}
-                      value={field.value ?? ""}
+                      autoComplete="new-password"
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">
-              Change Password
+
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isSubmitting || !form.formState.isValid}
+            >
+              {isSubmitting ? <Spinner /> : "Change Password"}
             </Button>
           </form>
         </Form>

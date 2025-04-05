@@ -10,14 +10,13 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/hooks/use-toast";
-import { formatDayMonthYear } from "@/lib/utils";
-import { toTitleCase } from "@/lib/utils";
+import { formatDayMonthYear, toTitleCase } from "@/lib/utils";
 import { FormResponse } from "@/types/form";
 import { ReportResponse, ReportStatus } from "@/types/report";
 import { ResidentRecord } from "@/types/resident";
@@ -27,10 +26,13 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleAlert,
+  Download,
   Info,
   MessageCircle,
   MessageCircleReply,
   Share2,
+  User as UserIcon,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -210,327 +212,412 @@ export default function ViewReportPage() {
   if (!reportId) return <LoadingSkeleton />;
 
   return (
-    <div className="py-4 px-8">
-      <div className="flex justify-between items-center mb-2">
+    <div className="py-6 px-4 sm:px-6 lg:px-8 space-y-8 flex flex-col">
+      <div className="flex justify-between items-center">
         <Button
           onClick={() => router.back()}
           variant="outline"
-          className="border rounded-md"
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
         >
-          <ChevronLeft className="h-4 w-4 mx-auto" />
-          Return to Incident Reports
+          <ChevronLeft className="h-4 w-4" />
+          <span>Return to Incident Reports</span>
         </Button>
-        {report?.status === ReportStatus.PUBLISHED && (
-          <div className="flex flex-row space-x-4">
-            <Button
-              variant={"outline"}
-              onClick={handleShareWithNextOfKin}
-              disabled={!resident?.emergency_contact_number || isSharing}
-              title={
-                !resident?.emergency_contact_number
-                  ? "No emergency contact number available"
-                  : ""
-              }
-              className="w-48"
-            >
-              {isSharing ? (
-                <>
-                  <Spinner />
-                  Sharing...
-                </>
-              ) : (
-                <>
-                  <Share2 className="mr-1 h-4 w-4" />
-                  Share with Guardian
-                </>
-              )}
-            </Button>
-            <Button onClick={handleDownload}>Download Report</Button>
-          </div>
-        )}
-        {(report?.status === ReportStatus.SUBMITTED ||
-          report?.status === ReportStatus.CHANGES_MADE) &&
-          user?.role === "Admin" && (
-            <div className="flex gap-2 justify-end">
+
+        <div className="flex gap-3">
+          {report?.status === ReportStatus.PUBLISHED && (
+            <>
               <Button
-                className="bg-blue-500 hover:bg-blue-600 text-white"
-                onClick={() => setReviewDialogOpen(true)}
+                variant="outline"
+                onClick={handleShareWithNextOfKin}
+                disabled={!resident?.emergency_contact_number || isSharing}
+                title={
+                  !resident?.emergency_contact_number
+                    ? "No emergency contact number available"
+                    : ""
+                }
+                className="flex items-center gap-2"
               >
-                Request Changes
+                {isSharing ? (
+                  <>
+                    <Spinner />
+                    <span>Sharing...</span>
+                  </>
+                ) : (
+                  <>
+                    <Share2 className="h-4 w-4" />
+                    <span>Share with Guardian</span>
+                  </>
+                )}
               </Button>
+
               <Button
-                className="bg-green-500 hover:bg-green-600 text-white"
-                onClick={handleApprove}
+                onClick={handleDownload}
+                className="flex items-center gap-2"
               >
-                Approve
+                <Download className="h-4 w-4" />
+                <span>Download Report</span>
               </Button>
-            </div>
+            </>
           )}
-        {report?.status === ReportStatus.CHANGES_REQUESTED &&
-          user?.id === report.reporter.id && (
-            <Button
-              variant={"secondary"}
-              onClick={() =>
-                router.replace(
-                  `/dashboard/incidents/resolve?formId=${report.form_id}&reportId=${reportId}`,
-                )
-              }
-            >
-              Resolve Review
-            </Button>
-          )}
+
+          {(report?.status === ReportStatus.SUBMITTED ||
+            report?.status === ReportStatus.CHANGES_MADE) &&
+            user?.role === "Admin" && (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => setReviewDialogOpen(true)}
+                  className="flex items-center gap-2"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  <span>Request Changes</span>
+                </Button>
+
+                <Button
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                  onClick={handleApprove}
+                >
+                  Approve
+                </Button>
+              </>
+            )}
+
+          {report?.status === ReportStatus.CHANGES_REQUESTED &&
+            user?.id === report.reporter.id && (
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  router.replace(
+                    `/dashboard/incidents/resolve?formId=${report.form_id}&reportId=${reportId}`,
+                  )
+                }
+                className="flex items-center gap-2"
+              >
+                <MessageCircleReply className="h-4 w-4" />
+                <span>Resolve Review</span>
+              </Button>
+            )}
+        </div>
       </div>
 
       {report?.status === ReportStatus.CHANGES_REQUESTED && (
-        <div className="rounded-md border px-4 my-4">
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="item-1">
-              <AccordionTrigger className="text-lg font-medium">
-                <CircleAlert className="text-red-500 transition-none" />
-                Changes Requested
+        <Card className="border-red-200 bg-red-50">
+          <Accordion type="single" collapsible>
+            <AccordionItem value="item-1" className="border-none">
+              <AccordionTrigger className="py-4 px-6 text-lg font-medium text-red-800 hover:no-underline group">
+                <div className="flex items-center gap-2">
+                  <CircleAlert className="text-red-600 h-5 w-5" />
+                  <span>Changes Requested</span>
+                </div>
               </AccordionTrigger>
-              <AccordionContent className="rounded">
-                <Card className="border-none shadow-none">
-                  <CardContent className="px-2 text-sm pb-4">
-                    <p className="opacity-50 text-sm mt-2 pb-2">
-                      Reviewed by{" "}
+              <AccordionContent className="px-6 pb-4 pt-0">
+                <div className="text-gray-700 space-y-4">
+                  <p className="text-sm text-gray-500">
+                    Reviewed by{" "}
+                    <span className="font-medium">
                       {
                         report?.reviews![report?.reviews!.length - 1].reviewer
                           .name
-                      }{" "}
-                      on{" "}
+                      }
+                    </span>{" "}
+                    on{" "}
+                    <span className="font-medium">
                       {new Date(
                         report?.reviews![report?.reviews!.length - 1]
                           .reviewed_at,
                       ).toLocaleString()}
-                    </p>
+                    </span>
+                  </p>
+                  <div className="bg-white p-4 rounded-md border border-red-100">
                     {report?.reviews![report?.reviews!.length - 1].review}
-                  </CardContent>
-                </Card>
-                {user?.id === report.reporter.id && (
-                  <Button
-                    className="my-2 mx-2"
-                    variant={"secondary"}
-                    onClick={() =>
-                      router.replace(
-                        `/dashboard/incidents/resolve?formId=${report.form_id}&reportId=${reportId}`,
-                      )
-                    }
-                  >
-                    Resolve Review
-                  </Button>
-                )}
+                  </div>
+
+                  {user?.id === report.reporter.id && (
+                    <Button
+                      className="mt-2"
+                      variant="secondary"
+                      onClick={() =>
+                        router.replace(
+                          `/dashboard/incidents/resolve?formId=${report.form_id}&reportId=${reportId}`,
+                        )
+                      }
+                    >
+                      Resolve Review
+                    </Button>
+                  )}
+                </div>
               </AccordionContent>
             </AccordionItem>
           </Accordion>
-        </div>
+        </Card>
       )}
+
       {report?.status === ReportStatus.CHANGES_MADE && (
-        <div className="rounded-md border px-4 my-4">
+        <Card className="border-green-200 bg-green-50">
           <Accordion type="single" collapsible>
-            <AccordionItem value="item-1">
-              <AccordionTrigger className="text-lg font-medium">
-                <Info className="text-purple-500 transition-none" />
-                Changes Made
+            <AccordionItem value="item-1" className="border-none">
+              <AccordionTrigger className="py-4 px-6 text-lg font-medium text-green-800 hover:no-underline group">
+                <div className="flex items-center gap-2">
+                  <Info className="text-green-600 h-5 w-5" />
+                  <span>Changes Made</span>
+                </div>
               </AccordionTrigger>
-              <AccordionContent className="rounded">
-                <Card className="border-none shadow-none">
-                  <CardContent className="px-2 text-sm pb-4">
-                    <div className="mt-2 mb-6">
-                      <div className="flex items-center gap-2">
-                        <MessageCircle className="text-gray-300" />
-                        <p className="text-base font-semibold">Review</p>
-                      </div>
-                      <p className="opacity-50 text-sm mt-2 pb-2">
-                        Reviewed by{" "}
+              <AccordionContent className="px-6 pb-4 pt-0 text-gray-700">
+                <div className="space-y-6">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <MessageCircle className="text-gray-500 h-5 w-5" />
+                      <h3 className="font-medium text-gray-800">Review</h3>
+                    </div>
+                    <p className="text-sm text-gray-500">
+                      Reviewed by{" "}
+                      <span className="font-medium">
                         {
                           report?.reviews![report?.reviews!.length - 1].reviewer
                             .name
-                        }{" "}
-                        on{" "}
+                        }
+                      </span>{" "}
+                      on{" "}
+                      <span className="font-medium">
                         {new Date(
                           report?.reviews![report?.reviews!.length - 1]
                             .reviewed_at,
                         ).toLocaleString()}
-                      </p>
+                      </span>
+                    </p>
+                    <div className="bg-white p-4 rounded-md border border-gray-200">
                       {report?.reviews![report?.reviews!.length - 1].review}
                     </div>
+                  </div>
 
-                    <div className="mt-4">
-                      <div className="flex items-center gap-2">
-                        <MessageCircleReply className="text-purple-300" />
-                        <p className="text-base font-semibold">Resolution</p>
-                      </div>
-                      <p className="opacity-50 text-sm mt-2 pb-2">
-                        Resolved on{" "}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <MessageCircleReply className="text-green-500 h-5 w-5" />
+                      <h3 className="font-medium text-gray-800">Resolution</h3>
+                    </div>
+                    <p className="text-sm text-gray-500">
+                      Resolved on{" "}
+                      <span className="font-medium">
                         {new Date(
                           report?.reviews![report?.reviews!.length - 1]
                             .resolved_at!,
                         ).toLocaleString()}
-                      </p>
+                      </span>
+                    </p>
+                    <div className="bg-white p-4 rounded-md border border-gray-200">
                       {report?.reviews![report?.reviews!.length - 1].resolution}
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </AccordionContent>
             </AccordionItem>
           </Accordion>
-        </div>
+        </Card>
       )}
+
       <Card>
-        <CardHeader className="pb-2">
-          <div className="flex justify-between">
-            <CardTitle>{form?.title}</CardTitle>
-            <Badge className={getReportBadgeConfig(report?.status!)}>
+        <CardHeader className="bg-gray-50 border-b pb-4">
+          <div className="flex justify-between items-center">
+            <div className="space-y-1">
+              <CardTitle className="text-xl font-semibold">
+                {form?.title}
+              </CardTitle>
+              <p className="text-gray-500 text-sm">
+                Reported on{" "}
+                <time
+                  dateTime={
+                    report?.created_at
+                      ? new Date(report.created_at).toISOString()
+                      : ""
+                  }
+                >
+                  {report?.created_at
+                    ? formatDayMonthYear(new Date(report.created_at))
+                    : ""}
+                </time>{" "}
+                by {report?.reporter.name}
+              </p>
+            </div>
+            <Badge
+              className={`${getReportBadgeConfig(
+                report?.status!,
+              )} px-3 py-1 text-sm font-medium`}
+            >
               {report?.status}
             </Badge>
           </div>
-          {report?.created_at && (
-            <p className="text-gray-500">
-              Reported on {formatDayMonthYear(new Date(report?.created_at))} by{" "}
-              {report.reporter.name}
-            </p>
-          )}
         </CardHeader>
-        <CardContent>
-          <div>
-            <div className="flex my-4">
-              {(resident ||
-                (report?.involved_residents &&
-                  report?.involved_residents.length > 0)) && (
-                <div className="w-1/2">
-                  {resident && (
-                    <div className="mb-4">
-                      <h2 className="text-gray-500 font-semibold mb-2">
-                        Primary Resident
-                      </h2>
+
+        <CardContent className="p-6">
+          <div className="grid md:grid-cols-2 gap-8 mb-8">
+            {(resident ||
+              (report?.involved_residents &&
+                report?.involved_residents.length > 0)) && (
+              <div className="space-y-6">
+                {resident && (
+                  <div className="space-y-4">
+                    <h2 className="text-gray-600 font-semibold flex items-center gap-2">
+                      <UserIcon className="h-5 w-5 text-gray-400" />
+                      Primary Resident
+                    </h2>
+                    <Link
+                      href={`/dashboard/residents/${resident.id}`}
+                      className="flex items-start gap-4 p-4 rounded-lg border border-gray-100 hover:border-gray-300 hover:bg-gray-50 transition-all group"
+                    >
+                      <Avatar className="h-16 w-16 border shadow-sm">
+                        <AvatarImage
+                          src={resident.photograph || undefined}
+                          alt={resident.full_name}
+                        />
+                        <AvatarFallback className="bg-gray-100 text-gray-800 text-sm rounded-lg">
+                          {resident.full_name.substring(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
                       <div>
-                        <Link
-                          href={`/dashboard/residents/${resident.id}`}
-                          className="flex items-center gap-3 group hover"
-                        >
-                          <Avatar className="h-16 w-16 group-hover:ring-1 group-hover:ring-primary group-hover:ring-offset-2 transition-all">
-                            <AvatarFallback>PR</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="font-medium flex items-center gap-1">
-                              <span className="border-b border-dotted border-muted-foreground group-hover:border-primary mb-1">
-                                {resident.full_name}
-                              </span>
-                              <ChevronRight className="h-4 w-4 mb-1 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              Room: {resident.room_number}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              DOB: {resident.date_of_birth}
-                            </p>
-                          </div>
-                        </Link>
-                      </div>
-                    </div>
-                  )}
-                  {report?.involved_residents &&
-                    report?.involved_residents.length > 0 && (
-                      <div>
-                        <h2 className="text-gray-500">Involved residents:</h2>
-                        <div>
-                          {report.involved_residents.map((ir, index) => (
-                            <span key={ir.id}>
-                              <Link
-                                href={`/dashboard/residents/${ir.id}`}
-                                className="border-b border-dotted border-muted-foreground"
-                              >
-                                {ir.name}
-                              </Link>
-                              {index < report.involved_residents!.length - 1 &&
-                                ", "}
-                            </span>
-                          ))}
+                        <div className="font-medium text-gray-900 group-hover:text-gray-600 transition-colors flex items-center gap-1">
+                          {resident.full_name}
+                          <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                        <div className="mt-1 space-y-1 text-sm text-gray-500">
+                          <p>Room: {resident.room_number}</p>
+                          <p>DOB: {resident.date_of_birth}</p>
                         </div>
                       </div>
-                    )}
-                </div>
-              )}
-              <div className="w-1/2">
-                <h2 className="text-gray-500 font-semibold mb-2">Reporter</h2>
-                <Link
-                  href={`/dashboard/nurses/${report?.reporter.id}`}
-                  className="flex items-center gap-3 group hover mb-4"
-                >
-                  <Avatar className="h-16 w-16 group-hover:ring-1 group-hover:ring-primary group-hover:ring-offset-2 transition-all">
-                    <AvatarFallback>NU</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="font-medium flex items-center gap-1">
-                      <span className="border-b border-dotted border-muted-foreground group-hover:border-primary mb-1">
-                        {reporter?.name}
-                      </span>
-                      <ChevronRight className="h-4 w-4 mb-1 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {reporter?.organisation_rank} [{reporter?.role}]
-                    </p>
+                    </Link>
                   </div>
-                </Link>
-                {report?.involved_caregivers &&
-                  report?.involved_caregivers.length > 0 && (
-                    <div>
-                      <h2 className="text-gray-500">Involved caregivers:</h2>
-                      <div>
-                        {report.involved_caregivers.map((ir, index) => (
-                          <span key={ir.id}>
+                )}
+
+                {report?.involved_residents &&
+                  report?.involved_residents.length > 0 && (
+                    <div className="space-y-3">
+                      <h2 className="text-gray-600 font-semibold flex items-center gap-2">
+                        <Users className="h-5 w-5 text-gray-400" />
+                        Other Involved Residents
+                      </h2>
+                      <div className="p-4 bg-gray-50 rounded-lg">
+                        {report.involved_residents.map((ir, index) => (
+                          <span key={ir.id} className="inline-block mr-1">
                             <Link
-                              href={`/dashboard/nurses/${ir.id}`}
-                              className="border-b border-dotted border-muted-foreground"
+                              href={`/dashboard/residents/${ir.id}`}
+                              className="text-gray-600 hover:text-gray-800 hover:underline"
                             >
                               {ir.name}
                             </Link>
-                            {index < report.involved_caregivers!.length - 1 &&
-                              ", "}
+                            {index < report.involved_residents!.length - 1
+                              ? ", "
+                              : ""}
                           </span>
                         ))}
                       </div>
                     </div>
                   )}
               </div>
+            )}
+
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <h2 className="text-gray-600 font-semibold flex items-center gap-2">
+                  <UserIcon className="h-5 w-5 text-gray-400" />
+                  Reporter
+                </h2>
+                <Link
+                  href={`/dashboard/nurses/${report?.reporter.id}`}
+                  className="flex items-start gap-4 p-4 rounded-lg border border-gray-100 hover:border-gray-300 hover:bg-gray-50 transition-all group"
+                >
+                  <Avatar className="h-16 w-16 border shadow-sm">
+                    <AvatarImage
+                      src={reporter?.profile_picture || undefined}
+                      alt={reporter?.name}
+                      className="rounded-lg bg-blue-100"
+                    />
+                    <AvatarFallback className="bg-blue-100 text-blue-800 text-sm rounded-lg">
+                      {reporter?.name.substring(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <div className="font-medium text-gray-900 group-hover:text-blue-500 transition-colors flex items-center gap-1">
+                      {reporter?.name}
+                      <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                    <div className="mt-1 space-y-1 text-sm text-gray-500">
+                      <p>{reporter?.organisation_rank}</p>
+                      <p>Role: {reporter?.role}</p>
+                    </div>
+                  </div>
+                </Link>
+              </div>
+
+              {report?.involved_caregivers &&
+                report?.involved_caregivers.length > 0 && (
+                  <div className="space-y-3">
+                    <h2 className="text-gray-600 font-semibold flex items-center gap-2">
+                      <Users className="h-5 w-5 text-gray-400" />
+                      Other Involved Caregivers
+                    </h2>
+                    <div className="p-4 bg-gray-50 rounded-lg">
+                      {report.involved_caregivers.map((ir, index) => (
+                        <span key={ir.id} className="inline-block mr-1">
+                          <Link
+                            href={`/dashboard/nurses/${ir.id}`}
+                            className="text-blue-600 hover:text-blue-800 hover:underline"
+                          >
+                            {ir.name}
+                          </Link>
+                          {index < report.involved_caregivers!.length - 1
+                            ? ", "
+                            : ""}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
               {report?.reference_report_id && (
-                <div className="mt-4">
-                  <h2 className="text-gray-500 font-semibold mb-2">
+                <div className="space-y-3">
+                  <h2 className="text-gray-600 font-semibold">
                     Reference Report
                   </h2>
                   <Link
                     href={`/dashboard/incidents/view?reportId=${report.reference_report_id}`}
-                    className="border-b border-dotted border-muted-foreground hover:border-primary text-blue-600"
+                    className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800"
                   >
-                    View Reference Report
+                    <Info className="h-4 w-4" />
+                    <span className="hover:underline">
+                      View Reference Report
+                    </span>
                   </Link>
                 </div>
               )}
             </div>
+          </div>
 
-            <hr className="border-t-1 border-gray-300 mt-8 mb-6"></hr>
+          <hr className="my-8 border-gray-200" />
 
-            <div>
-              {report?.report_content
-                .filter((section) => !!section.input)
-                .map((section) => (
-                  <div key={section.form_element_id} className="my-4">
-                    <div className="font-bold text-gray-500 py-2">
-                      {
-                        form?.json_content.find(
-                          (element) =>
-                            element.element_id === section.form_element_id,
-                        )?.label
-                      }
-                    </div>
-                    <div className="text-sm">{section.input}</div>
+          <div className="space-y-6">
+            {report?.report_content
+              .filter((section) => !!section.input)
+              .map((section) => (
+                <div
+                  key={section.form_element_id}
+                  className="bg-gray-50 p-5 rounded-lg border border-gray-100"
+                >
+                  <h3 className="font-medium text-gray-800 mb-3">
+                    {
+                      form?.json_content.find(
+                        (element) =>
+                          element.element_id === section.form_element_id,
+                      )?.label
+                    }
+                  </h3>
+                  <div className="text-gray-700 whitespace-pre-line">
+                    {section.input}
                   </div>
-                ))}
-            </div>
+                </div>
+              ))}
           </div>
         </CardContent>
       </Card>
+
       {reportId && user && (
         <ReportReviewDialogue
           open={reviewDialogOpen}

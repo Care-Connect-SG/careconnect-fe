@@ -61,20 +61,20 @@ const EditResidentDialog: React.FC<EditResidentDialogProps> = ({
   const [roomNumber, setRoomNumber] = useState(initialData.room_number || "");
   const [gender, setGender] = useState(initialData.gender || "");
   const [dateOfBirth, setDateOfBirth] = useState(
-    initialData.date_of_birth || ""
+    initialData.date_of_birth || "",
   );
   const [nricNumber, setNricNumber] = useState(initialData.nric_number || "");
   const [relationship, setRelationship] = useState(
-    initialData.relationship || ""
+    initialData.relationship || "",
   );
   const [emergencyContactName, setEmergencyContactName] = useState(
-    initialData.emergency_contact_name || ""
+    initialData.emergency_contact_name || "",
   );
   const [emergencyContactNumber, setEmergencyContactNumber] = useState(
-    initialData.emergency_contact_number || ""
+    initialData.emergency_contact_number || "",
   );
   const [primaryNurse, setPrimaryNurse] = useState(
-    initialData.primary_nurse || ""
+    initialData.primary_nurse || "",
   );
   const [nurseOptions, setNurseOptions] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);

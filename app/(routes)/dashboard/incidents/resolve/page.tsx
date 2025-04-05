@@ -266,121 +266,78 @@ export default function ResolveReportPage() {
 
   return (
     <FormProvider {...methods}>
-      <div className="py-4 px-8">
-        <div className="flex justify-between">
-          <div className="flex justify-start gap-2">
+      <div className="py-6 px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center mb-6 pb-4">
+          <div className="flex items-center gap-3">
             <Button
               type="button"
               onClick={() => router.back()}
               variant="outline"
-              className="border h-10 mb-2 rounded-md"
+              className="flex items-center gap-2"
             >
-              <ChevronLeft className="h-4 w-4 mx-auto" />
+              <ChevronLeft className="h-4 w-4" />
               Return
             </Button>
           </div>
-          <div className="flex gap-2 justify-end">
+          <div className="flex gap-3">
             <Button
               type="button"
               disabled={methods.formState.isSubmitting}
               onClick={onClickSubmit}
-              className="bg-green-500 hover:bg-green-600 text-white"
+              className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
             >
               Submit Resolution
             </Button>
           </div>
         </div>
 
-        {report?.status === ReportStatus.CHANGES_REQUESTED && (
-          <div className="rounded-md border px-4 my-4">
-            <Accordion type="single" collapsible className="w-full">
-              <AccordionItem value="item-1">
-                <AccordionTrigger className="text-lg font-medium">
-                  <CircleAlert className="text-red-500 transition-none" />
-                  Changes Requested
-                </AccordionTrigger>
-                <AccordionContent className="rounded">
-                  <Card className="border-none shadow-none">
-                    <CardContent className="px-2 text-sm pb-4">
-                      <p className="opacity-50 text-sm mt-2 pb-2">
-                        Reviewed by{" "}
-                        {
-                          report?.reviews![report?.reviews!.length - 1].reviewer
-                            .name
-                        }{" "}
-                        on{" "}
-                        {new Date(
-                          report?.reviews![report?.reviews!.length - 1]
-                            .reviewed_at,
-                        ).toLocaleString()}
-                      </p>
-                      {report?.reviews![report?.reviews!.length - 1].review}
-                    </CardContent>
-                  </Card>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-          </div>
-        )}
+        <div className="space-y-8">
+          {report?.status === ReportStatus.CHANGES_REQUESTED && (
+            <div className="rounded-md border px-4 py-2">
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="item-1">
+                  <AccordionTrigger className="text-lg font-medium">
+                    <CircleAlert className="text-red-500 transition-none mr-2" />
+                    Changes Requested
+                  </AccordionTrigger>
+                  <AccordionContent className="rounded">
+                    <Card className="border-none shadow-none">
+                      <CardContent className="px-2 text-sm pb-4">
+                        <p className="opacity-50 text-sm mt-2 pb-2">
+                          Reviewed by{" "}
+                          {
+                            report?.reviews![report?.reviews!.length - 1]
+                              .reviewer.name
+                          }{" "}
+                          on{" "}
+                          {new Date(
+                            report?.reviews![report?.reviews!.length - 1]
+                              .reviewed_at,
+                          ).toLocaleString()}
+                        </p>
+                        {report?.reviews![report?.reviews!.length - 1].review}
+                      </CardContent>
+                    </Card>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </div>
+          )}
 
-        <div className="pt-2">
-          <div className="flex justify-between gap-4">
-            <FormHeaderView title={form.title} description={form.description} />
+          <div className="flex flex-col lg:flex-row justify-between gap-6">
+            <FormHeaderView
+              title={form.title}
+              description={form.description}
+              reports={availableReports}
+              referenceReportId={referenceReportId}
+              onReferenceReportChange={(reportId) =>
+                setReferenceReportId(reportId)
+              }
+            />
             <PersonSelector user={user} />
           </div>
 
-          <div className="flex items-center gap-4 mt-4">
-            <div>
-              <Label className="block text-sm font-medium text-gray-700">
-                Reference Report (optional)
-              </Label>
-              {showReference ? (
-                <div className="flex items-center gap-2 mt-1">
-                  <Select
-                    value={referenceReportId || ""}
-                    onValueChange={(value) => setReferenceReportId(value)}
-                  >
-                    <SelectTrigger className="w-[300px]">
-                      <SelectValue placeholder="Select a report" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>Available Reports</SelectLabel>
-                        {availableReports.map((report) => (
-                          <SelectItem key={report.id} value={report.id}>
-                            {report.form_name} —{" "}
-                            {new Date(report.created_at).toLocaleDateString()}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setReferenceReportId(null);
-                      setShowReference(false);
-                    }}
-                    className="rounded-full h-8 w-8"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ) : (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-1"
-                  onClick={() => setShowReference(true)}
-                >
-                  + Add Reference Report
-                </Button>
-              )}
-            </div>
-          </div>
-
-          <div className="py-4 space-y-4">
+          <div className="space-y-6">
             {form.json_content.map((element, idx) => (
               <FormElementFill
                 key={element.element_id}
@@ -419,7 +376,7 @@ export default function ResolveReportPage() {
               <Button
                 disabled={!resolution.trim()}
                 onClick={onSubmitResolution}
-                className="flex-1 sm:flex-auto"
+                className="flex-1 sm:flex-auto bg-green-600 hover:bg-green-700 text-white"
               >
                 Submit
               </Button>

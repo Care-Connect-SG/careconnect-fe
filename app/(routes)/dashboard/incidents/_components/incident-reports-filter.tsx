@@ -18,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { DateRange } from "react-day-picker";
 
 interface OptionType {
   id: string;
@@ -44,11 +45,13 @@ export default function IncidentReportFilters({
     filterOptions.residentId === "all" ? [] : filterOptions.residentId || [],
   );
 
-  const [startDate, setStartDate] = useState<Date | undefined>(
-    filterOptions.startDate ? parseISO(filterOptions.startDate) : undefined,
-  );
-  const [endDate, setEndDate] = useState<Date | undefined>(
-    filterOptions.endDate ? parseISO(filterOptions.endDate) : undefined,
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(
+    filterOptions.startDate && filterOptions.endDate
+      ? {
+          from: parseISO(filterOptions.startDate),
+          to: parseISO(filterOptions.endDate),
+        }
+      : undefined,
   );
 
   useEffect(() => {
@@ -56,8 +59,10 @@ export default function IncidentReportFilters({
       ...filterOptions,
       reporterId: selectedReporters,
       residentId: selectedResidents.length === 0 ? "all" : selectedResidents,
+      startDate: dateRange?.from ? format(dateRange.from, "yyyy-MM-dd") : null,
+      endDate: dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : null,
     });
-  }, [selectedReporters, selectedResidents]);
+  }, [selectedReporters, selectedResidents, dateRange]);
 
   const handleToggleReporter = (id: string) => {
     setSelectedReporters((prev) =>
@@ -71,37 +76,20 @@ export default function IncidentReportFilters({
     );
   };
 
-  const handleStartDateChange = (date: Date | undefined) => {
-    setStartDate(date);
-    setFilterOptions({
-      ...filterOptions,
-      startDate: date ? format(date, "yyyy-MM-dd") : null,
-    });
-  };
-
-  const handleEndDateChange = (date: Date | undefined) => {
-    setEndDate(date);
-    setFilterOptions({
-      ...filterOptions,
-      endDate: date ? format(date, "yyyy-MM-dd") : null,
-    });
-  };
-
   const hasActiveFilters = () => {
     return (
       selectedReporters.length > 0 ||
       selectedResidents.length > 0 ||
       filterOptions.search?.trim() !== "" ||
-      filterOptions.startDate !== null ||
-      filterOptions.endDate !== null
+      dateRange?.from ||
+      dateRange?.to
     );
   };
 
   const handleReset = () => {
     setSelectedReporters([]);
     setSelectedResidents([]);
-    setStartDate(undefined);
-    setEndDate(undefined);
+    setDateRange(undefined);
     setFilterOptions({
       search: "",
       reporterId: [],
@@ -208,56 +196,39 @@ export default function IncidentReportFilters({
             <Button
               variant="outline"
               className={cn(
-                "w-[180px] justify-start text-left font-normal",
-                !startDate && "text-muted-foreground",
+                "w-[300px] justify-start text-left font-normal",
+                !dateRange && "text-muted-foreground",
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {startDate && isValid(startDate)
-                ? format(startDate, "MMM d, yyyy")
-                : "Start date"}
+              {dateRange?.from ? (
+                dateRange.to ? (
+                  <>
+                    {format(dateRange.from, "LLL dd, y")} -{" "}
+                    {format(dateRange.to, "LLL dd, y")}
+                  </>
+                ) : (
+                  format(dateRange.from, "LLL dd, y")
+                )
+              ) : (
+                <span>Pick a date range</span>
+              )}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar
-              mode="single"
-              selected={startDate}
-              onSelect={handleStartDateChange}
-              disabled={(date) => (endDate ? date > endDate : false)}
-            />
-          </PopoverContent>
-        </Popover>
-      </div>
-
-      <div>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                "w-[180px] justify-start text-left font-normal",
-                !endDate && "text-muted-foreground",
-              )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {endDate && isValid(endDate)
-                ? format(endDate, "MMM d, yyyy")
-                : "End date"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={endDate}
-              onSelect={handleEndDateChange}
-              disabled={(date) => (startDate ? date < startDate : false)}
+              mode="range"
+              defaultMonth={dateRange?.from}
+              selected={dateRange}
+              onSelect={setDateRange}
+              numberOfMonths={2}
             />
           </PopoverContent>
         </Popover>
       </div>
 
       <Button
-        variant="transparentHover"
+        variant="ghost"
         onClick={handleReset}
         disabled={!hasActiveFilters()}
         className="px-2"

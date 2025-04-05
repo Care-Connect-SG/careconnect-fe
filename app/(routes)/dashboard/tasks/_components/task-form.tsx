@@ -57,7 +57,6 @@ import {
   AlertTriangle,
   CalendarIcon,
   ChevronsDown,
-  InfoIcon,
   Loader2,
   Plus,
   Sparkles,

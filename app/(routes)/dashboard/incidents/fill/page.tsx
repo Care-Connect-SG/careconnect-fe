@@ -20,21 +20,11 @@ import { FormHeaderView } from "../_components/form-header";
 import PersonSelector from "../_components/tag-personnel";
 
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { ReportResponse } from "@/types/report";
 import { User } from "@/types/user";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronLeft, Trash2, X } from "lucide-react";
+import { ChevronLeft, Trash } from "lucide-react";
 import { FormProvider, useForm } from "react-hook-form";
 import { LoadingSkeleton } from "../_components/loading-skeleton";
 import { ReportSchema, reportSchema } from "../schema";
@@ -52,7 +42,6 @@ export default function CreateReportPage() {
   const [availableReports, setAvailableReports] = useState<ReportResponse[]>(
     [],
   );
-  const [showReference, setShowReference] = useState(false);
   const [referenceReportId, setReferenceReportId] = useState<string | null>(
     null,
   );
@@ -137,7 +126,6 @@ export default function CreateReportPage() {
 
             if (reportData.reference_report_id) {
               setReferenceReportId(reportData.reference_report_id);
-              setShowReference(true);
             }
           } catch (error) {
             console.error("Error loading report:", error);
@@ -166,6 +154,10 @@ export default function CreateReportPage() {
 
     loadData();
   }, [formId, isEditing, reportId, router, methods]);
+
+  const handleReferenceReportChange = (reportId: string | null) => {
+    setReferenceReportId(reportId);
+  };
 
   const prepareReport = (data: ReportSchema, mode: string) => {
     const missingRequired = form!.json_content
@@ -312,106 +304,63 @@ export default function CreateReportPage() {
 
   return (
     <FormProvider {...methods}>
-      <div className="py-4 px-8">
-        <div className="flex justify-between">
-          <div className="flex justify-start gap-2">
+      <div className="py-6 px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center mb-6 pb-4">
+          <div className="flex items-center gap-3">
             <Button
               type="button"
               onClick={() => router.back()}
               variant="outline"
-              className="border h-10 mb-2 rounded-md"
+              className="flex items-center gap-2"
             >
-              <ChevronLeft className="h-4 w-4 mx-auto" />
+              <ChevronLeft className="h-4 w-4" />
               Return
             </Button>
+          </div>
+          <div className="flex gap-3">
             {reportId && (
               <Button
                 type="button"
                 onClick={handleDeleteReport}
-                className="bg-gray-100 text-black hover:bg-gray-200"
+                variant="outline"
+                className="flex items-center gap-2 text-red-600 hover:text-red-600"
               >
-                <Trash2 />
+                <Trash className="h-4 w-4" />
+                Delete
               </Button>
             )}
-          </div>
-          <div className="flex gap-2 justify-end">
             <Button
               type="button"
               disabled={methods.formState.isSubmitting}
               onClick={onSaveDraft}
-              className="bg-blue-500 hover:bg-blue-600 text-white"
+              className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
             >
-              Save
+              Save Draft
             </Button>
             <Button
               type="button"
               disabled={methods.formState.isSubmitting}
               onClick={onSubmit}
-              className="bg-green-500 hover:bg-green-600 text-white"
+              className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
             >
-              Submit
+              Submit Report
             </Button>
           </div>
         </div>
 
-        <div className="pt-2">
-          <div className="flex justify-between gap-4">
-            <FormHeaderView title={form.title} description={form.description} />
+        <div className="space-y-8">
+          <div className="flex flex-col lg:flex-row justify-between gap-6">
+            <FormHeaderView
+              title={form.title}
+              description={form.description}
+              reports={availableReports}
+              referenceReportId={referenceReportId}
+              onReferenceReportChange={handleReferenceReportChange}
+            />
             <PersonSelector user={user} />
           </div>
 
-          <div className="flex items-center gap-4 mt-4">
-            <div>
-              <Label className="block text-sm font-medium text-gray-700">
-                Reference Report (optional)
-              </Label>
-              {showReference ? (
-                <div className="flex items-center gap-2 mt-1">
-                  <Select
-                    value={referenceReportId || ""}
-                    onValueChange={(value) => setReferenceReportId(value)}
-                  >
-                    <SelectTrigger className="w-[300px]">
-                      <SelectValue placeholder="Select a report" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>Available Reports</SelectLabel>
-                        {availableReports.map((report) => (
-                          <SelectItem key={report.id} value={report.id}>
-                            {report.form_name} —{" "}
-                            {new Date(report.created_at).toLocaleDateString()}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setReferenceReportId(null);
-                      setShowReference(false);
-                    }}
-                    className="rounded-full h-8 w-8"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ) : (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-1"
-                  onClick={() => setShowReference(true)}
-                >
-                  + Add Reference Report
-                </Button>
-              )}
-            </div>
-          </div>
-
-          <div className="py-4 space-y-4">
+          <div className="space-y-6">
             {form.json_content.map((element, idx) => (
               <FormElementFill
                 key={element.element_id}

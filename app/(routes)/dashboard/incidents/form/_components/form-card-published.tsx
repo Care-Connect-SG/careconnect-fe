@@ -39,12 +39,12 @@ export default function FormCardPublished({
   };
 
   return (
-    <Card className="relative h-[14rem] overflow-hidden border-l-4 border-l-blue-500">
+    <Card className="relative h-[12rem] overflow-hidden border-l-4 border-l-blue-500">
       <CardHeader
         className={`flex flex-row items-start justify-between space-y-0`}
       >
         <div>
-          <CardTitle className="text-base font-bold">{title}</CardTitle>
+          <CardTitle className="text-base font-semibold">{title}</CardTitle>
           <p className="hidden sm:block text-xs text-muted-foreground mt-1">
             Created at {formatDate(created_date)}
           </p>

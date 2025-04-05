@@ -17,6 +17,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { CaregiverTag, ResidentTag } from "@/types/report";
 import { User } from "@/types/user";
@@ -80,219 +87,256 @@ export default function PersonSelector({ user }: PersonSelectorProps) {
     debouncedFetchCaregivers("");
   }, []);
 
+  const handlePrimaryResidentChange = (residentId: string) => {
+    const resident = primaryResidentOptions.find((r) => r.id === residentId);
+    if (resident) {
+      setValue("primary_resident", resident);
+    }
+  };
+
   return (
-    <Card className="w-1/2 p-4">
-      <div className="space-y-6">
-        <div>
-          <div className="flex gap-2 justify-start items-center">
-            <div className="flex items-center gap-1">
-              <UserRound className="mb-2" />
-              <Label className="block md:text-sm font-semibold pl-1">
+    <div className="w-full">
+      <Card className="p-5 border bg-white shadow-sm">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">
+          People Involved
+        </h3>
+
+        <div className="space-y-5">
+          <div className="pb-3 border-b border-gray-100">
+            <div className="flex items-center gap-2 mb-2">
+              <UserRound className="h-4 w-4 text-green-600" />
+              <Label className="text-sm font-medium text-gray-700">
                 Primary Resident
               </Label>
             </div>
 
-            <Popover>
-              <PopoverTrigger asChild>
-                <CirclePlus className="w-4 h-4 text-blue-400" />
-              </PopoverTrigger>
-              <PopoverContent className="p-0 w-[300px]">
-                <Command>
-                  <CommandInput
-                    placeholder="Search resident..."
-                    onValueChange={handlePrimaryResidentSearch}
-                  />
-                  <CommandList>
-                    <CommandEmpty>No resident found.</CommandEmpty>
-                    <CommandGroup>
-                      {primaryResidentOptions.map((resident) => (
-                        <CommandItem
-                          key={resident.id}
-                          onSelect={() =>
-                            setValue(`primary_resident`, resident)
-                          }
-                        >
-                          {resident.name}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+            <div>
+              <Select
+                value={primaryResident?.id || ""}
+                onValueChange={handlePrimaryResidentChange}
+              >
+                <SelectTrigger className="w-full bg-white border-green-200 focus:ring-transparent ">
+                  <SelectValue placeholder="Select primary resident" />
+                </SelectTrigger>
+                <SelectContent>
+                  {primaryResidentOptions.length === 0 ? (
+                    <div className="py-2 px-2 text-sm text-gray-500">
+                      No residents found
+                    </div>
+                  ) : (
+                    primaryResidentOptions.map((resident) => (
+                      <SelectItem
+                        key={resident.id}
+                        value={resident.id}
+                        className="cursor-pointer"
+                      >
+                        {resident.name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          {primaryResident ? (
-            <Badge variant="secondary" className="font-medium">
-              {primaryResident?.name}
-              <X
-                className="h-3 w-3 cursor-pointer"
-                onClick={() => setValue(`primary_resident`, null)}
-              />
-            </Badge>
-          ) : null}
-        </div>
 
-        <div>
-          <div className="flex items-center gap-2 pb-2">
-            <UsersRound strokeWidth={1} className="mb-2" />
-            <Label className="block md:text-sm font-medium">
-              Involved Residents
-            </Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <CirclePlus className="w-4 h-4 text-blue-400" />
-              </PopoverTrigger>
-              <PopoverContent className="p-0 w-[300px]">
-                <Command>
-                  <CommandInput
-                    placeholder="Search residents..."
-                    onValueChange={handleInvolvedResidentSearch}
-                  />
-                  <CommandList>
-                    <CommandEmpty>No resident found.</CommandEmpty>
-                    <CommandGroup>
-                      {involvedResidentOptions
-                        .filter(
-                          (resident) =>
-                            !(resident.name === primaryResident?.name),
-                        )
-                        .map((resident, index) => (
-                          <CommandItem
-                            key={index}
-                            onSelect={() => {
-                              involvedResidents.some(
-                                (r) => r.id === resident.id,
-                              )
-                                ? setValue(
-                                    "involved_residents",
-                                    involvedResidents.filter(
-                                      (r) => r.id !== resident.id,
-                                    ),
-                                  )
-                                : setValue("involved_residents", [
-                                    ...involvedResidents,
-                                    resident,
-                                  ]);
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                involvedResidents.includes(resident)
-                                  ? "opacity-100"
-                                  : "opacity-0",
-                              )}
-                            />
-                            {resident.name}
-                          </CommandItem>
-                        ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          </div>
-          <div className="flex flex-wrap gap-2 mb-2">
-            {involvedResidents.map((resident) => {
-              return resident ? (
-                <Badge
-                  key={resident.id}
-                  variant="secondary"
-                  className="font-medium"
-                >
-                  {resident.name}
-                  <X
-                    className="h-3 w-3 cursor-pointer"
-                    onClick={() =>
-                      setValue(
-                        "involved_residents",
-                        involvedResidents.filter((r) => r.id !== resident.id),
-                      )
-                    }
-                  />
-                </Badge>
-              ) : null;
-            })}
-          </div>
-        </div>
+          <div className="pb-3 border-b border-gray-100">
+            <div className="flex items-center gap-2 mb-2">
+              <UsersRound className="h-4 w-4 text-gray-500" />
+              <Label className="text-sm font-medium text-gray-700">
+                Involved Residents
+              </Label>
 
-        <div>
-          <div className="flex items-center gap-2 pb-2">
-            <UsersRound strokeWidth={1} className="mb-2" />
-            <Label className="block md:text-sm font-medium">
-              Involved Caregivers
-            </Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <CirclePlus className="w-4 h-4 text-blue-400" />
-              </PopoverTrigger>
-              <PopoverContent className="p-0 w-[300px]">
-                <Command>
-                  <CommandInput
-                    placeholder="Search caregivers..."
-                    onValueChange={handleCaregiverSearch}
-                  />
-                  <CommandList>
-                    <CommandEmpty>No caregiver found.</CommandEmpty>
-                    <CommandGroup>
-                      {caregiverOptions
-                        .filter((caregiver) => !(caregiver.id === user?.id))
-                        .map((caregiver, index) => (
-                          <CommandItem
-                            key={index}
-                            onSelect={() => {
-                              involvedCaregivers.some(
-                                (c) => c.id === caregiver.id,
-                              )
-                                ? setValue(
-                                    "involved_caregivers",
-                                    involvedCaregivers.filter(
-                                      (c) => c.id !== caregiver.id,
-                                    ),
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="ml-auto flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-full py-1 px-2 transition-colors">
+                    <CirclePlus className="w-3 h-3" />
+                    <span>Add</span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="p-0 w-[280px]">
+                  <Command>
+                    <CommandInput
+                      placeholder="Search residents..."
+                      onValueChange={handleInvolvedResidentSearch}
+                    />
+                    <CommandList>
+                      <CommandEmpty>No resident found.</CommandEmpty>
+                      <CommandGroup>
+                        {involvedResidentOptions
+                          .filter(
+                            (resident) =>
+                              !(resident.name === primaryResident?.name),
+                          )
+                          .map((resident, index) => (
+                            <CommandItem
+                              key={index}
+                              onSelect={() => {
+                                involvedResidents.some(
+                                  (r) => r.id === resident.id,
+                                )
+                                  ? setValue(
+                                      "involved_residents",
+                                      involvedResidents.filter(
+                                        (r) => r.id !== resident.id,
+                                      ),
+                                    )
+                                  : setValue("involved_residents", [
+                                      ...involvedResidents,
+                                      resident,
+                                    ]);
+                              }}
+                              className="cursor-pointer"
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4 text-gray-600",
+                                  involvedResidents.some(
+                                    (r) => r.id === resident.id,
                                   )
-                                : setValue("involved_caregivers", [
-                                    ...involvedCaregivers,
-                                    caregiver,
-                                  ]);
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                involvedCaregivers.includes(caregiver)
-                                  ? "opacity-100"
-                                  : "opacity-0",
-                              )}
-                            />
-                            {caregiver.name}
-                          </CommandItem>
-                        ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+                                    ? "opacity-100"
+                                    : "opacity-0",
+                                )}
+                              />
+                              {resident.name}
+                            </CommandItem>
+                          ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {involvedResidents && involvedResidents.length > 0 ? (
+                involvedResidents.map((resident) => {
+                  return resident ? (
+                    <Badge
+                      key={resident.id}
+                      variant="secondary"
+                      className="font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 border-gray-200"
+                    >
+                      {resident.name}
+                      <X
+                        className="h-3 w-3 ml-1 cursor-pointer text-gray-600 hover:text-gray-800"
+                        onClick={() =>
+                          setValue(
+                            "involved_residents",
+                            involvedResidents.filter(
+                              (r) => r.id !== resident.id,
+                            ),
+                          )
+                        }
+                      />
+                    </Badge>
+                  ) : null;
+                })
+              ) : (
+                <span className="text-xs text-gray-500 italic">
+                  No other residents involved
+                </span>
+              )}
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2 mb-2">
-            {involvedCaregivers.map((caregiver, index) => {
-              return caregiver ? (
-                <Badge key={index} variant="secondary" className="font-medium">
-                  {caregiver.name}
-                  <X
-                    className="h-3 w-3 cursor-pointer"
-                    onClick={() =>
-                      setValue(
-                        "involved_caregivers",
-                        involvedCaregivers.filter((c) => c.id !== caregiver.id),
-                      )
-                    }
-                  />
-                </Badge>
-              ) : null;
-            })}
+
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <UsersRound className="h-4 w-4 text-blue-500" />
+              <Label className="text-sm font-medium text-gray-700">
+                Involved Caregivers
+              </Label>
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="ml-auto flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 rounded-full py-1 px-2 transition-colors">
+                    <CirclePlus className="w-3 h-3" />
+                    <span>Add</span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="p-0 w-[280px]">
+                  <Command>
+                    <CommandInput
+                      placeholder="Search caregivers..."
+                      onValueChange={handleCaregiverSearch}
+                    />
+                    <CommandList>
+                      <CommandEmpty>No caregiver found.</CommandEmpty>
+                      <CommandGroup>
+                        {caregiverOptions
+                          .filter((caregiver) => !(caregiver.id === user?.id))
+                          .map((caregiver, index) => (
+                            <CommandItem
+                              key={index}
+                              onSelect={() => {
+                                involvedCaregivers.some(
+                                  (c) => c.id === caregiver.id,
+                                )
+                                  ? setValue(
+                                      "involved_caregivers",
+                                      involvedCaregivers.filter(
+                                        (c) => c.id !== caregiver.id,
+                                      ),
+                                    )
+                                  : setValue("involved_caregivers", [
+                                      ...involvedCaregivers,
+                                      caregiver,
+                                    ]);
+                              }}
+                              className="cursor-pointer"
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4 text-blue-600",
+                                  involvedCaregivers.some(
+                                    (c) => c.id === caregiver.id,
+                                  )
+                                    ? "opacity-100"
+                                    : "opacity-0",
+                                )}
+                              />
+                              {caregiver.name}
+                            </CommandItem>
+                          ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {involvedCaregivers && involvedCaregivers.length > 0 ? (
+                involvedCaregivers.map((caregiver, index) => {
+                  return caregiver ? (
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200"
+                    >
+                      {caregiver.name}
+                      <X
+                        className="h-3 w-3 ml-1 cursor-pointer text-blue-600 hover:text-blue-800"
+                        onClick={() =>
+                          setValue(
+                            "involved_caregivers",
+                            involvedCaregivers.filter(
+                              (c) => c.id !== caregiver.id,
+                            ),
+                          )
+                        }
+                      />
+                    </Badge>
+                  ) : null;
+                })
+              ) : (
+                <span className="text-xs text-gray-500 italic">
+                  No other caregivers involved
+                </span>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-    </Card>
+      </Card>
+    </div>
   );
 }

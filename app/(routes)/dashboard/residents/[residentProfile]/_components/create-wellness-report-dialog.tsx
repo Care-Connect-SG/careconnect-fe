@@ -1,8 +1,12 @@
 "use client";
 
-import { createWellnessReport } from "@/app/api/wellness-report";
+import {
+  createWellnessReport,
+  generateAIWellnessReport,
+} from "@/app/api/wellness-report";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -18,10 +22,15 @@ import {
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { Bot, CalendarIcon, Loader2 } from "lucide-react";
+import {
+  AlertCircle,
+  Bot,
+  CalendarIcon,
+  CheckCircle2,
+  Loader2,
+} from "lucide-react";
 import React, { useEffect, useState } from "react";
 
 interface CreateWellnessReportDialogProps {
@@ -40,14 +49,16 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
   const { toast } = useToast();
   const [isFetchingAI, setIsFetchingAI] = useState(false);
   const [aiGenerated, setAiGenerated] = useState(false);
+  const [step, setStep] = useState<"input" | "form">("input");
 
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     new Date(),
   );
 
+  const [aiContext, setAIContext] = useState("");
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split("T")[0],
-    monthly_summary: "",
+    summary: "",
     medical_summary: "",
     medication_update: "",
     nutrition_hydration: "",
@@ -56,13 +67,17 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
     social_engagement: "",
   });
 
+  const hasContent = Object.entries(formData).some(
+    ([key, value]) => key !== "date" && value !== "",
+  );
+
   useEffect(() => {
     if (isOpen) {
       const today = new Date();
       setSelectedDate(today);
       setFormData({
         date: format(today, "yyyy-MM-dd"),
-        monthly_summary: "",
+        summary: "",
         medical_summary: "",
         medication_update: "",
         nutrition_hydration: "",
@@ -70,7 +85,9 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
         cognitive_emotional: "",
         social_engagement: "",
       });
+      setAIContext("");
       setAiGenerated(false);
+      setStep("input");
     }
   }, [isOpen]);
 
@@ -115,19 +132,9 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
   const handleGenerateAI = async () => {
     setIsFetchingAI(true);
     try {
-      const response = await fetchWithAuth(
-        `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/wellness-reports/generate-suggestion`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error(await response.text());
-      }
-
-      const aiData = await response.json();
+      const aiData = await generateAIWellnessReport(residentId, {
+        context: aiContext,
+      });
 
       let reportDate: Date;
       try {
@@ -147,7 +154,7 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
 
       setFormData({
         date: format(reportDate, "yyyy-MM-dd"),
-        monthly_summary: aiData.monthly_summary || "",
+        summary: aiData.summary || "",
         medical_summary: aiData.medical_summary || "",
         medication_update: aiData.medication_update || "",
         nutrition_hydration: aiData.nutrition_hydration || "",
@@ -156,11 +163,12 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
         social_engagement: aiData.social_engagement || "",
       });
       setAiGenerated(true);
+      setStep("form");
 
       toast({
         variant: "default",
-        title: "AI Suggestion Applied",
-        description: "The report has been pre-filled with AI-generated data.",
+        title: "AI Report Generated",
+        description: "Review and edit the report before submitting.",
       });
     } catch (error: any) {
       console.error("Error fetching AI suggestion:", error);
@@ -174,12 +182,16 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
     }
   };
 
+  const handleManualEntry = () => {
+    setStep("form");
+  };
+
   const handleClearAll = () => {
     const today = new Date();
     setSelectedDate(today);
     setFormData({
       date: format(today, "yyyy-MM-dd"),
-      monthly_summary: "",
+      summary: "",
       medical_summary: "",
       medication_update: "",
       nutrition_hydration: "",
@@ -187,40 +199,34 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
       cognitive_emotional: "",
       social_engagement: "",
     });
+    setAIContext("");
     setAiGenerated(false);
   };
 
+  const reportFields = [
+    ["summary", "Summary"],
+    ["medical_summary", "Medical Summary"],
+    ["medication_update", "Medication Update"],
+    ["nutrition_hydration", "Nutrition & Hydration"],
+    ["mobility_physical", "Mobility & Physical"],
+    ["cognitive_emotional", "Cognitive & Emotional"],
+    ["social_engagement", "Social Engagement"],
+  ];
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto">
-        <DialogHeader className="flex flex-row items-center justify-between">
-          <DialogTitle>Create Wellness Report</DialogTitle>
-          <div>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={handleGenerateAI}
-              disabled={isFetchingAI}
-              className="flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-blue-500 hover:text-green-500 transition-all hover:duration-300"
-            >
-              {isFetchingAI ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin text-green-500" />
-                  Getting Suggestion...
-                </>
-              ) : (
-                <>
-                  <Bot className="h-4 w-4 text-green-500" />
-                  Get AI Suggestion
-                </>
-              )}
-            </Button>
-          </div>
+      <DialogContent className="max-w-2xl w-full p-6 max-h-[82vh] overflow-y-auto">
+        <DialogHeader className="flex flex-row items-center justify-between mb-4">
+          <DialogTitle className="text-xl font-semibold">
+            {step === "input"
+              ? "Create Wellness Report"
+              : "Edit Wellness Report"}
+          </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="date">Date</Label>
+            <Label htmlFor="date">Report Date</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -244,45 +250,157 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
                   mode="single"
                   selected={selectedDate}
                   onSelect={handleDateChange}
-                  initialFocus
                 />
               </PopoverContent>
             </Popover>
           </div>
 
-          {[
-            ["monthly_summary", "Monthly Summary"],
-            ["medical_summary", "Medical Summary"],
-            ["medication_update", "Medication Update"],
-            ["nutrition_hydration", "Nutrition & Hydration"],
-            ["mobility_physical", "Mobility & Physical"],
-            ["cognitive_emotional", "Cognitive & Emotional"],
-            ["social_engagement", "Social Engagement"],
-          ].map(([field, label]) => (
-            <div key={field} className="space-y-1.5">
-              <Label htmlFor={field}>{label}</Label>
-              <Textarea
-                id={field}
-                value={(formData as any)[field]}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, [field]: e.target.value }))
-                }
-                rows={3}
-                className={aiGenerated ? "bg-green-50 border-green-500" : ""}
-              />
+          {step === "input" ? (
+            <div className="space-y-6 py-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="aiContext">Context Information</Label>
+                <Textarea
+                  id="aiContext"
+                  value={aiContext}
+                  onChange={(e) => setAIContext(e.target.value)}
+                  placeholder="Enter relevant information about the resident's recent activities, health changes, social interactions, or specific areas to focus on..."
+                  rows={5}
+                  className="resize-none"
+                />
+              </div>
+
+              <div className="flex flex-col gap-4">
+                <Card className="border border-green-200 bg-green-50">
+                  <CardContent className="p-4 flex items-start gap-3">
+                    <Bot className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h3 className="font-medium text-green-800 mb-1">
+                        Generate with AI
+                      </h3>
+                      <p className="text-sm text-green-700">
+                        Let AI generate a complete wellness report based on your
+                        context. You'll be able to review and edit all sections
+                        before submitting.
+                      </p>
+                      <Button
+                        type="button"
+                        onClick={handleGenerateAI}
+                        disabled={isFetchingAI}
+                        variant="outline"
+                        className="mt-2 flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-blue-500 hover:text-green-500 transition-all hover:duration-300"
+                      >
+                        {isFetchingAI ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin text-green-500" />
+                            Generating Report...
+                          </>
+                        ) : (
+                          "Generate AI Report"
+                        )}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border">
+                  <CardContent className="p-4 flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-gray-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h3 className="font-medium mb-1">Manual Entry</h3>
+                      <p className="text-sm text-gray-600">
+                        Create the wellness report manually by filling out each
+                        section yourself.
+                      </p>
+                      <Button
+                        type="button"
+                        onClick={handleManualEntry}
+                        variant="outline"
+                        className="mt-3"
+                      >
+                        Create Manually
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-          ))}
+          ) : (
+            <>
+              {reportFields.map(([field, label]) => (
+                <div key={field} className="space-y-1.5">
+                  <Label htmlFor={field}>{label}</Label>
+                  <Textarea
+                    id={field}
+                    value={(formData as any)[field]}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        [field]: e.target.value,
+                      }))
+                    }
+                    rows={3}
+                    className={cn(
+                      "resize-none",
+                      aiGenerated ? "bg-green-50 border-green-200" : "",
+                    )}
+                  />
+                </div>
+              ))}
+
+              <div className="flex items-center text-sm text-amber-600 gap-1 mt-2">
+                <AlertCircle className="h-4 w-4" />
+                <span>
+                  All fields are required. Please fill in all sections before
+                  submitting.
+                </span>
+              </div>
+            </>
+          )}
 
           <DialogFooter>
             <div className="flex justify-between items-center w-full">
-              <Button type="button" variant="outline" onClick={handleClearAll}>
-                Clear All
-              </Button>
+              <div>
+                {step === "form" && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setStep("input")}
+                    className="text-gray-500"
+                  >
+                    Back
+                  </Button>
+                )}
+              </div>
               <div className="space-x-2">
+                {step === "form" && hasContent && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleClearAll}
+                  >
+                    Clear All
+                  </Button>
+                )}
+
                 <Button type="button" variant="secondary" onClick={onClose}>
                   Cancel
                 </Button>
-                <Button type="submit">Create Report</Button>
+
+                {step === "form" && (
+                  <Button
+                    type="submit"
+                    disabled={
+                      !Object.entries(formData).some(
+                        ([key, value]) => key !== "date" && value !== "",
+                      ) ||
+                      Object.entries(formData).some(
+                        ([key, value]) => key !== "date" && value === "",
+                      )
+                    }
+                  >
+                    Create Report
+                  </Button>
+                )}
               </div>
             </div>
           </DialogFooter>

@@ -108,7 +108,10 @@ const MedicationLogList: React.FC<Props> = ({ residentId, selectedDate }) => {
               <ul className="grid gap-4">
                 {dateLogs.map((log, index) => {
                   const med = medicationDetailsMap[log.medication_id];
-                  const administeredTime = new Date(log.administered_at);
+                  const administeredTimeUTC = new Date(log.administered_at);
+                  const administeredTimeSGT = new Date(
+                    administeredTimeUTC.getTime() + 8 * 60 * 60 * 1000,
+                  );
 
                   return (
                     <li
@@ -134,7 +137,7 @@ const MedicationLogList: React.FC<Props> = ({ residentId, selectedDate }) => {
 
                         <div className="flex flex-col items-end">
                           <span className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full text-sm font-medium">
-                            {format(administeredTime, "h:mm a")}
+                            {format(administeredTimeSGT, "h:mm a")}
                           </span>
                         </div>
                       </div>

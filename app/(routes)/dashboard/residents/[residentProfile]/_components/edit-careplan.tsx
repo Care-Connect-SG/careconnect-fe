@@ -74,7 +74,9 @@ const EditableCarePlan: React.FC<CarePlanProps> = ({
     if (!formData) return;
     setIsSaving(true);
     try {
-      const updatedCarePlan = await updateCarePlan(residentId, formData);
+      const { id, ...rest } = formData;
+      const updatedCarePlan = await updateCarePlan(residentId, { ...rest, id });
+
       if (!updatedCarePlan || !updatedCarePlan.id) {
         throw new Error("Update returned invalid data");
       }
@@ -130,8 +132,9 @@ const EditableCarePlan: React.FC<CarePlanProps> = ({
     try {
       const newCarePlan = await createCarePlanWithEmptyValues(residentId);
       if (newCarePlan && newCarePlan.id) {
-        onCarePlanUpdated(newCarePlan);
         setFormData(newCarePlan);
+        onCarePlanUpdated(newCarePlan);
+
         toast({
           title: "Success",
           description: "New care plan has been created successfully.",

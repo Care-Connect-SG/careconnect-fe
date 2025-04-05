@@ -412,10 +412,8 @@ export default function ResidentDashboard() {
             </div>
 
             <div className="border rounded-lg bg-white flex flex-col h-[80vh]">
-              <div className="sticky top-0 p-6  z-10 flex justify-between items-center">
-                <h2 className="text-lg font-semibold tracking-tight">
-                  Medication Logs
-                </h2>
+              <div className="top-0 p-6  z-10 flex justify-between items-center">
+                <h2 className="text-lg font-semibold">Medication Log</h2>
 
                 <div className="flex items-center gap-2">
                   {selectedDate && (

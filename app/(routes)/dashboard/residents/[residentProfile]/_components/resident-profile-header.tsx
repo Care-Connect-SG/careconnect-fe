@@ -15,9 +15,11 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { toTitleCase } from "@/lib/utils";
 import { ResidentRecord } from "@/types/resident";
-import { Trash } from "lucide-react";
+import { Trash, QrCodeIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import html2canvas from "html2canvas";
+import { QRCodeCanvas } from "qrcode.react";
+import React, { useRef, useState } from "react";
 import ResidentProfilePictureDialog from "./resident-profile-picture-dialog";
 
 interface ResidentProfileHeaderProps {
@@ -32,6 +34,8 @@ const ResidentProfileHeader: React.FC<ResidentProfileHeaderProps> = ({
   const { toast } = useToast();
   const router = useRouter();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showQR, setShowQR] = useState(false);
+  const qrRef = useRef<HTMLDivElement>(null);
 
   const age =
     new Date().getFullYear() - new Date(resident.date_of_birth).getFullYear();
@@ -52,6 +56,21 @@ const ResidentProfileHeader: React.FC<ResidentProfileHeaderProps> = ({
         title: "Error deleting resident",
         description: error.message,
       });
+    }
+  };
+
+  const handleDownloadQR = async () => {
+    if (!qrRef.current) return;
+
+    try {
+      const canvas = await html2canvas(qrRef.current);
+      const dataUrl = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = `${resident.full_name.replace(/\s+/g, "_")}_QR.png`;
+      link.click();
+    } catch (err) {
+      console.error("QR download failed:", err);
     }
   };
 
@@ -89,9 +108,46 @@ const ResidentProfileHeader: React.FC<ResidentProfileHeaderProps> = ({
           >
             <Trash className="w-4 h-4 text-red-500" />
           </Button>
+          {/* QR Icon */}
+          <div className="relative">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowQR(!showQR)}
+              title="Generate QR Code"
+            >
+              <QrCodeIcon className="h-6 w-6 text-gray-500" />
+            </Button>
+
+            {/* QR Popout */}
+            {showQR && (
+              <div className="absolute right-0 mt-2 z-50 bg-white border rounded shadow-lg p-3 flex flex-col items-center space-y-2">
+                <div
+                  ref={qrRef}
+                  className="bg-white p-4 rounded inline-block"
+                  style={{ background: "#fff" }}
+                >
+                  <QRCodeCanvas
+                    value={resident.id}
+                    size={150}
+                    level="H"
+                  />
+                </div>
+
+                <Button
+                  onClick={handleDownloadQR}
+                  variant="outline"
+                  className="text-xs h-8 px-3"
+                >
+                  Download
+                </Button>
+              </div>
+            )}
+          </div>
+
+
         </div>
       </div>
-
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>

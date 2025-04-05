@@ -8,6 +8,8 @@ import { getMedicationById } from "@/app/api/medication";
 import { logMedicationAdministration } from "@/app/api/medication-log";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { User2, Pill } from "lucide-react";
+
 
 interface BCMA_ScannerProps {
     onSuccess?: () => void;
@@ -130,11 +132,11 @@ const BCMA_Scanner: React.FC<BCMA_ScannerProps> = ({ onSuccess }) => {
 
     return (
         <Card className="p-6 shadow-lg">
-            <h2 className="text-2xl font-bold mb-4">🩺 BCMA Medication Scanner</h2>
+            <h2 className="text-2xl font-bold mb-4">BCMA Medication Scanner</h2>
 
             <div className="flex flex-col gap-4">
                 <Button onClick={() => setIsScanning(!isScanning)} className="w-full bg-blue-100 text-blue-900 hover:bg-blue-200">
-                    {isScanning ? "🛑 Stop Camera" : "📷 Start Scanning"}
+                    {isScanning ? "🛑 Stop Camera" : "Start Scanning"}
                 </Button>
 
                 {isScanning && (
@@ -147,16 +149,24 @@ const BCMA_Scanner: React.FC<BCMA_ScannerProps> = ({ onSuccess }) => {
                             className="w-full rounded-lg border"
                         />
                         <Button onClick={handleScan} className="w-full">
-                            {step === "resident" ? "🧑 Scan Resident QR" : "💊 Scan Medication QR"}
+                            {step === "resident" ? "Scan Resident QR" : "Scan Medication QR"}
                         </Button>
                     </div>
                 )}
 
                 <div className="space-y-2 text-sm">
-                    <p><strong>👤 Resident:</strong> {residentName || "Not scanned"}</p>
-                    {residentId && <p className="text-gray-500 text-xs">ID: {residentId}</p>}
-
-                    <p><strong>💊 Medication:</strong> {medicationInfo?.medication_name || "Not scanned"}</p>
+                    <div className="flex items-center gap-2">
+                        <User2 className="h-4 w-4 text-gray-500" />
+                        <p className="text-sm">
+                            <strong>Resident:</strong> {residentName || "Not scanned"}
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Pill className="h-4 w-4 text-gray-500" />
+                        <p className="text-sm">
+                            <strong>Medication:</strong> {medicationInfo?.medication_name || "Not scanned"}
+                        </p>
+                    </div>
                     {medicationInfo && (
                         <p className="text-gray-500 text-xs">
                             {medicationInfo.dosage} – {medicationInfo.frequency}

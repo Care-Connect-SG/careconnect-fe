@@ -90,8 +90,14 @@ const MedicationLogList: React.FC<Props> = ({ residentId }) => {
                                     <Clock className="w-4 h-4 text-gray-400" />
                                     <span>
                                         <strong>Time:</strong>{" "}
-                                        {format(new Date(log.administered_at), "PPpp")}
+                                        {new Date(log.administered_at).toLocaleString("en-SG", {
+                                            timeZone: "Asia/Singapore",
+                                            dateStyle: "medium",
+                                            timeStyle: "short",
+                                        })}
+
                                     </span>
+
                                 </div>
                             </li>
                         );

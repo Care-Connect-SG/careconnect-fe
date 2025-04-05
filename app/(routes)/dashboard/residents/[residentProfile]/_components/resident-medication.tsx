@@ -26,6 +26,9 @@ import { format, parseISO } from "date-fns";
 import { Edit, MoreHorizontal, Trash } from "lucide-react";
 import { useParams } from "next/navigation";
 import React, { useState } from "react";
+import { QRCodeCanvas } from "qrcode.react";
+import html2canvas from "html2canvas";
+import { QrCodeIcon } from "lucide-react";
 
 interface MedicationProps {
   medication: {
@@ -49,6 +52,17 @@ const ResidentMedication: React.FC<MedicationProps> = ({
   const queryClient = useQueryClient();
   const { residentProfile } = useParams() as { residentProfile: string };
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [showQR, setShowQR] = useState(false);
+  const qrRef = React.useRef<HTMLDivElement>(null);
+
+  const handleDownloadQR = async () => {
+    if (!qrRef.current) return;
+    const canvas = await html2canvas(qrRef.current);
+    const link = document.createElement("a");
+    link.download = `${medication.medication_name}_qr.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  };
 
   const formatDate = (dateString: string | undefined) => {
     if (!dateString) return "N/A";
@@ -165,6 +179,28 @@ const ResidentMedication: React.FC<MedicationProps> = ({
               <p className="text-sm">{medication.instructions}</p>
             </div>
           )}
+          <div className="mt-6">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowQR(!showQR)}
+              title="Generate QR"
+            >
+              <QrCodeIcon className="h-10 w-10 text-gray-500" />
+            </Button>
+          </div>
+
+          {showQR && (
+            <div className="mt-4 space-y-2">
+              <div ref={qrRef} className="inline-block bg-white p-4 rounded">
+                <QRCodeCanvas value={medication.id} size={150} />
+              </div>
+              <Button onClick={handleDownloadQR} variant="outline" className="text-sm">
+                Download QR Code
+              </Button>
+            </div>
+          )}
+
         </CardContent>
       </Card>
 

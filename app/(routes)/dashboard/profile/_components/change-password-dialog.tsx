@@ -24,7 +24,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
-// Password validation schema
 const passwordSchema = z
   .object({
     current_password: z.string().min(1, "Current password is required"),
@@ -54,7 +53,6 @@ const ChangePasswordDialog = ({
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Setup form with validation
   const form = useForm<PasswordFormValues>({
     resolver: zodResolver(passwordSchema),
     defaultValues: {
@@ -65,7 +63,6 @@ const ChangePasswordDialog = ({
     mode: "onChange",
   });
 
-  // Reset form when dialog opens or closes
   const handleDialogChange = (open: boolean) => {
     if (!open) {
       form.reset({
@@ -77,7 +74,6 @@ const ChangePasswordDialog = ({
     }
   };
 
-  // Handle form submission
   const onSubmit = async (data: PasswordFormValues) => {
     setIsSubmitting(true);
 

@@ -60,11 +60,7 @@ export default function IncidentReportingForms() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {forms.map((form) => (
-            <div
-              key={form.id}
-              className="transform transition-transform hover:-translate-y-1 "
-              onClick={(e) => e.preventDefault()}
-            >
+            <div key={form.id} onClick={(e) => e.preventDefault()}>
               <FormCardPublished
                 id={form.id}
                 title={form.title}

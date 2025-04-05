@@ -54,7 +54,7 @@ export default function FormCard({
       <Link href={`/dashboard/incidents/admin/view/${id}`}>
         <CardHeader className="max-h-24 space-y-0 my-0">
           <div className="flex flex-row items-start justify-between gap-2 mb-2">
-            <CardTitle className="text-base font-bold">{title}</CardTitle>
+            <CardTitle className="text-base font-semibold">{title}</CardTitle>
             <Badge
               className={
                 status === "Published"

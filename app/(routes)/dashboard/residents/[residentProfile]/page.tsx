@@ -22,6 +22,12 @@ import { getResidentById, updateResident } from "@/app/api/resident";
 import { getWellnessReportsForResident } from "@/app/api/wellness-report";
 
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CreateMedicalHistoryDialog from "./_components/create-medical-history";
 import CreateMedication from "./_components/create-medication-dialog";
@@ -34,9 +40,17 @@ import ResidentDetailsCard from "./_components/resident-detail-card";
 import ResidentDetailsNotesCard from "./_components/resident-detail-notes";
 import MedicalHistoryCard from "./_components/resident-medical-history";
 import ResidentMedication from "./_components/resident-medication";
+import MedicationLogList from "./_components/resident-medication-log";
 import ResidentProfileHeader from "./_components/resident-profile-header";
 import WellnessReportList from "./_components/resident-wellness-report";
 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { useBreadcrumb } from "@/context/breadcrumb-context";
 import { useToast } from "@/hooks/use-toast";
@@ -46,13 +60,15 @@ import { MedicalHistory, inferTemplateType } from "@/types/medical-history";
 import { MedicationRecord } from "@/types/medication";
 import { ResidentRecord } from "@/types/resident";
 import { WellnessReportRecord } from "@/types/wellness-report";
-import { Plus } from "lucide-react";
+import { format } from "date-fns/format";
+import { CalendarIcon, NotebookPen, Plus, X } from "lucide-react";
+import BCMA_Scanner from "./_components/bcma-scanner";
 
 const TABS = [
   { label: "Overview", value: "overview" },
   { label: "Record History", value: "history" },
-  { label: "Medication", value: "medication" },
   { label: "Care Plan", value: "careplan" },
+  { label: "Medication", value: "medication" },
   { label: "Wellness Report", value: "wellness" },
 ] as const;
 
@@ -66,6 +82,8 @@ export default function ResidentDashboard() {
   const { setPageName } = useBreadcrumb();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
   const tabParam = searchParams.get("tab");
   const isValidTab = (tab: string | null): tab is TabValue => {
@@ -228,7 +246,7 @@ export default function ResidentDashboard() {
     setIsCreatingCarePlan(true);
     try {
       await createCarePlanWithEmptyValues(residentProfile);
-      refetchCarePlans();
+      await refetchCarePlans();
     } catch (error) {
       console.error("Error creating care plan:", error);
     } finally {
@@ -362,37 +380,117 @@ export default function ResidentDashboard() {
         </TabsContent>
 
         <TabsContent value="medication">
-          <div className="p-6 border rounded-lg">
-            <div className="flex justify-between items-center">
-              <h2 className="text-lg font-semibold">Medication List</h2>
-              <Button onClick={() => openModal("createMedication")}>
-                <Plus className="h-4 w-4 mr-1" />
-                Add Medication
-              </Button>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="p-6 border rounded-lg bg-white">
+              <div className="flex justify-between items-center">
+                <h2 className="text-lg font-semibold">Medication List</h2>
+                <Button onClick={() => openModal("createMedication")}>
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Medication
+                </Button>
+              </div>
+
+              {isMedicationsLoading ? (
+                <LoadingSpinner />
+              ) : (
+                <div className="space-y-4 mt-4">
+                  {medications.length > 0 ? (
+                    medications.map((medication, index) => (
+                      <ResidentMedication
+                        key={medication.id || index}
+                        medication={medication}
+                        onEdit={() => openModal("editMedication", medication)}
+                      />
+                    ))
+                  ) : (
+                    <div className="text-center text-gray-500 p-8 border rounded-lg bg-gray-50">
+                      No medications found for this resident.
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
-            {isMedicationsLoading ? (
-              <LoadingSpinner />
-            ) : (
-              <div className="space-y-4 mt-4">
-                {medications.length > 0 ? (
-                  medications.map((medication, index) => (
-                    <ResidentMedication
-                      key={medication.id || index}
-                      medication={medication}
-                      onEdit={() => openModal("editMedication", medication)}
-                    />
-                  ))
-                ) : (
-                  <div className="text-center text-gray-500 p-8 border rounded-lg bg-gray-50">
-                    No medications found for this resident.
-                  </div>
-                )}
+            <div className="border rounded-lg bg-white flex flex-col h-[80vh]">
+              <div className="sticky top-0 p-6  z-10 flex justify-between items-center">
+                <h2 className="text-lg font-semibold tracking-tight">
+                  Medication Logs
+                </h2>
+
+                <div className="flex items-center gap-2">
+                  {selectedDate && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-gray-500 hover:text-gray-700"
+                      onClick={() => setSelectedDate(undefined)}
+                    >
+                      <X className="h-4 w-4" />
+                      <span className="sr-only">Clear filter</span>
+                    </Button>
+                  )}
+
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="flex items-center gap-2"
+                        size="sm"
+                      >
+                        <CalendarIcon className="h-4 w-4" />
+                        {selectedDate
+                          ? format(selectedDate, "MMM d")
+                          : "Filter"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="end">
+                      <Calendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={setSelectedDate}
+                      />
+                    </PopoverContent>
+                  </Popover>
+
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        className="flex items-center gap-2 bg-green-500 hover:bg-green-600"
+                        size="sm"
+                      >
+                        <NotebookPen className="h-4 w-4" />
+                        Administer
+                      </Button>
+                    </DialogTrigger>
+
+                    <DialogContent className="max-w-3xl sm:max-w-2xl p-0">
+                      <DialogHeader className="px-6 pt-6">
+                        <DialogTitle className="text-xl font-semibold">
+                          Medication Administration
+                        </DialogTitle>
+                      </DialogHeader>
+
+                      <BCMA_Scanner
+                        onSuccess={() =>
+                          queryClient.invalidateQueries({
+                            queryKey: ["medicationLogs", residentProfile],
+                          })
+                        }
+                      />
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </div>
-            )}
+
+              <div className="flex-1 overflow-y-auto p-6 pt-4">
+                <MedicationLogList
+                  residentId={residentProfile}
+                  selectedDate={selectedDate}
+                />
+              </div>
+            </div>
           </div>
         </TabsContent>
-
         <TabsContent value="careplan">
           {isCarePlansLoading ? (
             <LoadingSpinner />
@@ -402,10 +500,18 @@ export default function ResidentDashboard() {
                 <EditCarePlan
                   careplan={carePlans[0]}
                   residentId={residentProfile}
-                  onCarePlanUpdated={() => {
-                    queryClient.invalidateQueries({
-                      queryKey: ["carePlans", residentProfile],
-                    });
+                  onCarePlanUpdated={(updatedPlan) => {
+                    if (!updatedPlan) return;
+                    queryClient.setQueryData(
+                      ["carePlans", residentProfile],
+                      (old: CarePlanRecord[] | undefined) => {
+                        if (!old) return [updatedPlan];
+                        const updated = old.map((cp) =>
+                          cp.id === updatedPlan.id ? updatedPlan : cp,
+                        );
+                        return updated.length > 0 ? updated : [updatedPlan];
+                      },
+                    );
                   }}
                 />
               ) : (

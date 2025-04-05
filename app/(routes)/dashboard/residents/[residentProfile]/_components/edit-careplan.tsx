@@ -30,7 +30,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { CarePlanRecord } from "@/types/careplan";
 import { Edit, MoreHorizontal, PlusCircle, Trash } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface CarePlanProps {
   careplan: CarePlanRecord | null;
@@ -45,11 +45,17 @@ const EditableCarePlan: React.FC<CarePlanProps> = ({
 }) => {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState<CarePlanRecord | null>(careplan);
+  const [formData, setFormData] = useState<CarePlanRecord | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+
+  useEffect(() => {
+    if (careplan) {
+      setFormData(careplan);
+    }
+  }, [careplan]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -69,17 +75,17 @@ const EditableCarePlan: React.FC<CarePlanProps> = ({
     setIsSaving(true);
     try {
       const updatedCarePlan = await updateCarePlan(residentId, formData);
-      if (updatedCarePlan) {
-        onCarePlanUpdated(updatedCarePlan);
-        setIsEditing(false);
-        toast({
-          title: "Success",
-          description: "Care plan has been updated successfully.",
-          variant: "default",
-        });
-      } else {
-        throw new Error("Failed to update care plan");
+      if (!updatedCarePlan || !updatedCarePlan.id) {
+        throw new Error("Update returned invalid data");
       }
+      setFormData(updatedCarePlan);
+      onCarePlanUpdated(updatedCarePlan);
+      setIsEditing(false);
+      toast({
+        title: "Success",
+        description: "Care plan has been updated successfully.",
+        variant: "default",
+      });
     } catch (error) {
       toast({
         title: "Error",
@@ -98,6 +104,7 @@ const EditableCarePlan: React.FC<CarePlanProps> = ({
       const result = await deleteCarePlan(residentId, formData.id);
       if (result.success) {
         onCarePlanUpdated(null);
+        setFormData(null);
         setIsDeleteDialogOpen(false);
         toast({
           title: "Success",
@@ -122,7 +129,7 @@ const EditableCarePlan: React.FC<CarePlanProps> = ({
     setIsCreating(true);
     try {
       const newCarePlan = await createCarePlanWithEmptyValues(residentId);
-      if (newCarePlan) {
+      if (newCarePlan && newCarePlan.id) {
         onCarePlanUpdated(newCarePlan);
         setFormData(newCarePlan);
         toast({

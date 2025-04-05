@@ -117,3 +117,36 @@ export const deleteMedication = async (
     return false;
   }
 };
+
+export const getMedicationById = async (
+  residentId: string,
+  medicationId: string,
+  suppressError?: boolean,
+): Promise<MedicationRecord | null> => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/medications/${medicationId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    if (!response.ok) {
+      if (!suppressError) {
+        const errData = await response.json();
+        throw Error(errData.detail || "Error fetching medication by ID");
+      }
+      return null;
+    }
+
+    return await response.json();
+  } catch (error: any) {
+    if (!suppressError) {
+      console.error("getMedicationById error:", error);
+    }
+    return null;
+  }
+};

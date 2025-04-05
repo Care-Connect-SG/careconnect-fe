@@ -283,7 +283,6 @@ const TaskManagement = () => {
         return;
       }
 
-      console.log("Tasks to download:", tasksToDownload);
       const blob = await downloadTasks(tasksToDownload.map((task) => task.id));
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");

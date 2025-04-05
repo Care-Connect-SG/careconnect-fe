@@ -190,7 +190,7 @@ const BCMA_Scanner: React.FC<BCMA_ScannerProps> = ({ onSuccess }) => {
   };
 
   return (
-    <Card className="p-6 shadow-sm border-gray-200">
+    <Card className="p-6 shadow-sm border-gray-200 max-h-[90vh] overflow-y-auto">
       <div className="flex items-center gap-3 mb-6 pb-4 border-b">
         <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
           <Pill className="h-5 w-5" />

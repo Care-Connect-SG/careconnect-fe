@@ -54,14 +54,16 @@ export const createCarePlan = async (residentId: string, carePlanData: any) => {
 
 export const updateCarePlan = async (residentId: string, carePlanData: any) => {
   try {
+    const { id, ...payload } = carePlanData;
+
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/careplan/${carePlanData.id}`,
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/careplan/${id}`,
       {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(carePlanData),
+        body: JSON.stringify(payload),
       },
     );
 

@@ -12,12 +12,19 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { toTitleCase } from "@/lib/utils";
 import { ResidentRecord } from "@/types/resident";
-import { Trash } from "lucide-react";
+import html2canvas from "html2canvas";
+import { QrCodeIcon, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import { QRCodeCanvas } from "qrcode.react";
+import React, { useRef, useState } from "react";
 import ResidentProfilePictureDialog from "./resident-profile-picture-dialog";
 
 interface ResidentProfileHeaderProps {
@@ -32,6 +39,8 @@ const ResidentProfileHeader: React.FC<ResidentProfileHeaderProps> = ({
   const { toast } = useToast();
   const router = useRouter();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [openQR, setOpenQR] = useState(false);
+  const qrRef = useRef<HTMLDivElement>(null);
 
   const age =
     new Date().getFullYear() - new Date(resident.date_of_birth).getFullYear();
@@ -55,6 +64,21 @@ const ResidentProfileHeader: React.FC<ResidentProfileHeaderProps> = ({
     }
   };
 
+  const handleDownloadQR = async () => {
+    if (!qrRef.current) return;
+
+    try {
+      const canvas = await html2canvas(qrRef.current);
+      const dataUrl = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = `${resident.full_name.replace(/\s+/g, "_")}_QR.png`;
+      link.click();
+    } catch (err) {
+      console.error("QR download failed:", err);
+    }
+  };
+
   return (
     <>
       <div className="w-full flex flex-col sm:flex-row items-center justify-between p-4 bg-white border rounded-md">
@@ -72,6 +96,24 @@ const ResidentProfileHeader: React.FC<ResidentProfileHeaderProps> = ({
               </span>
             </div>
           </div>
+          <Popover open={openQR} onOpenChange={setOpenQR}>
+            <PopoverTrigger asChild>
+              <QrCodeIcon className="w-8 h-8 text-blue-500 ml-4 cursor-pointer" />
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-3 flex flex-col items-center space-y-2">
+              <div ref={qrRef} className="bg-white p-4 rounded inline-block">
+                <QRCodeCanvas value={resident.id} size={150} level="H" />
+              </div>
+
+              <Button
+                onClick={handleDownloadQR}
+                variant="outline"
+                className="text-xs h-8 px-3"
+              >
+                Download Resident QR
+              </Button>
+            </PopoverContent>
+          </Popover>
         </div>
 
         <div className="flex flex-row gap-4">
@@ -91,7 +133,6 @@ const ResidentProfileHeader: React.FC<ResidentProfileHeaderProps> = ({
           </Button>
         </div>
       </div>
-
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>

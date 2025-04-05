@@ -44,7 +44,7 @@ export default function FormCardPublished({
         className={`flex flex-row items-start justify-between space-y-0`}
       >
         <div>
-          <CardTitle className="text-base font-bold">{title}</CardTitle>
+          <CardTitle className="text-base font-semibold">{title}</CardTitle>
           <p className="hidden sm:block text-xs text-muted-foreground mt-1">
             Created at {formatDate(created_date)}
           </p>

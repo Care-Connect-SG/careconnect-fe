@@ -24,7 +24,7 @@ import { toTitleCase } from "@/lib/utils";
 import { ReportResponse, ReportStatus } from "@/types/report";
 import { Role, User } from "@/types/user";
 import { pdf } from "@react-pdf/renderer";
-import { Download, Edit, MoreHorizontal, Share2, Trash2 } from "lucide-react";
+import { Download, Edit, MoreHorizontal, Share2, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import getReportBadgeConfig from "./badge-config";
 import ReportPDF from "./report-pdf";
@@ -166,7 +166,7 @@ export default function ReportsTable({
     if (!value) {
       return <span className="text-gray-400">N/A</span>;
     }
-    return value;
+    return toTitleCase(value);
   };
 
   return (
@@ -236,7 +236,11 @@ export default function ReportsTable({
                   </TableCell>
                   {activeTab === "my" && (
                     <TableCell className="px-6 py-4">
-                      <Badge className={getReportBadgeConfig(report.status)}>
+                      <Badge
+                        className={`${getReportBadgeConfig(
+                          report.status,
+                        )} font-normal`}
+                      >
                         {report.status}
                       </Badge>
                     </TableCell>
@@ -297,8 +301,9 @@ export default function ReportsTable({
                                 e.stopPropagation();
                                 handleDelete(report.id);
                               }}
+                              className="text-red-500 hover:text-red-500"
                             >
-                              <Trash2 className="mr-2 h-4 w-4" />
+                              <Trash className="mr-2 h-4 w-4 text-red-500 hover:text-red-500 " />
                               Delete
                             </DropdownMenuItem>
                           )}

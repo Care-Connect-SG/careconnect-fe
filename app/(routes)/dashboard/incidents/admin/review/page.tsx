@@ -25,7 +25,12 @@ import {
   DropdownMenu,
   DropdownMenuContent,
 } from "@radix-ui/react-dropdown-menu";
-import { MoreHorizontal } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle,
+  MoreHorizontal,
+  TimerIcon,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import getReportBadgeConfig from "../../_components/badge-config";
@@ -70,273 +75,185 @@ export default function ReviewReports() {
     }
   };
 
+  const renderTable = (
+    reports: ReportResponse[],
+    dateLabel: string,
+    isReviews: boolean = false,
+  ) => (
+    <Table className="bg-white">
+      <TableHeader className="bg-gray-50">
+        <TableRow className="hover:bg-gray-50">
+          <TableHead className="font-semibold text-gray-700">
+            {dateLabel}
+          </TableHead>
+          <TableHead className="font-semibold text-gray-700">Form</TableHead>
+          <TableHead className="font-semibold text-gray-700">
+            Reporter
+          </TableHead>
+          <TableHead className="font-semibold text-gray-700">
+            Resident
+          </TableHead>
+          <TableHead className="font-semibold text-gray-700">Status</TableHead>
+          <TableHead className="font-semibold text-gray-700 text-right">
+            Actions
+          </TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {reports.length === 0 ? (
+          <TableRow className="hover:bg-white">
+            <TableCell colSpan={6} className="h-16 text-center text-gray-500">
+              No reports found in this category
+            </TableCell>
+          </TableRow>
+        ) : (
+          reports.map((report) => (
+            <TableRow
+              key={report.id}
+              className=" hover:bg-blue-50 transition-colors"
+              onClick={() => handleView(report)}
+            >
+              <TableCell className="font-medium">
+                {isReviews
+                  ? new Date(
+                      report.reviews![report.reviews!.length - 1].reviewed_at,
+                    ).toLocaleDateString()
+                  : new Date(report.created_at).toLocaleDateString()}
+              </TableCell>
+              <TableCell>{report.form_name}</TableCell>
+              <TableCell>{report.reporter.name}</TableCell>
+              <TableCell>
+                {report.primary_resident?.name || (
+                  <span className="text-gray-400">Not Applicable</span>
+                )}
+              </TableCell>
+              <TableCell>
+                <Badge
+                  className={`${getReportBadgeConfig(
+                    report.status,
+                  )} px-2 py-1 font-normal`}
+                >
+                  {report.status}
+                </Badge>
+              </TableCell>
+              <TableCell className="text-right">
+                {(report.status !== "Published" ||
+                  user?.role === Role.ADMIN) && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      asChild
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 hover:bg-gray-100"
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Open menu</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                  </DropdownMenu>
+                )}
+              </TableCell>
+            </TableRow>
+          ))
+        )}
+      </TableBody>
+    </Table>
+  );
+
   return (
-    <div className="p-8">
-      <div className="pb-4">
-        <h1 className="text-2xl font-semibold tracking-tight pb-2">
-          Review Submitted Reports
+    <div className="py-8 px-4 sm:px-6 lg:px-8">
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+          Review Incident Reports
         </h1>
-        <p className="text-sm text-muted-foreground pb-1">
-          Approve or request changes from submitted reports
+        <p className="text-gray-600">
+          Manage submitted reports by approving or requesting changes
         </p>
       </div>
 
-      <hr className="border-t-1 border-gray-300 pb-8" />
-
-      <div className="flex flex-col gap-8">
-        <div className="rounded-md border px-4 bg-blue-50">
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="item-1">
-              <AccordionTrigger className="text-md font-medium">
-                Pending Review From Admin {`[${submittedReports.length}]`}
+      <div className="space-y-6">
+        <div className="rounded-lg shadow-sm overflow-hidden border">
+          <Accordion
+            type="single"
+            collapsible
+            className="w-full"
+            defaultValue="pending-review"
+          >
+            <AccordionItem value="pending-review" className="border-none">
+              <AccordionTrigger className="bg-blue-50 border-l-4 border-blue-500 px-6 py-4 hover:no-underline hover:bg-blue-100 transition-colors">
+                <div className="flex items-center gap-3">
+                  <TimerIcon className="h-5 w-5 text-blue-600 flex-shrink-0" />
+                  <h2 className="text-md font-medium text-blue-800 flex items-center">
+                    Pending Admin Review
+                    <span className="ml-2 text-sm py-0.5 px-2 bg-blue-100 text-blue-700 rounded-full">
+                      {submittedReports.length}
+                    </span>
+                  </h2>
+                </div>
               </AccordionTrigger>
-              <AccordionContent className="rounded border mt-2 mb-4 pb-0">
-                <Table className="text-center bg-white">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-center">
-                        Submitted Date
-                      </TableHead>
-                      <TableHead className="text-center">Form</TableHead>
-                      <TableHead className="text-center">Reporter</TableHead>
-                      <TableHead className="text-center">Resident</TableHead>
-                      <TableHead className="text-center">Status</TableHead>
-                      <TableHead className="text-center">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {submittedReports.length === 0 ? (
-                      <TableRow className="mb-0">
-                        <TableCell colSpan={7} className="h-10 text-center">
-                          No reports found.
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      submittedReports.map((report) => (
-                        <TableRow
-                          key={report.id}
-                          onClick={() => handleView(report)}
-                        >
-                          <TableCell className="font-medium">
-                            {new Date(report.created_at).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell>{report.form_name}</TableCell>
-
-                          <TableCell>{report.reporter.name}</TableCell>
-
-                          {report.primary_resident?.name ? (
-                            <TableCell>
-                              {report.primary_resident?.name}
-                            </TableCell>
-                          ) : (
-                            <TableCell className="text-gray-400">NA</TableCell>
-                          )}
-
-                          <TableCell>
-                            <Badge
-                              className={getReportBadgeConfig(report.status)}
-                            >
-                              {report.status}
-                            </Badge>
-                          </TableCell>
-
-                          {(report.status !== "Published" ||
-                            user?.role === Role.ADMIN) && (
-                            <TableCell className="text-center">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="focus:ring-0 focus:ring-offset-0"
-                                  >
-                                    <MoreHorizontal className="h-4 w-4" />
-                                    <span className="sr-only">Open menu</span>
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end"></DropdownMenuContent>
-                              </DropdownMenu>
-                            </TableCell>
-                          )}
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
+              <AccordionContent className="pt-0 pb-0">
+                <div className="p-4 bg-white">
+                  {renderTable(submittedReports, "Submission Date")}
+                </div>
               </AccordionContent>
             </AccordionItem>
           </Accordion>
         </div>
 
-        <div className="rounded-md border px-4 bg-purple-50">
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="item-1">
-              <AccordionTrigger className="text-md font-medium">
-                Pending Approval From Admin {`[${resolvedReports.length}]`}
+        <div className="rounded-lg shadow-sm overflow-hidden border">
+          <Accordion
+            type="single"
+            collapsible
+            className="w-full"
+            defaultValue="pending-approval"
+          >
+            <AccordionItem value="pending-approval" className="border-none">
+              <AccordionTrigger className="bg-green-50 border-l-4 border-green-500 px-6 py-4 hover:no-underline hover:bg-green-100 transition-colors">
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
+                  <h2 className="text-md font-medium text-green-800 flex items-center">
+                    Updates Completed - Pending Approval
+                    <span className="ml-2 text-sm py-0.5 px-2 bg-green-100 text-green-700 rounded-full">
+                      {resolvedReports.length}
+                    </span>
+                  </h2>
+                </div>
               </AccordionTrigger>
-              <AccordionContent className="rounded border mt-2 mb-4 pb-0">
-                <Table className="text-center bg-white">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-center">
-                        Resolved Date
-                      </TableHead>
-                      <TableHead className="text-center">Form</TableHead>
-                      <TableHead className="text-center">Reporter</TableHead>
-                      <TableHead className="text-center">Resident</TableHead>
-                      <TableHead className="text-center">Status</TableHead>
-                      <TableHead className="text-center">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {resolvedReports.length === 0 ? (
-                      <TableRow className="mb-0">
-                        <TableCell colSpan={7} className="h-10 text-center">
-                          No reports found.
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      resolvedReports.map((report) => (
-                        <TableRow
-                          key={report.id}
-                          onClick={() => handleView(report)}
-                        >
-                          <TableCell className="font-medium">
-                            {new Date(
-                              report.reviews![report.reviews!.length - 1]
-                                .reviewed_at,
-                            ).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell>{report.form_name}</TableCell>
-
-                          <TableCell>{report.reporter.name}</TableCell>
-
-                          {report.primary_resident?.name ? (
-                            <TableCell>
-                              {report.primary_resident?.name}
-                            </TableCell>
-                          ) : (
-                            <TableCell className="text-gray-400">NA</TableCell>
-                          )}
-
-                          <TableCell>
-                            <Badge
-                              className={getReportBadgeConfig(report.status)}
-                            >
-                              {report.status}
-                            </Badge>
-                          </TableCell>
-
-                          {(report.status !== "Published" ||
-                            user?.role === Role.ADMIN) && (
-                            <TableCell className="text-center">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="focus:ring-0 focus:ring-offset-0"
-                                  >
-                                    <MoreHorizontal className="h-4 w-4" />
-                                    <span className="sr-only">Open menu</span>
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end"></DropdownMenuContent>
-                              </DropdownMenu>
-                            </TableCell>
-                          )}
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
+              <AccordionContent className="pt-0 pb-0">
+                <div className="p-4 bg-white">
+                  {renderTable(resolvedReports, "Resolution Date", true)}
+                </div>
               </AccordionContent>
             </AccordionItem>
           </Accordion>
         </div>
 
-        <div className="rounded-md border px-4 bg-red-50">
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="item-1">
-              <AccordionTrigger className="text-md font-medium">
-                Pending Updates From Reporter {`[${reviewedReports.length}]`}
+        <div className="rounded-lg shadow-sm overflow-hidden border">
+          <Accordion
+            type="single"
+            collapsible
+            className="w-full"
+            defaultValue="awaiting-updates"
+          >
+            <AccordionItem value="awaiting-updates" className="border-none">
+              <AccordionTrigger className="bg-amber-50 border-l-4 border-amber-500 px-6 py-4 hover:no-underline hover:bg-amber-100 transition-colors">
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0" />
+                  <h2 className="text-md font-medium text-amber-800 flex items-center">
+                    Changes Requested - Awaiting Updates
+                    <span className="ml-2 text-sm py-0.5 px-2 bg-amber-100 text-amber-700 rounded-full">
+                      {reviewedReports.length}
+                    </span>
+                  </h2>
+                </div>
               </AccordionTrigger>
-              <AccordionContent className="rounded border mt-2 mb-4 pb-0">
-                <Table className="text-center bg-white">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-center">
-                        Reviewed Date
-                      </TableHead>
-                      <TableHead className="text-center">Form</TableHead>
-                      <TableHead className="text-center">Reporter</TableHead>
-                      <TableHead className="text-center">Resident</TableHead>
-                      <TableHead className="text-center">Status</TableHead>
-                      <TableHead className="text-center">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {reviewedReports.length === 0 ? (
-                      <TableRow className="mb-0">
-                        <TableCell colSpan={7} className="h-10 text-center">
-                          No reports found.
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      reviewedReports.map((report) => (
-                        <TableRow
-                          key={report.id}
-                          onClick={() => handleView(report)}
-                        >
-                          <TableCell className="font-medium">
-                            {new Date(
-                              report.reviews![report.reviews!.length - 1]
-                                .reviewed_at,
-                            ).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell>{report.form_name}</TableCell>
-
-                          <TableCell>{report.reporter.name}</TableCell>
-
-                          {report.primary_resident?.name ? (
-                            <TableCell>
-                              {report.primary_resident?.name}
-                            </TableCell>
-                          ) : (
-                            <TableCell className="text-gray-400">NA</TableCell>
-                          )}
-
-                          <TableCell>
-                            <Badge
-                              className={getReportBadgeConfig(report.status)}
-                            >
-                              {report.status}
-                            </Badge>
-                          </TableCell>
-
-                          {(report.status !== "Published" ||
-                            user?.role === Role.ADMIN) && (
-                            <TableCell className="text-center">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="focus:ring-0 focus:ring-offset-0"
-                                  >
-                                    <MoreHorizontal className="h-4 w-4" />
-                                    <span className="sr-only">Open menu</span>
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end"></DropdownMenuContent>
-                              </DropdownMenu>
-                            </TableCell>
-                          )}
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
+              <AccordionContent className="pt-0 pb-0">
+                <div className="p-4 bg-white">
+                  {renderTable(reviewedReports, "Review Date", true)}
+                </div>
               </AccordionContent>
             </AccordionItem>
           </Accordion>

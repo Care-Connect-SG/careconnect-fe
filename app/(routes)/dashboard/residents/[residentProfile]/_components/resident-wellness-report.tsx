@@ -124,14 +124,14 @@ const WellnessReportList: React.FC<WellnessReportListProps> = ({
 
     try {
       const blob = await pdf(
-        <WellnessReportPDF report={report} resident={resident} />
+        <WellnessReportPDF report={report} resident={resident} />,
       ).toBlob();
 
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       a.download = `Wellness Report - ${toTitleCase(
-        resident.full_name
+        resident.full_name,
       )} - ${format(new Date(report.date), "yyyy-MM-dd")}.pdf`;
       document.body.appendChild(a);
       a.click();
@@ -168,7 +168,7 @@ const WellnessReportList: React.FC<WellnessReportListProps> = ({
       setIsSharing(report.id || "");
 
       const pdfBlob = await pdf(
-        <WellnessReportPDF report={report} resident={resident} />
+        <WellnessReportPDF report={report} resident={resident} />,
       ).toBlob();
 
       const formData = new FormData();
@@ -176,11 +176,11 @@ const WellnessReportList: React.FC<WellnessReportListProps> = ({
         [pdfBlob],
         `Wellness Report - ${toTitleCase(resident.full_name)} - ${format(
           new Date(report.date),
-          "yyyy-MM-dd"
+          "yyyy-MM-dd",
         )}.pdf`,
         {
           type: "application/pdf",
-        }
+        },
       );
 
       formData.append("media", pdfFile);
@@ -190,8 +190,8 @@ const WellnessReportList: React.FC<WellnessReportListProps> = ({
         "caption",
         `Wellness Report for ${toTitleCase(resident.full_name)} - ${format(
           new Date(report.date),
-          "PPP"
-        )}`
+          "PPP",
+        )}`,
       );
 
       const response = await fetch("/api/whatsapp/media", {
@@ -239,7 +239,7 @@ const WellnessReportList: React.FC<WellnessReportListProps> = ({
       ) : (
         [...reports]
           .sort(
-            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
           )
           .map((report) => (
             <Card key={report.id} className="rounded-xl bg-gray-50">

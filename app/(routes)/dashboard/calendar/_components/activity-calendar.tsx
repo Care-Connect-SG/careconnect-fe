@@ -332,7 +332,6 @@ export default function ActivityCalendar({
     try {
       setIsUpdating(true);
 
-      // Find the activity to check if it exists and who created it
       const activityToDelete = activities.find(
         (activity) => activity.id === id,
       );
@@ -345,7 +344,6 @@ export default function ActivityCalendar({
         return;
       }
 
-      // Optimistically update UI
       setActivities((prevActivities) =>
         prevActivities.filter((activity) => activity.id !== id),
       );
@@ -358,7 +356,6 @@ export default function ActivityCalendar({
       });
       setIsDialogOpen(false);
     } catch (error) {
-      // Restore activities from server
       await loadActivities();
 
       toast({

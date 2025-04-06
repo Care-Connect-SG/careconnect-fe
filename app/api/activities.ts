@@ -20,7 +20,6 @@ export async function fetchActivities(): Promise<Activity[]> {
 
     return await response.json();
   } catch (error) {
-    // Handle different types of errors
     if (
       error instanceof TypeError &&
       error.message.includes("Failed to fetch")
@@ -128,7 +127,7 @@ export async function deleteActivity(id: string): Promise<void> {
           await response.text();
         }
       } catch (parseError) {
-        // Silently handle parse errors
+        console.error("Error parsing response:", parseError);
       }
 
       throw new Error(errorDetail);

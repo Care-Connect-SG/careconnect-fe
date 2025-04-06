@@ -320,8 +320,29 @@ export default function ActivityCalendar({
   };
 
   const handleDeleteActivity = async (id: string) => {
+    if (!id) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Activity ID is required for deletion",
+      });
+      return;
+    }
+
     try {
       setIsUpdating(true);
+
+      const activityToDelete = activities.find(
+        (activity) => activity.id === id,
+      );
+      if (!activityToDelete) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Activity not found. Please refresh the calendar.",
+        });
+        return;
+      }
 
       setActivities((prevActivities) =>
         prevActivities.filter((activity) => activity.id !== id),
@@ -340,7 +361,10 @@ export default function ActivityCalendar({
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to delete activity. Please try again.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to delete activity. Please try again.",
       });
     } finally {
       setIsUpdating(false);

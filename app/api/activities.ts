@@ -12,13 +12,22 @@ export async function fetchActivities(): Promise<Activity[]> {
     );
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = await response
+        .json()
+        .catch(() => ({ detail: "Could not parse error response" }));
       throw Error(errorData.detail || "Failed to fetch activities");
     }
 
     return await response.json();
   } catch (error) {
-    console.error("Error fetching activities:", error);
+    if (
+      error instanceof TypeError &&
+      error.message.includes("Failed to fetch")
+    ) {
+      throw new Error(
+        "Could not connect to the server. Please check your connection or try again later.",
+      );
+    }
     throw error;
   }
 }
@@ -53,7 +62,6 @@ export async function createActivity(
 
     return await response.json();
   } catch (error) {
-    console.error("Error creating activity:", error);
     throw error;
   }
 }
@@ -89,7 +97,6 @@ export async function updateActivity(
 
     return await response.json();
   } catch (error) {
-    console.error("Error updating activity:", error);
     throw error;
   }
 }
@@ -109,11 +116,23 @@ export async function deleteActivity(id: string): Promise<void> {
     );
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw Error(errorData.detail || "Failed to delete activity");
+      let errorDetail = "Failed to delete activity";
+
+      try {
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          const errorData = await response.json();
+          errorDetail = errorData.detail || errorDetail;
+        } else {
+          await response.text();
+        }
+      } catch (parseError) {
+        console.error("Error parsing response:", parseError);
+      }
+
+      throw new Error(errorDetail);
     }
   } catch (error) {
-    console.error("Error deleting activity:", error);
     throw error;
   }
 }

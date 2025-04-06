@@ -1,3 +1,5 @@
+"use client";
+
 import { formatDayMonthYear } from "@/lib/utils";
 import { FormResponse } from "@/types/form";
 import { ReportResponse } from "@/types/report";

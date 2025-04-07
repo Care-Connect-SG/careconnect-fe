@@ -40,10 +40,7 @@ const formSchema = z.object({
   end_time: z.date(),
   location: z.string().min(1, "Location is required"),
   category: z.string().min(1, "Category is required"),
-  reminder_minutes: z
-    .string()
-    .transform((val) => parseInt(val))
-    .optional(),
+  reminder_minutes: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -95,7 +92,7 @@ export default function ActivityDialog({
         selectedEndDate || new Date(selectedDate.getTime() + 30 * 60000),
       location: "",
       category: "",
-      reminder_minutes: 5,
+      reminder_minutes: "5",
     },
   });
 
@@ -115,10 +112,7 @@ export default function ActivityDialog({
         end_time: endDate,
         location: activity.location || "",
         category: activity.category || "",
-        reminder_minutes:
-          activity.reminder_minutes !== undefined
-            ? activity.reminder_minutes
-            : undefined,
+        reminder_minutes: activity.reminder_minutes?.toString() || "5",
       });
     } else {
       form.reset({
@@ -129,7 +123,7 @@ export default function ActivityDialog({
           selectedEndDate || new Date(selectedDate.getTime() + 30 * 60000),
         location: "",
         category: "",
-        reminder_minutes: 5,
+        reminder_minutes: "5",
       });
     }
   }, [activity, selectedDate, selectedEndDate, form]);
@@ -152,7 +146,7 @@ export default function ActivityDialog({
         end_time: data.end_time.toISOString(),
         location: data.location,
         category: data.category,
-        reminder_minutes: data.reminder_minutes,
+        reminder_minutes: parseInt(data.reminder_minutes || "5"),
       };
 
       onSave(activityData);

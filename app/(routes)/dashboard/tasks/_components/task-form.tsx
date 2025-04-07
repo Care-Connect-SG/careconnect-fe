@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { DateTimePicker } from "@/components/ui/datetime-picker";
+import { parseStringToDateTime } from "@/components/ui/datetime-picker";
 import {
   Dialog,
   DialogContent,
@@ -49,7 +50,6 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { Task, TaskCategory, TaskPriority, TaskStatus } from "@/types/task";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { DialogClose } from "@radix-ui/react-dialog";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
@@ -93,20 +93,24 @@ const taskSchema = z
       .nullable()
       .optional(),
     end_recurring_date: z.date().nullable().optional(),
-    remind_prior: z
-      .union([
-        z.literal("none").transform(() => undefined),
-        z.string().transform((val) => parseInt(val)),
-      ])
-      .optional(),
+    remind_prior: z.string().optional(),
     is_ai_generated: z.boolean().default(false),
     assigned_to: z.string().nonempty("Assignee is required"),
     update_series: z.boolean().optional(),
   })
-  .refine((data) => data.start_date < data.due_date, {
-    message: "Start date must be before due date",
-    path: ["due_date"],
-  })
+  .refine(
+    (data) => {
+      const startDate = new Date(data.start_date);
+      const dueDate = new Date(data.due_date);
+      console.log(startDate);
+      console.log(dueDate);
+      return startDate < dueDate;
+    },
+    {
+      message: "Start date must be before due date",
+      path: ["due_date"],
+    },
+  )
   .refine(
     (data) => {
       if (data.recurring && data.end_recurring_date) {
@@ -162,7 +166,7 @@ export default function TaskForm({
     due_date: new Date(),
     recurring: undefined,
     end_recurring_date: undefined,
-    remind_prior: 5,
+    remind_prior: "5",
     is_ai_generated: false,
     assigned_to: "",
   };
@@ -200,7 +204,7 @@ export default function TaskForm({
         end_recurring_date: task.end_recurring_date
           ? new Date(task.end_recurring_date + "Z")
           : undefined,
-        remind_prior: task.remind_prior,
+        remind_prior: task.remind_prior?.toString() || "5",
         is_ai_generated: task.is_ai_generated,
         assigned_to: task.assigned_to,
       });
@@ -930,16 +934,7 @@ export default function TaskForm({
                                       value={field.value}
                                       onChange={(date) => {
                                         if (date) {
-                                          const newDate = new Date(date);
-                                          if (field.value) {
-                                            newDate.setHours(
-                                              field.value.getHours(),
-                                            );
-                                            newDate.setMinutes(
-                                              field.value.getMinutes(),
-                                            );
-                                          }
-                                          field.onChange(newDate);
+                                          field.onChange(date);
                                         }
                                       }}
                                     />
@@ -976,16 +971,7 @@ export default function TaskForm({
                                       value={field.value}
                                       onChange={(date) => {
                                         if (date) {
-                                          const newDate = new Date(date);
-                                          if (field.value) {
-                                            newDate.setHours(
-                                              field.value.getHours(),
-                                            );
-                                            newDate.setMinutes(
-                                              field.value.getMinutes(),
-                                            );
-                                          }
-                                          field.onChange(newDate);
+                                          field.onChange(date);
                                         }
                                       }}
                                     />
@@ -1112,16 +1098,8 @@ export default function TaskForm({
                         <FormItem>
                           <Label>Remind Prior (minutes)</Label>
                           <Select
-                            onValueChange={(value) => {
-                              field.onChange(
-                                value === "none" ? undefined : parseInt(value),
-                              );
-                            }}
-                            value={
-                              field.value === undefined
-                                ? "none"
-                                : String(field.value)
-                            }
+                            onValueChange={field.onChange}
+                            value={field.value?.toString() || "5"}
                           >
                             <FormControl>
                               <SelectTrigger
@@ -1169,10 +1147,7 @@ export default function TaskForm({
                 </div>
               )}
               <div className="flex justify-end px-6 py-4 bg-background">
-                <Button
-                  type="submit"
-                  disabled={isLoading || isAILoading || !form.formState.isValid}
-                >
+                <Button type="submit" disabled={isLoading || isAILoading}>
                   {isLoading ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />

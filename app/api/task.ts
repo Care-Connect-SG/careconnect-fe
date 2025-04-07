@@ -208,7 +208,7 @@ export const updateTask = async (
         updatedData.end_recurring_date,
       ).toISOString();
     if (updatedData.remind_prior)
-      dataToSend.remind_prior = updatedData.remind_prior;
+      dataToSend.remind_prior = parseInt(updatedData.remind_prior);
     if (updatedData.is_ai_generated !== undefined)
       dataToSend.is_ai_generated = updatedData.is_ai_generated;
     if (updatedData.assigned_to)

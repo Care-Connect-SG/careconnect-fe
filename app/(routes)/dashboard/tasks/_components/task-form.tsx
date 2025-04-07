@@ -56,7 +56,6 @@ import {
   AlertTriangle,
   CalendarIcon,
   ChevronsDown,
-  HelpCircle,
   Loader2,
   Plus,
   Sparkles,
@@ -94,7 +93,12 @@ const taskSchema = z
       .nullable()
       .optional(),
     end_recurring_date: z.date().nullable().optional(),
-    remind_prior: z.number().nullable().optional(),
+    remind_prior: z
+      .union([
+        z.literal("none").transform(() => undefined),
+        z.string().transform((val) => parseInt(val)),
+      ])
+      .optional(),
     is_ai_generated: z.boolean().default(false),
     assigned_to: z.string().nonempty("Assignee is required"),
     update_series: z.boolean().optional(),
@@ -158,7 +162,7 @@ export default function TaskForm({
     due_date: new Date(),
     recurring: undefined,
     end_recurring_date: undefined,
-    remind_prior: undefined,
+    remind_prior: 5,
     is_ai_generated: false,
     assigned_to: "",
   };
@@ -1107,20 +1111,52 @@ export default function TaskForm({
                       render={({ field, fieldState }) => (
                         <FormItem>
                           <Label>Remind Prior (minutes)</Label>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              onChange={(e) =>
-                                field.onChange(Number(e.target.value))
-                              }
-                              value={field.value || ""}
-                              className={
-                                fieldState.invalid
-                                  ? "border-destructive focus-visible:ring-destructive"
-                                  : ""
-                              }
-                            />
-                          </FormControl>
+                          <Select
+                            onValueChange={(value) => {
+                              field.onChange(
+                                value === "none" ? undefined : parseInt(value),
+                              );
+                            }}
+                            value={
+                              field.value === undefined
+                                ? "none"
+                                : String(field.value)
+                            }
+                          >
+                            <FormControl>
+                              <SelectTrigger
+                                className={
+                                  fieldState.invalid
+                                    ? "border-destructive focus-visible:ring-destructive"
+                                    : ""
+                                }
+                              >
+                                <SelectValue placeholder="Select reminder time" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="5">
+                                5 minutes before
+                              </SelectItem>
+                              <SelectItem value="10">
+                                10 minutes before
+                              </SelectItem>
+                              <SelectItem value="15">
+                                15 minutes before
+                              </SelectItem>
+                              <SelectItem value="30">
+                                30 minutes before
+                              </SelectItem>
+                              <SelectItem value="60">1 hour before</SelectItem>
+                              <SelectItem value="120">
+                                2 hours before
+                              </SelectItem>
+                              <SelectItem value="1440">1 day before</SelectItem>
+                              <SelectItem value="2880">
+                                2 days before
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
                           {fieldState.error && (
                             <p className="text-sm text-destructive">
                               {fieldState.error.message}

@@ -59,7 +59,7 @@ function ResidentCard({
       </div>
 
       <div className="flex items-center bg-transparent flex-1 justify-between px-6">
-        <div className="flex flex-col items-start w-28 space-y-2">
+        <div className="flex flex-col items-start w-20 space-y-2">
           <span className="text-xs text-gray-500">Age</span>
           <span className="font-medium text-gray-700">
             {new Date().getFullYear() -
@@ -67,10 +67,17 @@ function ResidentCard({
           </span>
         </div>
 
-        <div className="flex flex-col items-start w-28 space-y-2">
+        <div className="flex flex-col items-start w-20 space-y-2">
           <span className="text-xs text-gray-500">Room</span>
           <span className="font-medium text-gray-700">
             {resident.room_number}
+          </span>
+        </div>
+
+        <div className="flex flex-col items-start w-28 space-y-2">
+          <span className="text-xs text-gray-500">Admission Date</span>
+          <span className="font-medium text-gray-700">
+            {resident.admission_date}
           </span>
         </div>
 

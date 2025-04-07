@@ -18,6 +18,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Activity, ActivityCreate } from "@/types/activity";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -33,6 +40,12 @@ const formSchema = z.object({
   end_time: z.date(),
   location: z.string().min(1, "Location is required"),
   category: z.string().min(1, "Category is required"),
+  reminder_minutes: z
+    .union([
+      z.literal("none").transform(() => undefined),
+      z.string().transform((val) => parseInt(val)),
+    ])
+    .optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -84,16 +97,17 @@ export default function ActivityDialog({
         selectedEndDate || new Date(selectedDate.getTime() + 30 * 60000),
       location: "",
       category: "",
+      reminder_minutes: 5,
     },
   });
 
   useEffect(() => {
     if (activity) {
       const startDate = new Date(
-        activity.start_time + (activity.start_time.endsWith("Z") ? "" : "Z"),
+        activity.start_time + (activity.start_time.endsWith("Z") ? "" : "Z")
       );
       const endDate = new Date(
-        activity.end_time + (activity.end_time.endsWith("Z") ? "" : "Z"),
+        activity.end_time + (activity.end_time.endsWith("Z") ? "" : "Z")
       );
 
       form.reset({
@@ -103,6 +117,10 @@ export default function ActivityDialog({
         end_time: endDate,
         location: activity.location || "",
         category: activity.category || "",
+        reminder_minutes:
+          activity.reminder_minutes !== undefined
+            ? activity.reminder_minutes
+            : undefined,
       });
     } else {
       form.reset({
@@ -113,6 +131,7 @@ export default function ActivityDialog({
           selectedEndDate || new Date(selectedDate.getTime() + 30 * 60000),
         location: "",
         category: "",
+        reminder_minutes: undefined,
       });
     }
   }, [activity, selectedDate, selectedEndDate, form]);
@@ -135,6 +154,7 @@ export default function ActivityDialog({
         end_time: data.end_time.toISOString(),
         location: data.location,
         category: data.category,
+        reminder_minutes: data.reminder_minutes,
       };
 
       onSave(activityData);
@@ -233,6 +253,38 @@ export default function ActivityDialog({
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="reminder_minutes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Reminder</FormLabel>
+                  <Select
+                    disabled={!canEdit}
+                    onValueChange={field.onChange}
+                    value={field.value?.toString() || "5"}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a reminder time" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="5">5 minutes before</SelectItem>
+                      <SelectItem value="10">10 minutes before</SelectItem>
+                      <SelectItem value="15">15 minutes before</SelectItem>
+                      <SelectItem value="30">30 minutes before</SelectItem>
+                      <SelectItem value="60">1 hour before</SelectItem>
+                      <SelectItem value="120">2 hours before</SelectItem>
+                      <SelectItem value="1440">1 day before</SelectItem>
+                      <SelectItem value="2880">2 days before</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}

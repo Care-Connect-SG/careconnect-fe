@@ -91,7 +91,7 @@ export default function ResidentDashboard() {
   };
 
   const [activeTab, setActiveTab] = useState<TabValue>(
-    isValidTab(tabParam) ? tabParam : "overview",
+    isValidTab(tabParam) ? tabParam : "overview"
   );
 
   const [modals, setModals] = useState({
@@ -337,7 +337,8 @@ export default function ResidentDashboard() {
               emergencyContactName={resident.emergency_contact_name}
               emergencyContactNumber={resident.emergency_contact_number}
               relationship={resident.relationship}
-              primaryNurse={resident.primary_nurse || ""}
+              primaryNurse={resident.primary_nurse || "None"}
+              admissionDate={resident.admission_date}
             />
             <ResidentDetailsNotesCard
               additionalNotes={resident.additional_notes || "None"}
@@ -505,10 +506,10 @@ export default function ResidentDashboard() {
                       (old: CarePlanRecord[] | undefined) => {
                         if (!old) return [updatedPlan];
                         const updated = old.map((cp) =>
-                          cp.id === updatedPlan.id ? updatedPlan : cp,
+                          cp.id === updatedPlan.id ? updatedPlan : cp
                         );
                         return updated.length > 0 ? updated : [updatedPlan];
-                      },
+                      }
                     );
                   }}
                 />

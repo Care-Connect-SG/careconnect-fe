@@ -12,6 +12,7 @@ interface ResidentDetailsCardProps {
   relationship: string;
   additionalNotes?: string;
   primaryNurse: string;
+  admissionDate?: string;
 }
 
 const ResidentDetailsCard: React.FC<ResidentDetailsCardProps> = ({
@@ -23,6 +24,7 @@ const ResidentDetailsCard: React.FC<ResidentDetailsCardProps> = ({
   relationship,
   additionalNotes,
   primaryNurse,
+  admissionDate,
 }) => {
   const renderCellContent = (value: string | undefined) => {
     if (!value) {
@@ -69,6 +71,12 @@ const ResidentDetailsCard: React.FC<ResidentDetailsCardProps> = ({
           <div>
             <p className="text-sm font-medium text-gray-500">Primary Nurse</p>
             {renderCellContent(primaryNurse)}
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-500">
+              Registration Date
+            </p>
+            {renderCellContent(admissionDate)}
           </div>
         </div>
         {additionalNotes && (

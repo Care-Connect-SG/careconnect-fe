@@ -1,56 +1,39 @@
+// Updated ResidentDetailsNotesCard to handle list-based additional notes properly
 "use client";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Check, Pencil } from "lucide-react";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 interface ResidentDetailsNotesCardProps {
-  additionalNotes?: string;
-  initialLastSaved?: string;
-  onSaveNotes?: (notes: string) => void;
+  additionalNotes?: string[];
+  initialTimestamps?: string[];
+  onSaveNotes?: (note: string) => void;
 }
 
 const ResidentDetailsNotesCard: React.FC<ResidentDetailsNotesCardProps> = ({
-  additionalNotes,
-  initialLastSaved,
+  additionalNotes = [],
+  initialTimestamps = [],
   onSaveNotes,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [notes, setNotes] = useState(additionalNotes || "");
-  const [lastModified, setLastModified] = useState<Date | null>(
-    initialLastSaved ? new Date(initialLastSaved) : null,
-  );
-
-  useEffect(() => {
-    setNotes(additionalNotes || "");
-  }, [additionalNotes]);
-
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
+  const [newNote, setNewNote] = useState("");
 
   const handleSaveNote = () => {
+    if (!newNote.trim()) return;
     setIsEditing(false);
-    const now = new Date();
-    setLastModified(now);
     if (onSaveNotes) {
-      onSaveNotes(notes);
+      onSaveNotes(newNote.trim());
     }
-  };
-
-  const formatDate = (date: Date | null) => {
-    if (!date) return "Not modified yet";
-    return date.toLocaleString();
+    setNewNote("");
   };
 
   return (
     <Card className="w-full">
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-        <CardTitle className="text-lg font-semibold">
-          Additional Notes
-        </CardTitle>
+        <CardTitle className="text-lg font-semibold">Additional Notes</CardTitle>
         <div>
           {isEditing ? (
             <Button
@@ -63,32 +46,37 @@ const ResidentDetailsNotesCard: React.FC<ResidentDetailsNotesCardProps> = ({
               Save
             </Button>
           ) : (
-            <Button onClick={handleEdit} variant="ghost" size="icon">
+            <Button onClick={() => setIsEditing(true)} variant="ghost" size="icon">
               <Pencil className="h-4 w-4" />
             </Button>
           )}
         </div>
       </CardHeader>
-      <CardContent>
-        {isEditing ? (
+      <CardContent className="space-y-4">
+        {additionalNotes.length > 0 ? (
+          additionalNotes.map((note, idx) => (
+            <div key={idx} className="border-b border-dashed pb-2">
+              <p className="text-sm whitespace-pre-wrap break-words">{note}</p>
+              <p className="text-xs text-gray-500">
+                {initialTimestamps[idx]
+                  ? new Date(initialTimestamps[idx]).toLocaleString()
+                  : "No timestamp"}
+              </p>
+            </div>
+          ))
+        ) : (
+          <p className="text-gray-500 text-sm">No notes yet.</p>
+        )}
+
+        {isEditing && (
           <Textarea
             className="w-full border border-gray-200 rounded-md p-2 text-sm"
-            rows={4}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Enter additional notes here..."
+            rows={3}
+            value={newNote}
+            onChange={(e) => setNewNote(e.target.value)}
+            placeholder="Enter a new note..."
           />
-        ) : (
-          <div>
-            <p className="text-sm font-medium text-gray-500 mb-1">Notes</p>
-            <p className="text-sm">
-              {notes || <span className="text-gray-400">N/A</span>}
-            </p>
-          </div>
         )}
-        <p className="text-xs text-gray-500 mt-4">
-          Last Modified: {formatDate(lastModified)}
-        </p>
       </CardContent>
     </Card>
   );

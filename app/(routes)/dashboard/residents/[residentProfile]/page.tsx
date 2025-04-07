@@ -91,7 +91,7 @@ export default function ResidentDashboard() {
   };
 
   const [activeTab, setActiveTab] = useState<TabValue>(
-    isValidTab(tabParam) ? tabParam : "overview",
+    isValidTab(tabParam) ? tabParam : "overview"
   );
 
   const [modals, setModals] = useState({
@@ -223,22 +223,38 @@ export default function ResidentDashboard() {
     }
   };
 
-  const handleSaveAdditionalNotes = async (newNotes: string) => {
+  const handleSaveAdditionalNotes = async (newNote: string) => {
     if (!resident) return;
-
+  
     try {
-      await updateResident(resident.id, {
-        ...resident,
-        additional_notes: newNotes,
-        additional_notes_timestamp: new Date().toISOString(),
-      });
+      // Generate local ISO string (e.g., "2025-04-07T16:24:00.000+08:00")
+      const getLocalISOString = () => {
+        const now = new Date();
+        const tzOffsetMs = now.getTimezoneOffset() * 60000;
+        const localTime = new Date(now.getTime() - tzOffsetMs);
+        return localTime.toISOString();
+      };
+  
+      const updateData = {
+        additional_notes: [newNote], // Only the new note
+        additional_notes_timestamp: [getLocalISOString()], // Local time
+      };
+  
+      await updateResident(resident.id, updateData);
+  
       queryClient.invalidateQueries({
         queryKey: ["resident", residentProfile],
       });
-    } catch (error) {
-      console.error("Error updating additional notes:", error);
+    } catch (error: any) {
+      const errorMsg =
+        error?.message ||
+        (typeof error === "string"
+          ? error
+          : JSON.stringify(error, Object.getOwnPropertyNames(error)));
+      console.error("❌ Error updating additional notes:", errorMsg);
     }
   };
+  
 
   const handleCreateCarePlan = async () => {
     if (!residentProfile) return;
@@ -341,8 +357,14 @@ export default function ResidentDashboard() {
               admissionDate={resident.admission_date}
             />
             <ResidentDetailsNotesCard
-              additionalNotes={resident.additional_notes || "None"}
-              initialLastSaved={resident.additional_notes_timestamp}
+              additionalNotes={Array.isArray(resident.additional_notes) ? resident.additional_notes : []}
+              initialTimestamps={
+                Array.isArray(resident.additional_notes_timestamp)
+                  ? resident.additional_notes_timestamp.map((ts) =>
+                      typeof ts === "string" ? ts : new Date(ts).toISOString()
+                    )
+                  : []
+              }
               onSaveNotes={handleSaveAdditionalNotes}
             />
           </div>
@@ -506,10 +528,10 @@ export default function ResidentDashboard() {
                       (old: CarePlanRecord[] | undefined) => {
                         if (!old) return [updatedPlan];
                         const updated = old.map((cp) =>
-                          cp.id === updatedPlan.id ? updatedPlan : cp,
+                          cp.id === updatedPlan.id ? updatedPlan : cp
                         );
                         return updated.length > 0 ? updated : [updatedPlan];
-                      },
+                      }
                     );
                   }}
                 />

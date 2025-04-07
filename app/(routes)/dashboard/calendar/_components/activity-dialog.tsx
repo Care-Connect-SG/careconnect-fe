@@ -41,10 +41,8 @@ const formSchema = z.object({
   location: z.string().min(1, "Location is required"),
   category: z.string().min(1, "Category is required"),
   reminder_minutes: z
-    .union([
-      z.literal("none").transform(() => undefined),
-      z.string().transform((val) => parseInt(val)),
-    ])
+    .string()
+    .transform((val) => parseInt(val))
     .optional(),
 });
 
@@ -131,7 +129,7 @@ export default function ActivityDialog({
           selectedEndDate || new Date(selectedDate.getTime() + 30 * 60000),
         location: "",
         category: "",
-        reminder_minutes: undefined,
+        reminder_minutes: 5,
       });
     }
   }, [activity, selectedDate, selectedEndDate, form]);
@@ -339,7 +337,7 @@ export default function ActivityDialog({
                       }
 
                       try {
-                        await onDelete(activity.id);
+                        onDelete(activity.id);
                         toast({
                           title: "Success",
                           description: "Activity deleted successfully",

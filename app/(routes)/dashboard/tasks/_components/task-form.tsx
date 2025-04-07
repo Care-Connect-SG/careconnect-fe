@@ -94,10 +94,8 @@ const taskSchema = z
       .optional(),
     end_recurring_date: z.date().nullable().optional(),
     remind_prior: z
-      .union([
-        z.literal("none").transform(() => undefined),
-        z.string().transform((val) => parseInt(val)),
-      ])
+      .string()
+      .transform((val) => parseInt(val))
       .optional(),
     is_ai_generated: z.boolean().default(false),
     assigned_to: z.string().nonempty("Assignee is required"),
@@ -1112,16 +1110,8 @@ export default function TaskForm({
                         <FormItem>
                           <Label>Remind Prior (minutes)</Label>
                           <Select
-                            onValueChange={(value) => {
-                              field.onChange(
-                                value === "none" ? undefined : parseInt(value),
-                              );
-                            }}
-                            value={
-                              field.value === undefined
-                                ? "none"
-                                : String(field.value)
-                            }
+                            onValueChange={field.onChange}
+                            value={field.value?.toString() || "5"}
                           >
                             <FormControl>
                               <SelectTrigger

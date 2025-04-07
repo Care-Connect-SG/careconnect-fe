@@ -17,7 +17,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -25,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Activity, ActivityCreate } from "@/types/activity";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -104,10 +104,10 @@ export default function ActivityDialog({
   useEffect(() => {
     if (activity) {
       const startDate = new Date(
-        activity.start_time + (activity.start_time.endsWith("Z") ? "" : "Z")
+        activity.start_time + (activity.start_time.endsWith("Z") ? "" : "Z"),
       );
       const endDate = new Date(
-        activity.end_time + (activity.end_time.endsWith("Z") ? "" : "Z")
+        activity.end_time + (activity.end_time.endsWith("Z") ? "" : "Z"),
       );
 
       form.reset({

@@ -91,7 +91,7 @@ export default function ResidentDashboard() {
   };
 
   const [activeTab, setActiveTab] = useState<TabValue>(
-    isValidTab(tabParam) ? tabParam : "overview"
+    isValidTab(tabParam) ? tabParam : "overview",
   );
 
   const [modals, setModals] = useState({
@@ -506,10 +506,10 @@ export default function ResidentDashboard() {
                       (old: CarePlanRecord[] | undefined) => {
                         if (!old) return [updatedPlan];
                         const updated = old.map((cp) =>
-                          cp.id === updatedPlan.id ? updatedPlan : cp
+                          cp.id === updatedPlan.id ? updatedPlan : cp,
                         );
                         return updated.length > 0 ? updated : [updatedPlan];
-                      }
+                      },
                     );
                   }}
                 />

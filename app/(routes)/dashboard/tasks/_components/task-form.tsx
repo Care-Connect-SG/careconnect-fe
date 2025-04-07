@@ -117,7 +117,7 @@ const taskSchema = z
     {
       message: "Due date must be before end recurring date",
       path: ["end_recurring_date"],
-    }
+    },
   );
 
 export type TaskForm = z.infer<typeof taskSchema>;
@@ -372,7 +372,7 @@ export default function TaskForm({
         title: "Validation Error",
         description: errorMessages.join(", "),
       });
-    }
+    },
   );
 
   const handleAISuggestion = async () => {
@@ -402,7 +402,7 @@ export default function TaskForm({
 
       const suggestion = await getAITaskSuggestion(
         residentId,
-        currentFormValues
+        currentFormValues,
       );
 
       const newPrefilledFields: Record<string, string> = {};
@@ -501,7 +501,7 @@ export default function TaskForm({
                                 className={cn(
                                   fieldState.invalid
                                     ? "border-destructive focus-visible:ring-destructive"
-                                    : ""
+                                    : "",
                                 )}
                               >
                                 <SelectValue placeholder="Select a resident" />
@@ -542,7 +542,7 @@ export default function TaskForm({
                                 className={cn(
                                   fieldState.invalid
                                     ? "border-destructive focus-visible:ring-destructive"
-                                    : ""
+                                    : "",
                                 )}
                               >
                                 <SelectValue placeholder="Select a nurse" />
@@ -655,7 +655,7 @@ export default function TaskForm({
                                         : "",
                                       prefilledFields.task_title
                                         ? "border-green-500 bg-green-50"
-                                        : ""
+                                        : "",
                                     )}
                                   />
                                 </div>
@@ -695,7 +695,7 @@ export default function TaskForm({
                                         : "",
                                       prefilledFields.task_details
                                         ? "border-green-500 bg-green-50"
-                                        : ""
+                                        : "",
                                     )}
                                   />
                                 </div>
@@ -737,7 +737,7 @@ export default function TaskForm({
                                             : "",
                                           prefilledFields.priority
                                             ? "border-green-500 bg-green-50"
-                                            : ""
+                                            : "",
                                         )}
                                       >
                                         <SelectValue placeholder="Select priority" />
@@ -785,7 +785,7 @@ export default function TaskForm({
                                             : "",
                                           prefilledFields.category
                                             ? "border-green-500 bg-green-50"
-                                            : ""
+                                            : "",
                                         )}
                                       >
                                         <SelectValue placeholder="Select category" />
@@ -842,7 +842,7 @@ export default function TaskForm({
                                     className={cn(
                                       fieldState.invalid
                                         ? "border-destructive focus-visible:ring-destructive"
-                                        : ""
+                                        : "",
                                     )}
                                   >
                                     <SelectValue placeholder="Select a resident" />
@@ -883,7 +883,7 @@ export default function TaskForm({
                                     className={cn(
                                       fieldState.invalid
                                         ? "border-destructive focus-visible:ring-destructive"
-                                        : ""
+                                        : "",
                                     )}
                                   >
                                     <SelectValue placeholder="Select a nurse" />
@@ -923,7 +923,7 @@ export default function TaskForm({
                                       "rounded-md relative",
                                       prefilledFields.start_date
                                         ? "border border-green-500 bg-green-50"
-                                        : ""
+                                        : "",
                                     )}
                                   >
                                     <DateTimePicker
@@ -933,10 +933,10 @@ export default function TaskForm({
                                           const newDate = new Date(date);
                                           if (field.value) {
                                             newDate.setHours(
-                                              field.value.getHours()
+                                              field.value.getHours(),
                                             );
                                             newDate.setMinutes(
-                                              field.value.getMinutes()
+                                              field.value.getMinutes(),
                                             );
                                           }
                                           field.onChange(newDate);
@@ -969,7 +969,7 @@ export default function TaskForm({
                                       "rounded-md relative",
                                       prefilledFields.due_date
                                         ? "border border-green-500 bg-green-50"
-                                        : ""
+                                        : "",
                                     )}
                                   >
                                     <DateTimePicker
@@ -979,10 +979,10 @@ export default function TaskForm({
                                           const newDate = new Date(date);
                                           if (field.value) {
                                             newDate.setHours(
-                                              field.value.getHours()
+                                              field.value.getHours(),
                                             );
                                             newDate.setMinutes(
-                                              field.value.getMinutes()
+                                              field.value.getMinutes(),
                                             );
                                           }
                                           field.onChange(newDate);
@@ -1050,7 +1050,7 @@ export default function TaskForm({
                                       "w-full pl-3 text-left font-normal",
                                       !field.value && "text-muted-foreground",
                                       fieldState.invalid &&
-                                        "border-destructive focus-visible:ring-destructive"
+                                        "border-destructive focus-visible:ring-destructive",
                                     )}
                                     disabled={!form.watch("recurring")}
                                   >
@@ -1082,7 +1082,7 @@ export default function TaskForm({
                                       date.getDate(),
                                       8,
                                       0,
-                                      0
+                                      0,
                                     );
 
                                     field.onChange(selectedDate);
@@ -1114,7 +1114,7 @@ export default function TaskForm({
                           <Select
                             onValueChange={(value) => {
                               field.onChange(
-                                value === "none" ? undefined : parseInt(value)
+                                value === "none" ? undefined : parseInt(value),
                               );
                             }}
                             value={

@@ -142,7 +142,7 @@ export const getResidentById = async (
 
 export const updateResident = async (
   residentId: string,
-  updateData: any
+  updateData: any,
 ): Promise<ResidentRecord> => {
   try {
     const response = await fetchWithAuth(
@@ -151,7 +151,7 @@ export const updateResident = async (
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updateData),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -166,10 +166,6 @@ export const updateResident = async (
     throw error;
   }
 };
-
-
-
-
 
 export const updateResidentNurse = async (
   residentId: string,

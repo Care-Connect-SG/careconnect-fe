@@ -77,7 +77,6 @@ export async function createActivity(
       end_time: data.end_time
         ? new Date(data.end_time).toISOString().split(".")[0]
         : undefined,
-      // Handle the reminder_minutes field
       reminder_minutes:
         data.reminder_minutes === undefined ? null : data.reminder_minutes,
     };
@@ -115,7 +114,6 @@ export async function updateActivity(
       end_time: data.end_time
         ? new Date(data.end_time).toISOString().split(".")[0]
         : undefined,
-      // Handle the reminder_minutes field
       reminder_minutes:
         data.reminder_minutes === undefined ? null : data.reminder_minutes,
     };

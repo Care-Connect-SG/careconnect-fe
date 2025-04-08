@@ -91,7 +91,7 @@ export default function ResidentDashboard() {
   };
 
   const [activeTab, setActiveTab] = useState<TabValue>(
-    isValidTab(tabParam) ? tabParam : "overview"
+    isValidTab(tabParam) ? tabParam : "overview",
   );
 
   const [modals, setModals] = useState({
@@ -225,36 +225,128 @@ export default function ResidentDashboard() {
 
   const handleSaveAdditionalNotes = async (newNote: string) => {
     if (!resident) return;
-  
+
     try {
-      // Generate local ISO string (e.g., "2025-04-07T16:24:00.000+08:00")
-      const getLocalISOString = () => {
-        const now = new Date();
-        const tzOffsetMs = now.getTimezoneOffset() * 60000;
-        const localTime = new Date(now.getTime() - tzOffsetMs);
-        return localTime.toISOString();
-      };
-  
+      const existingNotes = Array.isArray(resident.additional_notes)
+        ? [...resident.additional_notes]
+        : [];
+      const existingTimestamps = Array.isArray(
+        resident.additional_notes_timestamp,
+      )
+        ? [...resident.additional_notes_timestamp]
+        : [];
+
+      const updatedNotes = [...existingNotes, newNote];
+      const updatedTimestamps = [
+        ...existingTimestamps,
+        new Date().toISOString(),
+      ];
+
       const updateData = {
-        additional_notes: [newNote], // Only the new note
-        additional_notes_timestamp: [getLocalISOString()], // Local time
+        additional_notes: updatedNotes,
+        additional_notes_timestamp: updatedTimestamps,
       };
-  
+
       await updateResident(resident.id, updateData);
-  
+
       queryClient.invalidateQueries({
         queryKey: ["resident", residentProfile],
       });
+
+      toast({
+        variant: "default",
+        title: "Note added",
+        description: "Note has been added successfully",
+      });
     } catch (error: any) {
-      const errorMsg =
-        error?.message ||
-        (typeof error === "string"
-          ? error
-          : JSON.stringify(error, Object.getOwnPropertyNames(error)));
-      console.error("❌ Error updating additional notes:", errorMsg);
+      console.error("Error adding note:", error);
+      toast({
+        variant: "destructive",
+        title: "Error adding note",
+        description: error.details || "Failed to add note",
+      });
     }
   };
-  
+  const handleUpdateNote = async (index: number, updatedNote: string) => {
+    if (!resident) return;
+
+    try {
+      const updatedNotes = Array.isArray(resident.additional_notes)
+        ? [...resident.additional_notes]
+        : [];
+      const updatedTimestamps = Array.isArray(
+        resident.additional_notes_timestamp,
+      )
+        ? [...resident.additional_notes_timestamp]
+        : [];
+
+      if (index >= 0 && index < updatedNotes.length) {
+        updatedNotes[index] = updatedNote;
+        updatedTimestamps[index] = new Date().toISOString();
+      } else {
+        throw new Error("Invalid note index");
+      }
+
+      await updateResident(resident.id, {
+        additional_notes: updatedNotes,
+        additional_notes_timestamp: updatedTimestamps,
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["resident", residentProfile],
+      });
+
+      toast({
+        variant: "default",
+        title: "Note updated",
+        description: "Note has been updated successfully",
+      });
+    } catch (error: any) {
+      console.error("Error updating note:", error);
+      toast({
+        variant: "destructive",
+        title: "Error updating note",
+        description: error.details || "Failed to update note",
+      });
+    }
+  };
+
+  const handleDeleteNote = async (index: number) => {
+    if (!resident) return;
+
+    try {
+      const updatedNotes = Array.isArray(resident.additional_notes)
+        ? resident.additional_notes.filter((_, idx) => idx !== index)
+        : [];
+      const updatedTimestamps = Array.isArray(
+        resident.additional_notes_timestamp,
+      )
+        ? resident.additional_notes_timestamp.filter((_, idx) => idx !== index)
+        : [];
+
+      await updateResident(resident.id, {
+        additional_notes: updatedNotes,
+        additional_notes_timestamp: updatedTimestamps,
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["resident", residentProfile],
+      });
+
+      toast({
+        variant: "default",
+        title: "Note deleted",
+        description: "Note has been deleted successfully",
+      });
+    } catch (error: any) {
+      console.error("Error deleting note:", error);
+      toast({
+        variant: "destructive",
+        title: "Error deleting note",
+        description: error.details || "Failed to delete note",
+      });
+    }
+  };
 
   const handleCreateCarePlan = async () => {
     if (!residentProfile) return;
@@ -306,7 +398,7 @@ export default function ResidentDashboard() {
 
   if (isResidentLoading) {
     return (
-      <div className="h-screen justify-center items-center flex">
+      <div className="h-[90vh] justify-center items-center flex">
         <Spinner />
       </div>
     );
@@ -357,15 +449,21 @@ export default function ResidentDashboard() {
               admissionDate={resident.admission_date}
             />
             <ResidentDetailsNotesCard
-              additionalNotes={Array.isArray(resident.additional_notes) ? resident.additional_notes : []}
+              additionalNotes={
+                Array.isArray(resident.additional_notes)
+                  ? resident.additional_notes
+                  : []
+              }
               initialTimestamps={
                 Array.isArray(resident.additional_notes_timestamp)
                   ? resident.additional_notes_timestamp.map((ts) =>
-                      typeof ts === "string" ? ts : new Date(ts).toISOString()
+                      typeof ts === "string" ? ts : new Date(ts).toISOString(),
                     )
                   : []
               }
               onSaveNotes={handleSaveAdditionalNotes}
+              onUpdateNote={handleUpdateNote}
+              onDeleteNote={handleDeleteNote}
             />
           </div>
         </TabsContent>
@@ -404,7 +502,7 @@ export default function ResidentDashboard() {
 
         <TabsContent value="medication">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="p-6 border rounded-lg bg-white">
+            <div className="p-6 border rounded-lg bg-white max-h-[80vh]">
               <div className="flex justify-between items-center">
                 <h2 className="text-lg font-semibold">Medication List</h2>
                 <Button onClick={() => openModal("createMedication")}>
@@ -434,7 +532,7 @@ export default function ResidentDashboard() {
               )}
             </div>
 
-            <div className="border rounded-lg bg-white flex flex-col h-[80vh]">
+            <div className="border rounded-lg bg-white flex flex-col max-h-[80vh]">
               <div className="top-0 p-6  z-10 flex justify-between items-center">
                 <h2 className="text-lg font-semibold">Medication Log</h2>
 
@@ -528,10 +626,10 @@ export default function ResidentDashboard() {
                       (old: CarePlanRecord[] | undefined) => {
                         if (!old) return [updatedPlan];
                         const updated = old.map((cp) =>
-                          cp.id === updatedPlan.id ? updatedPlan : cp
+                          cp.id === updatedPlan.id ? updatedPlan : cp,
                         );
                         return updated.length > 0 ? updated : [updatedPlan];
-                      }
+                      },
                     );
                   }}
                 />

@@ -52,7 +52,6 @@ export default function PersonSelector({ user }: PersonSelectorProps) {
   >([]);
   const [caregiverOptions, setCaregiverOptions] = useState<CaregiverTag[]>([]);
 
-  const [primaryResidentSearch, setPrimaryResidentSearch] = useState("");
   const [involvedResidentSearch, setInvolvedResidentSearch] = useState("");
   const [caregiverSearch, setCaregiverSearch] = useState("");
 
@@ -66,11 +65,6 @@ export default function PersonSelector({ user }: PersonSelectorProps) {
     const results = await getCaregiverTags(search);
     setCaregiverOptions(results);
   }, 300);
-
-  const handlePrimaryResidentSearch = (search: string) => {
-    setPrimaryResidentSearch(search);
-    debouncedFetchResidents(search);
-  };
 
   const handleInvolvedResidentSearch = (search: string) => {
     setInvolvedResidentSearch(search);

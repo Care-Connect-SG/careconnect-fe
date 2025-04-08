@@ -15,11 +15,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { DateTimePicker } from "@/components/ui/datetime-picker";
-import { parseStringToDateTime } from "@/components/ui/datetime-picker";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -59,7 +57,6 @@ import {
   Loader2,
   Plus,
   Sparkles,
-  X,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -472,7 +469,7 @@ export default function TaskForm({
             </Button>
           )}
         </DialogTrigger>
-        <DialogContent className="min-h-fit max-h-[90vh] flex flex-col p-0 max-w-5xl w-full">
+        <DialogContent className="max-w-5xl p-0">
           <DialogHeader className="px-6 pt-6">
             <div className="flex items-center justify-between">
               <DialogTitle>
@@ -635,7 +632,7 @@ export default function TaskForm({
                   <div
                     className={`${
                       !task ? "w-2/3" : "w-full"
-                    } p-6 overflow-y-auto space-y-4`}
+                    } p-6 overflow-y-auto space-y-4 max-h-[48vh]`}
                   >
                     <FormField
                       control={form.control}

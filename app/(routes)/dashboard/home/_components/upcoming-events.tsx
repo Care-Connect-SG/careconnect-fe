@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Activity } from "@/types/activity";
 import { format } from "date-fns";
-import { Clock, MapPin, MoreHorizontal, Users } from "lucide-react";
+import { Clock, MapPin, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 

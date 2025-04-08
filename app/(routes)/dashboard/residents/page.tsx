@@ -42,11 +42,7 @@ export default function AllResidentsPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [debouncedSearchUpdate, setDebouncedSearchUpdate] = useState(false);
 
-  const {
-    data: totalCount = 0,
-    isLoading: isCountLoading,
-    isError: isCountError,
-  } = useQuery({
+  const { data: totalCount = 0 } = useQuery({
     queryKey: ["residentsCount", searchParam],
     queryFn: () => getResidentsCount(searchParam),
     staleTime: 30000,

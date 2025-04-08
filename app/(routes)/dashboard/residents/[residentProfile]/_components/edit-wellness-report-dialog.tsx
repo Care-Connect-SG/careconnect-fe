@@ -133,65 +133,70 @@ const EditWellnessReportDialog: React.FC<EditWellnessReportDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Edit Wellness Report</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="date">Date</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !selectedDate && "text-muted-foreground",
-                  )}
-                  type="button"
-                >
-                  {selectedDate ? (
-                    format(selectedDate, "MMMM d, yyyy")
-                  ) : (
-                    <span>Select date</span>
-                  )}
-                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={handleDateChange}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          {[
-            ["summary", "Summary"],
-            ["medical_summary", "Medical Summary"],
-            ["medication_update", "Medication Update"],
-            ["nutrition_hydration", "Nutrition & Hydration"],
-            ["mobility_physical", "Mobility & Physical"],
-            ["cognitive_emotional", "Cognitive & Emotional"],
-            ["social_engagement", "Social Engagement"],
-          ].map(([field, label]) => (
-            <div key={field} className="space-y-1.5">
-              <Label htmlFor={field}>{label}</Label>
-              <Textarea
-                id={field}
-                value={(formData as any)[field] || ""}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, [field]: e.target.value }))
-                }
-                rows={3}
-              />
+          <div className="max-h-[60vh] overflow-y-auto px-1 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="date">Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !selectedDate && "text-muted-foreground",
+                    )}
+                    type="button"
+                  >
+                    {selectedDate ? (
+                      format(selectedDate, "MMMM d, yyyy")
+                    ) : (
+                      <span>Select date</span>
+                    )}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={handleDateChange}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
-          ))}
 
+            {[
+              ["summary", "Summary"],
+              ["medical_summary", "Medical Summary"],
+              ["medication_update", "Medication Update"],
+              ["nutrition_hydration", "Nutrition & Hydration"],
+              ["mobility_physical", "Mobility & Physical"],
+              ["cognitive_emotional", "Cognitive & Emotional"],
+              ["social_engagement", "Social Engagement"],
+            ].map(([field, label]) => (
+              <div key={field} className="space-y-1.5">
+                <Label htmlFor={field}>{label}</Label>
+                <Textarea
+                  id={field}
+                  value={(formData as any)[field] || ""}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      [field]: e.target.value,
+                    }))
+                  }
+                  className="h-[100px]"
+                  rows={3}
+                />
+              </div>
+            ))}
+          </div>
           <DialogFooter>
             <div className="flex justify-end space-x-4">
               <Button type="button" variant="secondary" onClick={onClose}>

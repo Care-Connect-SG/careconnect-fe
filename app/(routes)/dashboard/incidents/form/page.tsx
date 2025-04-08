@@ -3,7 +3,7 @@
 import { getForms } from "@/app/api/form";
 import { Spinner } from "@/components/ui/spinner";
 import { FormResponse } from "@/types/form";
-import { ClipboardList, Loader2 } from "lucide-react";
+import { ClipboardList } from "lucide-react";
 import { useEffect, useState } from "react";
 import FormCardPublished from "./_components/form-card-published";
 

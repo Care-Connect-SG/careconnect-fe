@@ -21,14 +21,7 @@ import {
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { addMonths, subMonths } from "date-fns";
-import {
-  Calendar as CalendarIcon,
-  ChevronLeft,
-  ChevronRight,
-  Filter,
-  Plus,
-  Search,
-} from "lucide-react";
+import { Calendar as CalendarIcon, Filter, Plus, Search } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import ActivityCalendar from "./_components/activity-calendar";
 

@@ -248,7 +248,7 @@ const CreateMedicalHistoryDialog: React.FC<{
       const currentSchema = currentTemplate.schema;
       const validatedData = currentSchema.parse(data.formData);
 
-      const createdRecord = await createMedicalHistory(
+      await createMedicalHistory(
         data.templateType,
         residentProfile,
         validatedData,
@@ -275,7 +275,7 @@ const CreateMedicalHistoryDialog: React.FC<{
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md w-full p-6 max-h-[80vh] overflow-y-auto">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Add Medical Record</DialogTitle>
           <DialogDescription>

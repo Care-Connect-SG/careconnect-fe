@@ -9,7 +9,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { format, isValid, parseISO } from "date-fns";
+import { format, parseISO } from "date-fns";
 import {
   CalendarIcon,
   CheckIcon,

@@ -6,7 +6,6 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -192,196 +191,200 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
             className="absolute right-4 top-4"
           ></DialogClose>
         </DialogHeader>
+
         <ExtractIDCard onExtract={handleIDCardExtract} />
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="fullName">Full Name</Label>
-              <Input
-                id="fullName"
-                type="text"
-                value={fullName}
-                onChange={(e) => {
-                  setFullName(e.target.value);
-                  if (filledByExtractor.fullName) {
-                    setFilledByExtractor({
-                      ...filledByExtractor,
-                      fullName: false,
-                    });
-                  }
-                }}
-                required
-                className={getInputClassName("fullName")}
-              />
-            </div>
-            <div>
-              <Label htmlFor="gender">Gender</Label>
-              <Select
-                value={gender}
-                onValueChange={(value) => {
-                  setGender(value);
-                  if (filledByExtractor.gender) {
-                    setFilledByExtractor({
-                      ...filledByExtractor,
-                      gender: false,
-                    });
-                  }
-                }}
-              >
-                <SelectTrigger
-                  id="gender"
-                  className={getSelectClassName("gender")}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="max-h-[60vh] overflow-y-auto px-1 space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="fullName">Full Name</Label>
+                <Input
+                  id="fullName"
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => {
+                    setFullName(e.target.value);
+                    if (filledByExtractor.fullName) {
+                      setFilledByExtractor({
+                        ...filledByExtractor,
+                        fullName: false,
+                      });
+                    }
+                  }}
+                  required
+                  className={getInputClassName("fullName")}
+                />
+              </div>
+              <div>
+                <Label htmlFor="gender">Gender</Label>
+                <Select
+                  value={gender}
+                  onValueChange={(value) => {
+                    setGender(value);
+                    if (filledByExtractor.gender) {
+                      setFilledByExtractor({
+                        ...filledByExtractor,
+                        gender: false,
+                      });
+                    }
+                  }}
                 >
-                  <SelectValue placeholder="Select gender" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Female">Female</SelectItem>
-                  <SelectItem value="Male">Male</SelectItem>
-                </SelectContent>
-              </Select>
+                  <SelectTrigger
+                    id="gender"
+                    className={getSelectClassName("gender")}
+                  >
+                    <SelectValue placeholder="Select gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Female">Female</SelectItem>
+                    <SelectItem value="Male">Male</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="dateOfBirth">Date of Birth</Label>
-              <Input
-                id="dateOfBirth"
-                type="date"
-                value={dateOfBirth}
-                onChange={(e) => {
-                  setDateOfBirth(e.target.value);
-                  if (filledByExtractor.dateOfBirth) {
-                    setFilledByExtractor({
-                      ...filledByExtractor,
-                      dateOfBirth: false,
-                    });
-                  }
-                }}
-                required
-                className={getInputClassName("dateOfBirth")}
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                <Input
+                  id="dateOfBirth"
+                  type="date"
+                  value={dateOfBirth}
+                  onChange={(e) => {
+                    setDateOfBirth(e.target.value);
+                    if (filledByExtractor.dateOfBirth) {
+                      setFilledByExtractor({
+                        ...filledByExtractor,
+                        dateOfBirth: false,
+                      });
+                    }
+                  }}
+                  required
+                  className={getInputClassName("dateOfBirth")}
+                />
+              </div>
+              <div>
+                <Label htmlFor="nricNumber">NRIC Number</Label>
+                <Input
+                  id="nricNumber"
+                  type="text"
+                  value={nricNumber}
+                  onChange={(e) => {
+                    setNricNumber(e.target.value);
+                    if (filledByExtractor.nricNumber) {
+                      setFilledByExtractor({
+                        ...filledByExtractor,
+                        nricNumber: false,
+                      });
+                    }
+                  }}
+                  required
+                  className={getInputClassName("nricNumber")}
+                />
+              </div>
             </div>
-            <div>
-              <Label htmlFor="nricNumber">NRIC Number</Label>
-              <Input
-                id="nricNumber"
-                type="text"
-                value={nricNumber}
-                onChange={(e) => {
-                  setNricNumber(e.target.value);
-                  if (filledByExtractor.nricNumber) {
-                    setFilledByExtractor({
-                      ...filledByExtractor,
-                      nricNumber: false,
-                    });
-                  }
-                }}
-                required
-                className={getInputClassName("nricNumber")}
-              />
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="emergencyContactName">
+                  Emergency Contact Name
+                </Label>
+                <Input
+                  id="emergencyContactName"
+                  type="text"
+                  value={emergencyContactName}
+                  onChange={(e) => setEmergencyContactName(e.target.value)}
+                  required
+                  className="mt-1 block w-full"
+                />
+              </div>
+              <div>
+                <Label htmlFor="emergencyContactNumber">
+                  Emergency Contact Number
+                </Label>
+                <Input
+                  id="emergencyContactNumber"
+                  type="text"
+                  value={emergencyContactNumber}
+                  onChange={(e) => setEmergencyContactNumber(e.target.value)}
+                  required
+                  className="mt-1 block w-full"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="relationship">Relationship</Label>
+                <Select
+                  value={relationship}
+                  onValueChange={(value) => setRelationship(value)}
+                  required
+                >
+                  <SelectTrigger id="relationship" className="mt-1 w-full">
+                    <SelectValue placeholder="Select relationship" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Mother">Mother</SelectItem>
+                    <SelectItem value="Father">Father</SelectItem>
+                    <SelectItem value="Daughter">Daughter</SelectItem>
+                    <SelectItem value="Son">Son</SelectItem>
+                    <SelectItem value="Spouse">Spouse</SelectItem>
+                    <SelectItem value="Sibling">Sibling</SelectItem>
+                    <SelectItem value="Friend">Friend</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="roomNumber">Room Number</Label>
+                <Input
+                  id="roomNumber"
+                  type="text"
+                  value={roomNumber}
+                  onChange={(e) => setRoomNumber(e.target.value)}
+                  className="mt-1 block w-full"
+                />
+              </div>
+            </div>
+
             <div>
-              <Label htmlFor="emergencyContactName">
-                Emergency Contact Name
-              </Label>
-              <Input
-                id="emergencyContactName"
-                type="text"
-                value={emergencyContactName}
-                onChange={(e) => setEmergencyContactName(e.target.value)}
-                required
+              <Label htmlFor="additionalNotes">Additional Notes</Label>
+              <Textarea
+                id="additionalNotes"
+                value={additionalNotes}
+                onChange={(e) => setAdditionalNotes(e.target.value)}
                 className="mt-1 block w-full"
+                rows={3}
               />
             </div>
-            <div>
-              <Label htmlFor="emergencyContactNumber">
-                Emergency Contact Number
-              </Label>
-              <Input
-                id="emergencyContactNumber"
-                type="text"
-                value={emergencyContactNumber}
-                onChange={(e) => setEmergencyContactNumber(e.target.value)}
-                required
-                className="mt-1 block w-full"
-              />
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="relationship">Relationship</Label>
+              <Label htmlFor="primaryNurse">Primary Nurse</Label>
               <Select
-                value={relationship}
-                onValueChange={(value) => setRelationship(value)}
-                required
+                value={primaryNurse}
+                onValueChange={(value) => setPrimaryNurse(value)}
               >
-                <SelectTrigger id="relationship" className="mt-1 w-full">
-                  <SelectValue placeholder="Select relationship" />
+                <SelectTrigger id="primaryNurse" className="mt-1 w-full">
+                  <SelectValue placeholder="Select Nurse" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Mother">Mother</SelectItem>
-                  <SelectItem value="Father">Father</SelectItem>
-                  <SelectItem value="Daughter">Daughter</SelectItem>
-                  <SelectItem value="Son">Son</SelectItem>
-                  <SelectItem value="Spouse">Spouse</SelectItem>
-                  <SelectItem value="Sibling">Sibling</SelectItem>
-                  <SelectItem value="Friend">Friend</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
+                  {nurseOptions.map((nurse) => (
+                    <SelectItem key={nurse.id} value={nurse.name}>
+                      {nurse.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <Label htmlFor="roomNumber">Room Number</Label>
-              <Input
-                id="roomNumber"
-                type="text"
-                value={roomNumber}
-                onChange={(e) => setRoomNumber(e.target.value)}
-                className="mt-1 block w-full"
-              />
-            </div>
           </div>
-
-          <div>
-            <Label htmlFor="additionalNotes">Additional Notes</Label>
-            <Textarea
-              id="additionalNotes"
-              value={additionalNotes}
-              onChange={(e) => setAdditionalNotes(e.target.value)}
-              className="mt-1 block w-full"
-              rows={3}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="primaryNurse">Primary Nurse</Label>
-            <Select
-              value={primaryNurse}
-              onValueChange={(value) => setPrimaryNurse(value)}
-            >
-              <SelectTrigger id="primaryNurse" className="mt-1 w-full">
-                <SelectValue placeholder="Select Nurse" />
-              </SelectTrigger>
-              <SelectContent>
-                {nurseOptions.map((nurse) => (
-                  <SelectItem key={nurse.id} value={nurse.name}>
-                    {nurse.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <DialogFooter>
+          <div className="flex justify-end space-x-4">
             <Button variant="outline" type="button" onClick={onClose}>
               Cancel
             </Button>
             <Button type="submit">Save</Button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

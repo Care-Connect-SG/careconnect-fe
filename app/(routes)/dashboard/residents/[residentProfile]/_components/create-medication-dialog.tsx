@@ -18,6 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,9 @@ import { format } from "date-fns";
 import { CalendarIcon, QrCode, Scan, Undo } from "lucide-react";
 import React, { useState, useRef } from "react";
 import Webcam from "react-webcam";
+import { DayMedicationScheduler, WeekMedicationScheduler } from "./scheduler";
+import { z } from "zod";
+
 
 interface CreateMedicationProps {
   residentId: string;
@@ -40,6 +44,7 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
   onClose,
   onMedicationAdded,
 }) => {
+  
   const initialForm = {
     medication_name: "",
     dosage: "",
@@ -150,48 +155,48 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
     }
   };
 
-  const validateForm = () => {
-    if (!form.medication_name.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Missing information",
-        description: "Medication name is required.",
-      });
-      return false;
-    }
+  // const validateForm = () => {
+  //   if (!form.medication_name.trim()) {
+  //     toast({
+  //       variant: "destructive",
+  //       title: "Missing information",
+  //       description: "Medication name is required.",
+  //     });
+  //     return false;
+  //   }
 
-    if (!form.dosage.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Missing information",
-        description: "Dosage is required.",
-      });
-      return false;
-    }
+  //   if (!form.dosage.trim()) {
+  //     toast({
+  //       variant: "destructive",
+  //       title: "Missing information",
+  //       description: "Dosage is required.",
+  //     });
+  //     return false;
+  //   }
 
-    if (!form.frequency.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Missing information",
-        description: "Frequency is required.",
-      });
-      return false;
-    }
+  //   if (!form.frequency.trim()) {
+  //     toast({
+  //       variant: "destructive",
+  //       title: "Missing information",
+  //       description: "Frequency is required.",
+  //     });
+  //     return false;
+  //   }
 
-    if (!form.start_date) {
-      toast({
-        variant: "destructive",
-        title: "Missing information",
-        description: "Start date is required.",
-      });
-      return false;
-    }
+  //   if (!form.start_date) {
+  //     toast({
+  //       variant: "destructive",
+  //       title: "Missing information",
+  //       description: "Start date is required.",
+  //     });
+  //     return false;
+  //   }
 
-    return true;
-  };
+  //   return true;
+  // };
 
   const handleSubmit = async () => {
-    if (!validateForm()) return;
+    // if (!validateForm()) return;
 
     setIsSubmitting(true);
     try {
@@ -299,16 +304,24 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="frequency">Frequency</Label>
-                  <Input
-                    id="frequency"
-                    name="frequency"
-                    value={form.frequency}
-                    onChange={handleChange}
-                    placeholder="e.g., Twice daily"
-                  />
+                  <Label htmlFor="frequency">Schedule</Label>
+                  <Select>
+                    <SelectTrigger className="">
+                      <SelectValue placeholder="Select a schedule" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="day">By Day</SelectItem>
+                        <SelectItem value="week">By Week</SelectItem>
+                        <SelectItem value="custom">As Needed</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
+
+              {/* <WeekMedicationScheduler /> */}
+              <DayMedicationScheduler />
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">

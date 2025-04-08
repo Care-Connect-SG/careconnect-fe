@@ -1,6 +1,6 @@
 "use client";
 
-import { getFormById } from "@/app/api/form";
+import { tryGetFormById } from "@/app/api/form";
 import {
   approveReport,
   getReportById,
@@ -55,7 +55,7 @@ export default function ViewReportPage() {
   const [reporter, setReporter] = useState<User | null>();
   const [resident, setResident] = useState<ResidentRecord>();
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
-  const [form, setForm] = useState<FormResponse>();
+  const [form, setForm] = useState<FormResponse | null>();
   const [user, setUser] = useState<User>();
   const [isSharing, setIsSharing] = useState(false);
   const [referenceReportValid, setReferenceReportValid] = useState(true);
@@ -204,11 +204,10 @@ export default function ViewReportPage() {
 
   const fetchForm = async (formId: string) => {
     try {
-      const data = await getFormById(formId!);
+      const data = await tryGetFormById(formId!);
       setForm(data);
     } catch (error) {
-      console.error("Failed to fetch form");
-      return null;
+      setForm(undefined); // explicitly set null to avoid undefined behavior
     }
   };
 

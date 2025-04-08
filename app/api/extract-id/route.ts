@@ -19,14 +19,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!process.env.AZURE_ENDPOINT || !process.env.AZURE_OCR_KEY) {
+    if (!process.env.AZURE_OCR_ENDPOINT || !process.env.AZURE_OCR_KEY) {
       return NextResponse.json(
         { message: "Missing Azure credentials" },
         { status: 500 },
       );
     }
     const client = new DocumentAnalysisClient(
-      process.env.AZURE_ENDPOINT,
+      process.env.AZURE_OCR_ENDPOINT,
       new AzureKeyCredential(process.env.AZURE_OCR_KEY),
     );
 

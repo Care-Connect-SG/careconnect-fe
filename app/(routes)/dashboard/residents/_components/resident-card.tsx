@@ -43,7 +43,7 @@ function ResidentCard({
       className="flex items-center justify-between p-4 bg-white shadow-sm rounded-lg border transition-all hover:bg-blue-50 gap-4 w-full"
       onClick={() => onClick && onClick(resident.id)}
     >
-      <div className="flex items-center w-64">
+      <div className="flex items-center w-60">
         <Avatar className="h-16 w-16 rounded-lg cursor-pointer flex-shrink-0">
           <AvatarImage src={resident.photograph!} alt={resident.full_name} />
           <AvatarFallback className="rounded-lg">
@@ -59,7 +59,7 @@ function ResidentCard({
       </div>
 
       <div className="flex items-center bg-transparent flex-1 justify-between px-6">
-        <div className="flex flex-col items-start w-20 space-y-2">
+        <div className="flex flex-col items-start w-24 space-y-2">
           <span className="text-xs text-gray-500">Age</span>
           <span className="font-medium text-gray-700">
             {new Date().getFullYear() -
@@ -67,21 +67,21 @@ function ResidentCard({
           </span>
         </div>
 
-        <div className="flex flex-col items-start w-20 space-y-2">
+        <div className="flex flex-col items-start w-24 space-y-2">
           <span className="text-xs text-gray-500">Room</span>
           <span className="font-medium text-gray-700">
             {resident.room_number}
           </span>
         </div>
 
-        <div className="flex flex-col items-start w-28 space-y-2">
+        <div className="flex flex-col items-start w-40 space-y-2">
           <span className="text-xs text-gray-500">Admission Date</span>
           <span className="font-medium text-gray-700">
             {resident.admission_date}
           </span>
         </div>
 
-        <div className="flex flex-col items-start w-32 space-y-2">
+        <div className="flex flex-col items-start w-36 space-y-2">
           <span className="text-xs text-gray-500">Gender</span>
           <div className="flex items-center">
             {resident.gender === "Female" ? (
@@ -95,7 +95,7 @@ function ResidentCard({
           </div>
         </div>
 
-        <div className="flex flex-col items-start w-48 space-y-2">
+        <div className="flex flex-col items-start w-40 space-y-2">
           <span className="text-xs text-gray-500">Contact</span>
           <div className="flex items-center">
             <Phone className="h-3 w-3 text-green-500 mr-2" />

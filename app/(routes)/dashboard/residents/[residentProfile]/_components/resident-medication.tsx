@@ -190,34 +190,40 @@ const ResidentMedication: React.FC<MedicationProps> = ({
               </div>
             )}
             <div className="mb-3">
-              <p className="text-sm font-semibold text-gray-500">
-                Schedule
-              </p>
+              <p className="text-sm font-semibold text-gray-500">Schedule</p>
               <p className="text-sm">
                 {medication.schedule_type === "day"
-                  ? (medication.repeat > 1 ? `Every ${medication.repeat} day(s)` : "Daily")
+                  ? medication.repeat > 1
+                    ? `Every ${medication.repeat} day(s)`
+                    : "Daily"
                   : medication.schedule_type === "week"
-                    ? (medication.repeat > 1 ? `Every ${medication.repeat} week(s)` : "Weekly") + (" - ") + (medication.days_of_week?.join(", ") || "N/A")
+                    ? (medication.repeat > 1
+                        ? `Every ${medication.repeat} week(s)`
+                        : "Weekly") +
+                      " - " +
+                      (medication.days_of_week?.join(", ") || "N/A")
                     : medication.schedule_type === "custom"
                       ? `Custom schedule`
                       : "N/A"}
               </p>
             </div>
-            {
-            medication.schedule_type !== "custom" &&
-            (
+            {medication.schedule_type !== "custom" && (
               <div className="mb-3">
-                <p className="text-sm font-semibold text-gray-500">
-                  Timings
-                </p>
+                <p className="text-sm font-semibold text-gray-500">Timings</p>
                 <p className="text-sm wrap">
-                  {medication.times_of_day?.map((time => time.hour + ":" + (time.minute < 10 ? "0" : "") + time.minute)).join(", ") || "N/A"}
+                  {medication.times_of_day
+                    ?.map(
+                      (time) =>
+                        time.hour +
+                        ":" +
+                        (time.minute < 10 ? "0" : "") +
+                        time.minute,
+                    )
+                    .join(", ") || "N/A"}
                 </p>
               </div>
-            )
-          }
+            )}
           </div>
-
 
           {medication.instructions && (
             <div className="mt-2 border-t border-gray-100 pt-3">

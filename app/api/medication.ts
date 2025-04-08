@@ -34,10 +34,11 @@ export const createMedication = async (
   medicationData: any,
 ) => {
   try {
-    console.log(medicationData
-      ? medicationData
-      : "No medication data provided for resident ID: " + residentId,
-    )
+    console.log(
+      medicationData
+        ? medicationData
+        : "No medication data provided for resident ID: " + residentId,
+    );
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/medications`,
       {

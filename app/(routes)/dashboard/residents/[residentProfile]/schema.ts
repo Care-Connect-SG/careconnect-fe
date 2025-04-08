@@ -13,7 +13,7 @@ export const medicationFormSchema = z.object({
   days_of_week: z.array(z.string()).optional(),
   times_of_day: z.array(TimeSchema).optional(),
   start_date: z.string().min(1, "Start date is required"),
-  end_date: z.string().optional(),
+  end_date: z.string().nullable().optional(),
   instructions: z.string().optional(),
 });
 

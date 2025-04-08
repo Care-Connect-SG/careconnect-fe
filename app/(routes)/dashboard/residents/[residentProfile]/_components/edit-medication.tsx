@@ -65,8 +65,8 @@ const EditMedication: React.FC<EditMedicationProps> = ({
       days_of_week: medication.days_of_week,
       times_of_day: medication.times_of_day,
       start_date: medication.start_date,
-      end_date: medication.end_date,
       instructions: "",
+      ...(medication.end_date !== "" && { end_date: medication.end_date })
     },
   });
 
@@ -185,11 +185,12 @@ const EditMedication: React.FC<EditMedicationProps> = ({
   };
 
   return (
-    <FormProvider {...methods}>
+    
       <Dialog open={isOpen} onOpenChange={onClose}>
+        <FormProvider {...methods}>
         <DialogContent className="max-w-lg w-full p-6 rounded-lg shadow-lg">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold text-gray-800">
+            <DialogTitle className="text-xl font-semibold text-gray-800" aria-describedby="edit-medication">
               Edit Medication
             </DialogTitle>
           </DialogHeader>
@@ -322,14 +323,16 @@ const EditMedication: React.FC<EditMedicationProps> = ({
             </div>
           </div>
 
-          <form onSubmit={handleSubmit(handleSubmitForm)} className="space-y-4">
-            <DialogFooter>
-              <Button type="submit">Save</Button>
-            </DialogFooter>
-          </form>
+
+          <DialogFooter>
+
+              <Button onClick={handleSubmit(handleSubmitForm)}>Save</Button>
+
+          </DialogFooter>
         </DialogContent>
+        </FormProvider>
       </Dialog>
-    </FormProvider>
+      
   );
 };
 

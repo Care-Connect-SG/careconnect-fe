@@ -1,7 +1,11 @@
 "use client";
 
 import { getFormById } from "@/app/api/form";
-import { approveReport, getReportById } from "@/app/api/report";
+import {
+  approveReport,
+  getReportById,
+  tryGetReportById,
+} from "@/app/api/report";
 import { getResidentById } from "@/app/api/resident";
 import { getCurrentUser, getUserById } from "@/app/api/user";
 import {
@@ -54,6 +58,7 @@ export default function ViewReportPage() {
   const [form, setForm] = useState<FormResponse>();
   const [user, setUser] = useState<User>();
   const [isSharing, setIsSharing] = useState(false);
+  const [referenceReportValid, setReferenceReportValid] = useState(true);
 
   const handleShareWithNextOfKin = async () => {
     if (!report || !form || !reporter || !resident?.emergency_contact_number) {
@@ -74,7 +79,7 @@ export default function ViewReportPage() {
           report={report}
           reporter={reporter}
           resident={resident}
-        />,
+        />
       ).toBlob();
 
       const formData = new FormData();
@@ -84,7 +89,7 @@ export default function ViewReportPage() {
         `${toTitleCase(resident.full_name)}'s ${form.title}.pdf`,
         {
           type: "application/pdf",
-        },
+        }
       );
 
       formData.append("media", pdfFile);
@@ -93,7 +98,7 @@ export default function ViewReportPage() {
       formData.append("jid", `${whatsappNumber}`);
       formData.append(
         "caption",
-        `🚨 URGENT: Incident Report for ${toTitleCase(resident.full_name)}`,
+        `🚨 URGENT: Incident Report for ${toTitleCase(resident.full_name)}`
       );
 
       const response = await fetch("/api/whatsapp/media", {
@@ -132,7 +137,7 @@ export default function ViewReportPage() {
         report={report}
         reporter={reporter}
         resident={resident}
-      />,
+      />
     ).toBlob();
 
     const url = URL.createObjectURL(blob);
@@ -178,13 +183,18 @@ export default function ViewReportPage() {
       const reporter = await getUserById(data.reporter.id);
       if (data.primary_resident?.id) {
         const resident: ResidentRecord = await getResidentById(
-          data.primary_resident.id,
+          data.primary_resident.id
         );
         setResident(resident);
       }
       setReport(data);
       setReporter(reporter);
       fetchForm(data.form_id);
+
+      if (data.reference_report_id) {
+        const ref = await tryGetReportById(data.reference_report_id);
+        setReferenceReportValid(!!ref);
+      }
     } catch {
       console.error("Report not found");
       router.replace("/404");
@@ -288,7 +298,7 @@ export default function ViewReportPage() {
                 variant="secondary"
                 onClick={() =>
                   router.replace(
-                    `/dashboard/incidents/resolve?formId=${report.form_id}&reportId=${reportId}`,
+                    `/dashboard/incidents/resolve?formId=${report.form_id}&reportId=${reportId}`
                   )
                 }
                 className="flex items-center gap-2"
@@ -323,8 +333,9 @@ export default function ViewReportPage() {
                     on{" "}
                     <span className="font-medium">
                       {new Date(
-                        report?.reviews![report?.reviews!.length - 1]
-                          .reviewed_at,
+                        report?.reviews![
+                          report?.reviews!.length - 1
+                        ].reviewed_at
                       ).toLocaleString()}
                     </span>
                   </p>
@@ -338,7 +349,7 @@ export default function ViewReportPage() {
                       variant="secondary"
                       onClick={() =>
                         router.replace(
-                          `/dashboard/incidents/resolve?formId=${report.form_id}&reportId=${reportId}`,
+                          `/dashboard/incidents/resolve?formId=${report.form_id}&reportId=${reportId}`
                         )
                       }
                     >
@@ -380,8 +391,9 @@ export default function ViewReportPage() {
                       on{" "}
                       <span className="font-medium">
                         {new Date(
-                          report?.reviews![report?.reviews!.length - 1]
-                            .reviewed_at,
+                          report?.reviews![
+                            report?.reviews!.length - 1
+                          ].reviewed_at
                         ).toLocaleString()}
                       </span>
                     </p>
@@ -399,8 +411,9 @@ export default function ViewReportPage() {
                       Resolved on{" "}
                       <span className="font-medium">
                         {new Date(
-                          report?.reviews![report?.reviews!.length - 1]
-                            .resolved_at!,
+                          report?.reviews![
+                            report?.reviews!.length - 1
+                          ].resolved_at!
                         ).toLocaleString()}
                       </span>
                     </p>
@@ -440,7 +453,7 @@ export default function ViewReportPage() {
             </div>
             <Badge
               className={`${getReportBadgeConfig(
-                report?.status!,
+                report?.status!
               )} px-3 py-1 text-sm font-medium`}
             >
               {report?.status}
@@ -577,15 +590,23 @@ export default function ViewReportPage() {
                   <h2 className="text-gray-600 font-semibold">
                     Reference Report
                   </h2>
-                  <Link
-                    href={`/dashboard/incidents/view?reportId=${report.reference_report_id}`}
-                    className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800"
-                  >
-                    <Info className="h-4 w-4" />
-                    <span className="hover:underline">
-                      View Reference Report
-                    </span>
-                  </Link>
+
+                  {referenceReportValid === false ? (
+                    <div className="inline-flex items-center gap-2 text-gray-400 cursor-not-allowed">
+                      <Info className="h-4 w-4" />
+                      <span>Reference Report Deleted</span>
+                    </div>
+                  ) : referenceReportValid === true ? (
+                    <Link
+                      href={`/dashboard/incidents/view?reportId=${report.reference_report_id}`}
+                      className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800"
+                    >
+                      <Info className="h-4 w-4" />
+                      <span className="hover:underline">
+                        View Reference Report
+                      </span>
+                    </Link>
+                  ) : null}
                 </div>
               )}
             </div>
@@ -605,7 +626,7 @@ export default function ViewReportPage() {
                     {
                       form?.json_content.find(
                         (element) =>
-                          element.element_id === section.form_element_id,
+                          element.element_id === section.form_element_id
                       )?.label
                     }
                   </h3>

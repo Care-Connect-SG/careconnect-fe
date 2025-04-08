@@ -29,6 +29,8 @@ import React, { useState, useRef } from "react";
 import Webcam from "react-webcam";
 import { DayMedicationScheduler, WeekMedicationScheduler } from "./scheduler";
 import { z } from "zod";
+import { FormProvider, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 
 interface CreateMedicationProps {
@@ -38,29 +40,52 @@ interface CreateMedicationProps {
   onMedicationAdded: () => void;
 }
 
+const TimeSchema = z.object({
+  hour: z.number(),
+  minute: z.number(),
+});
+
+const medicationFormSchema = z.object({
+  medication_name: z.string().min(1, "Medication name is required"),
+  dosage: z.string().min(1, "Dosage is required"),
+  schedule_type: z.enum(["day", "week", "custom"]),
+  repeat: z.number().optional().default(1),
+  days_of_week: z.array(z.string()).optional(),
+  times_of_day: z.array(TimeSchema).optional(),
+  start_date: z.string().min(1, "Start date is required"),
+  end_date: z.string().optional(),
+  instructions: z.string().optional(),
+});
+
+export type MedicationFormSchema = z.infer<typeof medicationFormSchema>;
+
 const CreateMedication: React.FC<CreateMedicationProps> = ({
   residentId,
   isOpen,
   onClose,
   onMedicationAdded,
 }) => {
-  
-  const initialForm = {
-    medication_name: "",
-    dosage: "",
-    frequency: "",
-    start_date: "",
-    end_date: "",
-    instructions: "",
-  };
 
   const { toast } = useToast();
-  const [form, setForm] = useState(initialForm);
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [isScanning, setIsScanning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const webcamRef = useRef<Webcam>(null);
+
+  const methods = useForm<MedicationFormSchema>({
+    resolver: zodResolver(medicationFormSchema),
+    defaultValues: {
+      medication_name: "",
+      dosage: "",
+      schedule_type: "day",
+      start_date: "",
+      instructions: "",
+    },
+  });
+
+  const { register, handleSubmit, reset, formState: { errors } } = methods;
+
 
   const handleScan = async () => {
     const imageSrc = webcamRef.current?.getScreenshot();
@@ -88,13 +113,9 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
 
         const medicationData = await fetchMedicationByBarcode(scannedId);
         if (medicationData) {
-          setForm((prev) => ({
-            ...prev,
-            medication_name: medicationData.medication_name || "",
-            dosage: medicationData.dosage || "",
-            frequency: medicationData.frequency || "",
-            instructions: medicationData.instructions || "",
-          }));
+          methods.setValue("medication_name", medicationData.medication_name || "");
+          methods.setValue("dosage", medicationData.dosage || "");
+          methods.setValue("instructions", medicationData.instructions || "");
           setIsScanning(false);
           toast({
             title: "Medication found!",
@@ -119,96 +140,30 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
     };
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
   const handleStartDateChange = (date: Date | undefined) => {
     setStartDate(date);
     if (date) {
-      setForm({
-        ...form,
-        start_date: format(date, "yyyy-MM-dd"),
-      });
-    } else {
-      setForm({
-        ...form,
-        start_date: "",
-      });
+      methods.setValue("start_date", format(date, "yyy-MM-dd"));
     }
   };
 
   const handleEndDateChange = (date: Date | undefined) => {
     setEndDate(date);
     if (date) {
-      setForm({
-        ...form,
-        end_date: format(date, "yyyy-MM-dd"),
-      });
-    } else {
-      setForm({
-        ...form,
-        end_date: "",
-      });
+      methods.setValue("end_date", format(date, "yyyy-MM-dd"))
     }
   };
 
-  // const validateForm = () => {
-  //   if (!form.medication_name.trim()) {
-  //     toast({
-  //       variant: "destructive",
-  //       title: "Missing information",
-  //       description: "Medication name is required.",
-  //     });
-  //     return false;
-  //   }
 
-  //   if (!form.dosage.trim()) {
-  //     toast({
-  //       variant: "destructive",
-  //       title: "Missing information",
-  //       description: "Dosage is required.",
-  //     });
-  //     return false;
-  //   }
-
-  //   if (!form.frequency.trim()) {
-  //     toast({
-  //       variant: "destructive",
-  //       title: "Missing information",
-  //       description: "Frequency is required.",
-  //     });
-  //     return false;
-  //   }
-
-  //   if (!form.start_date) {
-  //     toast({
-  //       variant: "destructive",
-  //       title: "Missing information",
-  //       description: "Start date is required.",
-  //     });
-  //     return false;
-  //   }
-
-  //   return true;
-  // };
-
-  const handleSubmit = async () => {
-    // if (!validateForm()) return;
-
+  const handleSubmitForm = async () => {
     setIsSubmitting(true);
     try {
-      await createMedication(residentId, form);
+      // await createMedication(residentId, form);
       toast({
         title: "Success",
-        description: `${form.medication_name} has been added to the medication list.`,
+        description: `${methods.watch("medication_name")} has been added to the medication list.`,
       });
       onMedicationAdded();
-      setForm(initialForm);
-      setStartDate(undefined);
-      setEndDate(undefined);
       onClose();
     } catch (error: any) {
       console.error("Error adding medication:", error);
@@ -232,192 +187,200 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-gray-800">
-            Add New Medication
-          </DialogTitle>
-        </DialogHeader>
+    <FormProvider {...methods}>
+      <Dialog open={isOpen} onOpenChange={handleClose}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold text-gray-800">
+              Add New Medication
+            </DialogTitle>
+          </DialogHeader>
 
-        {isScanning ? (
-          <div className="space-y-4">
-            <div className="relative">
-              <Webcam
-                ref={webcamRef}
-                audio={false}
-                screenshotFormat="image/png"
-                videoConstraints={{
-                  width: { ideal: 1280 },
-                  height: { ideal: 720 },
-                  facingMode: "environment",
-                }}
-                className="w-full rounded-lg border overflow-hidden"
-              />
-              <Button
-                variant="outline"
-                size="icon"
-                className="absolute top-4 left-4 bg-white rounded-full h-8 w-8"
-                onClick={() => setIsScanning(false)}
-              >
-                <Undo className="h-4 w-4" />
+          {isScanning ? (
+            <div className="space-y-4">
+              <div className="relative">
+                <Webcam
+                  ref={webcamRef}
+                  audio={false}
+                  screenshotFormat="image/png"
+                  videoConstraints={{
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                    facingMode: "environment",
+                  }}
+                  className="w-full rounded-lg border overflow-hidden"
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="absolute top-4 left-4 bg-white rounded-full h-8 w-8"
+                  onClick={() => setIsScanning(false)}
+                >
+                  <Undo className="h-4 w-4" />
+                </Button>
+              </div>
+              <Button onClick={handleScan} className="w-full" variant="default">
+                <Scan className="mr-1 h-4 w-4" />
+                Scan Medication
               </Button>
             </div>
-            <Button onClick={handleScan} className="w-full" variant="default">
-              <Scan className="mr-1 h-4 w-4" />
-              Scan Medication
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-5 py-2">
-            <Button
-              onClick={() => setIsScanning(true)}
-              className="w-full"
-              variant="outline"
-            >
-              <QrCode className="mr-2 h-4 w-4" />
-              Scan Medication QR Code
-            </Button>
+          ) : (
+            <div className="space-y-5 py-2">
+              <Button
+                onClick={() => setIsScanning(true)}
+                className="w-full"
+                variant="outline"
+              >
+                <QrCode className="mr-2 h-4 w-4" />
+                Scan Medication QR Code
+              </Button>
 
-            <div className="grid gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="medication_name">Medication Name</Label>
-                <Input
-                  id="medication_name"
-                  name="medication_name"
-                  value={form.medication_name}
-                  onChange={handleChange}
-                  placeholder="Enter medication name"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="dosage">Dosage</Label>
+                  <Label htmlFor="medication_name">Medication Name</Label>
                   <Input
-                    id="dosage"
-                    name="dosage"
-                    value={form.dosage}
-                    onChange={handleChange}
-                    placeholder="e.g., 10mg"
+                    id="medication_name"
+                    {...register("medication_name")}
+                    placeholder="Enter medication name"
+                  />
+                  {errors.medication_name && (
+                    <p className="text-xs text-red-500">{errors.medication_name.message}</p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="dosage">Dosage</Label>
+                    <Input
+                      id="dosage"
+                      {...register("dosage")}
+                      placeholder="e.g., 10mg"
+                    />
+                    {errors.dosage && (
+                      <p className="text-xs text-red-500">{errors.dosage.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="frequency">Schedule</Label>
+                    <Select value={methods.watch("schedule_type")} onValueChange={(value) => methods.setValue("schedule_type", value as "custom" | "day" | "week")}>
+                      <SelectTrigger className="">
+                        <SelectValue placeholder="Select a schedule" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectItem value="day">By Day</SelectItem>
+                          <SelectItem value="week">By Week</SelectItem>
+                          <SelectItem value="custom">As Needed</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {
+                  methods.watch("schedule_type") == "day" && (<DayMedicationScheduler />)
+                }
+                {
+                  methods.watch("schedule_type") == "week" && (<WeekMedicationScheduler />)
+                }
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label>Start Date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !methods.watch("start_date") && "text-muted-foreground",
+                          )}
+                        >
+                          {methods.watch("start_date") ? (
+                            format(methods.watch("start_date"), "MMMM d, yyyy")
+                          ) : (
+                            <span>Select date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={startDate}
+                          onSelect={handleStartDateChange}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    {errors.start_date && (
+                      <p className="text-xs text-red-500">{errors.start_date.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label>End Date (Optional)</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !methods.watch("end_date") && "text-muted-foreground",
+                          )}
+                        >
+                          {methods.watch("end_date") ? (
+                            format(methods.watch("end_date")!, "MMMM d, yyyy")
+                          ) : (
+                            <span>Select date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={endDate}
+                          onSelect={handleEndDateChange}
+                          disabled={(date) =>
+                            startDate ? date < startDate : false
+                          }
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="instructions">Instructions</Label>
+                  <Textarea
+                    id="instructions"
+                    {...register("instructions")}
+                    placeholder="Special instructions for administration"
+                    rows={3}
                   />
                 </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="frequency">Schedule</Label>
-                  <Select>
-                    <SelectTrigger className="">
-                      <SelectValue placeholder="Select a schedule" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectItem value="day">By Day</SelectItem>
-                        <SelectItem value="week">By Week</SelectItem>
-                        <SelectItem value="custom">As Needed</SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* <WeekMedicationScheduler /> */}
-              <DayMedicationScheduler />
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label>Start Date</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !startDate && "text-muted-foreground",
-                        )}
-                      >
-                        {startDate ? (
-                          format(startDate, "MMMM d, yyyy")
-                        ) : (
-                          <span>Select date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={startDate}
-                        onSelect={handleStartDateChange}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label>End Date (Optional)</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !endDate && "text-muted-foreground",
-                        )}
-                      >
-                        {endDate ? (
-                          format(endDate, "MMMM d, yyyy")
-                        ) : (
-                          <span>Select date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={endDate}
-                        onSelect={handleEndDateChange}
-                        disabled={(date) =>
-                          startDate ? date < startDate : false
-                        }
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="instructions">Instructions</Label>
-                <Textarea
-                  id="instructions"
-                  name="instructions"
-                  value={form.instructions}
-                  onChange={handleChange}
-                  placeholder="Special instructions for administration"
-                  rows={3}
-                />
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {!isScanning && (
-          <DialogFooter className="pt-2">
-            <Button variant="outline" onClick={handleClose} className="mr-2">
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              {isSubmitting ? "Saving..." : "Save Medication"}
-            </Button>
-          </DialogFooter>
-        )}
-      </DialogContent>
-    </Dialog>
+          {!isScanning && (
+            <DialogFooter className="pt-2">
+              <Button variant="outline" onClick={handleClose} className="mr-2">
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSubmit(handleSubmitForm)}
+                disabled={isSubmitting}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {isSubmitting ? "Saving..." : "Save Medication"}
+              </Button>
+            </DialogFooter>
+          )}
+        </DialogContent>
+      </Dialog>
+    </FormProvider>
   );
 };
 

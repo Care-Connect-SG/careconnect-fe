@@ -1,10 +1,11 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Clock, MinusIcon, PlusIcon } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { format, set } from "date-fns";
+import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
+import { useFormContext } from "react-hook-form";
+import { MedicationFormSchema } from "./create-medication-dialog";
 
 type Time = {
     hour: number;
@@ -12,16 +13,20 @@ type Time = {
 };
 
 export function WeekMedicationScheduler() {
-    const [selectedDays, setSelectedDays] = useState<string[]>([]);
-    const [timings, setTimings] = useState<Time[]>([{ hour: 0, minute: 0 }]);
-    const [repeatFreq, setRepeatFreq] = useState(1);
+
+    const {
+        setValue,
+        watch
+    } = useFormContext<MedicationFormSchema>();
+
+    const timings = watch("times_of_day") || [{ hour: 8, minute: 0 }];
+    const days = watch("days_of_week") || [];
+    const repeat = watch("repeat") || 1;
 
     const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
     function toggleDay(day: string) {
-        setSelectedDays(prev =>
-            prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
-        );
+        setValue("days_of_week", days.includes(day) ? days.filter(d => d !== day) : [...days, day]);
     }
 
     const formatTimeDisplay = (t: Time) => {
@@ -32,26 +37,23 @@ export function WeekMedicationScheduler() {
     };
 
     const updateTiming = (index: number, field: keyof Time, value: number) => {
-        setTimings(prev =>
-            prev.map((time, i) =>
-                i === index ? { ...time, [field]: value } : time
-            )
-        );
+        setValue("times_of_day", timings.map((time: Time, i: number) =>
+            i === index ? { ...time, [field]: value } : time));
     };
 
     const addTiming = () => {
-        setTimings(prev => [...prev, { hour: 0, minute: 0 }]);
+        setValue("times_of_day", [...timings, { hour: 8, minute: 0 }]);
     };
 
     const removeTiming = (index: number) => {
-        setTimings(prev => prev.filter((_, i) => i !== index));
+        setValue("times_of_day", timings.filter((_: Time, i: number) => i !== index));
     };
 
     return (
         <div className="rounded border border-0 bg-blue-50 p-4">
             <div className="grid grid-cols-7 gap-4">
                 {daysOfWeek.map(day => {
-                    const isSelected = selectedDays.includes(day);
+                    const isSelected = days.includes(day);
                     const variant = isSelected ? "default" : "outline";
 
                     return (
@@ -146,23 +148,22 @@ export function WeekMedicationScheduler() {
                     + Add Timing
                 </Button>
                 <div className="bg-card rounded-lg border shadow-sm py-2 px-4 flex items-center gap-3 col-span-2">
-                    {/* <RepeatIcon className="h-4 w-4 text-blue-500 font-bold" /> */}
                     <div className="flex items-center gap-2">
                         <span className="text-sm font-medium text-foreground">Repeat every</span>
                         <div className={`flex items-center border rounded-md overflow-hidden bg-background`}>
                             <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => setRepeatFreq(Math.max(1, repeatFreq - 1))}
-                                disabled={repeatFreq <= 1}
+                                onClick={() => setValue("repeat", Math.max(1, repeat - 1))}
+                                disabled={repeat <= 1}
                                 className="h-6 w-6 px-0 flex-shrink-0 rounded-none border-0 border-r"
                             >
                                 <MinusIcon className="h-3 w-3" />
                             </Button>
                             <Input
                                 type="number"
-                                value={repeatFreq}
-                                onChange={(e) => setRepeatFreq(Math.max(1, Number(e.target.value)))}
+                                value={repeat}
+                                onChange={(e) => setValue("repeat", Math.max(1, Number(e.target.value)))}
                                 className="w-12 h-6 text-center border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 min={2}
                                 step={1}
@@ -170,13 +171,13 @@ export function WeekMedicationScheduler() {
                             <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => setRepeatFreq(repeatFreq + 1)}
+                                onClick={() => setValue("repeat", repeat + 1)}
                                 className="h-6 w-6 px-0 flex-shrink-0 rounded-none border-0 border-l"
                             >
                                 <PlusIcon className="h-3 w-3" />
                             </Button>
                         </div>
-                        <span className="text-sm font-medium text-foreground">{repeatFreq === 1 ? "week" : "weeks"}</span>
+                        <span className="text-sm font-medium text-foreground">{repeat === 1 ? "week" : "weeks"}</span>
                     </div>
                 </div>
             </div>
@@ -186,9 +187,14 @@ export function WeekMedicationScheduler() {
 }
 
 export function DayMedicationScheduler() {
-    const [timings, setTimings] = useState<Time[]>([{ hour: 0, minute: 0 }]);
-    const [repeatFreq, setRepeatFreq] = useState(1);
+    const {
+        setValue,
+        watch
+    } = useFormContext<MedicationFormSchema>();
 
+    const timings = watch("times_of_day") || [{ hour: 8, minute: 0 }];
+    const repeat = watch("repeat") || 1;
+    
     const formatTimeDisplay = (t: Time) => {
         const date = new Date();
         date.setHours(t.hour);
@@ -197,19 +203,16 @@ export function DayMedicationScheduler() {
     };
 
     const updateTiming = (index: number, field: keyof Time, value: number) => {
-        setTimings(prev =>
-            prev.map((time, i) =>
-                i === index ? { ...time, [field]: value } : time
-            )
-        );
+        setValue("times_of_day", timings.map((time: Time, i: number) =>
+            i === index ? { ...time, [field]: value } : time));
     };
 
     const addTiming = () => {
-        setTimings(prev => [...prev, { hour: 0, minute: 0 }]);
+        setValue("times_of_day", [...timings, { hour: 8, minute: 0 }]);
     };
 
     const removeTiming = (index: number) => {
-        setTimings(prev => prev.filter((_, i) => i !== index));
+        setValue("times_of_day", timings.filter((_: Time, i: number) => i !== index));
     };
 
     return (
@@ -292,23 +295,22 @@ export function DayMedicationScheduler() {
                     + Add Timing
                 </Button>
                 <div className="bg-card rounded-lg border shadow-sm py-2 px-4 flex items-center gap-3 col-span-2">
-                    {/* <RepeatIcon className="h-4 w-4 text-blue-500 font-bold" /> */}
                     <div className="flex items-center gap-2">
                         <span className="text-sm font-medium text-foreground">Repeat every</span>
                         <div className={`flex items-center border rounded-md overflow-hidden bg-background`}>
                             <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => setRepeatFreq(Math.max(1, repeatFreq - 1))}
-                                disabled={repeatFreq <= 1}
+                                onClick={() => setValue("repeat", Math.max(1, repeat - 1))}
+                                disabled={repeat <= 1}
                                 className="h-6 w-6 px-0 flex-shrink-0 rounded-none border-0 border-r"
                             >
                                 <MinusIcon className="h-3 w-3" />
                             </Button>
                             <Input
                                 type="number"
-                                value={repeatFreq}
-                                onChange={(e) => setRepeatFreq(Math.max(1, Number(e.target.value)))}
+                                value={repeat}
+                                onChange={(e) => setValue("repeat", Math.max(1, Number(e.target.value)))}
                                 className="w-12 h-6 text-center border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 min={2}
                                 step={1}
@@ -316,13 +318,13 @@ export function DayMedicationScheduler() {
                             <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => setRepeatFreq(repeatFreq + 1)}
+                                onClick={() => setValue("repeat", repeat + 1)}
                                 className="h-6 w-6 px-0 flex-shrink-0 rounded-none border-0 border-l"
                             >
                                 <PlusIcon className="h-3 w-3" />
                             </Button>
                         </div>
-                        <span className="text-sm font-medium text-foreground">{repeatFreq === 1 ? "day" : "days"}</span>
+                        <span className="text-sm font-medium text-foreground">{repeat === 1 ? "day" : "days"}</span>
                     </div>
                 </div>
             </div>

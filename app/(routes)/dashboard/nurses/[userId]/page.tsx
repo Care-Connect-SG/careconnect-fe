@@ -35,11 +35,12 @@ const nurseProfileSchema = z.object({
   contact_number: z.string().optional(),
   organisation_rank: z.string().optional(),
   gender: z.enum(["Male", "Female"]),
+  telegram_handle: z.string().optional(),
 });
 
 type NurseProfileFormValues = z.infer<typeof nurseProfileSchema>;
 
-const SimplifiedNurseProfile = () => {
+const NurseProfile = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { userId } = useParams();
@@ -58,14 +59,13 @@ const SimplifiedNurseProfile = () => {
   const form = useForm<NurseProfileFormValues>({
     resolver: zodResolver(nurseProfileSchema),
     mode: "onChange",
-    defaultValues: formInitialized
-      ? {
-          name: user?.name || "",
-          contact_number: user?.contact_number || "",
-          organisation_rank: user?.organisation_rank || "",
-          gender: user?.gender === "Female" ? "Female" : "Male",
-        }
-      : undefined,
+    defaultValues: {
+      name: "",
+      contact_number: "",
+      organisation_rank: "",
+      gender: "Male",
+      telegram_handle: "",
+    },
   });
 
   useEffect(() => {
@@ -77,6 +77,7 @@ const SimplifiedNurseProfile = () => {
         contact_number: user.contact_number || "",
         organisation_rank: user.organisation_rank || "",
         gender: gender,
+        telegram_handle: user.telegram_handle || "",
       });
 
       setFormInitialized(true);
@@ -113,7 +114,7 @@ const SimplifiedNurseProfile = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-[80vh]">
+      <div className="flex justify-center items-center h-[90vh]">
         <Spinner />
       </div>
     );
@@ -121,7 +122,7 @@ const SimplifiedNurseProfile = () => {
 
   if (error || !user) {
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex justify-center items-center h-[90vh]">
         <p className="text-center text-red-500">User not found</p>
       </div>
     );
@@ -129,7 +130,7 @@ const SimplifiedNurseProfile = () => {
 
   if (!formInitialized) {
     return (
-      <div className="flex justify-center items-center h-[80vh]">
+      <div className="flex justify-center items-center h-[90vh]">
         <Spinner />
       </div>
     );
@@ -152,73 +153,106 @@ const SimplifiedNurseProfile = () => {
               onSubmit={form.handleSubmit(handleSubmit)}
               className="space-y-6"
             >
-              <div className="space-y-2">
-                <FormLabel>Email</FormLabel>
-                <Input value={user.email} disabled className="bg-gray-50" />
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <FormLabel>Email</FormLabel>
+                  <Input
+                    value={user.email || ""}
+                    disabled
+                    className="bg-gray-50"
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Full Name" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="contact_number"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Contact Number</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="User contact number" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="organisation_rank"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Organisation Rank</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Organisation rank" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="gender"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Gender</FormLabel>
+                      <FormControl>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger className="w-full p-3 border rounded-lg shadow-sm bg-white text-gray-700">
+                            <SelectValue placeholder="Select Gender" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white shadow-lg rounded-lg">
+                            <SelectItem value="Male">Male</SelectItem>
+                            <SelectItem value="Female">Female</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="telegram_handle"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-semibold">
+                        Telegram Handle
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          placeholder="Enter Telegram username (without @)"
+                          className="w-full"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="contact_number"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Contact Number</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="organisation_rank"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Organisation Rank</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="gender"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Gender</FormLabel>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Gender" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Male">Male</SelectItem>
-                        <SelectItem value="Female">Female</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="flex justify-end">
+              <div className="flex justify-end pt-4">
                 <Button
                   type="submit"
                   className="w-32"
@@ -239,4 +273,4 @@ const SimplifiedNurseProfile = () => {
   );
 };
 
-export default SimplifiedNurseProfile;
+export default NurseProfile;

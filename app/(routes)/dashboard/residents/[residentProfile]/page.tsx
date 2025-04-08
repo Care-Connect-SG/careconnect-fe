@@ -406,7 +406,7 @@ export default function ResidentDashboard() {
 
   if (!resident) {
     return (
-      <div className="h-screen justify-center items-center flex">
+      <div className="h-[90vh] justify-center items-center flex">
         Resident not found
       </div>
     );

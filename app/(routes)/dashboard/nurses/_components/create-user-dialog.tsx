@@ -4,10 +4,8 @@ import { createUser } from "@/app/api/user";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -103,7 +101,7 @@ export default function CreateUserDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="max-h-[80vh] overflow-y-auto">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Create User</DialogTitle>
           <DialogDescription>
@@ -112,7 +110,7 @@ export default function CreateUserDialog({
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+            <div className="space-y-4 max-h-[60vh] overflow-y-auto px-1">
               <FormField
                 name="name"
                 control={form.control}
@@ -198,7 +196,10 @@ export default function CreateUserDialog({
                   <FormItem>
                     <FormLabel>Role</FormLabel>
                     <FormControl>
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
                         <SelectTrigger className="w-full p-3 border rounded-lg shadow-sm bg-white text-gray-700">
                           <SelectValue placeholder="Select User Role" />
                         </SelectTrigger>
@@ -220,7 +221,10 @@ export default function CreateUserDialog({
                   <FormItem>
                     <FormLabel>Gender</FormLabel>
                     <FormControl>
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
                         <SelectTrigger className="w-full p-3 border rounded-lg shadow-sm bg-white text-gray-700">
                           <SelectValue placeholder="Select User Gender" />
                         </SelectTrigger>
@@ -254,7 +258,9 @@ export default function CreateUserDialog({
                 name="telegram_handle"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="font-semibold">Telegram Handle</FormLabel>
+                    <FormLabel className="font-semibold">
+                      Telegram Handle
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type="text"
@@ -268,15 +274,13 @@ export default function CreateUserDialog({
                 )}
               />
             </div>
+            <div className="flex justify-end space-x-4">
+              <Button variant="outline">Cancel</Button>
 
-            <DialogFooter className="sticky bottom-0 bg-white pt-4">
-              <DialogClose asChild>
-                <Button variant="outline">Cancel</Button>
-              </DialogClose>
               <Button type="submit" disabled={loading}>
                 {loading ? <Spinner /> : "Create User"}
               </Button>
-            </DialogFooter>
+            </div>
           </form>
         </Form>
       </DialogContent>

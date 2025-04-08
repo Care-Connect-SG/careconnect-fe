@@ -115,7 +115,7 @@ const EditResidentDialog: React.FC<EditResidentDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg w-full p-6 max-h-[80vh] overflow-y-auto">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Edit Resident Profile</DialogTitle>
           <DialogDescription>
@@ -123,115 +123,122 @@ const EditResidentDialog: React.FC<EditResidentDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="fullName">Name</Label>
-            <Input
-              id="fullName"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="roomNumber">Room</Label>
-            <Input
-              id="roomNumber"
-              value={roomNumber}
-              onChange={(e) => setRoomNumber(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="gender">Gender</Label>
-            <Select value={gender} onValueChange={(value) => setGender(value)}>
-              <SelectTrigger id="gender" className="mt-1 w-full">
-                <SelectValue placeholder="Select a gender" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Female">Female</SelectItem>
-                <SelectItem value="Male">Male</SelectItem>
-                <SelectItem value="Other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label htmlFor="dateOfBirth">Date of Birth</Label>
-            <Input
-              type="date"
-              id="dateOfBirth"
-              value={dateOfBirth}
-              onChange={(e) => setDateOfBirth(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="nricNumber">NRIC Number</Label>
-            <Input
-              id="nricNumber"
-              value={nricNumber}
-              onChange={(e) => setNricNumber(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="relationship">Relationship</Label>
-            <Select
-              value={relationship}
-              onValueChange={(value) => setRelationship(value)}
-            >
-              <SelectTrigger id="relationship" className="mt-1 w-full">
-                <SelectValue placeholder="Select relationship" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Mother">Mother</SelectItem>
-                <SelectItem value="Father">Father</SelectItem>
-                <SelectItem value="Daughter">Daughter</SelectItem>
-                <SelectItem value="Son">Son</SelectItem>
-                <SelectItem value="Spouse">Spouse</SelectItem>
-                <SelectItem value="Sibling">Sibling</SelectItem>
-                <SelectItem value="Friend">Friend</SelectItem>
-                <SelectItem value="Other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label htmlFor="emergencyContactName">Emergency Contact</Label>
-            <Input
-              id="emergencyContactName"
-              value={emergencyContactName}
-              onChange={(e) => setEmergencyContactName(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="emergencyContactNumber">Contact Number</Label>
-            <Input
-              id="emergencyContactNumber"
-              value={emergencyContactNumber}
-              onChange={(e) => setEmergencyContactNumber(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="primaryNurse">Primary Nurse</Label>
-            <Select
-              value={primaryNurse}
-              onValueChange={(value) => setPrimaryNurse(value)}
-              disabled={isLoading}
-            >
-              <SelectTrigger id="primaryNurse" className="mt-1 w-full">
-                <SelectValue
-                  placeholder={isLoading ? <Spinner /> : "Select primary nurse"}
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {nurseOptions.map((nurse) => (
-                  <SelectItem key={nurse.id} value={nurse.name}>
-                    {nurse.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="max-h-[60vh] overflow-y-auto px-1 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="fullName">Name</Label>
+              <Input
+                id="fullName"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="roomNumber">Room</Label>
+              <Input
+                id="roomNumber"
+                value={roomNumber}
+                onChange={(e) => setRoomNumber(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="gender">Gender</Label>
+              <Select
+                value={gender}
+                onValueChange={(value) => setGender(value)}
+              >
+                <SelectTrigger id="gender" className="mt-1 w-full">
+                  <SelectValue placeholder="Select a gender" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Female">Female</SelectItem>
+                  <SelectItem value="Male">Male</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="dateOfBirth">Date of Birth</Label>
+              <Input
+                type="date"
+                id="dateOfBirth"
+                value={dateOfBirth}
+                onChange={(e) => setDateOfBirth(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="nricNumber">NRIC Number</Label>
+              <Input
+                id="nricNumber"
+                value={nricNumber}
+                onChange={(e) => setNricNumber(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="relationship">Relationship</Label>
+              <Select
+                value={relationship}
+                onValueChange={(value) => setRelationship(value)}
+              >
+                <SelectTrigger id="relationship" className="mt-1 w-full">
+                  <SelectValue placeholder="Select relationship" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Mother">Mother</SelectItem>
+                  <SelectItem value="Father">Father</SelectItem>
+                  <SelectItem value="Daughter">Daughter</SelectItem>
+                  <SelectItem value="Son">Son</SelectItem>
+                  <SelectItem value="Spouse">Spouse</SelectItem>
+                  <SelectItem value="Sibling">Sibling</SelectItem>
+                  <SelectItem value="Friend">Friend</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="emergencyContactName">Emergency Contact</Label>
+              <Input
+                id="emergencyContactName"
+                value={emergencyContactName}
+                onChange={(e) => setEmergencyContactName(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="emergencyContactNumber">Contact Number</Label>
+              <Input
+                id="emergencyContactNumber"
+                value={emergencyContactNumber}
+                onChange={(e) => setEmergencyContactNumber(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="primaryNurse">Primary Nurse</Label>
+              <Select
+                value={primaryNurse}
+                onValueChange={(value) => setPrimaryNurse(value)}
+                disabled={isLoading}
+              >
+                <SelectTrigger id="primaryNurse" className="mt-1 w-full">
+                  <SelectValue
+                    placeholder={
+                      isLoading ? <Spinner /> : "Select primary nurse"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {nurseOptions.map((nurse) => (
+                    <SelectItem key={nurse.id} value={nurse.name}>
+                      {nurse.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div className="flex justify-end space-x-4">
             <Button type="button" onClick={onClose} variant={"secondary"}>

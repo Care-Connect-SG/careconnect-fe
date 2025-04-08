@@ -706,7 +706,7 @@ export default function ActivityCalendar({
 
   return (
     <>
-      <div className="h-[100vh]">
+      <div className="h-[70vh]">
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
             <Spinner />

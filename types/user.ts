@@ -14,6 +14,7 @@ export interface UserEdit {
   organisation_rank?: string;
   profile_picture?: string | null;
   gender: string;
+  telegram_handle?: string;
 }
 
 export interface User {
@@ -23,6 +24,7 @@ export interface User {
   contact_number?: string;
   role: Role;
   organisation_rank?: string;
+  telegram_handle?: string;
   gender: Gender;
   profile_picture?: string | null;
   created_at: string;

@@ -120,11 +120,6 @@ export default function GroupDashboard() {
       {!loading && (
         <div className="flex flex-col gap-4">
           {filteredGroups.map((group) => {
-            const memberNames =
-              group.members && group.members.length > 0
-                ? group.members.map((id) => getUserName(id)).join(", ")
-                : "No members yet.";
-
             const groupMembers = group.members
               ? (group.members
                   .map((id) => getUser(id))

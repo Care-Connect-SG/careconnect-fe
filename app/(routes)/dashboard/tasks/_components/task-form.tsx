@@ -102,8 +102,6 @@ const taskSchema = z
     (data) => {
       const startDate = new Date(data.start_date);
       const dueDate = new Date(data.due_date);
-      console.log(startDate);
-      console.log(dueDate);
       return startDate < dueDate;
     },
     {

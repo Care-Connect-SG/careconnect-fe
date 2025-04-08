@@ -76,30 +76,34 @@ const UpcomingEvents = () => {
         </Button>
       </div>
       <div className="space-y-4">
-        {upcomingEvents.map((event) => (
-          <Card
-            key={event.id}
-            className="p-4 bg-gray-50 flex items-center justify-between border-xl"
-          >
-            <div>
-              <p className="font-medium text-gray-900">{event.title}</p>
-              <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500">
-                <div className="flex items-center">
-                  <Clock className="w-4 h-4 mr-1" />
-                  {format(new Date(event.start_time), "MMM d, h:mm a")}
-                </div>
-                <div className="flex items-center">
-                  <MapPin className="w-4 h-4 mr-1" />
-                  {event.location}
-                </div>
-                <div className="flex items-center">
-                  <Users className="w-4 h-4 mr-1" />
-                  {event.category}
+        {upcomingEvents.length > 0 ? (
+          upcomingEvents.map((event) => (
+            <Card
+              key={event.id}
+              className="p-4 bg-gray-50 flex items-center justify-between border-xl"
+            >
+              <div>
+                <p className="font-medium text-gray-900">{event.title}</p>
+                <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500">
+                  <div className="flex items-center">
+                    <Clock className="w-4 h-4 mr-1" />
+                    {format(new Date(event.start_time), "MMM d, h:mm a")}
+                  </div>
+                  <div className="flex items-center">
+                    <MapPin className="w-4 h-4 mr-1" />
+                    {event.location}
+                  </div>
+                  <div className="flex items-center">
+                    <Users className="w-4 h-4 mr-1" />
+                    {event.category}
+                  </div>
                 </div>
               </div>
-            </div>
-          </Card>
-        ))}
+            </Card>
+          ))
+        ) : (
+          <p className="text-gray-500">No upcoming events</p>
+        )}
       </div>
     </Card>
   );

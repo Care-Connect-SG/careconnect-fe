@@ -75,7 +75,7 @@ function ResidentCard({
         </div>
 
         <div className="flex flex-col items-start w-40 space-y-2">
-          <span className="text-xs text-gray-500">Admission Date</span>
+          <span className="text-xs text-gray-500">Registration Date</span>
           <span className="font-medium text-gray-700">
             {resident.admission_date}
           </span>

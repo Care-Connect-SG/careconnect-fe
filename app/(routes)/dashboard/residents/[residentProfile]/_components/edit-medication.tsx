@@ -17,17 +17,24 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { format, parse } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { DayMedicationScheduler, WeekMedicationScheduler } from "./scheduler";
-import { medicationFormSchema, MedicationFormSchema } from "../schema";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MedicationFormSchema, medicationFormSchema } from "../schema";
+import { DayMedicationScheduler, WeekMedicationScheduler } from "./scheduler";
 
 interface EditMedicationProps {
   residentId: string;
@@ -63,7 +70,11 @@ const EditMedication: React.FC<EditMedicationProps> = ({
     },
   });
 
-  const { register, handleSubmit, formState: { errors } } = methods;
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = methods;
 
   useEffect(() => {
     if (medication.start_date) {
@@ -116,7 +127,7 @@ const EditMedication: React.FC<EditMedicationProps> = ({
   const handleEndDateChange = (date: Date | undefined) => {
     setEndDate(date);
     if (date) {
-      methods.setValue("end_date", format(date, "yyyy-MM-dd"))
+      methods.setValue("end_date", format(date, "yyyy-MM-dd"));
     }
   };
 
@@ -144,7 +155,7 @@ const EditMedication: React.FC<EditMedicationProps> = ({
       }
     }
     return true;
-  }
+  };
 
   const handleSubmitForm = async () => {
     if (!validateSchedule()) return;
@@ -186,11 +197,11 @@ const EditMedication: React.FC<EditMedicationProps> = ({
           <div className="space-y-4">
             <div>
               <Label>Medication Name</Label>
-              <Input
-                {...register("medication_name")}
-              />
+              <Input {...register("medication_name")} />
               {errors.medication_name && (
-                <p className="text-xs text-red-500">{errors.medication_name.message}</p>
+                <p className="text-xs text-red-500">
+                  {errors.medication_name.message}
+                </p>
               )}
             </div>
 
@@ -203,13 +214,23 @@ const EditMedication: React.FC<EditMedicationProps> = ({
                   placeholder="e.g., 10mg"
                 />
                 {errors.dosage && (
-                  <p className="text-xs text-red-500">{errors.dosage.message}</p>
+                  <p className="text-xs text-red-500">
+                    {errors.dosage.message}
+                  </p>
                 )}
               </div>
 
               <div className="space-y-1.5">
                 <Label htmlFor="frequency">Schedule</Label>
-                <Select value={methods.watch("schedule_type")} onValueChange={(value) => methods.setValue("schedule_type", value as "custom" | "day" | "week")}>
+                <Select
+                  value={methods.watch("schedule_type")}
+                  onValueChange={(value) =>
+                    methods.setValue(
+                      "schedule_type",
+                      value as "custom" | "day" | "week",
+                    )
+                  }
+                >
                   <SelectTrigger className="">
                     <SelectValue placeholder="Select a schedule" />
                   </SelectTrigger>
@@ -224,12 +245,12 @@ const EditMedication: React.FC<EditMedicationProps> = ({
               </div>
             </div>
 
-            {
-              methods.watch("schedule_type") == "day" && (<DayMedicationScheduler />)
-            }
-            {
-              methods.watch("schedule_type") == "week" && (<WeekMedicationScheduler />)
-            }
+            {methods.watch("schedule_type") == "day" && (
+              <DayMedicationScheduler />
+            )}
+            {methods.watch("schedule_type") == "week" && (
+              <WeekMedicationScheduler />
+            )}
 
             <div>
               <Label>Start Date</Label>
@@ -259,7 +280,9 @@ const EditMedication: React.FC<EditMedicationProps> = ({
                 </PopoverContent>
               </Popover>
               {errors.start_date && (
-                <p className="text-xs text-red-500">{errors.start_date.message}</p>
+                <p className="text-xs text-red-500">
+                  {errors.start_date.message}
+                </p>
               )}
             </div>
 

@@ -18,20 +18,26 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { BrowserQRCodeReader } from "@zxing/browser";
 import { format } from "date-fns";
 import { CalendarIcon, QrCode, Scan, Undo } from "lucide-react";
 import React, { useState, useRef } from "react";
-import Webcam from "react-webcam";
-import { DayMedicationScheduler, WeekMedicationScheduler } from "./scheduler";
 import { FormProvider, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import Webcam from "react-webcam";
 import { MedicationFormSchema, medicationFormSchema } from "../schema";
-
+import { DayMedicationScheduler, WeekMedicationScheduler } from "./scheduler";
 
 interface CreateMedicationProps {
   residentId: string;
@@ -46,7 +52,6 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
   onClose,
   onMedicationAdded,
 }) => {
-
   const { toast } = useToast();
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
@@ -68,8 +73,12 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
     },
   });
 
-  const { register, handleSubmit, reset, formState: { errors } } = methods;
-
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = methods;
 
   const handleScan = async () => {
     const imageSrc = webcamRef.current?.getScreenshot();
@@ -97,7 +106,10 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
 
         const medicationData = await fetchMedicationByBarcode(scannedId);
         if (medicationData) {
-          methods.setValue("medication_name", medicationData.medication_name || "");
+          methods.setValue(
+            "medication_name",
+            medicationData.medication_name || "",
+          );
           methods.setValue("dosage", medicationData.dosage || "");
           methods.setValue("instructions", medicationData.instructions || "");
           setIsScanning(false);
@@ -134,7 +146,7 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
   const handleEndDateChange = (date: Date | undefined) => {
     setEndDate(date);
     if (date) {
-      methods.setValue("end_date", format(date, "yyyy-MM-dd"))
+      methods.setValue("end_date", format(date, "yyyy-MM-dd"));
     }
   };
 
@@ -162,7 +174,7 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
       }
     }
     return true;
-  }
+  };
 
   const handleSubmitForm = async () => {
     if (!validateSchedule()) return;
@@ -182,7 +194,7 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
         instructions: "",
         times_of_day: [],
         days_of_week: [],
-      })
+      });
       onMedicationAdded();
       onClose();
     } catch (error: any) {
@@ -264,7 +276,9 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
                     placeholder="Enter medication name"
                   />
                   {errors.medication_name && (
-                    <p className="text-xs text-red-500">{errors.medication_name.message}</p>
+                    <p className="text-xs text-red-500">
+                      {errors.medication_name.message}
+                    </p>
                   )}
                 </div>
 
@@ -277,13 +291,23 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
                       placeholder="e.g., 10mg"
                     />
                     {errors.dosage && (
-                      <p className="text-xs text-red-500">{errors.dosage.message}</p>
+                      <p className="text-xs text-red-500">
+                        {errors.dosage.message}
+                      </p>
                     )}
                   </div>
 
                   <div className="space-y-1.5">
                     <Label htmlFor="frequency">Schedule</Label>
-                    <Select value={methods.watch("schedule_type")} onValueChange={(value) => methods.setValue("schedule_type", value as "custom" | "day" | "week")}>
+                    <Select
+                      value={methods.watch("schedule_type")}
+                      onValueChange={(value) =>
+                        methods.setValue(
+                          "schedule_type",
+                          value as "custom" | "day" | "week",
+                        )
+                      }
+                    >
                       <SelectTrigger className="">
                         <SelectValue placeholder="Select a schedule" />
                       </SelectTrigger>
@@ -298,12 +322,12 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
                   </div>
                 </div>
 
-                {
-                  methods.watch("schedule_type") == "day" && (<DayMedicationScheduler />)
-                }
-                {
-                  methods.watch("schedule_type") == "week" && (<WeekMedicationScheduler />)
-                }
+                {methods.watch("schedule_type") == "day" && (
+                  <DayMedicationScheduler />
+                )}
+                {methods.watch("schedule_type") == "week" && (
+                  <WeekMedicationScheduler />
+                )}
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
@@ -314,7 +338,8 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
                           variant="outline"
                           className={cn(
                             "w-full justify-start text-left font-normal",
-                            !methods.watch("start_date") && "text-muted-foreground",
+                            !methods.watch("start_date") &&
+                              "text-muted-foreground",
                           )}
                         >
                           {methods.watch("start_date") ? (
@@ -334,7 +359,9 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
                       </PopoverContent>
                     </Popover>
                     {errors.start_date && (
-                      <p className="text-xs text-red-500">{errors.start_date.message}</p>
+                      <p className="text-xs text-red-500">
+                        {errors.start_date.message}
+                      </p>
                     )}
                   </div>
 
@@ -346,7 +373,8 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
                           variant="outline"
                           className={cn(
                             "w-full justify-start text-left font-normal",
-                            !methods.watch("end_date") && "text-muted-foreground",
+                            !methods.watch("end_date") &&
+                              "text-muted-foreground",
                           )}
                         >
                           {methods.watch("end_date") ? (

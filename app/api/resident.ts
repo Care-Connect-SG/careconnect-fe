@@ -145,13 +145,6 @@ export const updateResident = async (
   updateData: any,
 ): Promise<ResidentRecord> => {
   try {
-    const localDate = new Date();
-    const localISOString = new Date(
-      localDate.getTime() - localDate.getTimezoneOffset() * 60000,
-    ).toISOString();
-
-    updateData.additional_notes_timestamp = localISOString;
-
     const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}`,
       {
@@ -160,12 +153,14 @@ export const updateResident = async (
         body: JSON.stringify(updateData),
       },
     );
+
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || "Error updating resident details");
+      const text = await response.text();
+      console.error("Backend response error:", text);
+      throw new Error("Error updating resident details");
     }
-    const data = await response.json();
-    return data;
+
+    return await response.json();
   } catch (error) {
     console.error("updateResident error:", error);
     throw error;

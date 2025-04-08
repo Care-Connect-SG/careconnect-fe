@@ -23,6 +23,11 @@ import { cn } from "@/lib/utils";
 import { format, parse } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import { DayMedicationScheduler, WeekMedicationScheduler } from "./scheduler";
+import { medicationFormSchema, MedicationFormSchema } from "../schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { FormProvider, useForm } from "react-hook-form";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface EditMedicationProps {
   residentId: string;
@@ -40,9 +45,25 @@ const EditMedication: React.FC<EditMedicationProps> = ({
   onMedicationUpdated,
 }) => {
   const { toast } = useToast();
-  const [form, setForm] = useState({ ...medication });
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+
+  const methods = useForm<MedicationFormSchema>({
+    resolver: zodResolver(medicationFormSchema),
+    defaultValues: {
+      medication_name: medication.medication_name,
+      dosage: medication.dosage,
+      schedule_type: medication.schedule_type,
+      repeat: medication.repeat,
+      days_of_week: medication.days_of_week,
+      times_of_day: medication.times_of_day,
+      start_date: medication.start_date,
+      end_date: medication.end_date,
+      instructions: "",
+    },
+  });
+
+  const { register, handleSubmit, formState: { errors } } = methods;
 
   useEffect(() => {
     if (medication.start_date) {
@@ -85,153 +106,207 @@ const EditMedication: React.FC<EditMedicationProps> = ({
     return !isNaN(date.getTime()) ? date : null;
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
   const handleStartDateChange = (date: Date | undefined) => {
     setStartDate(date);
     if (date) {
-      setForm({
-        ...form,
-        start_date: format(date, "yyyy-MM-dd"),
-      });
+      methods.setValue("start_date", format(date, "yyy-MM-dd"));
     }
   };
 
   const handleEndDateChange = (date: Date | undefined) => {
     setEndDate(date);
     if (date) {
-      setForm({
-        ...form,
-        end_date: format(date, "yyyy-MM-dd"),
+      methods.setValue("end_date", format(date, "yyyy-MM-dd"))
+    }
+  };
+
+  const validateSchedule = () => {
+    if (methods.watch("schedule_type") !== "custom") {
+      const timesOfDay = methods.getValues("times_of_day");
+      if (!timesOfDay || timesOfDay.length === 0) {
+        toast({
+          variant: "destructive",
+          title: "Invalid Schedule",
+          description: "Please select at least one time of day.",
+        });
+        return false;
+      }
+    }
+    if (methods.watch("schedule_type") === "week") {
+      const daysOfWeek = methods.getValues("days_of_week");
+      if (!daysOfWeek || daysOfWeek.length === 0) {
+        toast({
+          variant: "destructive",
+          title: "Invalid Schedule",
+          description: "Please select at least one day of the week.",
+        });
+        return false;
+      }
+    }
+    return true;
+  }
+
+  const handleSubmitForm = async () => {
+    if (!validateSchedule()) return;
+
+    try {
+      const updatedFields = methods.getValues();
+      const medicationData = {
+        ...medication,
+        ...updatedFields,
+      };
+      await updateMedication(residentId, medicationData);
+      toast({
+        variant: "default",
+        description: "Medication updated successfully!",
       });
-    } else {
-      setForm({
-        ...form,
-        end_date: "",
+      onMedicationUpdated();
+      onClose();
+    } catch (error: any) {
+      console.error("Error updating medication:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description:
+          error.message || "Failed to edit medication. Please try again.",
       });
     }
   };
 
-  const handleSubmit = async () => {
-    await updateMedication(residentId, form);
-    toast({
-      variant: "default",
-      description: "Medication updated successfully!",
-    });
-    onMedicationUpdated();
-  };
-
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg w-full p-6 rounded-lg shadow-lg">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-gray-800">
-            Edit Medication
-          </DialogTitle>
-        </DialogHeader>
+    <FormProvider {...methods}>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-lg w-full p-6 rounded-lg shadow-lg">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold text-gray-800">
+              Edit Medication
+            </DialogTitle>
+          </DialogHeader>
 
-        <div className="space-y-4">
-          <div>
-            <Label>Medication Name</Label>
-            <Input
-              name="medication_name"
-              value={form.medication_name}
-              onChange={handleChange}
-            />
-          </div>
+          <div className="space-y-4">
+            <div>
+              <Label>Medication Name</Label>
+              <Input
+                {...register("medication_name")}
+              />
+              {errors.medication_name && (
+                <p className="text-xs text-red-500">{errors.medication_name.message}</p>
+              )}
+            </div>
 
-          <div>
-            <Label>Dosage</Label>
-            <Input name="dosage" value={form.dosage} onChange={handleChange} />
-          </div>
-
-          <div>
-            <Label>Frequency</Label>
-            <Input
-              name="frequency"
-              value={form.frequency}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div>
-            <Label>Start Date</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !startDate && "text-muted-foreground",
-                  )}
-                >
-                  {startDate ? (
-                    format(startDate, "MMMM d, yyyy")
-                  ) : (
-                    <span>Select a date</span>
-                  )}
-                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={startDate}
-                  onSelect={handleStartDateChange}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="dosage">Dosage</Label>
+                <Input
+                  id="dosage"
+                  {...register("dosage")}
+                  placeholder="e.g., 10mg"
                 />
-              </PopoverContent>
-            </Popover>
+                {errors.dosage && (
+                  <p className="text-xs text-red-500">{errors.dosage.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="frequency">Schedule</Label>
+                <Select value={methods.watch("schedule_type")} onValueChange={(value) => methods.setValue("schedule_type", value as "custom" | "day" | "week")}>
+                  <SelectTrigger className="">
+                    <SelectValue placeholder="Select a schedule" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="day">By Day</SelectItem>
+                      <SelectItem value="week">By Week</SelectItem>
+                      <SelectItem value="custom">As Needed</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {
+              methods.watch("schedule_type") == "day" && (<DayMedicationScheduler />)
+            }
+            {
+              methods.watch("schedule_type") == "week" && (<WeekMedicationScheduler />)
+            }
+
+            <div>
+              <Label>Start Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !startDate && "text-muted-foreground",
+                    )}
+                  >
+                    {startDate ? (
+                      format(startDate, "MMMM d, yyyy")
+                    ) : (
+                      <span>Select a date</span>
+                    )}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={startDate}
+                    onSelect={handleStartDateChange}
+                  />
+                </PopoverContent>
+              </Popover>
+              {errors.start_date && (
+                <p className="text-xs text-red-500">{errors.start_date.message}</p>
+              )}
+            </div>
+
+            <div>
+              <Label>End Date (Optional)</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !endDate && "text-muted-foreground",
+                    )}
+                  >
+                    {endDate ? (
+                      format(endDate, "MMMM d, yyyy")
+                    ) : (
+                      <span>Select a date</span>
+                    )}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={endDate}
+                    onSelect={handleEndDateChange}
+                    disabled={(date) => (startDate ? date < startDate : false)}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div>
+              <Label>Instructions</Label>
+              <Textarea {...register("instructions")} />
+            </div>
           </div>
 
-          <div>
-            <Label>End Date (Optional)</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !endDate && "text-muted-foreground",
-                  )}
-                >
-                  {endDate ? (
-                    format(endDate, "MMMM d, yyyy")
-                  ) : (
-                    <span>Select a date</span>
-                  )}
-                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={endDate}
-                  onSelect={handleEndDateChange}
-                  disabled={(date) => (startDate ? date < startDate : false)}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          <div>
-            <Label>Instructions</Label>
-            <Textarea
-              name="instructions"
-              value={form.instructions}
-              onChange={handleChange}
-            />
-          </div>
-        </div>
-
-        <DialogFooter>
-          <Button onClick={handleSubmit}>Save</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <form onSubmit={handleSubmit(handleSubmitForm)} className="space-y-4">
+            <DialogFooter>
+              <Button type="submit">Save</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </FormProvider>
   );
 };
 

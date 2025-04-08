@@ -5,7 +5,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { useFormContext } from "react-hook-form";
-import { MedicationFormSchema } from "./create-medication-dialog";
+import { MedicationFormSchema } from "../schema";
+
 
 type Time = {
     hour: number;

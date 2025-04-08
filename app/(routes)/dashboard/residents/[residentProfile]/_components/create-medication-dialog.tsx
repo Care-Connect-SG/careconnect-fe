@@ -28,9 +28,9 @@ import { CalendarIcon, QrCode, Scan, Undo } from "lucide-react";
 import React, { useState, useRef } from "react";
 import Webcam from "react-webcam";
 import { DayMedicationScheduler, WeekMedicationScheduler } from "./scheduler";
-import { z } from "zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { MedicationFormSchema, medicationFormSchema } from "../schema";
 
 
 interface CreateMedicationProps {
@@ -39,25 +39,6 @@ interface CreateMedicationProps {
   onClose: () => void;
   onMedicationAdded: () => void;
 }
-
-const TimeSchema = z.object({
-  hour: z.number(),
-  minute: z.number(),
-});
-
-const medicationFormSchema = z.object({
-  medication_name: z.string().min(1, "Medication name is required"),
-  dosage: z.string().min(1, "Dosage is required"),
-  schedule_type: z.enum(["day", "week", "custom"]),
-  repeat: z.number().optional().default(1),
-  days_of_week: z.array(z.string()).optional(),
-  times_of_day: z.array(TimeSchema).optional(),
-  start_date: z.string().min(1, "Start date is required"),
-  end_date: z.string().optional(),
-  instructions: z.string().optional(),
-});
-
-export type MedicationFormSchema = z.infer<typeof medicationFormSchema>;
 
 const CreateMedication: React.FC<CreateMedicationProps> = ({
   residentId,
@@ -80,7 +61,10 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
       dosage: "",
       schedule_type: "day",
       start_date: "",
+      end_date: "",
       instructions: "",
+      times_of_day: [],
+      days_of_week: [],
     },
   });
 
@@ -154,15 +138,51 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
     }
   };
 
+  const validateSchedule = () => {
+    if (methods.watch("schedule_type") !== "custom") {
+      const timesOfDay = methods.getValues("times_of_day");
+      if (!timesOfDay || timesOfDay.length === 0) {
+        toast({
+          variant: "destructive",
+          title: "Invalid Schedule",
+          description: "Please select at least one time of day.",
+        });
+        return false;
+      }
+    }
+    if (methods.watch("schedule_type") === "week") {
+      const daysOfWeek = methods.getValues("days_of_week");
+      if (!daysOfWeek || daysOfWeek.length === 0) {
+        toast({
+          variant: "destructive",
+          title: "Invalid Schedule",
+          description: "Please select at least one day of the week.",
+        });
+        return false;
+      }
+    }
+    return true;
+  }
 
   const handleSubmitForm = async () => {
+    if (!validateSchedule()) return;
     setIsSubmitting(true);
+
     try {
-      // await createMedication(residentId, form);
+      await createMedication(residentId, methods.getValues());
       toast({
         title: "Success",
         description: `${methods.watch("medication_name")} has been added to the medication list.`,
       });
+      reset({
+        medication_name: "",
+        dosage: "",
+        schedule_type: "day",
+        start_date: "",
+        instructions: "",
+        times_of_day: [],
+        days_of_week: [],
+      })
       onMedicationAdded();
       onClose();
     } catch (error: any) {

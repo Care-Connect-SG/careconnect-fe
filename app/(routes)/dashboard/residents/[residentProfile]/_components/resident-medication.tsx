@@ -11,7 +11,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -40,7 +39,10 @@ interface MedicationProps {
     id: string;
     medication_name: string;
     dosage: string;
-    frequency: string;
+    repeat: number;
+    schedule_type: "day" | "week" | "custom";
+    days_of_week?: string[];
+    times_of_day?: { hour: number; minute: number }[];
     start_date: string;
     end_date?: string;
     instructions?: string;
@@ -131,9 +133,6 @@ const ResidentMedication: React.FC<MedicationProps> = ({
             <CardTitle className="tracking-tight text-sm font-bold">
               {medication.medication_name.toUpperCase()}
             </CardTitle>
-            <Badge variant="outline" className="text-xs font-medium bg-gray-50">
-              {medication.frequency}
-            </Badge>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

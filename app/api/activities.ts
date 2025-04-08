@@ -32,6 +32,39 @@ export async function fetchActivities(): Promise<Activity[]> {
   }
 }
 
+export async function fetchUpcomingReminders(
+  minutesThreshold: number = 15,
+): Promise<Activity[]> {
+  try {
+    const response = await fetchWithAuth(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/activities/reminders/upcoming?minutes_threshold=${minutesThreshold}`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = await response
+        .json()
+        .catch(() => ({ detail: "Could not parse error response" }));
+      throw Error(errorData.detail || "Failed to fetch upcoming reminders");
+    }
+
+    return await response.json();
+  } catch (error) {
+    if (
+      error instanceof TypeError &&
+      error.message.includes("Failed to fetch")
+    ) {
+      throw new Error(
+        "Could not connect to the server. Please check your connection or try again later.",
+      );
+    }
+    throw error;
+  }
+}
+
 export async function createActivity(
   data: Partial<ActivityCreate>,
 ): Promise<Activity> {
@@ -44,6 +77,9 @@ export async function createActivity(
       end_time: data.end_time
         ? new Date(data.end_time).toISOString().split(".")[0]
         : undefined,
+      // Handle the reminder_minutes field
+      reminder_minutes:
+        data.reminder_minutes === undefined ? null : data.reminder_minutes,
     };
 
     const response = await fetchWithAuth(
@@ -79,6 +115,9 @@ export async function updateActivity(
       end_time: data.end_time
         ? new Date(data.end_time).toISOString().split(".")[0]
         : undefined,
+      // Handle the reminder_minutes field
+      reminder_minutes:
+        data.reminder_minutes === undefined ? null : data.reminder_minutes,
     };
 
     const response = await fetchWithAuth(

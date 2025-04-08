@@ -28,15 +28,34 @@ export const createTask = async (taskData: TaskForm): Promise<Task[]> => {
   }
 };
 
-export const getAITaskSuggestion = async (residentId: string) => {
+export const getAITaskSuggestion = async (
+  residentId: string,
+  formData: {
+    task_title?: string;
+    task_details?: string;
+    priority?: "High" | "Medium" | "Low";
+    category?: "Meals" | "Medication" | "Therapy" | "Outing" | "Others";
+    start_date?: Date;
+    due_date?: Date;
+    recurring?: "Daily" | "Weekly" | "Monthly" | "Annually" | null;
+    ai_context: string;
+  },
+) => {
   try {
+    const serializedFormData = {
+      ...formData,
+      start_date: formData.start_date?.toISOString(),
+      due_date: formData.due_date?.toISOString(),
+    };
+
     const response = await fetchWithAuth(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/tasks/ai-suggestion/${residentId}`,
       {
-        method: "GET",
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        body: JSON.stringify(serializedFormData),
       },
     );
 
@@ -189,7 +208,7 @@ export const updateTask = async (
         updatedData.end_recurring_date,
       ).toISOString();
     if (updatedData.remind_prior)
-      dataToSend.remind_prior = updatedData.remind_prior;
+      dataToSend.remind_prior = parseInt(updatedData.remind_prior);
     if (updatedData.is_ai_generated !== undefined)
       dataToSend.is_ai_generated = updatedData.is_ai_generated;
     if (updatedData.assigned_to)

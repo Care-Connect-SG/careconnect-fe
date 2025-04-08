@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { DateTimePicker } from "@/components/ui/datetime-picker";
+import { parseStringToDateTime } from "@/components/ui/datetime-picker";
 import {
   Dialog,
   DialogContent,
@@ -38,7 +39,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Tooltip,
@@ -50,7 +50,6 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { Task, TaskCategory, TaskPriority, TaskStatus } from "@/types/task";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { DialogClose } from "@radix-ui/react-dialog";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
@@ -60,6 +59,7 @@ import {
   Loader2,
   Plus,
   Sparkles,
+  X,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -93,15 +93,24 @@ const taskSchema = z
       .nullable()
       .optional(),
     end_recurring_date: z.date().nullable().optional(),
-    remind_prior: z.number().nullable().optional(),
+    remind_prior: z.string().optional(),
     is_ai_generated: z.boolean().default(false),
     assigned_to: z.string().nonempty("Assignee is required"),
     update_series: z.boolean().optional(),
   })
-  .refine((data) => data.start_date < data.due_date, {
-    message: "Start date must be before due date",
-    path: ["due_date"],
-  })
+  .refine(
+    (data) => {
+      const startDate = new Date(data.start_date);
+      const dueDate = new Date(data.due_date);
+      console.log(startDate);
+      console.log(dueDate);
+      return startDate < dueDate;
+    },
+    {
+      message: "Start date must be before due date",
+      path: ["due_date"],
+    },
+  )
   .refine(
     (data) => {
       if (data.recurring && data.end_recurring_date) {
@@ -142,6 +151,7 @@ export default function TaskForm({
   const [prefilledFields, setPrefilledFields] = useState<
     Record<string, string>
   >({});
+  const [aiContext, setAIContext] = useState("");
 
   const defaultFormValues = {
     task_title: "",
@@ -156,7 +166,7 @@ export default function TaskForm({
     due_date: new Date(),
     recurring: undefined,
     end_recurring_date: undefined,
-    remind_prior: undefined,
+    remind_prior: "5",
     is_ai_generated: false,
     assigned_to: "",
   };
@@ -173,6 +183,7 @@ export default function TaskForm({
     if (!isOpen) {
       form.reset(defaultFormValues);
       setPrefilledFields({});
+      setAIContext("");
     }
   }, [isOpen, form]);
 
@@ -193,7 +204,7 @@ export default function TaskForm({
         end_recurring_date: task.end_recurring_date
           ? new Date(task.end_recurring_date + "Z")
           : undefined,
-        remind_prior: task.remind_prior,
+        remind_prior: task.remind_prior?.toString() || "5",
         is_ai_generated: task.is_ai_generated,
         assigned_to: task.assigned_to,
       });
@@ -241,6 +252,7 @@ export default function TaskForm({
     if (!newOpen) {
       form.reset(defaultFormValues);
       setPrefilledFields({});
+      setAIContext("");
       if (onClose) {
         onClose();
       }
@@ -380,7 +392,22 @@ export default function TaskForm({
 
     try {
       setIsAILoading(true);
-      const suggestion = await getAITaskSuggestion(residentId);
+
+      const currentFormValues = {
+        task_title: form.getValues("task_title"),
+        task_details: form.getValues("task_details"),
+        priority: form.getValues("priority"),
+        category: form.getValues("category"),
+        start_date: form.getValues("start_date"),
+        due_date: form.getValues("due_date"),
+        recurring: form.getValues("recurring"),
+        ai_context: aiContext,
+      };
+
+      const suggestion = await getAITaskSuggestion(
+        residentId,
+        currentFormValues,
+      );
 
       const newPrefilledFields: Record<string, string> = {};
 
@@ -419,6 +446,7 @@ export default function TaskForm({
       }
 
       setPrefilledFields(newPrefilledFields);
+      form.setValue("is_ai_generated", true);
 
       toast({
         title: "Success",
@@ -446,35 +474,12 @@ export default function TaskForm({
             </Button>
           )}
         </DialogTrigger>
-        <DialogContent className="min-h-fit max-h-[90vh] flex flex-col p-0">
+        <DialogContent className="min-h-fit max-h-[90vh] flex flex-col p-0 max-w-5xl w-full">
           <DialogHeader className="px-6 pt-6">
             <div className="flex items-center justify-between">
               <DialogTitle>
                 {task ? "Edit Task" : "Create New Task"}
               </DialogTitle>
-              {!task && (
-                <div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={handleAISuggestion}
-                    disabled={isAILoading || !canProceed}
-                    className="flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-blue-500 hover:text-green-500 transition-all hover:duration-300"
-                  >
-                    {isAILoading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin text-green-500" />
-                        Getting Suggestion...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="h-4 w-4 text-green-500" />
-                        Get AI Suggestion
-                      </>
-                    )}
-                  </Button>
-                </div>
-              )}
             </div>
           </DialogHeader>
           <Form {...form}>
@@ -486,7 +491,7 @@ export default function TaskForm({
                       control={form.control}
                       name="residents"
                       render={({ field, fieldState }) => (
-                        <FormItem className="w-full">
+                        <FormItem className="w-1/2">
                           <Label className="font-semibold">
                             Select Resident
                           </Label>
@@ -530,7 +535,7 @@ export default function TaskForm({
                       control={form.control}
                       name="assigned_to"
                       render={({ field, fieldState }) => (
-                        <FormItem className="w-full">
+                        <FormItem className="w-1/2">
                           <Label className="font-semibold">Assigned To</Label>
                           <Select
                             onValueChange={field.onChange}
@@ -569,7 +574,7 @@ export default function TaskForm({
 
               {!task && !canProceed && (
                 <div className="flex flex-col items-center justify-center bg-slate-50 p-6">
-                  <div className="bg-amber-50 border border-amber-200 p-6 rounded-lg max-w-md text-center">
+                  <div className="bg-amber-50 border border-amber-200 p-6 rounded-lg text-center w-full">
                     <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
                     <h3 className="text-lg font-medium mb-2">
                       Select Required Fields
@@ -584,8 +589,56 @@ export default function TaskForm({
               )}
 
               {(task || canProceed) && (
-                <>
-                  <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+                <div className="flex flex-1 overflow-hidden">
+                  {!task && (
+                    <div className="w-1/3 p-6 bg-gray-50 border-r overflow-auto">
+                      <div className="flex flex-col gap-2">
+                        <Label
+                          htmlFor="ai-context"
+                          className="text-sm font-medium text-green-700"
+                        >
+                          Enhance Task with AI Context
+                        </Label>
+                        <Textarea
+                          id="ai-context"
+                          placeholder="Enter additional information to help generate a relevant task..."
+                          value={aiContext}
+                          onChange={(e) => setAIContext(e.target.value)}
+                          className="bg-white border-green-200 focus-visible:ring-green-500 h-[calc(100vh-800px)]"
+                        />
+                        <div className="text-xs text-gray-500 italic">
+                          Example: Recent medical history, care preferences,
+                          mobility limitations, etc.
+                        </div>
+                        {!task && (
+                          <Button
+                            type="button"
+                            onClick={handleAISuggestion}
+                            disabled={isAILoading || !canProceed}
+                            className="mt-2 flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-blue-500 hover:text-green-500 transition-all hover:duration-300 border w-full"
+                          >
+                            {isAILoading ? (
+                              <>
+                                <Loader2 className="w-4 h-4 animate-spin text-green-500" />
+                                Getting Suggestion...
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="h-4 w-4 text-green-500" />
+                                Get AI Suggestion
+                              </>
+                            )}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  <div
+                    className={`${
+                      !task ? "w-2/3" : "w-full"
+                    } p-6 overflow-y-auto space-y-4`}
+                  >
                     <FormField
                       control={form.control}
                       name="task_title"
@@ -881,16 +934,7 @@ export default function TaskForm({
                                       value={field.value}
                                       onChange={(date) => {
                                         if (date) {
-                                          const newDate = new Date(date);
-                                          if (field.value) {
-                                            newDate.setHours(
-                                              field.value.getHours(),
-                                            );
-                                            newDate.setMinutes(
-                                              field.value.getMinutes(),
-                                            );
-                                          }
-                                          field.onChange(newDate);
+                                          field.onChange(date);
                                         }
                                       }}
                                     />
@@ -927,16 +971,7 @@ export default function TaskForm({
                                       value={field.value}
                                       onChange={(date) => {
                                         if (date) {
-                                          const newDate = new Date(date);
-                                          if (field.value) {
-                                            newDate.setHours(
-                                              field.value.getHours(),
-                                            );
-                                            newDate.setMinutes(
-                                              field.value.getMinutes(),
-                                            );
-                                          }
-                                          field.onChange(newDate);
+                                          field.onChange(date);
                                         }
                                       }}
                                     />
@@ -1062,20 +1097,44 @@ export default function TaskForm({
                       render={({ field, fieldState }) => (
                         <FormItem>
                           <Label>Remind Prior (minutes)</Label>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              onChange={(e) =>
-                                field.onChange(Number(e.target.value))
-                              }
-                              value={field.value || ""}
-                              className={
-                                fieldState.invalid
-                                  ? "border-destructive focus-visible:ring-destructive"
-                                  : ""
-                              }
-                            />
-                          </FormControl>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value?.toString() || "5"}
+                          >
+                            <FormControl>
+                              <SelectTrigger
+                                className={
+                                  fieldState.invalid
+                                    ? "border-destructive focus-visible:ring-destructive"
+                                    : ""
+                                }
+                              >
+                                <SelectValue placeholder="Select reminder time" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="5">
+                                5 minutes before
+                              </SelectItem>
+                              <SelectItem value="10">
+                                10 minutes before
+                              </SelectItem>
+                              <SelectItem value="15">
+                                15 minutes before
+                              </SelectItem>
+                              <SelectItem value="30">
+                                30 minutes before
+                              </SelectItem>
+                              <SelectItem value="60">1 hour before</SelectItem>
+                              <SelectItem value="120">
+                                2 hours before
+                              </SelectItem>
+                              <SelectItem value="1440">1 day before</SelectItem>
+                              <SelectItem value="2880">
+                                2 days before
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
                           {fieldState.error && (
                             <p className="text-sm text-destructive">
                               {fieldState.error.message}
@@ -1085,20 +1144,20 @@ export default function TaskForm({
                       )}
                     />
                   </div>
-                  <div className="flex justify-end px-6 py-4 bg-background">
-                    <Button type="submit" disabled={isLoading || isAILoading}>
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                          {task ? "Updating..." : "Creating..."}
-                        </>
-                      ) : (
-                        <>{task ? "Update Task" : "Create Task"}</>
-                      )}
-                    </Button>
-                  </div>
-                </>
+                </div>
               )}
+              <div className="flex justify-end px-6 py-4 bg-background">
+                <Button type="submit" disabled={isLoading || isAILoading}>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      {task ? "Updating..." : "Creating..."}
+                    </>
+                  ) : (
+                    <>{task ? "Update Task" : "Create Task"}</>
+                  )}
+                </Button>
+              </div>
             </form>
           </Form>
         </DialogContent>

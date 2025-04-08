@@ -9,6 +9,7 @@ export interface Activity {
   created_at: string;
   updated_at: string;
   created_by?: string;
+  reminder_minutes?: number;
 }
 
 export interface ActivityCreate {
@@ -18,6 +19,7 @@ export interface ActivityCreate {
   end_time: string;
   location: string;
   category: string;
+  reminder_minutes?: number;
 }
 
 export interface ActivityFilter {

@@ -221,7 +221,7 @@ const ResidentDetailsNotesCard: React.FC<ResidentDetailsNotesCardProps> = ({
             </div>
           ))
         ) : (
-          <p className="text-gray-500 text-sm">No notes yet.</p>
+          <p className="text-gray-500 text-sm">No notes yet</p>
         )}
       </CardContent>
     </Card>

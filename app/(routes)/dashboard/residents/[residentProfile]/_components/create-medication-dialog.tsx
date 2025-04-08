@@ -66,7 +66,6 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
       dosage: "",
       schedule_type: "day",
       start_date: "",
-      end_date: "",
       instructions: "",
       times_of_day: [],
       days_of_week: [],

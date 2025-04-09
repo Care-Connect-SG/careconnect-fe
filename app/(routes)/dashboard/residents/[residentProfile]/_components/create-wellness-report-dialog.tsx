@@ -214,7 +214,7 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="max-w-3xl">
         <DialogHeader className="flex flex-row items-center justify-between mb-4">
           <DialogTitle className="text-xl font-semibold">
             {step === "input"

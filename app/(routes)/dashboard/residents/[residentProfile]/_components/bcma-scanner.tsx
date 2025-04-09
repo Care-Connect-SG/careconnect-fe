@@ -31,7 +31,6 @@ const BCMA_Scanner: React.FC<BCMA_ScannerProps> = ({ onSuccess }) => {
   const [medicationInfo, setMedicationInfo] = useState<{
     medication_name: string;
     dosage: string;
-    frequency: string;
   } | null>(null);
   const [step, setStep] = useState<"resident" | "medication">("resident");
   const [matchStatus, setMatchStatus] = useState<
@@ -89,7 +88,6 @@ const BCMA_Scanner: React.FC<BCMA_ScannerProps> = ({ onSuccess }) => {
               setMedicationInfo({
                 medication_name: med.medication_name,
                 dosage: med.dosage,
-                frequency: med.frequency,
               });
               toast({
                 title: "Medication Scanned",
@@ -277,7 +275,7 @@ const BCMA_Scanner: React.FC<BCMA_ScannerProps> = ({ onSuccess }) => {
               <div>
                 <p className="font-medium">{medicationInfo.medication_name}</p>
                 <p className="text-xs text-gray-500 mt-1">
-                  {medicationInfo.dosage} – {medicationInfo.frequency}
+                  {medicationInfo.dosage}
                 </p>
               </div>
             ) : (

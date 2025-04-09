@@ -55,7 +55,7 @@ export const createMedication = async (
     return await response.json();
   } catch (error) {
     console.error("Error creating medication for the resident:", error);
-    return null;
+    throw error;
   }
 };
 
@@ -85,7 +85,7 @@ export const updateMedication = async (
     return await response.json();
   } catch (error) {
     console.error("Error updating medication for the resident:", error);
-    return null;
+    throw error;
   }
 };
 

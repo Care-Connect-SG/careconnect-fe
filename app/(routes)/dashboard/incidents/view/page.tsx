@@ -79,7 +79,7 @@ export default function ViewReportPage() {
           report={report}
           reporter={reporter}
           resident={resident}
-        />
+        />,
       ).toBlob();
 
       const formData = new FormData();
@@ -89,7 +89,7 @@ export default function ViewReportPage() {
         `${toTitleCase(resident.full_name)}'s ${form.title}.pdf`,
         {
           type: "application/pdf",
-        }
+        },
       );
 
       formData.append("media", pdfFile);
@@ -98,7 +98,7 @@ export default function ViewReportPage() {
       formData.append("jid", `${whatsappNumber}`);
       formData.append(
         "caption",
-        `🚨 URGENT: Incident Report for ${toTitleCase(resident.full_name)}`
+        `🚨 URGENT: Incident Report for ${toTitleCase(resident.full_name)}`,
       );
 
       const response = await fetch("/api/whatsapp/media", {
@@ -137,7 +137,7 @@ export default function ViewReportPage() {
         report={report}
         reporter={reporter}
         resident={resident}
-      />
+      />,
     ).toBlob();
 
     const url = URL.createObjectURL(blob);
@@ -183,7 +183,7 @@ export default function ViewReportPage() {
       const reporter = await getUserById(data.reporter.id);
       if (data.primary_resident?.id) {
         const resident: ResidentRecord = await getResidentById(
-          data.primary_resident.id
+          data.primary_resident.id,
         );
         setResident(resident);
       }
@@ -297,7 +297,7 @@ export default function ViewReportPage() {
                 variant="secondary"
                 onClick={() =>
                   router.replace(
-                    `/dashboard/incidents/resolve?formId=${report.form_id}&reportId=${reportId}`
+                    `/dashboard/incidents/resolve?formId=${report.form_id}&reportId=${reportId}`,
                   )
                 }
                 className="flex items-center gap-2"
@@ -332,9 +332,8 @@ export default function ViewReportPage() {
                     on{" "}
                     <span className="font-medium">
                       {new Date(
-                        report?.reviews![
-                          report?.reviews!.length - 1
-                        ].reviewed_at
+                        report?.reviews![report?.reviews!.length - 1]
+                          .reviewed_at,
                       ).toLocaleString()}
                     </span>
                   </p>
@@ -348,7 +347,7 @@ export default function ViewReportPage() {
                       variant="secondary"
                       onClick={() =>
                         router.replace(
-                          `/dashboard/incidents/resolve?formId=${report.form_id}&reportId=${reportId}`
+                          `/dashboard/incidents/resolve?formId=${report.form_id}&reportId=${reportId}`,
                         )
                       }
                     >
@@ -390,9 +389,8 @@ export default function ViewReportPage() {
                       on{" "}
                       <span className="font-medium">
                         {new Date(
-                          report?.reviews![
-                            report?.reviews!.length - 1
-                          ].reviewed_at
+                          report?.reviews![report?.reviews!.length - 1]
+                            .reviewed_at,
                         ).toLocaleString()}
                       </span>
                     </p>
@@ -410,9 +408,8 @@ export default function ViewReportPage() {
                       Resolved on{" "}
                       <span className="font-medium">
                         {new Date(
-                          report?.reviews![
-                            report?.reviews!.length - 1
-                          ].resolved_at!
+                          report?.reviews![report?.reviews!.length - 1]
+                            .resolved_at!,
                         ).toLocaleString()}
                       </span>
                     </p>
@@ -452,7 +449,7 @@ export default function ViewReportPage() {
             </div>
             <Badge
               className={`${getReportBadgeConfig(
-                report?.status!
+                report?.status!,
               )} px-3 py-1 text-sm font-medium`}
             >
               {report?.status}
@@ -625,7 +622,7 @@ export default function ViewReportPage() {
                     {
                       form?.json_content.find(
                         (element) =>
-                          element.element_id === section.form_element_id
+                          element.element_id === section.form_element_id,
                       )?.label
                     }
                   </h3>

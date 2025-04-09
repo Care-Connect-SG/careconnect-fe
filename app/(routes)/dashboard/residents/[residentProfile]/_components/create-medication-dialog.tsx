@@ -95,7 +95,7 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
     img.onload = async () => {
       try {
         const result = await new BrowserQRCodeReader().decodeFromImageElement(
-          img
+          img,
         );
         const scannedId = result.getText();
 
@@ -107,7 +107,7 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
         if (medicationData) {
           methods.setValue(
             "medication_name",
-            medicationData.medication_name || ""
+            medicationData.medication_name || "",
           );
           methods.setValue("dosage", medicationData.dosage || "");
           methods.setValue("instructions", medicationData.instructions || "");
@@ -184,7 +184,7 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
       toast({
         title: "Success",
         description: `${methods.watch(
-          "medication_name"
+          "medication_name",
         )} has been added to the medication list.`,
       });
       reset({
@@ -334,7 +334,7 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
                         onValueChange={(value) =>
                           methods.setValue(
                             "schedule_type",
-                            value as "custom" | "day" | "week"
+                            value as "custom" | "day" | "week",
                           )
                         }
                       >
@@ -371,13 +371,13 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
                             className={cn(
                               "w-full justify-start text-left font-normal",
                               !methods.watch("start_date") &&
-                                "text-muted-foreground"
+                                "text-muted-foreground",
                             )}
                           >
                             {methods.watch("start_date") ? (
                               format(
                                 methods.watch("start_date"),
-                                "MMMM d, yyyy"
+                                "MMMM d, yyyy",
                               )
                             ) : (
                               <span>Select date</span>
@@ -409,7 +409,7 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
                             className={cn(
                               "w-full justify-start text-left font-normal",
                               !methods.watch("end_date") &&
-                                "text-muted-foreground"
+                                "text-muted-foreground",
                             )}
                           >
                             {methods.watch("end_date") ? (

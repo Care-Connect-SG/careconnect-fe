@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
@@ -16,10 +17,9 @@ import {
 } from "@/components/ui/select";
 import { format } from "date-fns";
 import { Clock, MinusIcon, PlusCircle, PlusIcon } from "lucide-react";
+import { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import { MedicationFormSchema } from "../schema";
-import { Label } from "@/components/ui/label";
-import { useEffect } from "react";
 
 type Time = {
   hour: number;
@@ -54,7 +54,7 @@ export function WeekMedicationScheduler({ onDialogClose }: SchedulerProps) {
   function toggleDay(day: string) {
     setValue(
       "days_of_week",
-      days.includes(day) ? days.filter((d) => d !== day) : [...days, day]
+      days.includes(day) ? days.filter((d) => d !== day) : [...days, day],
     );
   }
 
@@ -69,8 +69,8 @@ export function WeekMedicationScheduler({ onDialogClose }: SchedulerProps) {
     setValue(
       "times_of_day",
       timings.map((time: Time, i: number) =>
-        i === index ? { ...time, [field]: value } : time
-      )
+        i === index ? { ...time, [field]: value } : time,
+      ),
     );
   };
 
@@ -81,7 +81,7 @@ export function WeekMedicationScheduler({ onDialogClose }: SchedulerProps) {
   const removeTiming = (index: number) => {
     setValue(
       "times_of_day",
-      timings.filter((_: Time, i: number) => i !== index)
+      timings.filter((_: Time, i: number) => i !== index),
     );
   };
 
@@ -285,8 +285,8 @@ export function DayMedicationScheduler({ onDialogClose }: SchedulerProps) {
     setValue(
       "times_of_day",
       timings.map((time: Time, i: number) =>
-        i === index ? { ...time, [field]: value } : time
-      )
+        i === index ? { ...time, [field]: value } : time,
+      ),
     );
   };
 
@@ -297,7 +297,7 @@ export function DayMedicationScheduler({ onDialogClose }: SchedulerProps) {
   const removeTiming = (index: number) => {
     setValue(
       "times_of_day",
-      timings.filter((_: Time, i: number) => i !== index)
+      timings.filter((_: Time, i: number) => i !== index),
     );
   };
 

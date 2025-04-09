@@ -51,7 +51,7 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
   const [step, setStep] = useState<"input" | "form">("input");
 
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    new Date()
+    new Date(),
   );
 
   const [aiContext, setAIContext] = useState("");
@@ -67,7 +67,7 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
   });
 
   const hasContent = Object.entries(formData).some(
-    ([key, value]) => key !== "date" && value !== ""
+    ([key, value]) => key !== "date" && value !== "",
   );
 
   useEffect(() => {
@@ -233,7 +233,7 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
                     variant="outline"
                     className={cn(
                       "w-full justify-start text-left font-normal",
-                      !selectedDate && "text-muted-foreground"
+                      !selectedDate && "text-muted-foreground",
                     )}
                     type="button"
                   >
@@ -341,7 +341,7 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
                       rows={3}
                       className={cn(
                         "h-[100px]",
-                        aiGenerated ? "bg-green-50 border-green-200" : ""
+                        aiGenerated ? "bg-green-50 border-green-200" : "",
                       )}
                     />
                   </div>
@@ -392,10 +392,10 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
                     type="submit"
                     disabled={
                       !Object.entries(formData).some(
-                        ([key, value]) => key !== "date" && value !== ""
+                        ([key, value]) => key !== "date" && value !== "",
                       ) ||
                       Object.entries(formData).some(
-                        ([key, value]) => key !== "date" && value === ""
+                        ([key, value]) => key !== "date" && value === "",
                       )
                     }
                   >

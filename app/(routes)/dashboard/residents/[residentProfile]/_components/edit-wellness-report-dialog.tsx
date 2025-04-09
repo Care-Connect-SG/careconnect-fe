@@ -148,7 +148,7 @@ const EditWellnessReportDialog: React.FC<EditWellnessReportDialogProps> = ({
                     variant="outline"
                     className={cn(
                       "w-full justify-start text-left font-normal",
-                      !selectedDate && "text-muted-foreground"
+                      !selectedDate && "text-muted-foreground",
                     )}
                     type="button"
                   >

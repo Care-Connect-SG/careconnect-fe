@@ -21,10 +21,7 @@ import {
 } from "@/components/ui/table";
 import { ReportResponse, ReportStatus } from "@/types/report";
 import { Role, User } from "@/types/user";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-} from "@radix-ui/react-dropdown-menu";
+import { DropdownMenu } from "@radix-ui/react-dropdown-menu";
 import {
   AlertCircle,
   CheckCircle,

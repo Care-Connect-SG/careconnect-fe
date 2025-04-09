@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
 import { convertUTCToLocal } from "@/lib/utils";
-import { Check, MoreHorizontal, Pencil, Plus, Trash, X } from "lucide-react";
+import { Check, MoreHorizontal, Pencil, Plus, Trash } from "lucide-react";
 import React, { useState, useRef, useEffect } from "react";
 
 interface ResidentDetailsNotesCardProps {

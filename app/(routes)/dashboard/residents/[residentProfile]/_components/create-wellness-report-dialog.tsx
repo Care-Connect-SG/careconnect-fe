@@ -10,7 +10,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -215,7 +214,7 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl w-full p-6 max-h-[82vh] overflow-y-auto">
+      <DialogContent>
         <DialogHeader className="flex flex-row items-center justify-between mb-4">
           <DialogTitle className="text-xl font-semibold">
             {step === "input"
@@ -225,139 +224,141 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="date">Report Date</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !selectedDate && "text-muted-foreground",
-                  )}
-                  type="button"
-                >
-                  {selectedDate ? (
-                    format(selectedDate, "MMMM d, yyyy")
-                  ) : (
-                    <span>Select date</span>
-                  )}
-                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={handleDateChange}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          {step === "input" ? (
-            <div className="space-y-6 py-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="aiContext">Context Information</Label>
-                <Textarea
-                  id="aiContext"
-                  value={aiContext}
-                  onChange={(e) => setAIContext(e.target.value)}
-                  placeholder="Enter relevant information about the resident's recent activities, health changes, social interactions, or specific areas to focus on..."
-                  rows={5}
-                  className="resize-none"
-                />
-              </div>
-
-              <div className="flex flex-col gap-4">
-                <Card className="border border-green-200 bg-green-50">
-                  <CardContent className="p-4 flex items-start gap-3">
-                    <Bot className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <h3 className="font-medium text-green-800 mb-1">
-                        Generate with AI
-                      </h3>
-                      <p className="text-sm text-green-700">
-                        Let AI generate a complete wellness report based on your
-                        context. You'll be able to review and edit all sections
-                        before submitting.
-                      </p>
-                      <Button
-                        type="button"
-                        onClick={handleGenerateAI}
-                        disabled={isFetchingAI}
-                        variant="outline"
-                        className="mt-2 flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-blue-500 hover:text-green-500 transition-all hover:duration-300"
-                      >
-                        {isFetchingAI ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin text-green-500" />
-                            Generating Report...
-                          </>
-                        ) : (
-                          "Generate AI Report"
-                        )}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="border">
-                  <CardContent className="p-4 flex items-start gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-gray-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <h3 className="font-medium mb-1">Manual Entry</h3>
-                      <p className="text-sm text-gray-600">
-                        Create the wellness report manually by filling out each
-                        section yourself.
-                      </p>
-                      <Button
-                        type="button"
-                        onClick={handleManualEntry}
-                        variant="outline"
-                        className="mt-3"
-                      >
-                        Create Manually
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          ) : (
-            <>
-              {reportFields.map(([field, label]) => (
-                <div key={field} className="space-y-1.5">
-                  <Label htmlFor={field}>{label}</Label>
-                  <Textarea
-                    id={field}
-                    value={(formData as any)[field]}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        [field]: e.target.value,
-                      }))
-                    }
-                    rows={3}
+          <div className="max-h-[60vh] overflow-y-auto px-1 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="date">Report Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
                     className={cn(
-                      "resize-none",
-                      aiGenerated ? "bg-green-50 border-green-200" : "",
+                      "w-full justify-start text-left font-normal",
+                      !selectedDate && "text-muted-foreground",
                     )}
+                    type="button"
+                  >
+                    {selectedDate ? (
+                      format(selectedDate, "MMMM d, yyyy")
+                    ) : (
+                      <span>Select date</span>
+                    )}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={handleDateChange}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            {step === "input" ? (
+              <div className="space-y-6 pt-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="aiContext">Context Information</Label>
+                  <Textarea
+                    id="aiContext"
+                    value={aiContext}
+                    onChange={(e) => setAIContext(e.target.value)}
+                    placeholder="Enter relevant information about the resident's recent activities, health changes, social interactions, or specific areas to focus on..."
+                    rows={5}
+                    className="resize-none"
                   />
                 </div>
-              ))}
 
-              <div className="flex items-center text-sm text-amber-600 gap-1 mt-2">
-                <AlertCircle className="h-4 w-4" />
-                <span>
-                  All fields are required. Please fill in all sections before
-                  submitting.
-                </span>
+                <div className="flex flex-col gap-4">
+                  <Card className="border border-green-200 bg-green-50">
+                    <CardContent className="p-4 flex items-start gap-3">
+                      <Bot className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <h3 className="font-medium text-green-800 mb-1">
+                          Generate with AI
+                        </h3>
+                        <p className="text-sm text-green-700">
+                          Let AI generate a complete wellness report based on
+                          your context. You'll be able to review and edit all
+                          sections before submitting.
+                        </p>
+                        <Button
+                          type="button"
+                          onClick={handleGenerateAI}
+                          disabled={isFetchingAI}
+                          variant="outline"
+                          className="mt-2 flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-blue-500 hover:text-green-500 transition-all hover:duration-300"
+                        >
+                          {isFetchingAI ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin text-green-500" />
+                              Generating Report...
+                            </>
+                          ) : (
+                            "Generate AI Report"
+                          )}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border">
+                    <CardContent className="p-4 flex items-start gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-gray-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <h3 className="font-medium mb-1">Manual Entry</h3>
+                        <p className="text-sm text-gray-600">
+                          Create the wellness report manually by filling out
+                          each section yourself.
+                        </p>
+                        <Button
+                          type="button"
+                          onClick={handleManualEntry}
+                          variant="outline"
+                          className="mt-3"
+                        >
+                          Create Manually
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
-            </>
-          )}
+            ) : (
+              <>
+                {reportFields.map(([field, label]) => (
+                  <div key={field} className="space-y-1.5">
+                    <Label htmlFor={field}>{label}</Label>
+                    <Textarea
+                      id={field}
+                      value={(formData as any)[field]}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          [field]: e.target.value,
+                        }))
+                      }
+                      rows={3}
+                      className={cn(
+                        "h-[100px]",
+                        aiGenerated ? "bg-green-50 border-green-200" : "",
+                      )}
+                    />
+                  </div>
+                ))}
 
-          <DialogFooter>
+                <div className="flex items-center text-sm text-amber-600 gap-1 mt-2">
+                  <AlertCircle className="h-4 w-4" />
+                  <span>
+                    All fields are required. Please fill in all sections before
+                    submitting.
+                  </span>
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="flex justify-end space-x-4">
             <div className="flex justify-between items-center w-full">
               <div>
                 {step === "form" && (
@@ -403,7 +404,7 @@ const CreateWellnessReportDialog: React.FC<CreateWellnessReportDialogProps> = ({
                 )}
               </div>
             </div>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

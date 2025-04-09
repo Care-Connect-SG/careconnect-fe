@@ -30,22 +30,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { ReportResponse } from "@/types/report";
 import { User } from "@/types/user";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronLeft, CircleAlert, X } from "lucide-react";
+import { ChevronLeft, CircleAlert } from "lucide-react";
 import { FormProvider, useForm } from "react-hook-form";
 import FormElementFill from "../_components/form-element-fill";
 import { LoadingSkeleton } from "../_components/loading-skeleton";
@@ -60,7 +50,6 @@ export default function ResolveReportPage() {
 
   const [form, setForm] = useState<FormResponse | null>(null);
   const [report, setReport] = useState<ReportResponse | null>(null);
-  const [formTitle, setFormTitle] = useState<string>("");
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [availableReports, setAvailableReports] = useState<ReportResponse[]>(

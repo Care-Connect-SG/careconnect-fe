@@ -19,7 +19,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { useBreadcrumb } from "@/context/breadcrumb-context";
 import { useToast } from "@/hooks/use-toast";
@@ -37,6 +36,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Spinner } from "@/components/ui/spinner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -77,6 +77,7 @@ export default function CreateGroupPage() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
+        setLoadingUsers(true);
         const data = await getUsers();
         setUsers(data);
       } catch (err: any) {
@@ -130,6 +131,14 @@ export default function CreateGroupPage() {
       (user.role === "Admin" || user.role === "Nurse") &&
       !selectedMembers.includes(user.id),
   );
+
+  if (loadingUsers) {
+    return (
+      <div className="flex items-center justify-center h-[90vh]">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 max-w-3xl mx-auto">

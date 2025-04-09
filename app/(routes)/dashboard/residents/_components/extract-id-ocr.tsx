@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
-import { FileIcon, IdCard, ImageIcon } from "lucide-react";
+import { FileIcon, IdCard } from "lucide-react";
 import React, { useState, useRef } from "react";
 
 export interface ExtractedIDData {

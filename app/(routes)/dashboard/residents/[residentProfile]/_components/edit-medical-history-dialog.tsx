@@ -282,7 +282,7 @@ const EditMedicalHistoryDialog: React.FC<EditMedicalHistoryDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md w-full p-6 max-h-[80vh] overflow-y-auto">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Edit Medical Record</DialogTitle>
           <DialogDescription>

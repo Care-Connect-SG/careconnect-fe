@@ -22,7 +22,7 @@ import { toTitleCase } from "@/lib/utils";
 import { ResidentRecord } from "@/types/resident";
 import { Task, TaskStatus } from "@/types/task";
 import { useQueryClient } from "@tanstack/react-query";
-import { Clock, Copy, Download, Plus, Trash, User } from "lucide-react";
+import { Clock, Copy, Download, Plus, Trash } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState, Dispatch, SetStateAction } from "react";

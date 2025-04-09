@@ -1,7 +1,11 @@
 "use client";
 
-import { getFormById } from "@/app/api/form";
-import { approveReport, getReportById } from "@/app/api/report";
+import { tryGetFormById } from "@/app/api/form";
+import {
+  approveReport,
+  getReportById,
+  tryGetReportById,
+} from "@/app/api/report";
 import { getResidentById } from "@/app/api/resident";
 import { getCurrentUser, getUserById } from "@/app/api/user";
 import {
@@ -51,9 +55,10 @@ export default function ViewReportPage() {
   const [reporter, setReporter] = useState<User | null>();
   const [resident, setResident] = useState<ResidentRecord>();
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
-  const [form, setForm] = useState<FormResponse>();
+  const [form, setForm] = useState<FormResponse | null>();
   const [user, setUser] = useState<User>();
   const [isSharing, setIsSharing] = useState(false);
+  const [referenceReportValid, setReferenceReportValid] = useState(true);
 
   const handleShareWithNextOfKin = async () => {
     if (!report || !form || !reporter || !resident?.emergency_contact_number) {
@@ -185,6 +190,11 @@ export default function ViewReportPage() {
       setReport(data);
       setReporter(reporter);
       fetchForm(data.form_id);
+
+      if (data.reference_report_id) {
+        const ref = await tryGetReportById(data.reference_report_id);
+        setReferenceReportValid(!!ref);
+      }
     } catch {
       console.error("Report not found");
       router.replace("/404");
@@ -194,11 +204,10 @@ export default function ViewReportPage() {
 
   const fetchForm = async (formId: string) => {
     try {
-      const data = await getFormById(formId!);
+      const data = await tryGetFormById(formId!);
       setForm(data);
     } catch (error) {
-      console.error("Failed to fetch form");
-      return null;
+      setForm(undefined); // explicitly set null to avoid undefined behavior
     }
   };
 
@@ -577,15 +586,23 @@ export default function ViewReportPage() {
                   <h2 className="text-gray-600 font-semibold">
                     Reference Report
                   </h2>
-                  <Link
-                    href={`/dashboard/incidents/view?reportId=${report.reference_report_id}`}
-                    className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800"
-                  >
-                    <Info className="h-4 w-4" />
-                    <span className="hover:underline">
-                      View Reference Report
-                    </span>
-                  </Link>
+
+                  {referenceReportValid === false ? (
+                    <div className="inline-flex items-center gap-2 text-gray-400 cursor-not-allowed">
+                      <Info className="h-4 w-4" />
+                      <span>Reference Report Deleted</span>
+                    </div>
+                  ) : referenceReportValid === true ? (
+                    <Link
+                      href={`/dashboard/incidents/view?reportId=${report.reference_report_id}`}
+                      className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800"
+                    >
+                      <Info className="h-4 w-4" />
+                      <span className="hover:underline">
+                        View Reference Report
+                      </span>
+                    </Link>
+                  ) : null}
                 </div>
               )}
             </div>

@@ -146,6 +146,29 @@ export const getReportById = async (
   }
 };
 
+export const tryGetReportById = async (
+  reportId: string,
+): Promise<ReportResponse | null> => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/incident/reports/${reportId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    return data;
+  } catch {
+    return null; // No logging
+  }
+};
+
 export const deleteReport = async (reportId: string): Promise<void> => {
   try {
     const response = await fetch(

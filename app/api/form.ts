@@ -134,6 +134,29 @@ export const getFormById = async (formId: string): Promise<FormResponse> => {
   }
 };
 
+export const tryGetFormById = async (
+  formId: string,
+): Promise<FormResponse | null> => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BE_API_URL}/incident/forms/${formId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    return data;
+  } catch {
+    return null;
+  }
+};
+
 export const deleteForm = async (formId: string): Promise<void> => {
   try {
     const response = await fetch(

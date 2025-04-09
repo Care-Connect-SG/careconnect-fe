@@ -1,5 +1,3 @@
-"use client";
-
 import { getFormById } from "@/app/api/form";
 import { getResidentById } from "@/app/api/resident";
 import { getUserById } from "@/app/api/user";
@@ -119,19 +117,13 @@ export default function ReportsTable({
       ).toBlob();
 
       const formData = new FormData();
-
       const pdfFile = new File(
         [pdfBlob],
         `${toTitleCase(resident.full_name)}'s ${form.title}.pdf`,
-        {
-          type: "application/pdf",
-        },
+        { type: "application/pdf" },
       );
-
       formData.append("media", pdfFile);
-
-      const whatsappNumber = `65${resident.emergency_contact_number}`;
-      formData.append("jid", `${whatsappNumber}`);
+      formData.append("jid", `65${resident.emergency_contact_number}`);
       formData.append(
         "caption",
         `🚨 URGENT: Incident Report for ${toTitleCase(resident.full_name)}`,
@@ -147,7 +139,8 @@ export default function ReportsTable({
       if (result.success) {
         toast({
           title: "Report shared",
-          description: `The report has been shared with the next of kin via WhatsApp.`,
+          description:
+            "The report has been shared with the next of kin via WhatsApp.",
         });
       } else {
         throw new Error(result.error || "Failed to share report");
@@ -163,10 +156,14 @@ export default function ReportsTable({
   };
 
   const renderCellContent = (value: string | null | undefined) => {
-    if (!value) {
-      return <span className="text-gray-400">N/A</span>;
-    }
+    if (!value) return <span className="text-gray-400">N/A</span>;
     return toTitleCase(value);
+  };
+
+  const canShowActions = (report: ReportResponse) => {
+    return ![ReportStatus.SUBMITTED, ReportStatus.CHANGES_MADE].includes(
+      report.status,
+    );
   };
 
   return (
@@ -245,9 +242,8 @@ export default function ReportsTable({
                       </Badge>
                     </TableCell>
                   )}
-                  {(report.status !== "Published" ||
-                    user?.role === Role.ADMIN) && (
-                    <TableCell className="px-6 py-4">
+                  <TableCell className="px-6 py-4 w-[1%] whitespace-nowrap">
+                    {canShowActions(report) ? (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
@@ -261,7 +257,7 @@ export default function ReportsTable({
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          {report.status === "Published" && (
+                          {report.status === ReportStatus.PUBLISHED && (
                             <>
                               <DropdownMenuItem
                                 onClick={(e) => {
@@ -303,14 +299,16 @@ export default function ReportsTable({
                               }}
                               className="text-red-500 hover:text-red-500"
                             >
-                              <Trash className="mr-2 h-4 w-4 text-red-500 hover:text-red-500 " />
+                              <Trash className="mr-2 h-4 w-4 text-red-500 hover:text-red-500" />
                               Delete
                             </DropdownMenuItem>
                           )}
                         </DropdownMenuContent>
                       </DropdownMenu>
-                    </TableCell>
-                  )}
+                    ) : (
+                      <div className="h-4 w-4" /> // empty but still sized
+                    )}
+                  </TableCell>
                 </TableRow>
               ))
             )}

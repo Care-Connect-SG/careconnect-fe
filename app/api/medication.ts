@@ -1,7 +1,7 @@
 import { MedicationRecord } from "@/types/medication";
 
 export const getMedicationsForResident = async (
-  residentId: string,
+  residentId: string
 ): Promise<MedicationRecord[]> => {
   try {
     const response = await fetch(
@@ -11,13 +11,13 @@ export const getMedicationsForResident = async (
         headers: {
           "Content-Type": "application/json",
         },
-      },
+      }
     );
 
     if (!response.ok) {
       const errData = await response.json();
       throw Error(
-        errData.detail || "Error fetching medications for the resident",
+        errData.detail || "Error fetching medications for the resident"
       );
     }
 
@@ -31,14 +31,9 @@ export const getMedicationsForResident = async (
 
 export const createMedication = async (
   residentId: string,
-  medicationData: any,
+  medicationData: any
 ) => {
   try {
-    console.log(
-      medicationData
-        ? medicationData
-        : "No medication data provided for resident ID: " + residentId,
-    );
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/${residentId}/medications`,
       {
@@ -47,13 +42,13 @@ export const createMedication = async (
           "Content-Type": "application/json",
         },
         body: JSON.stringify(medicationData),
-      },
+      }
     );
 
     if (!response.ok) {
       const errData = await response.json();
       throw Error(
-        errData.detail || "Error creating medication for the resident",
+        errData.detail || "Error creating medication for the resident"
       );
     }
 
@@ -66,7 +61,7 @@ export const createMedication = async (
 
 export const updateMedication = async (
   residentId: string,
-  medicationData: any,
+  medicationData: any
 ) => {
   try {
     const response = await fetch(
@@ -77,13 +72,13 @@ export const updateMedication = async (
           "Content-Type": "application/json",
         },
         body: JSON.stringify(medicationData),
-      },
+      }
     );
 
     if (!response.ok) {
       const errData = await response.json();
       throw Error(
-        errData.detail || "Error updating medication for the resident",
+        errData.detail || "Error updating medication for the resident"
       );
     }
 
@@ -96,7 +91,7 @@ export const updateMedication = async (
 
 export const deleteMedication = async (
   residentId: string,
-  medicationId: string,
+  medicationId: string
 ): Promise<boolean> => {
   try {
     const response = await fetch(
@@ -106,13 +101,13 @@ export const deleteMedication = async (
         headers: {
           "Content-Type": "application/json",
         },
-      },
+      }
     );
 
     if (!response.ok) {
       const errData = await response.json();
       throw Error(
-        errData.detail || "Error deleting medication for the resident",
+        errData.detail || "Error deleting medication for the resident"
       );
     }
 
@@ -126,7 +121,7 @@ export const deleteMedication = async (
 export const getMedicationById = async (
   residentId: string,
   medicationId: string,
-  suppressError?: boolean,
+  suppressError?: boolean
 ): Promise<MedicationRecord | null> => {
   try {
     const response = await fetch(
@@ -136,7 +131,7 @@ export const getMedicationById = async (
         headers: {
           "Content-Type": "application/json",
         },
-      },
+      }
     );
 
     if (!response.ok) {

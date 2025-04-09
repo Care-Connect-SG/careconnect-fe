@@ -34,7 +34,7 @@ import CreateMedication from "./_components/create-medication-dialog";
 import CreateWellnessReportDialog from "./_components/create-wellness-report-dialog";
 import EditCarePlan from "./_components/edit-careplan";
 import EditMedicalHistoryModal from "./_components/edit-medical-history-dialog";
-import EditMedication from "./_components/edit-medication";
+import EditMedication from "./_components/edit-medication-dialog";
 import EditResidentDialog from "./_components/edit-resident-dialog";
 import ResidentDetailsCard from "./_components/resident-detail-card";
 import ResidentDetailsNotesCard from "./_components/resident-detail-notes";
@@ -91,7 +91,7 @@ export default function ResidentDashboard() {
   };
 
   const [activeTab, setActiveTab] = useState<TabValue>(
-    isValidTab(tabParam) ? tabParam : "overview",
+    isValidTab(tabParam) ? tabParam : "overview"
   );
 
   const [modals, setModals] = useState({
@@ -231,7 +231,7 @@ export default function ResidentDashboard() {
         ? [...resident.additional_notes]
         : [];
       const existingTimestamps = Array.isArray(
-        resident.additional_notes_timestamp,
+        resident.additional_notes_timestamp
       )
         ? [...resident.additional_notes_timestamp]
         : [];
@@ -275,7 +275,7 @@ export default function ResidentDashboard() {
         ? [...resident.additional_notes]
         : [];
       const updatedTimestamps = Array.isArray(
-        resident.additional_notes_timestamp,
+        resident.additional_notes_timestamp
       )
         ? [...resident.additional_notes_timestamp]
         : [];
@@ -319,7 +319,7 @@ export default function ResidentDashboard() {
         ? resident.additional_notes.filter((_, idx) => idx !== index)
         : [];
       const updatedTimestamps = Array.isArray(
-        resident.additional_notes_timestamp,
+        resident.additional_notes_timestamp
       )
         ? resident.additional_notes_timestamp.filter((_, idx) => idx !== index)
         : [];
@@ -457,7 +457,7 @@ export default function ResidentDashboard() {
               initialTimestamps={
                 Array.isArray(resident.additional_notes_timestamp)
                   ? resident.additional_notes_timestamp.map((ts) =>
-                      typeof ts === "string" ? ts : new Date(ts).toISOString(),
+                      typeof ts === "string" ? ts : new Date(ts).toISOString()
                     )
                   : []
               }
@@ -501,7 +501,7 @@ export default function ResidentDashboard() {
         </TabsContent>
 
         <TabsContent value="medication">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-fit">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-fit max-h-[80vh]">
             <div className="p-6 border rounded-lg bg-white">
               <div className="flex justify-between items-center">
                 <h2 className="text-lg font-semibold">Medication List</h2>
@@ -532,7 +532,7 @@ export default function ResidentDashboard() {
               )}
             </div>
 
-            <div className="border rounded-lg bg-white flex flex-col h-fit">
+            <div className="border rounded-lg bg-white flex flex-col h-fit max-h-[80vh]">
               <div className="top-0 p-6  z-10 flex justify-between items-center">
                 <h2 className="text-lg font-semibold">Medication Log</h2>
 
@@ -626,10 +626,10 @@ export default function ResidentDashboard() {
                       (old: CarePlanRecord[] | undefined) => {
                         if (!old) return [updatedPlan];
                         const updated = old.map((cp) =>
-                          cp.id === updatedPlan.id ? updatedPlan : cp,
+                          cp.id === updatedPlan.id ? updatedPlan : cp
                         );
                         return updated.length > 0 ? updated : [updatedPlan];
-                      },
+                      }
                     );
                   }}
                 />

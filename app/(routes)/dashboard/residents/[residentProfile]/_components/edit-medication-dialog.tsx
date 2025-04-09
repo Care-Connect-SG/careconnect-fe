@@ -107,7 +107,7 @@ const EditMedication: React.FC<EditMedicationProps> = ({
         date = new Date(
           parseInt(parts[2]),
           parseInt(parts[0]) - 1,
-          parseInt(parts[1]),
+          parseInt(parts[1])
         );
       } else if (dateString.includes("-")) {
         date = parse(dateString, "yyyy-MM-dd", new Date());
@@ -197,7 +197,7 @@ const EditMedication: React.FC<EditMedicationProps> = ({
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className="max-h-[60vh] overflow-y-auto space-y-4 px-1">
             <div>
               <Label>Medication Name</Label>
               <Input {...register("medication_name")} />
@@ -230,7 +230,7 @@ const EditMedication: React.FC<EditMedicationProps> = ({
                   onValueChange={(value) =>
                     methods.setValue(
                       "schedule_type",
-                      value as "custom" | "day" | "week",
+                      value as "custom" | "day" | "week"
                     )
                   }
                 >
@@ -263,7 +263,7 @@ const EditMedication: React.FC<EditMedicationProps> = ({
                     variant="outline"
                     className={cn(
                       "w-full justify-start text-left font-normal",
-                      !startDate && "text-muted-foreground",
+                      !startDate && "text-muted-foreground"
                     )}
                   >
                     {startDate ? (
@@ -297,7 +297,7 @@ const EditMedication: React.FC<EditMedicationProps> = ({
                     variant="outline"
                     className={cn(
                       "w-full justify-start text-left font-normal",
-                      !endDate && "text-muted-foreground",
+                      !endDate && "text-muted-foreground"
                     )}
                   >
                     {endDate ? (

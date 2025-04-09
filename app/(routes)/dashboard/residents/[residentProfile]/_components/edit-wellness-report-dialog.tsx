@@ -133,7 +133,7 @@ const EditWellnessReportDialog: React.FC<EditWellnessReportDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>Edit Wellness Report</DialogTitle>
         </DialogHeader>
@@ -148,7 +148,7 @@ const EditWellnessReportDialog: React.FC<EditWellnessReportDialogProps> = ({
                     variant="outline"
                     className={cn(
                       "w-full justify-start text-left font-normal",
-                      !selectedDate && "text-muted-foreground",
+                      !selectedDate && "text-muted-foreground"
                     )}
                     type="button"
                   >

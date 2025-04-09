@@ -11,7 +11,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -40,7 +39,10 @@ interface MedicationProps {
     id: string;
     medication_name: string;
     dosage: string;
-    frequency: string;
+    repeat: number;
+    schedule_type: "day" | "week" | "custom";
+    days_of_week?: string[];
+    times_of_day?: { hour: number; minute: number }[];
     start_date: string;
     end_date?: string;
     instructions?: string;
@@ -131,9 +133,6 @@ const ResidentMedication: React.FC<MedicationProps> = ({
             <CardTitle className="tracking-tight text-sm font-bold">
               {medication.medication_name.toUpperCase()}
             </CardTitle>
-            <Badge variant="outline" className="text-xs font-medium bg-gray-50">
-              {medication.frequency}
-            </Badge>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -188,6 +187,40 @@ const ResidentMedication: React.FC<MedicationProps> = ({
               <div className="mb-3">
                 <p className="text-sm font-semibold text-gray-500">End Date</p>
                 <p className="text-sm">{formatDate(medication.end_date)}</p>
+              </div>
+            )}
+            <div className="mb-3">
+              <p className="text-sm font-semibold text-gray-500">Schedule</p>
+              <p className="text-sm">
+                {medication.schedule_type === "day"
+                  ? medication.repeat > 1
+                    ? `Every ${medication.repeat} day(s)`
+                    : "Daily"
+                  : medication.schedule_type === "week"
+                    ? (medication.repeat > 1
+                        ? `Every ${medication.repeat} week(s)`
+                        : "Weekly") +
+                      " - " +
+                      (medication.days_of_week?.join(", ") || "N/A")
+                    : medication.schedule_type === "custom"
+                      ? `Custom schedule`
+                      : "N/A"}
+              </p>
+            </div>
+            {medication.schedule_type !== "custom" && (
+              <div className="mb-3">
+                <p className="text-sm font-semibold text-gray-500">Timings</p>
+                <p className="text-sm wrap">
+                  {medication.times_of_day
+                    ?.map(
+                      (time) =>
+                        time.hour +
+                        ":" +
+                        (time.minute < 10 ? "0" : "") +
+                        time.minute,
+                    )
+                    .join(", ") || "N/A"}
+                </p>
               </div>
             )}
           </div>

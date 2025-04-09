@@ -34,7 +34,7 @@ import CreateMedication from "./_components/create-medication-dialog";
 import CreateWellnessReportDialog from "./_components/create-wellness-report-dialog";
 import EditCarePlan from "./_components/edit-careplan";
 import EditMedicalHistoryModal from "./_components/edit-medical-history-dialog";
-import EditMedication from "./_components/edit-medication";
+import EditMedication from "./_components/edit-medication-dialog";
 import EditResidentDialog from "./_components/edit-resident-dialog";
 import ResidentDetailsCard from "./_components/resident-detail-card";
 import ResidentDetailsNotesCard from "./_components/resident-detail-notes";
@@ -501,8 +501,8 @@ export default function ResidentDashboard() {
         </TabsContent>
 
         <TabsContent value="medication">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="p-6 border rounded-lg bg-white max-h-[80vh]">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-fit max-h-[80vh]">
+            <div className="p-6 border rounded-lg bg-white">
               <div className="flex justify-between items-center">
                 <h2 className="text-lg font-semibold">Medication List</h2>
                 <Button onClick={() => openModal("createMedication")}>
@@ -532,7 +532,7 @@ export default function ResidentDashboard() {
               )}
             </div>
 
-            <div className="border rounded-lg bg-white flex flex-col max-h-[80vh]">
+            <div className="border rounded-lg bg-white flex flex-col h-fit max-h-[80vh]">
               <div className="top-0 p-6  z-10 flex justify-between items-center">
                 <h2 className="text-lg font-semibold">Medication Log</h2>
 

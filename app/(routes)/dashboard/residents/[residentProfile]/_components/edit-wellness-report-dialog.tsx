@@ -133,7 +133,7 @@ const EditWellnessReportDialog: React.FC<EditWellnessReportDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>Edit Wellness Report</DialogTitle>
         </DialogHeader>

@@ -257,6 +257,19 @@ export default function ReportsTable({
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          {report.status === ReportStatus.CHANGES_REQUESTED && (
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(
+                                  `/dashboard/incidents/resolve?formId=${report.form_id}&reportId=${report.id}`,
+                                );
+                              }}
+                            >
+                              <Edit className="mr-2 h-4 w-4" />
+                              Resolve
+                            </DropdownMenuItem>
+                          )}
                           {report.status === ReportStatus.PUBLISHED && (
                             <>
                               <DropdownMenuItem

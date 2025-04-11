@@ -48,7 +48,7 @@ export default function ReportsTable({
 
   const handleEdit = (report: ReportResponse) => {
     router.push(
-      `/dashboard/incidents/fill?formId=${report.form_id}&reportId=${report.id}`
+      `/dashboard/incidents/fill?formId=${report.form_id}&reportId=${report.id}`,
     );
   };
 
@@ -67,7 +67,7 @@ export default function ReportsTable({
         report={report}
         reporter={reporter}
         resident={resident}
-      />
+      />,
     ).toBlob();
 
     const url = URL.createObjectURL(blob);
@@ -113,20 +113,20 @@ export default function ReportsTable({
           report={report}
           reporter={reporter}
           resident={resident}
-        />
+        />,
       ).toBlob();
 
       const formData = new FormData();
       const pdfFile = new File(
         [pdfBlob],
         `${toTitleCase(resident.full_name)}'s ${form.title}.pdf`,
-        { type: "application/pdf" }
+        { type: "application/pdf" },
       );
       formData.append("media", pdfFile);
       formData.append("jid", `65${resident.emergency_contact_number}`);
       formData.append(
         "caption",
-        `🚨 URGENT: Incident Report for ${toTitleCase(resident.full_name)}`
+        `🚨 URGENT: Incident Report for ${toTitleCase(resident.full_name)}`,
       );
 
       const response = await fetch("/api/whatsapp/media", {
@@ -162,7 +162,7 @@ export default function ReportsTable({
 
   const canShowActions = (report: ReportResponse) => {
     return ![ReportStatus.SUBMITTED, ReportStatus.CHANGES_MADE].includes(
-      report.status
+      report.status,
     );
   };
 
@@ -235,7 +235,7 @@ export default function ReportsTable({
                     <TableCell className="px-6 py-4">
                       <Badge
                         className={`${getReportBadgeConfig(
-                          report.status
+                          report.status,
                         )} font-normal`}
                       >
                         {report.status}
@@ -262,7 +262,7 @@ export default function ReportsTable({
                               onClick={(e) => {
                                 e.stopPropagation();
                                 router.push(
-                                  `/dashboard/incidents/resolve?formId=${report.form_id}&reportId=${report.id}`
+                                  `/dashboard/incidents/resolve?formId=${report.form_id}&reportId=${report.id}`,
                                 );
                               }}
                             >

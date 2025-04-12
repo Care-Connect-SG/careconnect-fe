@@ -319,7 +319,7 @@ export default function ReportsTable({
                         </DropdownMenuContent>
                       </DropdownMenu>
                     ) : (
-                      <div className="h-4 w-4" /> // empty but still sized
+                      <div className="h-4 w-4" />
                     )}
                   </TableCell>
                 </TableRow>

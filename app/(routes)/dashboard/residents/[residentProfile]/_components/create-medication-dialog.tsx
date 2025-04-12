@@ -213,9 +213,7 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
     }
   };
 
-  // Create a handler for dialog close to reset scheduler states
   const handleDialogClose = useCallback(() => {
-    // Reset form values
     reset({
       medication_name: "",
       dosage: "",
@@ -228,12 +226,10 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
       repeat: 1,
     });
 
-    // Reset other state
     setStartDate(undefined);
     setEndDate(undefined);
     setIsScanning(false);
 
-    // Call the original onClose
     onClose();
   }, [onClose, reset]);
 

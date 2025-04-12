@@ -207,7 +207,7 @@ export default function ViewReportPage() {
       const data = await tryGetFormById(formId!);
       setForm(data);
     } catch (error) {
-      setForm(undefined); // explicitly set null to avoid undefined behavior
+      setForm(undefined);
     }
   };
 

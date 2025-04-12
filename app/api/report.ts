@@ -165,7 +165,7 @@ export const tryGetReportById = async (
     const data = await response.json();
     return data;
   } catch {
-    return null; // No logging
+    return null;
   }
 };
 

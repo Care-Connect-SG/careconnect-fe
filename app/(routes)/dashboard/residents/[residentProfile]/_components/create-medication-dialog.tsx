@@ -69,7 +69,7 @@ const CreateMedication: React.FC<CreateMedicationProps> = ({
       instructions: "",
       times_of_day: [],
       days_of_week: [],
-      repeat: 1
+      repeat: 1,
     },
   });
 

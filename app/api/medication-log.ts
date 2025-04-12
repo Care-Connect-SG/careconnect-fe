@@ -1,3 +1,4 @@
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { MedicationAdministrationLog } from "@/types/medication-log";
 
 export const getMedicationLogs = async (
@@ -10,7 +11,9 @@ export const getMedicationLogs = async (
 
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BE_API_URL}/medication-logs/?${params.toString()}`,
+      `${
+        process.env.NEXT_PUBLIC_BE_API_URL
+      }/medication-logs/?${params.toString()}`,
     );
 
     if (!response.ok) {
@@ -33,8 +36,10 @@ export const logMedicationAdministration = async (
   params.append("medication_id", medicationId);
 
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BE_API_URL}/medication-logs/?${params.toString()}`,
+    const response = await fetchWithAuth(
+      `${
+        process.env.NEXT_PUBLIC_BE_API_URL
+      }/medication-logs/?${params.toString()}`,
       {
         method: "POST",
         headers: {

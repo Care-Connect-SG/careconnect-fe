@@ -1,6 +1,6 @@
 "use client";
 
-import { getResidentsByPage } from "@/app/api/resident";
+import { getResidentsByPage, getResidentsCount } from "@/app/api/resident";
 import { getTasks } from "@/app/api/task";
 import { getAllNurses } from "@/app/api/user";
 import { Card } from "@/components/ui/card";
@@ -12,7 +12,7 @@ import { useEffect, useState } from "react";
 
 const StatsOverview = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [residents, setResidents] = useState<ResidentRecord[]>([]);
+  const [residents, setResidents] = useState(0);
   const [nurses, setNurses] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -22,7 +22,7 @@ const StatsOverview = () => {
         const today = new Date();
         const [tasksData, residentsData, nursesData] = await Promise.all([
           getTasks({ date: today.toISOString().split("T")[0] }),
-          getResidentsByPage(1),
+          getResidentsCount(),
           getAllNurses(),
         ]);
         setTasks(tasksData);
@@ -68,7 +68,7 @@ const StatsOverview = () => {
     },
     {
       title: "Total Residents",
-      value: residents.length.toString(),
+      value: residents,
       icon: BookUser,
       color: "text-green-500",
     },

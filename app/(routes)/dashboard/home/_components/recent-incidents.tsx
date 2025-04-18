@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { ReportResponse } from "@/types/report";
+import { CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -66,7 +67,7 @@ const RecentIncidents = () => {
           <div className="flex items-center justify-center h-64">
             <Spinner />
           </div>
-        ) : (
+        ) : reports.length > 0 ? (
           reports.map((report) => (
             <div
               key={report.id}
@@ -109,6 +110,18 @@ const RecentIncidents = () => {
               </div>
             </div>
           ))
+        ) : (
+          <div className="flex flex-col items-center justify-center h-64 text-center">
+            <div className="text-gray-400 mb-2">
+              <CheckCircle size={48} />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No incidents reported
+            </h3>
+            <p className="text-sm text-gray-500 max-w-sm">
+              New incidents will appear here when they are submitted
+            </p>
+          </div>
         )}
       </div>
     </Card>

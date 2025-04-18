@@ -91,15 +91,12 @@ export default function ReviewReports() {
             Resident
           </TableHead>
           <TableHead className="font-semibold text-gray-700">Status</TableHead>
-          <TableHead className="font-semibold text-gray-700 text-right">
-            Actions
-          </TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {reports.length === 0 ? (
           <TableRow className="hover:bg-white">
-            <TableCell colSpan={6} className="h-16 text-center text-gray-500">
+            <TableCell colSpan={5} className="h-16 text-center text-gray-500">
               No reports found in this category
             </TableCell>
           </TableRow>
@@ -132,26 +129,6 @@ export default function ReviewReports() {
                 >
                   {report.status}
                 </Badge>
-              </TableCell>
-              <TableCell className="text-right">
-                {(report.status !== "Published" ||
-                  user?.role === Role.ADMIN) && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger
-                      asChild
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 hover:bg-gray-100"
-                      >
-                        <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Open menu</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                  </DropdownMenu>
-                )}
               </TableCell>
             </TableRow>
           ))

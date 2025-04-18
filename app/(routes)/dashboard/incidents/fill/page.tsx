@@ -160,12 +160,12 @@ export default function CreateReportPage() {
   };
 
   const prepareReport = (data: ReportSchema, mode: string) => {
-    const missingRequired = form!.json_content
-      .filter((element) => element.required)
-      .some((element, idx) => {
-        const input = data.report_content[idx].input;
-        return Array.isArray(input) ? input.length === 0 : !input;
-      });
+    const missingRequired = form!.json_content.some((element, idx) => {
+      if (!element.required) return false;
+
+      const input = data.report_content[idx]?.input;
+      return Array.isArray(input) ? input.length === 0 : !input;
+    });
 
     if (missingRequired) {
       return;

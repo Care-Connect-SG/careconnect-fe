@@ -59,7 +59,6 @@ const StaffWorkload = () => {
     };
   };
 
-  // Create an array of nurse workloads
   const nurseWorkloads = nurses
     .map((nurse) => calculateWorkload(nurse.id))
     .filter((workload): workload is NurseWorkload => workload !== null);

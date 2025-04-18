@@ -124,8 +124,8 @@ const TaskManagement = () => {
       new Set(
         allTasks
           .filter((task) => task.assigned_to)
-          .map((task) => task.assigned_to)
-      )
+          .map((task) => task.assigned_to),
+      ),
     );
   }, [allTasks]);
 
@@ -135,8 +135,8 @@ const TaskManagement = () => {
           new Map(
             allTasks
               .filter((task) => task.assigned_to && task.assigned_to_name)
-              .map((task) => [task.assigned_to, task.assigned_to_name])
-          )
+              .map((task) => [task.assigned_to, task.assigned_to_name]),
+          ),
         )
       : [];
   }, [allTasks]);
@@ -159,7 +159,7 @@ const TaskManagement = () => {
     }
 
     return allTasks.filter(
-      (task) => task.assigned_to && selectedNurses.includes(task.assigned_to)
+      (task) => task.assigned_to && selectedNurses.includes(task.assigned_to),
     );
   }, [allTasks, selectedNurses, allSelected]);
 
@@ -391,10 +391,10 @@ const TaskManagement = () => {
                 {selectedNurses.length === 0
                   ? "No Nurses"
                   : allSelected
-                  ? "All Nurses"
-                  : `${selectedNurses.length} nurse${
-                      selectedNurses.length > 1 ? "s" : ""
-                    }`}
+                    ? "All Nurses"
+                    : `${selectedNurses.length} nurse${
+                        selectedNurses.length > 1 ? "s" : ""
+                      }`}
                 <ChevronDown className="w-4 h-4 ml-2" />
               </Button>
             </PopoverTrigger>

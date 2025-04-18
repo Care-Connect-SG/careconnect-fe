@@ -49,7 +49,7 @@ const StaffWorkload = () => {
 
     const pendingTasks = tasks.filter(
       (task) =>
-        task.assigned_to === nurseId && task.status !== TaskStatus.COMPLETED
+        task.assigned_to === nurseId && task.status !== TaskStatus.COMPLETED,
     ).length;
 
     return {

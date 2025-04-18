@@ -257,11 +257,7 @@ const MyProfile = () => {
                 <Button
                   type="submit"
                   className="w-32"
-                  disabled={
-                    !form.formState.isDirty ||
-                    !form.formState.isValid ||
-                    updateUserMutation.isPending
-                  }
+                  disabled={!form.formState.isDirty || !form.formState.isValid}
                 >
                   {updateUserMutation.isPending ? <Spinner /> : "Save Changes"}
                 </Button>

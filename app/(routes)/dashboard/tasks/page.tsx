@@ -113,42 +113,42 @@ const TaskManagement = () => {
       if (filters.status) queryParams.status = filters.status;
       if (filters.priority) queryParams.priority = filters.priority;
 
-      if (selectedNurses.length > 0 && !allSelected) {
-        queryParams.nurses = selectedNurses;
-      }
-
       return getTasks(queryParams);
     },
     enabled: true,
   });
 
-  const uniqueNurseIds = useMemo(() => {
+  const allNurseIds = useMemo(() => {
     if (!allTasks || allTasks.length === 0) return [];
     return Array.from(
       new Set(
         allTasks
           .filter((task) => task.assigned_to)
-          .map((task) => task.assigned_to),
-      ),
+          .map((task) => task.assigned_to)
+      )
     );
   }, [allTasks]);
 
+  const allAvailableNurses = useMemo(() => {
+    return allTasks
+      ? Array.from(
+          new Map(
+            allTasks
+              .filter((task) => task.assigned_to && task.assigned_to_name)
+              .map((task) => [task.assigned_to, task.assigned_to_name])
+          )
+        )
+      : [];
+  }, [allTasks]);
+
   useEffect(() => {
-    if (
-      uniqueNurseIds.length > 0 &&
-      selectedNurses.length === 0 &&
-      allSelected
-    ) {
-      setSelectedNurses(uniqueNurseIds);
+    if (allNurseIds.length > 0 && selectedNurses.length === 0 && allSelected) {
+      setSelectedNurses(allNurseIds);
     }
-  }, [uniqueNurseIds, selectedNurses.length, allSelected]);
+  }, [allNurseIds, selectedNurses.length, allSelected]);
 
   const filteredTasks = useMemo(() => {
     if (!allTasks || allTasks.length === 0) return [];
-
-    if (!allSelected) {
-      return allTasks;
-    }
 
     if (allSelected) {
       return allTasks;
@@ -159,21 +159,9 @@ const TaskManagement = () => {
     }
 
     return allTasks.filter(
-      (task) => task.assigned_to && selectedNurses.includes(task.assigned_to),
+      (task) => task.assigned_to && selectedNurses.includes(task.assigned_to)
     );
   }, [allTasks, selectedNurses, allSelected]);
-
-  const uniqueNurses = useMemo(() => {
-    return allTasks
-      ? Array.from(
-          new Map(
-            allTasks
-              .filter((task) => task.assigned_to && task.assigned_to_name)
-              .map((task) => [task.assigned_to, task.assigned_to_name]),
-          ),
-        )
-      : [];
-  }, [allTasks]);
 
   const handleToggleNurse = (nurseId: string) => {
     setSelectedNurses((prev) => {
@@ -183,7 +171,7 @@ const TaskManagement = () => {
         return newSelection;
       } else {
         const newSelection = [...prev, nurseId];
-        setAllSelected(newSelection.length === uniqueNurses.length);
+        setAllSelected(newSelection.length === allAvailableNurses.length);
         return newSelection;
       }
     });
@@ -194,7 +182,7 @@ const TaskManagement = () => {
       setSelectedNurses([]);
       setAllSelected(false);
     } else {
-      setSelectedNurses(uniqueNurses.map(([id]) => id));
+      setSelectedNurses(allAvailableNurses.map(([id]) => id));
       setAllSelected(true);
     }
   };
@@ -403,16 +391,16 @@ const TaskManagement = () => {
                 {selectedNurses.length === 0
                   ? "No Nurses"
                   : allSelected
-                    ? "All Nurses"
-                    : `${selectedNurses.length} nurse${
-                        selectedNurses.length > 1 ? "s" : ""
-                      }`}
+                  ? "All Nurses"
+                  : `${selectedNurses.length} nurse${
+                      selectedNurses.length > 1 ? "s" : ""
+                    }`}
                 <ChevronDown className="w-4 h-4 ml-2" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-56 p-2">
               <div className="max-h-60 overflow-auto">
-                {uniqueNurses.length > 0 && (
+                {allAvailableNurses.length > 0 && (
                   <div
                     className="flex items-center gap-2 cursor-pointer p-2 hover:bg-gray-100 rounded-md mb-1 border-b"
                     onClick={handleToggleAllNurses}
@@ -428,8 +416,8 @@ const TaskManagement = () => {
                   </div>
                 )}
 
-                {uniqueNurses.length > 0 ? (
-                  uniqueNurses.map(([nurseId, nurseName], index) => (
+                {allAvailableNurses.length > 0 ? (
+                  allAvailableNurses.map(([nurseId, nurseName], index) => (
                     <div
                       key={nurseId || index}
                       className="flex items-center gap-2 cursor-pointer p-2 hover:bg-gray-100 rounded-md"

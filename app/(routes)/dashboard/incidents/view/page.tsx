@@ -627,7 +627,9 @@ export default function ViewReportPage() {
                     }
                   </h3>
                   <div className="text-gray-700 whitespace-pre-line">
-                    {section.input}
+                    {Array.isArray(section.input)
+                      ? section.input.join(", ")
+                      : section.input}
                   </div>
                 </div>
               ))}

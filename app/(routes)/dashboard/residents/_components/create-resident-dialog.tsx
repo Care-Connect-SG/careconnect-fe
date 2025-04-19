@@ -35,7 +35,7 @@ interface CreateResidentDialogProps {
     emergency_contact_number: string;
     relationship: string;
     room_number?: string;
-    additional_notes?: string;
+    additional_notes?: string[] | string;
     primary_nurse?: string;
   }) => void;
 }
@@ -121,6 +121,9 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const formattedNotes = additionalNotes.trim() ? [additionalNotes] : [];
+
     onSave({
       full_name: fullName,
       gender,
@@ -129,10 +132,11 @@ const CreateResidentDialog: React.FC<CreateResidentDialogProps> = ({
       emergency_contact_name: emergencyContactName,
       emergency_contact_number: emergencyContactNumber,
       relationship,
-      room_number: roomNumber,
-      additional_notes: additionalNotes,
-      primary_nurse: primaryNurse,
+      room_number: roomNumber || undefined,
+      additional_notes: formattedNotes,
+      primary_nurse: primaryNurse || undefined,
     });
+
     resetForm();
     onClose();
   };

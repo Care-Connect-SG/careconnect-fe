@@ -5,14 +5,24 @@ export const createResident = async (
   newResidentData: RegistrationCreate,
 ): Promise<ResidentRecord> => {
   try {
+    if (
+      typeof newResidentData.additional_notes === "string" &&
+      newResidentData.additional_notes.trim()
+    ) {
+      newResidentData.additional_notes = [newResidentData.additional_notes];
+    }
+
+    const { admission_date, ...dataToSend } = newResidentData as any;
+
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BE_API_URL}/residents/createNewRecord`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newResidentData),
+        body: JSON.stringify(dataToSend),
       },
     );
+
     if (!response.ok) {
       const errData = await response.json();
       throw Error(errData.detail || "Error creating new resident");

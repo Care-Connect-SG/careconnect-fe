@@ -9,8 +9,8 @@ export interface ResidentRecord {
   relationship: string;
   room_number: string;
   admission_date: string;
-  additional_notes?: string;
-  additional_notes_timestamp?: string;
+  additional_notes?: string[];
+  additional_notes_timestamp?: string[];
   primary_nurse?: string;
   photograph?: string | null;
 }
@@ -23,8 +23,9 @@ export interface RegistrationCreate {
   emergency_contact_name: string;
   emergency_contact_number: string;
   relationship: string;
-  room_number: string;
-  admission_date: string;
-  additional_notes?: string;
+  room_number?: string;
+  additional_notes?: string[] | string;
+  additional_notes_timestamp?: string[] | string;
   primary_nurse?: string;
+  photograph?: string | null;
 }

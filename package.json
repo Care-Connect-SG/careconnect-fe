@@ -42,7 +42,7 @@
     "html2canvas": "^1.4.1",
     "lodash.debounce": "^4.0.8",
     "lucide-react": "^0.475.0",
-    "next": "^15.2.3",
+    "next": "15.2.8",
     "next-auth": "^4.24.11",
     "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
